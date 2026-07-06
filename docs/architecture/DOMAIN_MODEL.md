@@ -63,7 +63,7 @@ erDiagram
 | Task/Workflow | S1–S11 階段檢核清單（docs/methodology/開發流程架構.md 為藍本） | V6 |
 
 **掛載規則**（唯一現在就凍結的部分）：模組資料檔自帶 `project_id` 與自己的 schema_version；
-計算合約（project.schema.json）**永不**因模組需求而 bump；模組讀 Result 只讀不改。
+計算合約（project_schema.json）**永不**因模組需求而 bump；模組讀 Result 只讀不改。
 
 ## 4. 與現況的差距（P1/P2 要補的洞）
 

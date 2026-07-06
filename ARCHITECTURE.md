@@ -56,9 +56,9 @@ Project JSON 必須含**重算所需的全部輸入**（含逐層樓板表 floor
 稽核鏈（數字無法回放驗證），也堵死 Dashboard 多案件管理的重算需求。合約不可重算＝SSOT 只有一半。
 **細節**：見 `docs/architecture/SCHEMA_STRATEGY.md`（版本規則、遷移器、向下相容）。
 
-### D4 — Schema 檔案形態：單一 project.schema.json ＋ `$defs` 【推翻「7 個分離 schema 檔」提案】
+### D4 — Schema 檔案形態：單一 project_schema.json ＋ `$defs` 【推翻「7 個分離 schema 檔」提案】
 
-**決定**：不拆 owner/valuation/cashflow/… 七個獨立 schema 檔；一個 `project.schema.json`，
+**決定**：不拆 owner/valuation/cashflow/… 七個獨立 schema 檔；一個 `project_schema.json`，
 子實體用 `$defs` ＋ `$ref` 內部引用。CRM/GIS/Document 等 OS 模組資料**不進計算合約**，
 各模組自帶檔案（以 `project_id` 關聯），schema 各自獨立、獨立演進。
 **理由**：計算合約是原子性的（一個案件一份檔、一次驗證）；拆檔增加版本組合爆炸
@@ -89,7 +89,7 @@ BUILDER/（→ 建議更名 Urban-Renewal-OS）
 ├── CLAUDE.md                    # 索引（≤150 行，只路由不塞內容）
 ├── governance/                  # 制度檔：模型調度/判斷 rubric/範本/維護協議/診斷/交接信
 ├── core/redcf/                  # ★ 計算核心（原 RE-DCF core/，唯一公式來源）
-├── schemas/                     # project.schema.json ＋ examples/（合約與範例）
+├── schemas/                     # project_schema.json ＋ examples/（合約與範例）
 ├── apps/
 │   ├── web/                     # 原 Urban-Renewal 5 個靜態頁（Pages 部署根）
 │   └── streamlit/               # 原 app.py ＋ .streamlit/（Streamlit Cloud 進入點）

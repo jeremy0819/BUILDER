@@ -1,6 +1,6 @@
 # Schema 策略：版本、相容、遷移（隨 Architecture Freeze 凍結）
 
-> 檔案形態裁決見 ARCHITECTURE.md D4：單一 `project.schema.json` ＋ `$defs`，不拆七檔。
+> 檔案形態裁決見 ARCHITECTURE.md D4：單一 `project_schema.json` ＋ `$defs`，不拆七檔。
 > 現行 v1.1 **凍結中**（基準 sha256 見 RE-DCF《歷史乾淨度報告.md》），本檔規劃的 v2.0 在
 > **P1（合併完成後）**才動工。凍結期任何 schema 需求 → 記 backlog，不動檔案。
 

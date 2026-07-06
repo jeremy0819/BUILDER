@@ -41,7 +41,7 @@ SemVer 語意：X＝合約破壞性變更；Y＝相容新增；Z＝修正。alph
 
 ## 4. Release Strategy（何時發哪種版）
 
-- **alpha**：M1 完成（CI 綠＋六道 Gate＋本政策＋Checklist）即可發 os-v0.1.0-alpha。
+- **alpha**：M1 完成（CI 綠＋五道 Gate＋本政策＋Checklist）即可發 os-v0.1.0-alpha。
 - **beta**：schema v2.0 落地＋遷移器＋pyproject 完成（M3–M4）→ os-v0.2.0-beta。
 - **正式 v1.0**：合約穩定（v2.0 定案不再破壞）＋權變/現金流經真實案驗證＋LICENSE 定案。
 - 每次 release 一律走 `docs/releases/CHECKLIST.md`，缺一項不發。
