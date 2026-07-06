@@ -1,0 +1,49 @@
+name: CI
+
+# Urban Renewal OS — 四道 Gate（M1 Task 1）。任一 Gate 紅即擋 merge。
+# 設計依據：docs/architecture/MIGRATION_PLAN.md 步驟3、FREEZE_REVIEW-2026-07.md（CI 從零建立）。
+# 所有步驟都從 repo 根目錄執行。
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # ── Gate 0：資料紀律（紅線）——真實案件段名零命中 ──────────────
+      - name: "Gate 0 — No real names"
+        run: bash check_no_real_names.sh
+
+      # ── Gate 1：Python（pytest 黃金＋合約＋headless、schema 驗證、min_example）──
+      - name: "Gate 1 — pytest (golden + contract + headless + schema)"
+        run: python -m pytest -q
+      - name: "Gate 1 — min_example smoke"
+        run: python min_example.py
+
+      # ── Gate 2：Core 零 UI 依賴（封鎖 streamlit/plotly 後仍能 import + 計算）──
+      - name: "Gate 2 — Core import isolation"
+        run: python tools/check_core_isolation.py
+
+      # ── Gate 3：Excel 範本迴歸（內容比對，非 raw bytes；防範本被誤改）──
+      - name: "Gate 3 — Template regression"
+        run: python tools/check_template.py
+
+      # ── Gate 4：靜態站本地連結（apps/web 死連結/404 即 Fail）──────────
+      - name: "Gate 4 — Static web links"
+        run: python tools/check_web_links.py
