@@ -18,6 +18,7 @@
 - 各 repo `CLAUDE.md`——**改前先備份到 `docs/backups/CLAUDE-<日期>.md`**；改後仍須 ≤150 行
 
 ### 🔴 動前先問使用者（附建議選項再問）
+- `ARCHITECTURE.md`（架構凍結文件——變更本檔＝架構變更）
 - `schemas/project_schema.json`（v1.1 凍結，位元組不可變）
 - `test_golden.py` 的**期望值**（改期望值＝改對錯的定義）
 - 費率常數（`core/templates.py`／財務率預設——真實案校準成果）

@@ -72,14 +72,14 @@ optional 也不行（P1-4 驗收是位元組級 hash 不變）。
 
 **RE-DCF-Tool（合併後 core/redcf/）**
 ```bash
-pytest                                                    # 全綠
-grep -rn "竹蓮\|安和\|安民\|中正\|龜山" --exclude-dir=.git .   # 零命中
-sha256sum schemas/project_schema.json                     # 凍結期須等於基準 hash
+pytest                                    # 全綠
+bash check_no_real_names.sh               # PASS（真實段名檢查）
+sha256sum schemas/project_schema.json     # 凍結期須等於基準 hash
 ```
 
 **Urban-Renewal（合併後 apps/web/）**
 - headless 迴歸測試（Node stub-DOM）全綠；HTML 檔在瀏覽器實開一次。
-- 真實段名 grep 零命中（同上指令）。
+- `bash check_no_real_names.sh` → PASS。
 
 **BUILDER／governance 文件**
 - 內文提到的路徑與指令，逐一確認存在／可跑（用 ls 與 --help，不憑印象）。

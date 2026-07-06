@@ -100,6 +100,7 @@ opus 解出模式後
 2. **schema 凍結**：`schemas/project_schema.json` v1.1 凍結中，位元組不可變
    （基準 sha256 見 RE-DCF《歷史乾淨度報告.md》）。變更需求記 backlog。
 3. **零真實案件資料**：真實段名／案名／金額／姓名不進版控（含檔名與 commit 訊息）。
-   驗證指令：`grep -rn "竹蓮\|安和\|安民\|中正\|龜山" --exclude-dir=.git .` 零命中。
+   驗證：各 repo 根目錄 `bash check_no_real_names.sh` → PASS
+   （檢查字串只允許存在於該腳本與 RE-DCF《歷史乾淨度報告.md》內）。
 4. **黃金測試是硬門檻**：改公式後 `pytest` 不綠不准 commit。
 5. **simulator.html V4 封版**：不重寫；改動走 V5 路線圖。
