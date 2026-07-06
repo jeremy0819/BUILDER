@@ -1,0 +1,13 @@
+# Streamlit 專案設定（repo 根）。
+# 位置重點：Streamlit（含 Streamlit Cloud）從「執行 streamlit run 時的 cwd」讀 .streamlit/config.toml。
+# Cloud 以 repo 根為 cwd、主檔 apps/streamlit/app.py，故 config 必須在此（根），主題才會套用。
+# apps/streamlit/.streamlit/config.toml 僅在「從 apps/streamlit 目錄啟動」時才被讀到，Cloud 不走該路徑。
+[theme]
+primaryColor = "#534AB7"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F4F2EC"
+textColor = "#1A1916"
+font = "sans serif"
+
+[browser]
+gatherUsageStats = false
