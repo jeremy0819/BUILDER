@@ -2,10 +2,14 @@
 
 都市更新／危老前期評估的整合系統（Urban Renewal OS）目標容器。
 
-**現況**：架構凍結完成（2026-07），等待執行兩庫搬遷（乾淨快照）：
+**現況**：架構凍結完成（2026-07）；兩庫已以乾淨快照搬入（MIGRATION 步驟 0–2 完成）：
 
 - `RE-DCF-Tool` → `core/redcf/`＋`schemas/`＋`apps/streamlit/`（唯一計算核心，SSOT）
 - `Urban-Renewal` → `apps/web/`＋`docs/methodology/`（靜態展示與方法論）
+
+啟動：`pip install -r requirements.txt` → `streamlit run apps/streamlit/app.py`（計算工具）；
+靜態站直接開 `apps/web/index.html`。測試：根目錄 `pytest`。
+待辦：CI（步驟 3）、Pages/Streamlit Cloud 部署切換與舊庫封存（步驟 4，repo 擁有者操作）。
 
 ## 從哪裡開始
 

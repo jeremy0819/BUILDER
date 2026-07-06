@@ -33,10 +33,19 @@ v4.5（P0 模組化）：計算層 calc_engine.py、法規庫 law_db.py、獎勵
 """
 
 import json
+import sys
+import pathlib
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-from calc_engine import (
+
+# Streamlit 以 apps/streamlit/ 為腳本目錄執行；repo 根目錄（core/ 所在）需手動加入 sys.path
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
+
+APP_VERSION = "v4.9"        # UI 版號單一來源（原散落 4 處，搬遷時抽常數）
+BUILD_DATE = "2026-07-06"   # 頁尾 build 日期
+
+from core.redcf import (
     calc_容積查核, calc_坪效, calc_開發評效,
     calc_投報全案, calc_投報敏感度,
     calc_獎勵率合計, check_bonus_limit,
@@ -45,7 +54,7 @@ from calc_engine import (
     財務率預設, 範本參數, 範本樓層表, 範本案件類型, 範本獎勵拆解, 範本模式,
     解析上傳, 產生報告,
 )
-from law_db import BONUS_都更, BONUS_危老, COMMON_BURDEN_RANGES
+from core.redcf.law_db import BONUS_都更, BONUS_危老, COMMON_BURDEN_RANGES
 
 
 # ===========================================================================
@@ -587,7 +596,7 @@ box-shadow:0 6px 28px -8px rgba(30,27,75,0.45);">
       <span style="background:rgba(255,255,255,0.13);border:1px solid rgba(255,255,255,0.28);
       backdrop-filter:blur(4px);border-radius:999px;padding:4px 14px;
       color:rgba(255,255,255,0.95);font-size:11.5px;font-weight:600;white-space:nowrap;">
-        v4.9</span>
+        {APP_VERSION}</span>
       <span style="background:rgba(255,255,255,0.13);border:1px solid rgba(255,255,255,0.28);
       backdrop-filter:blur(4px);border-radius:999px;padding:4px 14px;
       color:rgba(255,255,255,0.95);font-size:11.5px;font-weight:600;white-space:nowrap;">
@@ -713,7 +722,7 @@ B1F 防空避難室　▶ §117</div>
 
     成本 = dict(售價=售價, 土地成本=土地成本, 營造單價=營造單價, 營造坪數=_營造坪數,
               管銷費率=管銷費率, 建融成數=建融成數, 利率=利率, 年期=年期, 稅費率=稅費率)
-    from calc_engine import calc_開發評效
+    from core.redcf import calc_開發評效
     評 = calc_開發評效(坪["銷售坪數"], 成本)
 
     # P1 更新前價值（有填地價才試算）
@@ -1251,12 +1260,12 @@ B1F 防空避難室　▶ §117</div>
             st.json(案件JSON)
 
     # ── 頁尾 ─────────────────────────────────────────────────────────────────
-    _build = "2026-07-01"
+    _build = BUILD_DATE
     st.markdown(
         f'<div style="margin-top:2rem;padding:13px 2px 4px;border-top:1px solid #E7E9F2;'
         f'display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;'
         f'font-size:11.5px;color:#9AA1B5">'
-        f'<span>🏗️ <b style="color:#6B7280">RE-DCF-Tool v4.9</b>　永盛開發建設 前期評估</span>'
+        f'<span>🏗️ <b style="color:#6B7280">RE-DCF-Tool {APP_VERSION}</b>　永盛開發建設 前期評估</span>'
         f'<span style="color:#C9CEDB">build {_build}　·　圖說為真　·　§162 逐層查核　·　都市更新權利變換實施辦法</span>'
         f'</div>', unsafe_allow_html=True)
 

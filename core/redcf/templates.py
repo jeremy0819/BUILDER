@@ -14,7 +14,7 @@ core/templates.py — 範本案件種子資料（Demo / 黃金測試用）
 """
 
 import pandas as pd
-from core.capacity import 樓層欄位
+from core.redcf.capacity import 樓層欄位
 
 範本參數 = {
     # 案例A：都更・全案管理（權變框架示範；容積剛好打滿的邊界情境）

@@ -5,7 +5,7 @@ core/efficiency.py — 銷售坪效 + 開發評效（L4.5–L5）
 Urban Renewal Core Engine ── 容積 → 室內坪 → 銷售坪 → 銷坪比；開發評效快篩。
 """
 
-from core.capacity import 平方米換坪
+from core.redcf.capacity import 平方米換坪
 
 
 def calc_坪效(允建容積, 陽台免計面積, 公設比, 外皮係數=1.01) -> dict:

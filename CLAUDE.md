@@ -1,7 +1,8 @@
 # BUILDER（→ Urban-Renewal-OS）— Session 索引
 
-> 本 repo 是 Urban Renewal OS 的目標容器（monorepo）。現況：**架構已凍結、搬遷未執行**
-> （兩個舊 repo 尚未搬入）。本檔只做路由，內容都在被指向的檔案裡——保持 ≤150 行。
+> 本 repo 是 Urban Renewal OS 的目標容器（monorepo）。現況：**架構已凍結；搬遷步驟 0–2 完成**
+> （兩庫已快照搬入＋機械修正，pytest 綠、Streamlit 與 5 靜態頁實開驗證；待辦＝MIGRATION_PLAN
+> 步驟 3 CI、步驟 4 部署切換〔使用者操作〕、步驟 5 收尾驗收）。本檔只做路由——保持 ≤150 行。
 
 ## 開工前必讀（依序，共約 10 分鐘）
 

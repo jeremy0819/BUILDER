@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """P1-1 最小可跑範例：讀合成 JSON → core 計算 → 印出合約 result（10 行內）。"""
 import json
-from core import calc_容積查核, calc_坪效, build_project_json
+from core.redcf import calc_容積查核, calc_坪效, build_project_json
 
 案 = json.load(open("schemas/examples/min_input.json", encoding="utf-8"))
 P, 樓層 = 案["參數"], 案["樓層"]

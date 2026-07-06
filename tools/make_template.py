@@ -172,8 +172,11 @@ def build():
         s2.cell(i, 1, a).font = 粗 if i == 1 else Font()
         s2.cell(i, 2, b)
 
-    wb.save("都更全案投報_對照範本.xlsx")
-    print("已產出 都更全案投報_對照範本.xlsx")
+    # 搬遷後路徑修正：輸出固定在本腳本所在目錄（tools/），不受執行時 cwd 影響
+    import pathlib
+    輸出路徑 = pathlib.Path(__file__).resolve().parent / "都更全案投報_對照範本.xlsx"
+    wb.save(輸出路徑)
+    print(f"已產出 {輸出路徑}")
 
 
 if __name__ == "__main__":

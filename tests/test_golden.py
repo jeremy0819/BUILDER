@@ -22,7 +22,7 @@ for 套件 in ["streamlit", "plotly", "plotly.graph_objects"]:
 # streamlit.column_config 屬性存取防呆
 sys.modules["streamlit"].column_config = types.SimpleNamespace()
 
-from calc_engine import (calc_容積查核, calc_坪效, calc_投報全案,   # noqa: E402
+from core.redcf import (calc_容積查核, calc_坪效, calc_投報全案,   # noqa: E402
                          calc_更新前價值, build_project_json,
                          範本參數, 範本樓層表, 範本案件類型, 範本獎勵拆解,
                          範本模式, 財務率預設)
