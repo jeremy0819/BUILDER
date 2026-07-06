@@ -16,6 +16,11 @@ WEB = "apps/web"
 
 def 該略過(目標: str) -> bool:
     低 = 目標.strip().lower()
+    # 網站根相對路徑（/foo.html）在 Pages 部署時的根未必＝apps/web，本地檔案系統無法可靠解析，
+    # os.path.join 遇 "/" 開頭還會丟棄基準目錄退化成絕對路徑（假陽/假陰）——一律略過並警示。
+    if 低.startswith("/") and not 低.startswith("//"):
+        print(f"⚠️ 略過網站根相對連結（本檢查無法解析）：{目標}")
+        return True
     return (低.startswith(("http://", "https://", "//", "data:", "mailto:",
                            "javascript:", "tel:", "#")) or 低 == "")
 

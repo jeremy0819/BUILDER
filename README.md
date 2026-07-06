@@ -4,7 +4,7 @@
 
 都市更新／危老前期評估的整合系統（Urban Renewal OS）目標容器。
 
-**現況**：架構凍結＋兩庫搬入完成；**M1 基礎建設完成**（CI 六道 Gate、Headless 測試、
+**現況**：架構凍結＋兩庫搬入完成；**M1 基礎建設完成**（CI 五道 Gate、Headless 測試、
 版本治理、Release Checklist、部署遷移計畫、LICENSE 分析）。可發 `os-v0.1.0-alpha`。
 
 - `RE-DCF-Tool` → `core/redcf/`＋`schemas/`＋`apps/streamlit/`（唯一計算核心，SSOT）
@@ -13,7 +13,7 @@
 啟動：`pip install -r requirements.txt` → `streamlit run apps/streamlit/app.py`（計算工具）；
 靜態站直接開 `apps/web/index.html`。測試：根目錄 `pytest`。
 
-**CI 六道 Gate**（`.github/workflows/ci.yml`，任一紅即擋 merge）：
+**CI 五道 Gate**（Gate0–Gate4，`.github/workflows/ci.yml`，任一紅即擋 merge；共 6 條指令）：
 Gate0 資料紀律／Gate1 pytest＋min_example／Gate2 Core 零 UI 依賴／
 Gate3 Excel 範本迴歸（內容比對）／Gate4 靜態站連結。本地一次跑完：
 

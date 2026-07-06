@@ -7,7 +7,7 @@
 
 ## A. 自動化門檻（CI 綠）
 
-- [ ] **CI 全綠**：最新 commit 的 GitHub Actions `CI` workflow 六道 Gate 全 pass。
+- [ ] **CI 全綠**：最新 commit 的 GitHub Actions `CI` workflow 五道 Gate（Gate0–Gate4，共 6 條指令）全 pass。
 - [ ] **Golden Test PASS**：`python -m pytest -q` → 全 passed（含 test_golden＋test_headless）。
 - [ ] **Core 隔離 PASS**：`python tools/check_core_isolation.py` → Gate2 PASS。
 - [ ] **Template 迴歸 PASS**：`python tools/check_template.py` → Gate3 PASS。

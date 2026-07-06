@@ -1,7 +1,7 @@
 # BUILDER（→ Urban-Renewal-OS）— Session 索引
 
 > 本 repo 是 Urban Renewal OS 的目標容器（monorepo）。現況：**架構凍結＋搬遷＋M1 基礎建設完成**
-> （CI 六道 Gate、Headless 測試、版本治理、Release Checklist 皆落地，可發 os-v0.1.0-alpha）。
+> （CI 五道 Gate、Headless 測試、版本治理、Release Checklist 皆落地，可發 os-v0.1.0-alpha）。
 > 待辦＝部署切換／舊庫封存／LICENSE 拍板（使用者操作）；下一階段 M2＝schema v2.0＋新模擬器。
 > 本檔只做路由——保持 ≤150 行。
 
@@ -32,7 +32,7 @@
 | 排優先序／判斷某功能該不該現在做 | `docs/architecture/ROADMAP.md`（P0–P3） |
 | 了解已知風險與文件衝突裁決 | `docs/architecture/ARCH_REVIEW.md`、`docs/architecture/FREEZE_REVIEW-2026-07.md` |
 | 版本規則／發布流程／授權 | `governance/VERSION_POLICY.md`、`docs/releases/`（CHECKLIST、LICENSE_ANALYSIS） |
-| CI 六道 Gate 怎麼跑／怎麼修 | `.github/workflows/ci.yml`＋`tools/check_*.py` |
+| CI 五道 Gate 怎麼跑／怎麼修 | `.github/workflows/ci.yml`＋`tools/check_*.py` |
 | harness 常見翻車與修法 | `governance/DIAGNOSIS.md` |
 | 交接脈絡與低信心警示 | `governance/LETTER_TO_FUTURE_SESSIONS.md` |
 | 踩了新雷 | 寫進 `LESSONS.md`（格式見 MAINTENANCE §2） |

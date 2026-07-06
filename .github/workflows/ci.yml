@@ -1,6 +1,8 @@
 name: CI
 
-# Urban Renewal OS — 四道 Gate（M1 Task 1）。任一 Gate 紅即擋 merge。
+# Urban Renewal OS — 五道 Gate：Gate0–Gate4（M1 Task 1）。任一 Gate 紅即擋 merge。
+# 註：PDF 原列四道（Gate1–4），本 CI 另加 Gate0 資料紀律紅線＝共五道；Gate1 含 pytest 與
+#     min_example 兩條指令（同屬「Python」一道），故 5 道 Gate ＝ 6 條驗證指令。
 # 設計依據：docs/architecture/MIGRATION_PLAN.md 步驟3、FREEZE_REVIEW-2026-07.md（CI 從零建立）。
 # 所有步驟都從 repo 根目錄執行。
 
