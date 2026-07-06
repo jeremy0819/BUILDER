@@ -1,0 +1,42 @@
+name: Deploy apps/web to GitHub Pages
+
+# 為什麼需要這個 workflow：apps/web 是子目錄，GitHub Pages 的「Deploy from a branch」
+# 只能選 repo 根或 /docs，無法指向 apps/web。故用 Actions 部署：把 apps/web 當 Pages 根上傳。
+# 啟用方式（repo 擁有者一次性）：Settings → Pages → Source 選「GitHub Actions」。
+# 之後推送到下列分支（且動到 apps/web）即自動部署；也可在 Actions 頁手動 Run workflow。
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - release/os-v0.1.0-alpha
+      - claude/urban-renewal-os-arch-freeze-svoum0
+    paths:
+      - "apps/web/**"
+      - ".github/workflows/pages.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同時只跑一個部署，不取消進行中的（避免半途中斷 Pages）
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Upload apps/web as Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web        # 以 apps/web 為網站根，index.html 即首頁；.nojekyll 已在其中
+      - id: deployment
+        uses: actions/deploy-pages@v4
