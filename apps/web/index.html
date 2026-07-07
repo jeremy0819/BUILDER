@@ -1,0 +1,295 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Urban Renewal OS · 開發評估儀表板</title>
+<style>
+:root{
+  --accent:#534AB7; --accent-2:#7A6FE0; --accent-soft:#efedfb;
+  --bg:#f6f5fa; --panel:#ffffff; --ink:#1a1830; --mute:#6b6880; --line:#e7e5f0;
+  --err:#dc2626; --warn:#c2740a; --info:#2563eb; --ok:#0f9d6a;
+  --err-bg:#fdeaea; --warn-bg:#fbf1e3; --info-bg:#e9f0fe; --ok-bg:#e7f7f0;
+  --shadow:0 1px 2px rgba(26,24,48,.04),0 8px 24px rgba(26,24,48,.06);
+  --radius:16px;
+}
+@media (prefers-color-scheme:dark){:root{
+  --accent:#8b80f0; --accent-2:#a89dff; --accent-soft:#241f3d;
+  --bg:#0f0e17; --panel:#1a1826; --ink:#eceafa; --mute:#a29fbb; --line:#2b2840;
+  --err:#f87171; --warn:#e0a54a; --info:#7aa2f7; --ok:#4dd0a1;
+  --err-bg:#2a1618; --warn-bg:#2a2113; --info-bg:#161f30; --ok-bg:#122720;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+}}
+:root[data-theme="light"]{
+  --accent:#534AB7; --accent-2:#7A6FE0; --accent-soft:#efedfb;
+  --bg:#f6f5fa; --panel:#fff; --ink:#1a1830; --mute:#6b6880; --line:#e7e5f0;
+  --err:#dc2626; --warn:#c2740a; --info:#2563eb; --ok:#0f9d6a;
+  --err-bg:#fdeaea; --warn-bg:#fbf1e3; --info-bg:#e9f0fe; --ok-bg:#e7f7f0;
+  --shadow:0 1px 2px rgba(26,24,48,.04),0 8px 24px rgba(26,24,48,.06);
+}
+:root[data-theme="dark"]{
+  --accent:#8b80f0; --accent-2:#a89dff; --accent-soft:#241f3d;
+  --bg:#0f0e17; --panel:#1a1826; --ink:#eceafa; --mute:#a29fbb; --line:#2b2840;
+  --err:#f87171; --warn:#e0a54a; --info:#7aa2f7; --ok:#4dd0a1;
+  --err-bg:#2a1618; --warn-bg:#2a2113; --info-bg:#161f30; --ok-bg:#122720;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:28px 20px 60px}
+.tnum{font-variant-numeric:tabular-nums}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+header.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:grid;place-items:center;color:#fff;font-weight:800;font-size:19px;flex:none}
+h1{font-size:22px;margin:0;letter-spacing:-.01em}
+.sub{color:var(--mute);font-size:13px;margin-top:2px}
+.pills{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.pill{font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--mute);white-space:nowrap}
+.pill.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 40%,transparent);background:var(--ok-bg)}
+.pill.accent{color:#fff;background:var(--accent);border-color:transparent}
+.tgl{cursor:pointer;font-size:12px;font-weight:600;padding:5px 11px;border-radius:999px;border:1px solid var(--line);
+  background:var(--panel);color:var(--mute)}
+
+.ssot{display:flex;gap:10px;align-items:center;background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);
+  border-radius:12px;padding:10px 14px;margin:18px 0 22px;font-size:12.5px;color:var(--ink)}
+.ssot b{color:var(--accent)}
+
+.section-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);font-weight:700;margin:26px 2px 12px}
+
+.cases{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:760px){.cases{grid-template-columns:1fr}}
+.case{cursor:pointer;background:var(--panel);border:1.5px solid var(--line);border-radius:var(--radius);padding:16px;
+  box-shadow:var(--shadow);transition:border-color .15s,transform .15s}
+.case:hover{transform:translateY(-2px)}
+.case.active{border-color:var(--accent)}
+.case .ct{font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--accent);text-transform:uppercase}
+.case .cn{font-size:17px;font-weight:700;margin:3px 0 12px}
+.case .row{display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0;color:var(--mute)}
+.case .row b{color:var(--ink);font-weight:700}
+.case .flags{display:flex;gap:5px;margin-top:11px;flex-wrap:wrap}
+.dot{width:9px;height:9px;border-radius:50%}
+.dot.err{background:var(--err)} .dot.warn{background:var(--warn)} .dot.info{background:var(--info)}
+
+.detail{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:22px;margin-top:16px}
+.dhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:18px}
+.dhead h2{margin:0;font-size:19px}
+.dhead .prov{font-size:11.5px;color:var(--mute)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:760px){.grid4{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--bg);border-radius:12px;padding:13px 14px}
+.kpi .k{font-size:11.5px;color:var(--mute);font-weight:600}
+.kpi .v{font-size:23px;font-weight:800;margin-top:3px;letter-spacing:-.02em}
+.kpi .u{font-size:12px;color:var(--mute);font-weight:600;margin-left:3px}
+.kpi .n{font-size:11.5px;color:var(--mute);margin-top:2px}
+.kpi .n.bad{color:var(--err)} .kpi .n.good{color:var(--ok)}
+
+.bars{margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:22px}
+@media(max-width:640px){.bars{grid-template-columns:1fr}}
+.blk h3{font-size:13px;margin:0 0 10px;color:var(--mute);font-weight:700}
+.bar{height:12px;border-radius:999px;background:var(--line);position:relative;overflow:hidden;margin:8px 0}
+.bar > span{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.bar.over > span{background:linear-gradient(90deg,var(--err),#f08a8a)}
+.barlab{display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
+.barlab b{color:var(--ink)}
+.donut{display:flex;align-items:center;gap:16px}
+.ring{width:96px;height:96px;border-radius:50%;flex:none;display:grid;place-items:center;position:relative}
+.ring::before{content:"";position:absolute;inset:12px;background:var(--panel);border-radius:50%}
+.ring .rv{position:relative;font-size:20px;font-weight:800}
+.band{font-size:12px;color:var(--mute);line-height:1.7}
+.band .tag{display:inline-block;padding:1px 7px;border-radius:6px;font-weight:700;font-size:11px}
+
+.warns{margin-top:20px;display:flex;flex-direction:column;gap:8px}
+.warn-item{display:flex;gap:10px;align-items:flex-start;padding:10px 13px;border-radius:10px;font-size:13px}
+.warn-item.err{background:var(--err-bg);color:var(--err)}
+.warn-item.warn{background:var(--warn-bg);color:var(--warn)}
+.warn-item.info{background:var(--info-bg);color:var(--info)}
+.warn-item .code{font-weight:800;font-size:11px;letter-spacing:.03em;flex:none;margin-top:1px}
+.warn-item .msg{color:var(--ink)}
+
+.consent{margin-top:20px;background:var(--bg);border-radius:12px;padding:16px}
+.consent .big{font-size:15px;font-weight:700;margin-bottom:8px}
+.pbar{height:16px;border-radius:999px;background:var(--line);position:relative;overflow:hidden}
+.pbar > span{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--ok),#59d3a6)}
+.pbar .thr{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.5}
+
+.nav{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+@media(max-width:760px){.nav{grid-template-columns:1fr 1fr}}
+@media(max-width:460px){.nav{grid-template-columns:1fr}}
+.nav a{display:block;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 15px;box-shadow:var(--shadow)}
+.nav a:hover{text-decoration:none;border-color:var(--accent)}
+.nav .t{font-weight:700;color:var(--ink);font-size:14px}
+.nav .d{font-size:12px;color:var(--mute);margin-top:2px}
+.nav .ext{font-size:11px;color:var(--accent);font-weight:600}
+
+footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--mute);
+  display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="logo">UR</div>
+      <div>
+        <h1>Urban Renewal OS</h1>
+        <div class="sub">都市更新／危老 開發評估儀表板 · v0.1.0-alpha</div>
+      </div>
+    </div>
+    <div class="pills">
+      <span class="pill ok">● CI 綠</span>
+      <span class="pill accent">Core v0.2.0</span>
+      <span class="pill">schema v1.1</span>
+      <span class="tgl" id="tgl">◐ 主題</span>
+    </div>
+  </header>
+
+  <div class="ssot">
+    <span>🔒</span>
+    <div>所有數字皆由 <b>RE-DCF Core</b> 計算並匯出（Result JSON）；本儀表板<b>只讀渲染、不重算</b>任何公式（SSOT）。
+    以下為 3 個<b>合成範例</b>案件，零真實案件資料。</div>
+  </div>
+
+  <div class="section-label">案件總覽 · 點卡片切換</div>
+  <div class="cases" id="cases"></div>
+
+  <div class="detail" id="detail"></div>
+
+  <div class="section-label">工具與導覽</div>
+  <div class="nav">
+    <a href="simulator.html"><div class="t">🎮 整合策略沙盤</div><div class="d">賽局理論模擬地主整合談判</div></a>
+    <a href="evaluator.html"><div class="t">🧮 坪效×投報試算</div><div class="d">教學試算＋對接 Core JSON 匯入</div></a>
+    <a href="guide.html"><div class="t">📖 都更 11 關指南</div><div class="d">S1–S11 流程與名詞小幫手</div></a>
+    <a href="https://builder-9sczgrez3a3qsbmkebd6ey.streamlit.app/" target="_blank" rel="noopener"><div class="t">⚙️ RE-DCF 精確計算 <span class="ext">↗ Streamlit</span></div><div class="d">正式容積查核·坪效·投報計算工具</div></a>
+    <a href="whitepaper.html"><div class="t">📈 整合開發總論</div><div class="d">開發評估方法論白皮書</div></a>
+    <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener"><div class="t">📦 程式庫 <span class="ext">↗ GitHub</span></div><div class="d">Urban Renewal OS monorepo</div></a>
+  </div>
+
+  <footer>
+    <span>數字來源：core/redcf Result JSON（合成範例）· computed_at 2026-07-01</span>
+    <span>Urban Renewal OS · <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">BUILDER</a></span>
+  </footer>
+</div>
+
+<script>
+// ─── Core 結果資料（＝ RE-DCF Core 之 Result JSON 匯出；此處只讀渲染，不含任何公式）───
+const CASES = [
+ {id:"A",name:"都更・全案管理",type:"都更全案管理",
+  allow:7616.0,used:7616.2,remaining:-0.2,saleable:3825.99,eff:1.661,
+  total_sales:270471,scr:0.5592,return_rate:0.7882,owner_ratio:0.4408,
+  pre_value:62920,vmult:1.89,owners:0,agreed:0,threshold:0.80,
+  warnings:[{code:"VOLUME_EXCEEDED",level:"err",msg:"容積超出允建 0.20 m²，需調整設計"},
+            {code:"SHARED_COST_HIGH",level:"warn",msg:"共負比 55.9% 高於合理區間上限 50%"}]},
+ {id:"C",name:"防災都更",type:"防災都更",
+  allow:4017.6,used:4049.52,remaining:-31.92,saleable:2054.85,eff:1.691,
+  total_sales:293500,scr:0.2972,return_rate:2.3646,owner_ratio:0.7028,
+  pre_value:null,vmult:null,owners:0,agreed:0,threshold:0.80,
+  warnings:[{code:"EFFICIENCY_OUT_OF_BAND",level:"warn",msg:"銷坪比 1.691 不在正常帶 1.58–1.68"},
+            {code:"VOLUME_EXCEEDED",level:"err",msg:"容積超出允建 31.92 m²，需調整設計"},
+            {code:"SHARED_COST_LOW",level:"info",msg:"共負比 29.7% 低於合理區間下限 30%，建議覆核參數"}]},
+ {id:"D",name:"危老・合建",type:"危老合建（owners 示範）",
+  allow:6120.0,used:6157.5,remaining:-37.5,saleable:3153.84,eff:1.704,
+  total_sales:226089,scr:0.66,return_rate:0.515,owner_ratio:0.34,
+  pre_value:36300,vmult:2.12,owners:48,agreed:34,threshold:1.00,
+  warnings:[{code:"EFFICIENCY_OUT_OF_BAND",level:"warn",msg:"銷坪比 1.704 不在正常帶 1.58–1.68"},
+            {code:"VOLUME_EXCEEDED",level:"err",msg:"容積超出允建 37.50 m²，需調整設計"},
+            {code:"SHARED_COST_HIGH",level:"err",msg:"共負比 66.0% 超過警示線 60%，地主接受度明顯降低"}]},
+];
+const pct=x=>(x*100).toFixed(1)+"%";
+const n0=x=>x==null?"—":Math.round(x).toLocaleString();
+const n2=x=>x==null?"—":x.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const worst=w=>w.some(x=>x.level==="err")?"err":w.some(x=>x.level==="warn")?"warn":"info";
+
+function caseCard(c){
+  const flags=c.warnings.map(w=>`<span class="dot ${w.level}" title="${w.code}"></span>`).join("");
+  return `<div class="case" data-id="${c.id}">
+    <div class="ct">${c.type}</div>
+    <div class="cn">案例 ${c.id}　${c.name}</div>
+    <div class="row"><span>允建容積</span><b class="tnum">${n0(c.allow)} m²</b></div>
+    <div class="row"><span>共負比</span><b class="tnum">${pct(c.scr)}</b></div>
+    <div class="row"><span>投報率</span><b class="tnum">${pct(c.return_rate)}</b></div>
+    <div class="flags">${flags}<span style="font-size:11px;color:var(--mute)">${c.warnings.length} 項健檢</span></div>
+  </div>`;
+}
+
+function ring(v,band){ // v=共負比, band color logic
+  const p=Math.min(v*100,100);
+  let col = v>0.60?"var(--err)": v>0.50?"var(--warn)": v<0.30?"var(--info)":"var(--ok)";
+  return `<div class="ring" style="background:conic-gradient(${col} ${p}%, var(--line) 0)"><span class="rv tnum">${pct(v)}</span></div>`;
+}
+
+function detail(c){
+  const usedPct=Math.min(c.used/c.allow*100,100);
+  const over=c.remaining<0;
+  const effOk=c.eff>=1.58&&c.eff<=1.68;
+  const warns=c.warnings.map(w=>`<div class="warn-item ${w.level}"><span class="code">${w.code}</span><span class="msg">${w.msg}</span></div>`).join("");
+  const consent = c.owners>0 ? (()=>{ const r=c.agreed/c.owners; return `
+    <div class="consent">
+      <div class="big">地主同意進度　<span class="tnum">${c.agreed}/${c.owners} 戶（${pct(r)}）</span></div>
+      <div class="pbar"><span style="width:${r*100}%"></span><div class="thr" style="left:${c.threshold*100}%"></div></div>
+      <div class="barlab" style="margin-top:6px"><span>目前同意率</span><span>門檻線 ${pct(c.threshold)}（${c.type.includes("危老")?"危老需全體同意":"法定門檻"}）</span></div>
+    </div>`;})() : "";
+  const val = c.pre_value!=null ? `<div class="kpi"><div class="k">更新前價值</div><div class="v tnum">${n0(c.pre_value)}<span class="u">萬</span></div><div class="n">增值倍率 ${n2(c.vmult)}×</div></div>` :
+    `<div class="kpi"><div class="k">更新前價值</div><div class="v">—</div><div class="n">本案未估值</div></div>`;
+  return `
+  <div class="dhead">
+    <h2>案例 ${c.id}　${c.name}<span style="font-size:13px;font-weight:500;color:var(--mute)">　${c.type}</span></h2>
+    <div class="prov">core v0.2.0 · computed_at 2026-07-01 · 合成資料</div>
+  </div>
+  <div class="grid4">
+    <div class="kpi"><div class="k">允建容積</div><div class="v tnum">${n0(c.allow)}<span class="u">m²</span></div>
+      <div class="n ${over?'bad':'good'}">餘量 ${n2(c.remaining)} m²${over?'（超出）':''}</div></div>
+    <div class="kpi"><div class="k">銷售坪數</div><div class="v tnum">${n0(c.saleable)}<span class="u">坪</span></div>
+      <div class="n ${effOk?'good':'bad'}">銷坪比 ${n2(c.eff)}${effOk?'（正常）':'（帶外）'}</div></div>
+    <div class="kpi"><div class="k">投報率</div><div class="v tnum">${pct(c.return_rate)}</div>
+      <div class="n">地主分回比 ${pct(c.owner_ratio)}</div></div>
+    ${val}
+  </div>
+
+  <div class="bars">
+    <div class="blk">
+      <h3>容積帳（L2–L4）</h3>
+      <div class="barlab"><span>計入容積 ／ 允建</span><b class="tnum">${n2(c.used)} / ${n2(c.allow)} m²</b></div>
+      <div class="bar ${over?'over':''}"><span style="width:${usedPct}%"></span></div>
+      <div class="barlab"><span>${over?'⚠ 已打滿並超出，需調整設計':'尚有餘裕'}</span><b class="tnum">總銷 ${n0(c.total_sales)} 萬</b></div>
+    </div>
+    <div class="blk">
+      <h3>共同負擔比（L6）</h3>
+      <div class="donut">
+        ${ring(c.scr)}
+        <div class="band">合理帶依案型而異：<br>
+          <span class="tag" style="background:var(--info-bg);color:var(--info)">危老 25–45%</span>
+          <span class="tag" style="background:var(--ok-bg);color:var(--ok)">都更全管 30–50%</span><br>
+          <span class="tag" style="background:var(--warn-bg);color:var(--warn)">合建 35–55%</span>　門檻由 Core 判斷</div>
+      </div>
+    </div>
+  </div>
+
+  ${consent}
+
+  <div class="warns">
+    <div class="section-label" style="margin:6px 0 2px">Core 權威健檢 warnings[]</div>
+    ${warns}
+  </div>`;
+}
+
+let active="C";
+function render(){
+  document.getElementById("cases").innerHTML=CASES.map(caseCard).join("");
+  document.getElementById("detail").innerHTML=detail(CASES.find(c=>c.id===active));
+  document.querySelectorAll(".case").forEach(el=>{
+    el.classList.toggle("active",el.dataset.id===active);
+    el.onclick=()=>{active=el.dataset.id;render();};
+  });
+}
+render();
+
+// theme toggle
+const root=document.documentElement;
+document.getElementById("tgl").onclick=()=>{
+  const cur=root.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");
+  root.setAttribute("data-theme",cur==="dark"?"light":"dark");
+};
+</script>

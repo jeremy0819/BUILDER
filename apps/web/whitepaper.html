@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>都更／危老 整合開發評估總論（2026）· 白皮書</title>
+<meta name="description" content="以不動產研析為脊椎，縫合法制、財務與人本的都更／危老開發評估方法論。整合都市更新法規、都市計畫、建築估價、稅制與 2026 房地產趨勢。通用方法論，不含真實案件資料。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --emer:#064e3b; --emer-d:#053d2e; --emer-l:#10b981; --mint:#ecfdf5; --mint-2:#d1fae5;
+    --warm:#f5f3ee; --paper:#fbfaf7; --card:#ffffff;
+    --ink:#1c1a17; --body:#44403c; --slate:#57534e; --mute:#a8a29e;
+    --line:#e7e5e4; --line-2:#d6d3cd;
+    --serif:"Playfair Display","Noto Serif TC",Georgia,serif;
+    --sans:"Inter","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.85;-webkit-font-smoothing:antialiased}
+  a{color:var(--emer);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 22px}
+
+  nav.top{position:sticky;top:0;z-index:50;background:rgba(251,250,247,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  nav.top .wrap{display:flex;align-items:center;gap:10px;height:58px;overflow-x:auto;scrollbar-width:none}
+  nav.top .wrap::-webkit-scrollbar{display:none}
+  .brand{font-weight:800;margin-right:auto;white-space:nowrap;display:flex;align-items:center;gap:8px;font-size:15px;letter-spacing:.02em}
+  .brand .gd{width:10px;height:10px;border-radius:50%;background:var(--emer-l);box-shadow:0 0 0 4px var(--mint-2)}
+  nav.top a.nl{padding:6px 11px;border-radius:999px;color:var(--slate);font-size:13.5px;font-weight:600;white-space:nowrap}
+  nav.top a.nl:hover{background:var(--mint);color:var(--emer-d);text-decoration:none}
+
+  header.hero{background:
+    radial-gradient(1100px 460px at 15% -10%, rgba(16,185,129,.12), transparent 55%),
+    linear-gradient(180deg,#fff,var(--paper));border-bottom:1px solid var(--line)}
+  .hero .wrap{padding:58px 22px 44px;max-width:880px;margin:0 auto}
+  .kicker{font-size:12.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--emer-l);font-weight:800;margin-bottom:14px}
+  h1{font-family:var(--serif);font-weight:800;font-size:clamp(30px,5.4vw,54px);line-height:1.12;margin:0 0 8px;letter-spacing:.01em}
+  .sub{font-size:clamp(16px,2vw,21px);color:var(--slate);font-weight:600;margin:0 0 18px}
+  .lede{font-size:clamp(15px,1.8vw,18px);color:var(--body);max-width:62ch}
+  .meta{display:flex;gap:22px;flex-wrap:wrap;margin-top:24px;font-size:13px;color:var(--slate)}
+  .meta b{color:var(--ink)}
+  .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:11px 18px;border-radius:11px;font-weight:700;font-size:14.5px;border:1px solid transparent;cursor:pointer;transition:.16s}
+  .btn.p{background:var(--emer);color:#fff} .btn.p:hover{background:var(--emer-d);text-decoration:none;transform:translateY(-2px)}
+  .btn.g{background:var(--card);border-color:var(--line);color:var(--ink)} .btn.g:hover{border-color:var(--emer);color:var(--emer-d);text-decoration:none}
+
+  .layout{display:grid;grid-template-columns:230px 1fr;gap:46px;align-items:start;padding:42px 0 0}
+  aside.toc{position:sticky;top:74px;font-size:13.5px}
+  aside.toc .t{font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);font-weight:800;margin-bottom:12px}
+  aside.toc a{display:block;color:var(--slate);padding:5px 0 5px 14px;border-left:2px solid var(--line);font-weight:600}
+  aside.toc a:hover{color:var(--emer-d);border-color:var(--emer-l);text-decoration:none}
+  main{min-width:0;max-width:760px}
+
+  section.sec{padding:6px 0 30px;border-bottom:1px solid var(--line);margin-bottom:30px;scroll-margin-top:72px}
+  .sk{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--emer-l);font-weight:800;margin-bottom:6px}
+  h2{font-family:var(--serif);font-weight:700;font-size:clamp(23px,3.2vw,34px);line-height:1.2;margin:0 0 6px}
+  h3{font-size:clamp(16px,1.7vw,19px);font-weight:800;margin:26px 0 6px;color:var(--ink)}
+  p{font-size:16px;color:var(--body);margin:.6em 0}
+  .tldr{display:flex;gap:12px;background:var(--mint);border-radius:12px;padding:13px 16px;margin:10px 0 18px;font-size:14.5px;color:var(--emer-d)}
+  .tldr b{color:var(--emer-d)}
+  ul,ol{padding-left:20px} li{font-size:15.5px;color:var(--body);margin:5px 0}
+  strong,b{color:var(--ink)}
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--warm);color:var(--ink);font-weight:800;font-size:12.5px;letter-spacing:.03em}
+  td{color:var(--body)} tr:hover td{background:#fcfbf8}
+  .callout{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--emer-l);border-radius:0 12px 12px 0;padding:14px 18px;margin:18px 0}
+  .callout p{margin:0;font-size:15px;color:var(--ink)}
+  .callout .lab{font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--emer-l);display:block;margin-bottom:4px}
+  .warn{border-left-color:#c2701c;background:#fffaf2}
+  .warn .lab{color:#c2701c}
+
+  /* 三層透鏡 */
+  .lenses{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:20px 0 8px}
+  .lens{background:linear-gradient(160deg,var(--emer),var(--emer-d));color:#fff;border-radius:14px;padding:18px 16px;text-align:center;position:relative}
+  .lens .n{font-size:11.5px;letter-spacing:.12em;color:var(--mint-2);font-weight:800;text-transform:uppercase}
+  .lens h4{font-family:var(--serif);font-size:20px;margin:6px 0 4px}
+  .lens p{color:#cdebe0;font-size:13px;margin:0}
+  .lens .x{position:absolute;right:-13px;top:50%;transform:translateY(-50%);z-index:2;font-weight:800;color:var(--emer-l);font-size:20px}
+  .lens:last-child .x{display:none}
+  .lens-foot{text-align:center;font-size:14px;color:var(--slate);font-weight:700;margin:8px 0 0}
+
+  footer{background:var(--emer-d);color:#cdebe0;padding:40px 0 56px;margin-top:30px}
+  footer h4{color:#fff;font-family:var(--serif);font-size:20px;margin:0 0 12px}
+  footer a{color:var(--mint-2)} footer a:hover{color:#fff}
+  footer .src{font-size:12.5px;line-height:2;columns:2;column-gap:32px}
+  footer .disc{font-size:11.5px;color:#7fa394;margin-top:20px;border-top:1px solid #0f5e48;padding-top:16px}
+  @media(max-width:900px){.src{columns:1}}
+
+  .reveal{opacity:0;transform:translateY(18px);transition:.6s cubic-bezier(.2,.7,.2,1)}
+  .reveal.in{opacity:1;transform:none}
+  @media(max-width:860px){.layout{grid-template-columns:1fr;gap:0}aside.toc{display:none}.lenses{grid-template-columns:1fr}.lens .x{display:none}}
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="wrap">
+    <span class="brand"><span class="gd"></span>整合開發評估總論 · 2026</span>
+    <a class="nl" href="#law">法規宇宙</a>
+    <a class="nl" href="#plan">都市計畫</a>
+    <a class="nl" href="#research">不動產研析</a>
+    <a class="nl" href="#trend">2026 趨勢</a>
+    <a class="nl" href="#human">數據×人文</a>
+    <a class="nl" href="#framework">整合人框架</a>
+    <a class="nl" href="index.html">🎯 儀表板</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">White Paper · 整合人的視角</div>
+    <h1>都更／危老<br>整合開發評估總論</h1>
+    <p class="sub">以不動產研析為脊椎，縫合法制、財務與人本</p>
+    <p class="lede">都更不是工程問題，是「法制 × 財務 × 人」的三體問題。本白皮書把都市更新法規、都市計畫、建築估價、稅制與 2026 房地產趨勢疊成一張判斷圖——並以「世界唯一的整合人」視角，提出一套最獨特的開發評估框架。</p>
+    <div class="meta"><span>查證日　<b>2026-06-19</b></span><span>定位　<b>方法論最上位框架</b></span><span>邊界　<b>通用・不含真實案件資料</b></span></div>
+    <div class="cta">
+      <a class="btn p" href="#framework">看整合人框架 ↓</a>
+      <a class="btn g" href="docs/整合開發評估總論-2026.md" target="_blank" rel="noopener">📄 完整 Markdown 版</a>
+      <a class="btn g" href="simulator.html">🎮 整合闖關</a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="layout">
+  <aside class="toc">
+    <div class="t">目錄</div>
+    <a href="#intro">序・為什麼需要整合人</a>
+    <a href="#law">一・法規宇宙</a>
+    <a href="#plan">二・都市計畫上位</a>
+    <a href="#research">三・不動產研析脊椎</a>
+    <a href="#trend">四・2026 趨勢透鏡</a>
+    <a href="#human">五・數據 × 人文</a>
+    <a href="#framework">六・整合人框架</a>
+    <a href="#report">七・報告格式</a>
+  </aside>
+
+  <main>
+    <section class="sec reveal" id="intro">
+      <div class="sk">序章</div>
+      <h2>為什麼需要「整合人」</h2>
+      <p>建築師談量體、估價師談價值、律師談條款、代銷談去化、地主談記憶與恐懼——每個專業都對，但每個只拿著一面透鏡。案子卡住，幾乎從不是「沒有人會算」，而是<b>沒有人把所有透鏡疊在同一張圖上</b>。</p>
+      <p><b>整合人的定位</b>：不是說服者，是<b>判斷者</b>；不是中介，是<b>縫合者</b>。第一件事不是推案，是先查清楚「能不能做、划不划算、整不整得起來」三件事的交集。</p>
+      <div class="callout"><span class="lab">一句話心法</span><p>把餅做大是數學，把人留下是人文；整合人要同時是會計師與人類學家。</p></div>
+    </section>
+
+    <section class="sec reveal" id="law">
+      <div class="sk">第一部</div>
+      <h2>法規宇宙：把所有規則疊成一張地圖</h2>
+      <div class="tldr"><div><b>TL;DR：</b>核心三法決定路徑與門檻，容積四源決定量體真相，估價與權變決定怎麼分，稅制決定誰負擔——而真正讓案子翻車的，常是「你沒想過的那一條」。</div></div>
+
+      <h3>核心三法・同意門檻</h3>
+      <table>
+        <tr><th>法源</th><th>角色</th><th>同意門檻（依現行條文）</th></tr>
+        <tr><td><b>都市更新條例</b></td><td>多數決整合主幹</td><td>事業概要 §22：&gt;1/2；事業計畫 <b>§37</b>：第7條劃定地區 &gt;1/2；<b>其餘（含自行劃定）&gt;3/4</b>；面積 &gt;9/10 者人數不計</td></tr>
+        <tr><td><b>都市計畫法</b></td><td>上位：分區・容積・都審</td><td>決定「可建範圍」的法定基礎</td></tr>
+        <tr><td><b>危老條例</b></td><td>小基地快速通道</td><td><b>全體（100%）同意</b>，無須劃定更新單元</td></tr>
+      </table>
+      <div class="callout warn"><span class="lab">2026 關鍵變動</span><p>危老<b>時程獎勵已落日歸零</b>（8→6→4→2→1%，至民國 114 年／2025 年 5 月歸零）。急迫性消退，路徑天平重新傾向都更多數決。</p></div>
+
+      <h3>容積的真相：量體只有一個來源</h3>
+      <table>
+        <tr><th>來源</th><th>重點</th></tr>
+        <tr><td>法定容積</td><td>容積率 × 土地面積；FA 用<b>使照基地面積</b>，非謄本</td></tr>
+        <tr><td>都更容積獎勵（辦法・條例§65）</td><td>上限 <b>法定 1.5 倍</b>，或原建築容積 + 0.3 倍基準；「容獎特快車」擬直給 1.5 倍、捐社宅可疊加至 2 倍</td></tr>
+        <tr><td>危老容積獎勵（條例§6）</td><td>上限 法定 1.3 倍 或 原建築 1.15 倍；時程＋規模 ≤10%（時程已歸零）</td></tr>
+        <tr><td>§162 免計容積</td><td><b>逐層</b>核算（機電／梯廳／陽台）；總量法放大近 10 倍</td></tr>
+        <tr><td>容積移轉 TDR</td><td>古蹟／公設地容積移入，受移入上限管制</td></tr>
+      </table>
+
+      <h3>你可能沒想過的那幾條（盲區清單）</h3>
+      <p>真正讓案子翻車的，常不是核心三法，而是這些邊界法規——整合人當前置風險逐項排雷：</p>
+      <table>
+        <tr><th>法源</th><th>為什麼會翻車</th></tr>
+        <tr><td>平均地權條例（2023/7）</td><td>限制預售換約、私法人購屋許可制（5 年內不得移轉）、重罰炒作 → 改變買方結構與去化</td></tr>
+        <tr><td>公寓大廈管理條例</td><td>交屋後管委會、規約、公設點交；更新前約定專用影響拆除同意</td></tr>
+        <tr><td>信託法・不動產開發信託</td><td><b>續建機制</b>與資金專戶的法制基礎——制度信用取代公司信用</td></tr>
+        <tr><td>文化資產保存法</td><td>老屋可能被列冊／指定，影響可拆性與容積（亦可換容積）</td></tr>
+        <tr><td>地質法・環評法</td><td>活動斷層／地質敏感區、一定規模需環評 → 可行性與時程風險</td></tr>
+        <tr><td>民法（共有・優先承買）</td><td>持分、繼承未分割、優先承買權——權屬整合的硬骨頭</td></tr>
+        <tr><td>銀行法§72-2・土建融管制</td><td>放款水位與央行管制，直接決定資金到不到位（2026 重中之重）</td></tr>
+      </table>
+    </section>
+
+    <section class="sec reveal" id="plan">
+      <div class="sk">第二部</div>
+      <h2>都市計畫上位整合：先讀計畫，再談容積</h2>
+      <div class="tldr"><div><b>TL;DR：</b>容積率不是憑空的數字，它從上位計畫一路長下來；不讀都市計畫就算容積，等於在沙上蓋樓。</div></div>
+      <ul>
+        <li><b>上位計畫 → 分區管制 → 容積率／建蔽率</b>：先確認主要／細部計畫、退縮、開放空間、高度管制。</li>
+        <li><b>都市設計審議</b>：一定規模須過都審，影響量體、外觀與<b>時程</b>。</li>
+        <li><b>TOD／都市再生／策略地區</b>：常帶額外容積，是爭取量體的槓桿。</li>
+        <li><b>容積移轉（TDR）</b>：受移入比例與區位上限管制，須與獎勵一併納入「容積帳」。</li>
+      </ul>
+      <div class="callout"><span class="lab">整合人動作</span><p>在 S2 之前先做「都市計畫體檢表」：上位計畫、分區、容積率、都審門檻、再生／TOD 機會、容移可行性逐項查清，再進容積試算。</p></div>
+    </section>
+
+    <section class="sec reveal" id="research">
+      <div class="sk">第三部</div>
+      <h2>不動產研析作為分析脊椎</h2>
+      <div class="tldr"><div><b>TL;DR：</b>研析不是「算一個數字」，是<b>建立一條可被挑戰的推理鏈</b>——從最有效使用，到估價，到現金流，到風險。</div></div>
+      <h3>最有效使用分析（HBU）——一切的起點</h3>
+      <p>四道篩網，缺一不可：<b>① 法律允許 → ② 實質可能 → ③ 財務可行 → ④ 最大效益</b>。整合人先問「該蓋什麼」，而非「能蓋多少」。</p>
+      <h3>估價三方法・權變的更新前後權利價值</h3>
+      <table>
+        <tr><th>方法</th><th>在都更的落點</th></tr>
+        <tr><td>比較法</td><td>更新前權利價值、銷售單價假設（S3–S4）</td></tr>
+        <tr><td>收益法</td><td>店舖、收益型物業、整體財務（S4）</td></tr>
+        <tr><td>成本法</td><td>更新後評估、營建成本基準（S4・S7）</td></tr>
+      </table>
+      <p>權變估價：更新前權利價值由實施者委託 <b>≥3 家估價者</b>查估，三家差距 <b>20% 以內</b>擇一並說明；未建築者以<b>素地價值</b>推估。估價是都更<b>最常見的爭議引爆點</b>——基準與選任須攤在陽光下。</p>
+      <h3>財務研析：敏感度三軸</h3>
+      <p>售價、營建單價、時程——2026 三者皆逆風（見下部）。報告不是給一個數字，是給一條<b>標明假設、可被反駁</b>的推理鏈。</p>
+    </section>
+
+    <section class="sec reveal" id="trend">
+      <div class="sk">第四部</div>
+      <h2>2026 趨勢透鏡：把時間軸納入評估</h2>
+      <div class="tldr"><div><b>TL;DR（查證 2026-06-19）：</b>高利率、餘屋賣壓、營造成本續漲、人口轉向、政策降溫、淨零碳上路——六股風同吹，且多數對都更危老是<b>逆風中的順風</b>（資金被擠進更新題材）。</div></div>
+      <table>
+        <tr><th>透鏡</th><th>2026 現況</th><th>回寫評估</th></tr>
+        <tr><td>資金・利率</td><td>「價緩跌、量盤整」；央行轉「精準控管・用途引導」，利率微降；土建融管制未鬆</td><td>折現率保守；<b>素地難求＋限貸 → 火力集中都更危老</b></td></tr>
+        <tr><td>供給・餘屋</td><td>餘屋約 8–10 萬戶；2026–28 完工 32–36 萬戶，賣壓沉重</td><td>去化速度下修，回寫現金流與敏感度</td></tr>
+        <tr><td>營造成本</td><td>年漲 2–3%；台北 RC ≈每坪 28 萬、鋼構 36 萬、其他都會 18–20 萬</td><td>用<b>總樓地板坪</b>、升幅入模；共負上升→分回壓縮</td></tr>
+        <tr><td>人口結構</td><td>高齡化、少子化、家戶縮小</td><td>產品轉<b>小宅・適老・無障礙</b></td></tr>
+        <tr><td>政策降溫</td><td>平均地權・囤房稅2.0（全國歸戶2%–4.8%）・房地合一2.0</td><td>買方轉<b>自用・長期持有・法人退場</b>；分回戶稅負入模</td></tr>
+        <tr><td>淨零・能效</td><td><b>建築能效 BERS</b>（2024版手冊2025/7/1實施，分級1+~7）；2040前50%既有建築達能效一級</td><td><b>危老都更＝國家級減碳槓桿</b>；能效＋綠建築疊加容獎、對接 ESG 資金</td></tr>
+      </table>
+      <div class="callout"><span class="lab">趨勢的整合啟示</span><p>2026 是「逆風中的結構性順風」——市場降溫，但限貸與淨零政策把資金與題材<b>擠向都更危老</b>。整合人要把六股風<b>逐一回寫進敏感度</b>，而非只喊「都更有前景」。</p></div>
+    </section>
+
+    <section class="sec reveal" id="human">
+      <div class="sk">第五部</div>
+      <h2>數據邏輯 × 人文思考的縫合</h2>
+      <div class="tldr"><div><b>TL;DR：</b>數據決定可行性（feasible），人文決定可成性（achievable）。能算出來的案子未必整合得起來；差別在人。</div></div>
+      <ul>
+        <li><b>把信任當資本</b>：整合的真正貨幣是信任。<b>制度信用 &gt; 公司信用</b>——信託、續建機制、連帶保證、單一數源。</li>
+        <li><b>釘子戶不是貪婪，是恐懼</b>：多數「拿翹」其實是資訊不對稱下的恐懼型／理性質疑型。專業質疑是<b>養分</b>，不是阻礙。</li>
+        <li><b>競合而非零和</b>：整合成功才有餅（正和），破局則餅歸零（雙輸）。合作把餅做大、競爭分餅。</li>
+        <li><b>程序正義的記憶</b>：聽證、公展、估價選任每一步留痕，是制度成本，也是社會信任的修復。</li>
+      </ul>
+      <div class="callout"><span class="lab">縫合準則</span><p>先用數據證明「值得做」，再用人文確保「做得成」；報告若只有前者，是半份報告。</p></div>
+    </section>
+
+    <section class="sec reveal" id="framework">
+      <div class="sk">第六部 · 最獨特的角度</div>
+      <h2>整合人評估框架</h2>
+      <p>假設世界上只有一個都更整合人，他的簽名工具是「<b>三層透鏡疊圖 × 短板診斷</b>」。</p>
+      <div class="lenses">
+        <div class="lens"><div class="n">能不能做</div><h4>法制層</h4><p>容積・門檻・路徑</p><span class="x">×</span></div>
+        <div class="lens"><div class="n">划不划算</div><h4>財務層</h4><p>投報・估價・稅</p><span class="x">×</span></div>
+        <div class="lens"><div class="n">整不整得起來</div><h4>人本層</h4><p>信任・賽局・程序</p></div>
+      </div>
+      <p class="lens-foot">整合人坐落於三者交集</p>
+      <h3>短板決定成敗（不是加總，是取最小）</h3>
+      <p>傳統評估把各項加權相加；整合人反過來——三層各打一分，<b>看最低的那一層</b>。容積再漂亮（90）、投報再香（85），只要人本層是 20（信任崩、釘子戶僵局），案子就是 20 分。<b>整合人先找短板，再決定要不要、以及如何補。</b></p>
+      <h3>五個診斷問題</h3>
+      <ol>
+        <li><b>法制</b>：路徑選對了嗎？容積帳每分獎勵都對得上法源上限嗎？（§37／§65／§162）</li>
+        <li><b>財務</b>：在售價／營建／時程三逆風下，保守情境還活著嗎？</li>
+        <li><b>估價</b>：更新前權利價值的基準與選任透明嗎？三家收斂嗎？</li>
+        <li><b>人本</b>：同意率是真實的，還是偏好偽裝堆出的紙牌屋？短板戶是恐懼型還是拿翹型？</li>
+        <li><b>制度信用</b>：續建機制、信託、擔保、單一數源到位了嗎？</li>
+      </ol>
+      <div class="callout"><span class="lab">整合人的自我定位</span><p>當判斷者，不當說服者；先查 corporate substance，再談其他。同時看「現在的數字」與「會怎麼演變的人」。</p></div>
+    </section>
+
+    <section class="sec reveal" id="report">
+      <div class="sk">第七部</div>
+      <h2>報告格式（脈絡）：每份評估都這樣寫</h2>
+      <p>報告不是資料堆疊，是<b>一條有起承轉合的推理脈絡</b>。從「這塊地的故事」開始，到「整合人的判斷」結束。</p>
+      <table>
+        <tr><th>段</th><th>標題</th><th>脈絡</th></tr>
+        <tr><td>0</td><td>一頁判斷</td><td>三層分數＋短板＋去留建議，先講結論</td></tr>
+        <tr><td>1</td><td>基地的故事</td><td>區位、權屬、屋齡、紋理（人文起手）</td></tr>
+        <tr><td>2</td><td>法制體檢</td><td>路徑、上位計畫、容積帳、§162 逐層</td></tr>
+        <tr><td>3</td><td>不動產研析</td><td>最有效使用、估價三方法、權利價值</td></tr>
+        <tr><td>4</td><td>財務與敏感度</td><td>投報兩層、共負六科目、三逆風情境</td></tr>
+        <tr><td>5</td><td>趨勢回寫</td><td>利率／餘屋／營造／人口／政策／淨零</td></tr>
+        <tr><td>6</td><td>人本與賽局</td><td>同意結構、短板戶辨型、制度信用解方</td></tr>
+        <tr><td>7</td><td>整合人判斷</td><td>短板、條件、時程賽局下的最適路徑</td></tr>
+      </table>
+      <div class="callout"><span class="lab">寫法準則</span><p>每一節都回答「所以呢？」——資料之後一定接判斷；判斷之後一定標假設與來源。</p></div>
+    </section>
+  </main>
+</div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <h4>整合人的三條鐵律</h4>
+    <p style="color:#d6eee5;font-size:15px;max-width:60ch">①三層疊圖、短板決定　②數據證明值得、人文確保做成　③制度信用 &gt; 公司信用。<br>都更的終局不是蓋好一棟樓，是讓一群人願意一起把家交給未來。</p>
+    <div style="margin:20px 0 6px;font-size:12px;font-weight:800;letter-spacing:.1em;color:#7fa394">參考來源 · 查證日 2026-06-19</div>
+    <div class="src">
+      <a href="https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=D0070008&flno=37" target="_blank" rel="noopener">都市更新條例 §37（同意比例）</a>
+      <a href="https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=D0070008" target="_blank" rel="noopener">都市更新條例 §67（稅捐減免）</a>
+      <a href="https://glrs.moi.gov.tw/LawContent.aspx?id=FL003615" target="_blank" rel="noopener">都市更新建築容積獎勵辦法</a>
+      <a href="https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=D0060077" target="_blank" rel="noopener">不動產估價技術規則</a>
+      <a href="https://www.abri.gov.tw/News_Content.aspx?n=745&s=323435" target="_blank" rel="noopener">建築能效評估手冊 BERS</a>
+      <a href="https://www.moi.gov.tw/News_Content.aspx?n=4&s=260331" target="_blank" rel="noopener">平均地權條例修正（內政部）</a>
+      <a href="https://download.tax.nat.gov.tw/irn/IRN2_QA.pdf" target="_blank" rel="noopener">房地合一稅 2.0 QA（財政部）</a>
+      <a href="https://csrone.com/topics/7623" target="_blank" rel="noopener">2050 淨零・建築能效規章</a>
+      <a href="https://www.farglory-realty.com.tw/life-proposal/expert_peizhen_real-estate-2026/" target="_blank" rel="noopener">2026 房市展望（劉佩真）</a>
+      <a href="https://news.cnyes.com/news/id/6291012" target="_blank" rel="noopener">2026 房市・量跌價穩</a>
+    </div>
+    <p class="disc">免責：本白皮書為通用方法論與趨勢研析，非正式財務／法律意見；所有法規數字、稅率、獎勵上限與市場數據均以現行條文、主管機關核定及查證日後最新資料為準，個案適用須由法規與估價專業逐項查證。不含任何真實案件資料。版本 1.0｜2026-06。</p>
+    <p style="margin-top:14px"><a href="index.html">🎯 開發儀表板</a> ｜ <a href="simulator.html">🎮 整合闖關</a> ｜ <a href="evaluator.html">🧮 開發試算</a> ｜ <a href="briefing.html">📊 說明會簡報</a> ｜ <a href="docs/整合開發評估總論-2026.md" target="_blank" rel="noopener">📄 完整 Markdown</a></p>
+  </div>
+</footer>
+
+<script>
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{threshold:.08});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  // TOC active highlight
+  const links=[...document.querySelectorAll('aside.toc a')];
+  const map={};links.forEach(a=>{const id=a.getAttribute('href').slice(1);const s=document.getElementById(id);if(s)map[id]=a;});
+  const so=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){links.forEach(l=>l.style.color='');const a=map[e.target.id];if(a){a.style.color='var(--emer-d)';a.style.borderLeftColor='var(--emer-l)';}}}),{rootMargin:'-40% 0px -55% 0px'});
+  document.querySelectorAll('section.sec').forEach(s=>so.observe(s));
+</script>
+</body>
+</html>

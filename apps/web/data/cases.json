@@ -1,0 +1,119 @@
+{
+  "generated_note": "資料為 Core (RE-DCF) 合成範例之 result 匯出，儀表板只讀渲染、不重算",
+  "cases": [
+    {
+      "id": "A",
+      "name": "都更・全案管理",
+      "case_type": "都更全案管理",
+      "core_version": "0.2.0",
+      "computed_at": "2026-07-01T00:00:00+00:00",
+      "allow_floor_area": 7616.0,
+      "used_floor_area": 7616.2,
+      "remaining_floor_area": -0.2,
+      "saleable_area": 3825.99,
+      "efficiency_ratio": 1.661,
+      "total_sales": 270471.0,
+      "shared_cost_ratio": 0.5592,
+      "return_rate": 0.7882,
+      "owner_return_ratio": 0.4408,
+      "pre_renewal_value": 62920.0,
+      "value_multiple": 1.89,
+      "warnings": [
+        {
+          "code": "VOLUME_EXCEEDED",
+          "level": "error",
+          "message": "容積超出允建 0.20 m²，需調整設計",
+          "field": "remaining_floor_area"
+        },
+        {
+          "code": "SHARED_COST_HIGH",
+          "level": "warn",
+          "message": "共負比 55.9% 高於合理區間上限 50%",
+          "field": "shared_cost_ratio"
+        }
+      ],
+      "owners_total": 0,
+      "owners_agreed": 0
+    },
+    {
+      "id": "C",
+      "name": "防災都更",
+      "case_type": "防災都更",
+      "core_version": "0.2.0",
+      "computed_at": "2026-07-01T00:00:00+00:00",
+      "allow_floor_area": 4017.6,
+      "used_floor_area": 4049.52,
+      "remaining_floor_area": -31.92,
+      "saleable_area": 2054.85,
+      "efficiency_ratio": 1.691,
+      "total_sales": 293500.0,
+      "shared_cost_ratio": 0.2972,
+      "return_rate": 2.3646,
+      "owner_return_ratio": 0.7028,
+      "pre_renewal_value": null,
+      "value_multiple": null,
+      "warnings": [
+        {
+          "code": "EFFICIENCY_OUT_OF_BAND",
+          "level": "warn",
+          "message": "銷坪比 1.691 不在正常帶 1.58–1.68",
+          "field": "efficiency_ratio"
+        },
+        {
+          "code": "VOLUME_EXCEEDED",
+          "level": "error",
+          "message": "容積超出允建 31.92 m²，需調整設計",
+          "field": "remaining_floor_area"
+        },
+        {
+          "code": "SHARED_COST_LOW",
+          "level": "info",
+          "message": "共負比 29.7% 低於合理區間下限 30%，建議覆核參數",
+          "field": "shared_cost_ratio"
+        }
+      ],
+      "owners_total": 0,
+      "owners_agreed": 0
+    },
+    {
+      "id": "D",
+      "name": "危老・合建（owners 示範）",
+      "case_type": "危老合建",
+      "core_version": "0.2.0",
+      "computed_at": "2026-07-01T00:00:00+00:00",
+      "allow_floor_area": 6120.0,
+      "used_floor_area": 6157.5,
+      "remaining_floor_area": -37.5,
+      "saleable_area": 3153.84,
+      "efficiency_ratio": 1.704,
+      "total_sales": 226089.0,
+      "shared_cost_ratio": 0.66,
+      "return_rate": 0.515,
+      "owner_return_ratio": 0.34,
+      "pre_renewal_value": 36300.0,
+      "value_multiple": 2.12,
+      "warnings": [
+        {
+          "code": "EFFICIENCY_OUT_OF_BAND",
+          "level": "warn",
+          "message": "銷坪比 1.704 不在正常帶 1.58–1.68",
+          "field": "efficiency_ratio"
+        },
+        {
+          "code": "VOLUME_EXCEEDED",
+          "level": "error",
+          "message": "容積超出允建 37.50 m²，需調整設計",
+          "field": "remaining_floor_area"
+        },
+        {
+          "code": "SHARED_COST_HIGH",
+          "level": "error",
+          "message": "共負比 66.0% 超過警示線 60%，地主接受度明顯降低",
+          "field": "shared_cost_ratio"
+        }
+      ],
+      "owners_total": 48,
+      "owners_agreed": 34
+    }
+  ]
+}

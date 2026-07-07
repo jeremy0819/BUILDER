@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>都市更新／危老重建 說明會簡報範本 · Urban-Renewal</title>
+<meta name="description" content="都市更新與危老重建住戶說明會的專業簡報範本：制式架構、設計感版面、可投影／可列印。通用範本，不含真實案件資料。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Playfair+Display:wght@600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* jieceng 品牌：暖白 × 炭黑 × 翡翠綠 */
+    --navy:#064e3b; --navy-2:#053d2e; --navy-3:#0a5d46;
+    --gold:#10b981; --gold-d:#059669; --gold-l:#a7f3d0;
+    --cream:#efece3; --paper:#f5f3ee; --card:#ffffff;
+    --ink:#1c1a17; --slate:#57534e; --mute:#a8a29e;
+    --line:#e7e5e4; --line-2:#d6d3cd;
+    --green:#064e3b; --red:#b5523f; --blue:#0a5d46;
+    --serif:"Playfair Display","Noto Serif TC","Songti TC",Georgia,serif;
+    --sans:"Inter","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{font-family:var(--sans);color:var(--ink);background:#053d2e;overflow:hidden;-webkit-font-smoothing:antialiased}
+
+  /* ===== stage ===== */
+  .stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  .slide{
+    position:absolute;width:100%;height:100%;padding:6vh 8vw;
+    display:flex;flex-direction:column;justify-content:center;
+    background:var(--paper);opacity:0;visibility:hidden;
+    transition:opacity .5s ease, transform .5s ease;transform:translateY(14px) scale(.99);
+    overflow:hidden;
+  }
+  .slide.on{opacity:1;visibility:visible;transform:none;z-index:2}
+  .slide::after{ /* hairline frame */
+    content:"";position:absolute;inset:3vh 3.4vw;border:1px solid var(--line-2);pointer-events:none;opacity:.5}
+
+  /* kicker / titles */
+  .kicker{font-size:clamp(11px,1.2vw,14px);letter-spacing:.32em;text-transform:uppercase;color:var(--gold-d);font-weight:700;margin-bottom:1.4vh}
+  h1{font-family:var(--serif);font-weight:800;font-size:clamp(30px,5.6vw,68px);line-height:1.1;margin:0;letter-spacing:.01em}
+  h2{font-family:var(--serif);font-weight:700;font-size:clamp(24px,3.8vw,46px);line-height:1.15;margin:0 0 2.2vh}
+  h3{font-size:clamp(16px,1.6vw,21px);margin:0 0 6px;font-weight:800}
+  p{font-size:clamp(14px,1.5vw,19px);line-height:1.75;color:var(--slate);margin:.4em 0}
+  .lead{font-size:clamp(16px,1.9vw,24px);color:var(--ink)}
+  .rule{width:64px;height:3px;background:var(--gold);margin:1.6vh 0;border-radius:2px}
+  .num-tag{font-family:var(--serif);font-size:clamp(40px,8vw,120px);color:var(--gold-l);font-weight:800;line-height:.8;opacity:.9}
+
+  /* cover */
+  .slide.cover{background:
+    radial-gradient(1200px 600px at 18% 12%, rgba(16,185,129,.16), transparent 55%),
+    linear-gradient(160deg,var(--navy),var(--navy-2) 60%,#042f24);color:#fff;justify-content:center}
+  .slide.cover::after{border-color:rgba(167,243,208,.28)}
+  .slide.cover .kicker{color:var(--gold-l)}
+  .slide.cover h1{color:#fff}
+  .slide.cover .sub{font-size:clamp(15px,1.8vw,22px);color:#d8e6df;margin-top:2.4vh;max-width:60ch}
+  .cover-meta{display:flex;gap:30px;flex-wrap:wrap;margin-top:5vh;font-size:clamp(12px,1.3vw,16px);color:#bcc6bd}
+  .cover-meta b{color:#fff;font-weight:700;display:block;font-size:1.15em;margin-top:3px}
+  .cover-badge{position:absolute;top:6vh;right:8vw;border:1px solid rgba(167,243,208,.4);color:var(--gold-l);
+    padding:8px 16px;border-radius:999px;font-size:clamp(11px,1.1vw,13px);letter-spacing:.1em;font-weight:700}
+
+  /* section divider */
+  .slide.divider{background:linear-gradient(160deg,var(--navy),var(--navy-2));color:#fff}
+  .slide.divider::after{border-color:rgba(167,243,208,.28)}
+  .slide.divider .kicker{color:var(--gold-l)}
+  .slide.divider h2{color:#fff;font-size:clamp(28px,5vw,60px);margin:0}
+  .slide.divider .dsub{color:#cdd8cf;margin-top:2vh;max-width:64ch}
+  .slide.divider .num-tag{color:rgba(167,243,208,.5)}
+
+  /* layouts */
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:4vw;align-items:center}
+  .cols.l{grid-template-columns:1.15fr .85fr}
+  .stacklist{list-style:none;padding:0;margin:1.2vh 0 0}
+  .stacklist li{display:flex;gap:14px;align-items:flex-start;padding:1.1vh 0;border-bottom:1px solid var(--line)}
+  .stacklist li:last-child{border-bottom:0}
+  .stacklist .ix{font-family:var(--serif);font-weight:800;color:var(--gold-d);font-size:clamp(15px,1.6vw,20px);min-width:1.6em}
+  .stacklist .tx b{display:block;font-size:clamp(14px,1.5vw,18px);color:var(--ink)}
+  .stacklist .tx span{font-size:clamp(12px,1.3vw,15px);color:var(--slate)}
+
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6vw}
+  .card{background:var(--card);border:1px solid var(--line);border-top:3px solid var(--gold);border-radius:10px;
+    padding:2.2vh 1.4vw;box-shadow:0 10px 30px -18px rgba(16,36,61,.4)}
+  .card .ic{font-size:clamp(22px,2.6vw,32px)}
+  .card h3{margin:1vh 0 .4vh}
+  .card p{font-size:clamp(12px,1.25vw,15px);margin:0}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6vw;margin-top:1vh}
+  .statbox{background:var(--cream);border:1px solid var(--line);border-radius:10px;padding:2vh 1.2vw;text-align:center}
+  .statbox .v{font-family:var(--serif);font-size:clamp(26px,3.4vw,44px);font-weight:800;color:var(--navy-2);line-height:1}
+  .statbox .k{font-size:clamp(11px,1.2vw,14px);color:var(--slate);margin-top:.8vh}
+
+  .note{background:var(--cream);border-left:4px solid var(--gold);border-radius:0 8px 8px 0;padding:1.4vh 1.4vw;margin-top:2vh}
+  .note p{margin:0;font-size:clamp(12px,1.35vw,16px);color:var(--ink)}
+  .tag{display:inline-block;background:var(--navy);color:#fff;font-size:clamp(10px,1.1vw,13px);font-weight:700;
+    padding:3px 12px;border-radius:999px;letter-spacing:.04em}
+  .tag.gold{background:var(--gold-d)}
+  .tag.green{background:var(--green)}
+
+  .ph{color:var(--mute);font-style:normal;border-bottom:1px dashed var(--line-2);padding:0 .15em}
+
+  /* timeline */
+  .timeline{display:flex;gap:6px;margin-top:2vh;flex-wrap:wrap}
+  .ph-band{flex:1;min-width:120px}
+  .ph-band .lbl{font-size:clamp(11px,1.2vw,14px);font-weight:800;color:#fff;text-align:center;padding:6px;border-radius:6px 6px 0 0}
+  .ph-band .steps{border:1px solid var(--line);border-top:0;border-radius:0 0 6px 6px;padding:1vh .8vw;background:var(--card)}
+  .ph-band .steps div{font-size:clamp(11px,1.2vw,14px);padding:3px 0;color:var(--slate)}
+  .ph-band .steps b{color:var(--ink)}
+
+  /* donut */
+  .donutwrap{display:flex;align-items:center;gap:3vw;justify-content:center}
+  .donutwrap svg{width:min(34vh,300px);height:min(34vh,300px)}
+  .legendD{list-style:none;padding:0;margin:0}
+  .legendD li{display:flex;align-items:center;gap:10px;margin:1.4vh 0;font-size:clamp(13px,1.4vw,17px)}
+  .legendD .sw{width:16px;height:16px;border-radius:4px;flex:none}
+  .legendD b{font-family:var(--serif)}
+
+  /* qa */
+  .qa{display:grid;grid-template-columns:1fr 1fr;gap:1.6vw 3vw}
+  .qa .qbox{border-left:3px solid var(--gold)}
+  .qa .qbox{padding-left:1.2vw}
+  .qa .q{font-weight:800;font-size:clamp(14px,1.5vw,18px);color:var(--navy-2)}
+  .qa .a{font-size:clamp(12px,1.3vw,16px);color:var(--slate);margin-top:.4vh}
+
+  /* contact / closing */
+  .slide.closing{background:linear-gradient(160deg,var(--navy),var(--navy-2));color:#fff;text-align:center;align-items:center}
+  .slide.closing::after{border-color:rgba(167,243,208,.28)}
+  .slide.closing h1{color:#fff}
+  .slide.closing .kicker{color:var(--gold-l)}
+  .slide.closing .contact{margin-top:4vh;display:flex;gap:40px;flex-wrap:wrap;justify-content:center;color:#d8e6df;font-size:clamp(13px,1.4vw,17px)}
+  .slide.closing .contact b{color:#fff;display:block}
+
+  /* ===== chrome (controls) ===== */
+  .progress{position:fixed;top:0;left:0;height:4px;background:var(--gold);z-index:30;transition:width .4s;box-shadow:0 0 8px rgba(16,185,129,.5)}
+  .chrome{position:fixed;bottom:18px;left:0;right:0;z-index:30;display:flex;align-items:center;justify-content:center;gap:18px;pointer-events:none}
+  .chrome > *{pointer-events:auto}
+  .navbtn{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(16,36,61,.72);
+    color:#fff;font-size:18px;cursor:pointer;backdrop-filter:blur(6px);transition:.15s;display:flex;align-items:center;justify-content:center}
+  .navbtn:hover{background:var(--gold-d);border-color:var(--gold)}
+  .dots{display:flex;gap:7px;background:rgba(16,36,61,.72);padding:9px 14px;border-radius:999px;backdrop-filter:blur(6px);max-width:60vw;overflow:auto;scrollbar-width:none}
+  .dots::-webkit-scrollbar{display:none}
+  .dot{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;flex:none;transition:.2s}
+  .dot.on{background:var(--gold);width:22px;border-radius:5px}
+  .counter{position:fixed;bottom:24px;right:26px;z-index:30;color:#fff;font-size:13px;font-family:var(--serif);
+    background:rgba(16,36,61,.72);padding:6px 13px;border-radius:999px;backdrop-filter:blur(6px);letter-spacing:.05em}
+  .brandmark{position:fixed;bottom:24px;left:26px;z-index:30;color:rgba(255,255,255,.78);font-size:12px;letter-spacing:.12em;
+    text-transform:uppercase;font-weight:700;display:flex;align-items:center;gap:8px}
+  .brandmark .gd{width:8px;height:8px;background:var(--gold);border-radius:50%}
+  .slide:not(.cover):not(.divider):not(.closing) .pagefoot{position:absolute;left:8vw;bottom:5.4vh;font-size:clamp(10px,1.1vw,13px);color:var(--mute);letter-spacing:.06em}
+
+  .hint{position:fixed;top:16px;right:18px;z-index:30;color:rgba(255,255,255,.6);font-size:12px;background:rgba(16,36,61,.6);
+    padding:6px 12px;border-radius:8px;transition:opacity .4s}
+  .hint b{color:var(--gold-l)}
+
+  @media (max-width:760px){
+    .cols,.cols.l,.cards,.stat-grid,.qa{grid-template-columns:1fr;gap:2.2vh}
+    .donutwrap{flex-direction:column}
+    .slide{padding:7vh 8vw}
+  }
+  @media print{
+    body{overflow:visible;background:#fff}
+    .stage{position:static}
+    .slide{position:relative;opacity:1!important;visibility:visible!important;transform:none!important;
+      height:100vh;page-break-after:always;break-after:page}
+    .progress,.chrome,.counter,.brandmark,.hint{display:none!important}
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="hint" id="hint">用 <b>← →</b> 翻頁 · <b>F</b> 全螢幕 · <b>P</b> 列印</div>
+
+<div class="stage" id="stage">
+
+  <!-- 1. COVER -->
+  <section class="slide cover on">
+    <span class="cover-badge">說明會簡報 · 範本</span>
+    <div class="kicker">都市更新 · 危老重建 住戶說明會</div>
+    <h1>與您一起，<br>把老屋變成安心的家</h1>
+    <p class="sub">本簡報為制式架構範本，帶您一次看懂：為何更新、如何進行、權益如何保障，以及您的每一步該確認什麼。</p>
+    <div class="cover-meta">
+      <div>案　名<b><span class="ph">〔請填入案名／門牌範圍〕</span></b></div>
+      <div>實施者<b><span class="ph">〔更新會／實施者〕</span></b></div>
+      <div>日　期<b><span class="ph">〔YYYY/MM/DD〕</span></b></div>
+      <div>場　次<b><span class="ph">〔第 N 次說明會〕</span></b></div>
+    </div>
+  </section>
+
+  <!-- 2. AGENDA -->
+  <section class="slide">
+    <div class="kicker">Agenda · 本日議程</div>
+    <h2>今天，我們會談這些</h2>
+    <div class="rule"></div>
+    <div class="cols l">
+      <ul class="stacklist">
+        <li><span class="ix">01</span><span class="tx"><b>為什麼要更新</b><span>老屋風險與更新效益</span></span></li>
+        <li><span class="ix">02</span><span class="tx"><b>基地與權屬現況</b><span>區位、面積、權屬概況</span></span></li>
+        <li><span class="ix">03</span><span class="tx"><b>法規路徑與容積</b><span>都更／危老／防災、同意門檻、獎勵</span></span></li>
+        <li><span class="ix">04</span><span class="tx"><b>規劃願景</b><span>量體、戶型、公設與停車</span></span></li>
+      </ul>
+      <ul class="stacklist">
+        <li><span class="ix">05</span><span class="tx"><b>權利變換與分回</b><span>共同負擔、分回比、常見迷思</span></span></li>
+        <li><span class="ix">06</span><span class="tx"><b>時程藍圖</b><span>從評估到交屋的里程碑</span></span></li>
+        <li><span class="ix">07</span><span class="tx"><b>您的保障</b><span>信託、續建機制、合約與透明</span></span></li>
+        <li><span class="ix">08</span><span class="tx"><b>常見問答與下一步</b><span>Q&amp;A、同意書、聯絡窗口</span></span></li>
+      </ul>
+    </div>
+    <div class="pagefoot">都市更新／危老重建 · 住戶說明會</div>
+  </section>
+
+  <!-- 3. DIVIDER 01 -->
+  <section class="slide divider">
+    <div class="num-tag">01</div>
+    <div class="kicker">Why Renewal</div>
+    <h2>為什麼要更新</h2>
+    <p class="dsub">更新不只是換新房子，而是把「安全、機能、資產價值」一次補齊。</p>
+  </section>
+
+  <!-- 4. WHY -->
+  <section class="slide">
+    <div class="kicker">老屋的隱形成本</div>
+    <h2>不更新，風險會一直累積</h2>
+    <div class="cards">
+      <div class="card"><div class="ic">🏚️</div><h3>耐震不足</h3><p>早期建築標準較低，地震時結構風險高，補強有極限。</p></div>
+      <div class="card"><div class="ic">🚿</div><h3>管線老化</h3><p>漏水、壁癌、消防與電力負載不符現代需求。</p></div>
+      <div class="card"><div class="ic">🚗</div><h3>機能落後</h3><p>無電梯、無車位、無無障礙，居住品質與轉手性下降。</p></div>
+      <div class="card"><div class="ic">📉</div><h3>資產停滯</h3><p>屋齡越高、增值越慢；更新可重塑資產價值。</p></div>
+      <div class="card"><div class="ic">🛡️</div><h3>安全升級</h3><p>新制耐震、消防、無障礙、智慧管理一次到位。</p></div>
+      <div class="card"><div class="ic">🌱</div><h3>世代資產</h3><p>把老屋轉為可傳承、好出租、好自住的新資產。</p></div>
+    </div>
+    <div class="pagefoot">為什麼要更新</div>
+  </section>
+
+  <!-- 5. SITE -->
+  <section class="slide">
+    <div class="kicker">基地現況 · Site</div>
+    <h2>我們的基地，條件如何？</h2>
+    <div class="cols">
+      <div>
+        <ul class="stacklist">
+          <li><span class="ix">區位</span><span class="tx"><b><span class="ph">〔行政區／路段〕</span></b><span>生活機能、交通與學區概述</span></span></li>
+          <li><span class="ix">面積</span><span class="tx"><b><span class="ph">〔基地面積 ㎡／坪〕</span></b><span>更新單元範圍與地號筆數</span></span></li>
+          <li><span class="ix">分區</span><span class="tx"><b><span class="ph">〔使用分區／容積率〕</span></b><span>可建範圍的法定基礎</span></span></li>
+          <li><span class="ix">權屬</span><span class="tx"><b><span class="ph">〔所有權人戶數〕</span></b><span>同意整合的分母</span></span></li>
+        </ul>
+      </div>
+      <div class="note">
+        <span class="tag gold">透明原則</span>
+        <p style="margin-top:1.2vh">本頁所有數字以<b>地政與使照文件</b>為準，現場提供查詢方式。我們承諾：對外說明、合約附件、送審文件，<b>同一套數字、同一個版本</b>。</p>
+      </div>
+    </div>
+    <div class="pagefoot">基地與權屬現況</div>
+  </section>
+
+  <!-- 6. DIVIDER 02 -->
+  <section class="slide divider">
+    <div class="num-tag">02</div>
+    <div class="kicker">Law &amp; Floor Area</div>
+    <h2>法規路徑與容積</h2>
+    <p class="dsub">走哪條路、要多少人同意、能爭取多少獎勵——先把規則講清楚。</p>
+  </section>
+
+  <!-- 7. PATH -->
+  <section class="slide">
+    <div class="kicker">三條路徑，怎麼選</div>
+    <h2>都更 · 危老 · 防災</h2>
+    <div class="cards">
+      <div class="card"><span class="tag">都市更新</span><h3 style="margin-top:1vh">多數決整合</h3><p>需達<b>法定同意比例</b>（依劃定方式而定），審議程序較完整，容積獎勵空間較大。</p></div>
+      <div class="card"><span class="tag gold">危老重建</span><h3 style="margin-top:1vh">全體同意</h3><p>需<b>100% 同意</b>、程序較快，適合戶數單純的基地；無須劃定更新單元。</p></div>
+      <div class="card"><span class="tag green">防災型</span><h3 style="margin-top:1vh">時程獎勵</h3><p>具<b>時程獎勵</b>但有<b>申請落日期限</b>，越早送件越有利。</p></div>
+    </div>
+    <div class="note"><p>📌 <b>同意門檻與容積獎勵以現行條文為準</b>，本頁為路徑概念說明；個案適用條件由專業團隊逐項查證後提供書面對照。</p></div>
+    <div class="pagefoot">法規路徑與容積</div>
+  </section>
+
+  <!-- 8. DIVIDER 03 -->
+  <section class="slide divider">
+    <div class="num-tag">03</div>
+    <div class="kicker">Design Vision</div>
+    <h2>規劃願景</h2>
+    <p class="dsub">把基地條件，轉化成安全、好住、保值的新家。</p>
+  </section>
+
+  <!-- 9. DESIGN -->
+  <section class="slide">
+    <div class="kicker">規劃重點 · Planning</div>
+    <h2>新家會長這樣</h2>
+    <div class="cols">
+      <ul class="stacklist">
+        <li><span class="ix">量體</span><span class="tx"><b><span class="ph">〔地上 N 層／地下 N 層〕</span></b><span>退縮、棟距與日照通風</span></span></li>
+        <li><span class="ix">戶型</span><span class="tx"><b><span class="ph">〔坪型配置〕</span></b><span>分回與銷售戶型規劃</span></span></li>
+        <li><span class="ix">公設</span><span class="tx"><b><span class="ph">〔公設比／公設項目〕</span></b><span>大廳、電梯、無障礙、社區設施</span></span></li>
+        <li><span class="ix">停車</span><span class="tx"><b><span class="ph">〔車位數／型式〕</span></b><span>平面／機械、車道規劃</span></span></li>
+      </ul>
+      <div class="note" style="border-left-color:var(--navy)">
+        <span class="tag">意象示意</span>
+        <p style="margin-top:1.2vh">此處置入<b>外觀透視、平面配置、公設意象圖</b>。提醒：示意圖以<b>核定圖說為準</b>，最終以建照與權變核定內容為依據。</p>
+      </div>
+    </div>
+    <div class="pagefoot">規劃願景</div>
+  </section>
+
+  <!-- 10. DIVIDER 04 -->
+  <section class="slide divider">
+    <div class="num-tag">04</div>
+    <div class="kicker">Rights &amp; Allocation</div>
+    <h2>權利變換與分回</h2>
+    <p class="dsub">最關鍵的一頁：您出地、團隊出力，蓋好後怎麼分。</p>
+  </section>
+
+  <!-- 11. ALLOCATION -->
+  <section class="slide">
+    <div class="kicker">分回的邏輯 · 示意</div>
+    <h2>總價值，怎麼分？</h2>
+    <div class="donutwrap">
+      <svg viewBox="0 0 120 120" aria-label="共同負擔與住戶分回比示意">
+        <circle cx="60" cy="60" r="48" fill="none" stroke="#e3ddd0" stroke-width="20"/>
+        <circle cx="60" cy="60" r="48" fill="none" stroke="#064e3b" stroke-width="20"
+          stroke-dasharray="301.6" stroke-dashoffset="120.6" transform="rotate(-90 60 60)" stroke-linecap="butt"/>
+        <text x="60" y="56" text-anchor="middle" font-family="Noto Serif TC,serif" font-size="15" font-weight="800" fill="#064e3b">示意</text>
+        <text x="60" y="72" text-anchor="middle" font-size="7.5" fill="#5a6b80">非個案數字</text>
+      </svg>
+      <ul class="legendD">
+        <li><span class="sw" style="background:#064e3b"></span><b>共同負擔</b>　工程・管維・權變・利息・稅捐・管理</li>
+        <li><span class="sw" style="background:#e3ddd0"></span><b>住戶分回</b>　＝ 1 − 共同負擔比</li>
+        <li style="color:var(--slate);font-size:clamp(12px,1.3vw,15px)">共同負擔六大科目經<b>估價師</b>查核、主管機關核定。</li>
+      </ul>
+    </div>
+    <div class="note"><p>🔎 <b>破解「一坪換一坪」迷思</b>：分回是「總價值 × 分回比」的結果，不是固定坪數承諾。共同負擔越透明，分回數字越站得住腳。實際分回以<b>權利變換核定</b>為準。</p></div>
+    <div class="pagefoot">權利變換與分回</div>
+  </section>
+
+  <!-- 12. TIMELINE -->
+  <section class="slide">
+    <div class="kicker">時程藍圖 · Roadmap</div>
+    <h2>從評估到交屋，分四大階段</h2>
+    <div class="timeline">
+      <div class="ph-band"><div class="lbl" style="background:#064e3b">前期評估 S1–S4</div>
+        <div class="steps"><div><b>S1</b> 基地權屬調查</div><div><b>S2</b> 法規容積試算</div><div><b>S3</b> 坪效量體規劃</div><div><b>S4</b> 投報財務評估</div></div></div>
+      <div class="ph-band"><div class="lbl" style="background:#064e3b">整合 S5–S6</div>
+        <div class="steps"><div><b>S5</b> 說明會與意願整合</div><div><b>S6</b> 簽約</div></div></div>
+      <div class="ph-band"><div class="lbl" style="background:#0f766e">法定程序 S7–S8</div>
+        <div class="steps"><div><b>S7</b> 事業／權變送審</div><div><b>S8</b> 審議・公展・核定</div></div></div>
+      <div class="ph-band"><div class="lbl" style="background:#047857">執行 S9–S11</div>
+        <div class="steps"><div><b>S9</b> 設計與發包</div><div><b>S10</b> 施工</div><div><b>S11</b> 銷售・交屋・管委會</div></div></div>
+    </div>
+    <div class="note"><p>📍 <b>我們現在在這裡：<span class="ph">〔目前階段 SN〕</span></b>。每個階段都有明確產出物與檢核點，進度公開可查。</p></div>
+    <div class="pagefoot">時程藍圖</div>
+  </section>
+
+  <!-- 13. DIVIDER 05 -->
+  <section class="slide divider">
+    <div class="num-tag">05</div>
+    <div class="kicker">Your Safeguards</div>
+    <h2>您的保障</h2>
+    <p class="dsub">把信任建立在「制度」上，而不是任何一家公司的口頭承諾。</p>
+  </section>
+
+  <!-- 14. SAFEGUARDS -->
+  <section class="slide">
+    <div class="kicker">四道防線 · Safeguards</div>
+    <h2>您的權益，靠制度保障</h2>
+    <div class="cards">
+      <div class="card"><div class="ic">🏦</div><h3>信託專戶</h3><p>資金進信託、<b>撥付綁里程碑</b>，專款專用、不被挪用。</p></div>
+      <div class="card"><div class="ic">🔁</div><h3>續建機制</h3><p>萬一實施者出狀況，信託／融資機構可<b>啟動續建、接管工程</b>，您的權益優先受保障、不隨單一公司存續而動搖。</p></div>
+      <div class="card"><div class="ic">📜</div><h3>合約保障</h3><p>權利義務、違約責任、撤回與解約條件<b>白紙黑字、對等明確</b>。</p></div>
+      <div class="card"><div class="ic">🧾</div><h3>單一數源</h3><p>說明、合約、送審<b>同版同源、日期戳記</b>，逐戶分配可回算。</p></div>
+      <div class="card"><div class="ic">⚖️</div><h3>獨立估價</h3><p>權變交由<b>估價師</b>查核，主管機關核定，非實施者自說自話。</p></div>
+      <div class="card"><div class="ic">👀</div><h3>程序公開</h3><p>審議、公展、核定皆<b>公開可查</b>，重大事項留痕。</p></div>
+    </div>
+    <div class="pagefoot">您的保障</div>
+  </section>
+
+  <!-- 15. QA -->
+  <section class="slide">
+    <div class="kicker">常見問答 · FAQ</div>
+    <h2>大家最常問的事</h2>
+    <div class="qa">
+      <div class="qbox"><div class="q">Q. 現在簽的是什麼？會不會被綁死？</div><div class="a">同意整合與正式合約是<b>不同階段</b>；任何授權範圍、撤回與解約條件都會逐條說明，您看懂再簽。</div></div>
+      <div class="qbox"><div class="q">Q. 萬一建商蓋到一半跑了？</div><div class="a">這正是<b>信託＋續建機制</b>要解決的問題：由制度接手續建，權益優先保障。</div></div>
+      <div class="qbox"><div class="q">Q. 真的能「一坪換一坪」嗎？</div><div class="a">分回是<b>總價值×分回比</b>的結果，視共同負擔而定；我們提供透明試算，不做不實承諾。</div></div>
+      <div class="qbox"><div class="q">Q. 我可以不參加嗎？</div><div class="a">更新採<b>法定同意門檻</b>；達門檻後依權利變換處理，過程有估價與安置等法定保障。</div></div>
+      <div class="qbox"><div class="q">Q. 數字會不會說一套做一套？</div><div class="a">我們承諾<b>單一數源</b>：對外、合約、送審同一版本，逐戶分配回算一致。</div></div>
+      <div class="qbox"><div class="q">Q. 要多久？現在到哪了？</div><div class="a">依四大階段推進，目前在 <span class="ph">〔SN〕</span>；每階段產出與檢核點公開可查。</div></div>
+    </div>
+    <div class="pagefoot">常見問答</div>
+  </section>
+
+  <!-- 16. NEXT STEPS -->
+  <section class="slide">
+    <div class="kicker">下一步 · Next</div>
+    <h2>接下來，這樣進行</h2>
+    <div class="cols l">
+      <ul class="stacklist">
+        <li><span class="ix">01</span><span class="tx"><b>領取資料包</b><span>說明簡報、Q&amp;A、同意書與條文對照表</span></span></li>
+        <li><span class="ix">02</span><span class="tx"><b>個別諮詢</b><span>一對一說明您的權屬與分回試算</span></span></li>
+        <li><span class="ix">03</span><span class="tx"><b>看懂再簽</b><span>確認授權範圍與保障條款後，再決定</span></span></li>
+        <li><span class="ix">04</span><span class="tx"><b>持續更新</b><span>進度、審議結果、財務調整即時公開</span></span></li>
+      </ul>
+      <div class="note" style="border-left-color:var(--green)">
+        <span class="tag green">給您的承諾</span>
+        <p style="margin-top:1.2vh">我們寧可<b>多花時間把疑慮講清楚</b>，也不催促您簽下看不懂的文件。專業的質疑，是把案子做好的養分。</p>
+      </div>
+    </div>
+    <div class="pagefoot">下一步</div>
+  </section>
+
+  <!-- 17. CLOSING -->
+  <section class="slide closing">
+    <div class="kicker">Thank You</div>
+    <h1>謝謝您的參與</h1>
+    <div class="rule" style="margin:2.4vh auto"></div>
+    <p style="color:#d8e6df;max-width:60ch">您的每一個問題，都讓這個案子更穩健。歡迎於會後一對一諮詢。</p>
+    <div class="contact">
+      <div>窗口<b><span class="ph" style="color:#e7d6a8">〔整合專員／電話〕</span></b></div>
+      <div>實施者<b><span class="ph" style="color:#e7d6a8">〔更新會／實施者〕</span></b></div>
+      <div>諮詢時間<b><span class="ph" style="color:#e7d6a8">〔時段／地點〕</span></b></div>
+    </div>
+  </section>
+
+</div>
+
+<div class="chrome">
+  <button class="navbtn" id="prev" aria-label="上一頁">‹</button>
+  <div class="dots" id="dots"></div>
+  <button class="navbtn" id="next" aria-label="下一頁">›</button>
+</div>
+<div class="counter" id="counter">1 / 17</div>
+<div class="brandmark"><span class="gd"></span>Urban-Renewal</div>
+
+<script>
+  const slides=[...document.querySelectorAll('.slide')];
+  const dotsWrap=document.getElementById('dots');
+  const progress=document.getElementById('progress');
+  const counter=document.getElementById('counter');
+  const hint=document.getElementById('hint');
+  let i=0;
+
+  slides.forEach((_,k)=>{
+    const d=document.createElement('span'); d.className='dot'+(k===0?' on':'');
+    d.onclick=()=>go(k); dotsWrap.appendChild(d);
+  });
+  const dots=[...dotsWrap.children];
+
+  function go(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('on',k===i));
+    dots.forEach((d,k)=>{d.classList.toggle('on',k===i); if(k===i)d.scrollIntoView({block:'nearest',inline:'center'});});
+    progress.style.width=((i+1)/slides.length*100)+'%';
+    counter.textContent=(i+1)+' / '+slides.length;
+  }
+  function next(){go(i+1)} function prev(){go(i-1)}
+  document.getElementById('next').onclick=next;
+  document.getElementById('prev').onclick=prev;
+
+  document.addEventListener('keydown',e=>{
+    if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();next();}
+    else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();prev();}
+    else if(e.key==='Home'){go(0);} else if(e.key==='End'){go(slides.length-1);}
+    else if(e.key==='f'||e.key==='F'){ if(!document.fullscreenElement)document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.(); }
+    else if(e.key==='p'||e.key==='P'){ window.print(); }
+  });
+
+  // click zones (ignore controls/links)
+  document.getElementById('stage').addEventListener('click',e=>{
+    if(e.target.closest('a,button,.ph')) return;
+    (e.clientX > window.innerWidth*0.5) ? next() : prev();
+  });
+
+  // swipe
+  let sx=0;
+  addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});
+  addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-sx; if(Math.abs(dx)>50)(dx<0?next():prev());},{passive:true});
+
+  progress.style.width=(1/slides.length*100)+'%';
+  setTimeout(()=>hint.style.opacity='0',5000);
+</script>
+</body>
+</html>

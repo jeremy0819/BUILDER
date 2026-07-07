@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>都市更新開發評估試算模擬器 · Urban-Renewal</title>
+<meta name="description" content="都更／危老兩層引擎互動試算：坪效層（容積帳→銷售坪）與投報層（總銷→共同負擔→分回比），含健檢與敏感度。[FRAME] 帳務模型示意，非估價或預測，不含真實案件資料。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --emer:#064e3b;--emer-d:#053d2e;--emer-l:#10b981;--mint:#ecfdf5;--mint-2:#d1fae5;
+    --warm:#f5f3ee;--paper:#fbfaf7;--card:#fff;
+    --ink:#1c1a17;--body:#44403c;--slate:#57534e;--mute:#a8a29e;
+    --line:#e7e5e4;--line-2:#d6d3cd;--amber:#c2701c;--amber-l:#fbf3e6;--red:#b5523f;--red-l:#fbecea;
+    --serif:"Playfair Display","Noto Serif TC",Georgia,serif;
+    --sans:"Inter","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.7;-webkit-font-smoothing:antialiased}
+  a{color:var(--emer);text-decoration:none}a:hover{text-decoration:underline}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 22px}
+  nav.top{position:sticky;top:0;z-index:50;background:rgba(251,250,247,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  nav.top .wrap{display:flex;align-items:center;gap:9px;height:56px;overflow-x:auto;scrollbar-width:none}
+  nav.top .wrap::-webkit-scrollbar{display:none}
+  .brand{font-weight:800;margin-right:auto;white-space:nowrap;display:flex;align-items:center;gap:8px;font-size:15px}
+  .brand .gd{width:10px;height:10px;border-radius:50%;background:var(--emer-l);box-shadow:0 0 0 4px var(--mint-2)}
+  nav.top a.nl{padding:6px 11px;border-radius:999px;color:var(--slate);font-size:13.5px;font-weight:600;white-space:nowrap}
+  nav.top a.nl:hover{background:var(--mint);color:var(--emer-d);text-decoration:none}
+
+  header.hero{background:linear-gradient(180deg,#fff,var(--paper));border-bottom:1px solid var(--line)}
+  .hero .wrap{padding:40px 22px 26px;max-width:900px}
+  .kicker{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--emer-l);font-weight:800;margin-bottom:10px}
+  h1{font-family:var(--serif);font-weight:800;font-size:clamp(26px,4.4vw,42px);line-height:1.14;margin:0 0 8px}
+  .sub{font-size:clamp(14px,1.7vw,17px);color:var(--slate);max-width:64ch;margin:0}
+
+  .epi{display:flex;gap:12px;align-items:flex-start;background:var(--amber-l);border:1px solid #ecd9bd;border-left:5px solid var(--amber);border-radius:12px;padding:13px 16px;margin:18px 0 0}
+  .epi .ic{font-size:20px;flex:none}
+  .epi b{color:var(--amber)}.epi .tag{font-family:var(--mono);font-size:11px;background:var(--amber);color:#fff;padding:1px 7px;border-radius:5px;font-weight:700}
+  .epi p{margin:4px 0 0;font-size:13px;color:#5b4a30}
+
+  section{padding:30px 0;border-bottom:1px solid var(--line)}
+  h2{font-family:var(--serif);font-size:clamp(20px,2.6vw,27px);margin:0 0 4px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  h2 .lab{font-family:var(--mono);font-size:11px;background:var(--mint);color:var(--emer);padding:2px 8px;border-radius:6px;font-weight:700;letter-spacing:0}
+  .ssub{color:var(--slate);font-size:14px;margin:0 0 18px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 8px 26px -20px rgba(16,36,61,.4)}
+  .inputs{display:grid;grid-template-columns:1fr 1fr;gap:11px 14px}
+  .f{display:flex;flex-direction:column;gap:3px}
+  .f label{font-size:12px;font-weight:600;color:var(--slate);display:flex;justify-content:space-between}
+  .f label .u{color:var(--mute);font-weight:500}
+  .f input{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--ink);border:1px solid var(--line-2);border-radius:8px;padding:7px 10px;background:var(--paper);width:100%}
+  .f input:focus{outline:2px solid var(--emer-l);border-color:var(--emer-l)}
+  .ghead{grid-column:1/-1;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--emer-l);margin-top:6px;border-top:1px solid var(--line);padding-top:8px}
+  .ghead:first-child{border-top:0;margin-top:0;padding-top:0}
+
+  table.out{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:4px}
+  table.out td{padding:6px 8px;border-bottom:1px solid var(--line)}
+  table.out td:first-child{color:var(--slate)}
+  table.out td:last-child{text-align:right;font-family:var(--mono);font-weight:700;color:var(--ink)}
+  table.out tr.hl td{background:var(--mint);border-bottom-color:var(--mint-2)}
+  table.out tr.hl td:last-child{color:var(--emer-d)}
+  table.out tr.sum td{font-weight:800;border-top:2px solid var(--emer);border-bottom:0}
+  table.out tr.sum td:last-child{color:var(--emer-d)}
+
+  .big{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  .bcard{background:var(--warm);border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+  .bcard .v{font-family:var(--mono);font-size:30px;font-weight:700;line-height:1;color:var(--emer-d)}
+  .bcard .k{font-size:12px;color:var(--slate);margin-top:6px}
+  .barwrap{height:13px;border-radius:999px;background:var(--line);overflow:hidden;margin-top:10px;display:flex}
+  .barwrap span{height:100%;transition:width .35s}
+  .barlbl{display:flex;justify-content:space-between;font-size:11.5px;color:var(--slate);margin-top:5px;font-weight:600}
+
+  .checks{display:flex;flex-direction:column;gap:9px}
+  .chk{display:flex;gap:11px;align-items:flex-start;border:1px solid var(--line);border-radius:11px;padding:11px 13px;font-size:13.5px}
+  .chk .dot{width:11px;height:11px;border-radius:50%;flex:none;margin-top:5px}
+  .chk.ok{background:var(--mint);border-color:var(--mint-2)}.chk.ok .dot{background:var(--emer-l)}
+  .chk.warn{background:var(--amber-l);border-color:#ecd9bd}.chk.warn .dot{background:var(--amber)}
+  .chk.bad{background:var(--red-l);border-color:#f0cfc9}.chk.bad .dot{background:var(--red)}
+  .chk b{color:var(--ink)}.chk .s{color:var(--slate);display:block;font-size:12.5px;margin-top:2px}
+
+  table.sens{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+  table.sens th,table.sens td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:center}
+  table.sens th{background:var(--warm);font-size:12px;font-weight:800;color:var(--ink)}
+  table.sens td{font-family:var(--mono);font-weight:600;color:var(--body)}
+  table.sens td:first-child{font-family:var(--sans);font-weight:700;text-align:left;color:var(--slate)}
+  table.sens td.base{background:var(--mint);color:var(--emer-d)}
+
+  .flab{font-family:var(--mono);font-size:11px;color:var(--mute)}
+  footer{background:var(--emer-d);color:#cdebe0;padding:34px 0 50px}
+  footer .wrap{max-width:1160px}
+  footer .tag{font-family:var(--mono);font-size:11px;background:#0a5d46;color:#a7f3d0;padding:2px 8px;border-radius:5px;font-weight:700}
+  footer p{font-size:12.5px;color:#a9cabd;margin:10px 0 0;max-width:80ch}
+  footer a{color:#a7f3d0}
+  .toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 18px;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+  .tlabel{font-size:12.5px;font-weight:700;color:var(--slate)}
+  .pbtn{font-size:13px;font-weight:700;padding:7px 13px;border-radius:999px;border:1px solid var(--line-2);background:var(--warm);color:var(--ink);cursor:pointer;transition:.15s}
+  .pbtn:hover{border-color:var(--emer);color:var(--emer-d)}
+  .pbtn.ghost{background:var(--emer);color:#fff;border-color:var(--emer)}
+  .pbtn.ghost:hover{background:var(--emer-d);color:#fff}
+  .pnote{font-size:12.5px;color:var(--emer-d);font-weight:600}
+  details.prov{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0 16px}
+  details.prov summary{cursor:pointer;font-weight:800;font-size:13.5px;color:var(--emer-d);padding:14px 0;list-style:none}
+  details.prov summary::-webkit-details-marker{display:none}
+  details.prov summary::before{content:"▸ ";color:var(--emer-l)}
+  details.prov[open] summary::before{content:"▾ "}
+  details.prov table{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:14px}
+  details.prov td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  details.prov .ct{font-family:var(--mono);font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:5px;white-space:nowrap}
+  .ct.known{background:var(--mint);color:var(--emer)}.ct.common{background:#eef4f1;color:var(--slate)}.ct.frame{background:var(--amber-l);color:var(--amber)}.ct.input{background:#eef;color:#5b21b6}
+  /* Phase 1：匯入 RE-DCF Core */
+  .imp{display:flex;flex-direction:column;gap:11px}
+  .impbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .impbar input[type=file]{font-size:12.5px;max-width:100%}
+  #jsonPaste{width:100%;min-height:92px;font-family:var(--mono);font-size:12px;border:1px solid var(--line-2);border-radius:8px;padding:9px;background:var(--paper);display:none;resize:vertical}
+  .ssot{font-size:11.5px;color:var(--emer-d);background:var(--mint);border:1px solid var(--mint-2);border-radius:8px;padding:8px 11px;line-height:1.5}
+  .imperr{font-size:12.5px;color:var(--red);background:var(--red-l);border:1px solid #f0cfc9;border-radius:8px;padding:9px 12px;white-space:pre-line;display:none}
+  @media(max-width:880px){.grid2{grid-template-columns:1fr}.inputs{grid-template-columns:1fr 1fr}.big{grid-template-columns:1fr 1fr}}
+  @media print{
+    nav.top,.toolbar #printBtn,footer .tag{display:none}
+    body{background:#fff}section{break-inside:avoid;border:0;padding:14px 0}
+    .panel{box-shadow:none;break-inside:avoid}.epi{break-inside:avoid}
+    .hero .wrap{padding:14px 0}
+    a[href]:after{content:""}
+  }
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <div class="wrap">
+    <span class="brand"><span class="gd"></span>開發評估試算模擬器</span>
+    <a class="nl" href="#l1">坪效層</a>
+    <a class="nl" href="#l2">投報層</a>
+    <a class="nl" href="#health">健檢・敏感度</a>
+    <a class="nl" href="#import">🔗 對接 Core</a>
+    <a class="nl" href="simulator.html">🎲 賽局</a>
+    <a class="nl" href="index.html">🎯 儀表板</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">坪效 × 投報 · 兩層引擎互動試算</div>
+    <h1>都市更新 坪效・開發評估試算</h1>
+    <p class="sub">把投報架構的「<b>坪效層（容積查核）</b> → <b>投報層（都更全案）</b>」做成可調的帳務模型：改一個參數，全鏈即時連動，並即時健檢與跑敏感度。<br><span style="font-size:13px;color:var(--mute)">定位：本頁為<b>瀏覽器內輕量教學試算</b>（理解坪效結構與敏感度）；正式容積查核・坪效・都更全案投報計算（含黃金測試）請用姊妹工具 <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">RE-DCF-Tool</a>（Streamlit）。</span></p>
+    <div class="epi">
+      <span class="ic">⚖️</span>
+      <div>
+        <span class="tag">FRAME · 內部自洽 ≠ 真實</span>　<b>這是帳務模型，不是估價，也不是預測。</b>
+        <p><b>[KNOWN·§162]</b> 免計上限（陽台≤10%、梯廳≤10%、合計≤15%、機電≤15%）已對照現行<a href="https://law.moj.gov.tw/LawClass/LawSingleRela.aspx?PCODE=D0070115&FLNO=162&ty=L" target="_blank" rel="noopener">建築技術規則§162</a>並內建驗證。<b>[COMMON]</b> 銷坪比 1.58–1.68、店舖×1.4 為經驗值；<b>[FRAME·LOW]</b> 電梯井 4.2㎡/層、單價為示意輸入。所有輸出為公式鏈 <b>[COMPUTED·FRAME]</b>。<b>對任何真實案件的判斷，信心上限 LOW</b>——實際以估價師核定與查證行情為準。無內建真實案件資料。</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== 坪效層 ===== -->
+<section id="l1"><div class="wrap">
+  <h2>① 坪效層 <span class="lab">容積查核 · oracle</span></h2>
+  <p class="ssub">基地 → 法定容積 → 允建容積 → §162 免計（逐層）→ 專有 → 總銷面積 → 銷售坪。公式骨架取自本庫 <a href="docs/投報分析架構-正確版.md" target="_blank" rel="noopener">投報分析架構</a>（[FRAME]）。</p>
+  <div class="toolbar">
+    <span class="tlabel">路徑預設：</span>
+    <button class="pbtn" data-path="urban">🏙️ 都更（獎勵上限約 1.5 倍）</button>
+    <button class="pbtn" data-path="danger">🏚️ 危老（1.3 倍・需全體同意）</button>
+    <span class="pnote" id="pathNote"></span>
+    <button class="pbtn ghost" id="printBtn" style="margin-left:auto">🖨 列印／匯出 PDF</button>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <div class="inputs">
+        <div class="ghead">基地與容積</div>
+        <div class="f"><label>基地面積 <span class="u">㎡（使照）</span></label><input id="siteA" type="number" value="1000" step="50"></div>
+        <div class="f"><label>容積率 <span class="u">%</span></label><input id="far" type="number" value="300" step="10"></div>
+        <div class="f"><label>容積獎勵率 <span class="u">% 都更+防災+規模</span></label><input id="bonus" type="number" value="30" step="5"></div>
+        <div class="f"><label>容積移轉率 <span class="u">%</span></label><input id="tdr" type="number" value="0" step="5"></div>
+        <div class="ghead">§162 免計（逐層）與量體</div>
+        <div class="f"><label>機電免計 <span class="u">% ≤15 §162</span></label><input id="mep" type="number" value="15" step="1"></div>
+        <div class="f"><label>梯廳 <span class="u">% ≤10 §162</span></label><input id="stair" type="number" value="6" step="1"></div>
+        <div class="f"><label>陽台 <span class="u">% ≤10 §162</span></label><input id="balcony" type="number" value="8" step="1"></div>
+        <div class="f"><label>公設比 <span class="u">%</span></label><input id="common" type="number" value="32" step="1"></div>
+        <div class="f"><label>樓層數 <span class="u">層（電梯井 4.2㎡/層）</span></label><input id="floors" type="number" value="15" step="1"></div>
+        <div class="f"><label>地下室樓地板 <span class="u">坪（計營建）</span></label><input id="basement" type="number" value="0" step="50"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <table class="out" id="out1"></table>
+      <div class="big">
+        <div class="bcard"><div class="v" id="sellPing">—</div><div class="k">銷售坪 <span class="flab">[COMPUTED]</span></div></div>
+        <div class="bcard"><div class="v" id="ratio">—</div><div class="k">銷坪比 <span class="flab">查核 1.58–1.68</span></div></div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ===== 投報層 ===== -->
+<section id="l2"><div class="wrap">
+  <h2>② 投報層 <span class="lab">都更全案 · 只讀坪效</span></h2>
+  <p class="ssub">銷售坪 → 總銷 → 共同負擔六大科目 → 共負比／分回比。<b>只讀坪效層輸出，不回頭重算容積</b>。單價為示意輸入（[COMMON]），請自行替換查證行情。</p>
+  <div class="grid2">
+    <div class="panel">
+      <div class="inputs">
+        <div class="ghead">總銷（示意單價，自行查證）</div>
+        <div class="f"><label>住宅單價 <span class="u">萬/坪</span></label><input id="priceH" type="number" value="80" step="1"></div>
+        <div class="f"><label>店舖佔比 <span class="u">%</span></label><input id="shopPct" type="number" value="10" step="1"></div>
+        <div class="f"><label>店舖溢價 <span class="u">× 住宅</span></label><input id="shopMul" type="number" value="1.4" step="0.1"></div>
+        <div class="f"><label>車位數 <span class="u">個</span></label><input id="parking" type="number" value="30" step="1"></div>
+        <div class="f"><label>車位單價 <span class="u">萬/個</span></label><input id="priceP" type="number" value="200" step="10"></div>
+        <div class="ghead">共同負擔六大科目（基數見括號）</div>
+        <div class="f"><label>營建單價 <span class="u">萬/坪 ×總樓地板</span></label><input id="buildCost" type="number" value="20" step="1"></div>
+        <div class="f"><label>設計監造 <span class="u">% ×營造</span></label><input id="design" type="number" value="8" step="1"></div>
+        <div class="f"><label>工程管理 <span class="u">% ×營造</span></label><input id="pm" type="number" value="5" step="1"></div>
+        <div class="f"><label>管維費 <span class="u">% ×工程費</span></label><input id="maint" type="number" value="2" step="1"></div>
+        <div class="f"><label>權變作業 <span class="u">% ×總銷</span></label><input id="rights" type="number" value="3" step="1"></div>
+        <div class="f"><label>拆遷/租金補償 <span class="u">萬</span></label><input id="relocate" type="number" value="0" step="100"></div>
+        <div class="f"><label>貸款利息 <span class="u">% ×工程費（示意）</span></label><input id="interest" type="number" value="5" step="1"></div>
+        <div class="f"><label>營業稅 <span class="u">% ×總銷</span></label><input id="vat" type="number" value="5" step="1"></div>
+        <div class="f"><label>管理/實施者費 <span class="u">% ×總銷</span></label><input id="mgmtFee" type="number" value="5" step="1"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <table class="out" id="out2"></table>
+      <div class="barlbl"><span>共同負擔比 <span class="flab">[COMPUTED]</span></span><span id="cbPct">—</span></div>
+      <div class="barwrap"><span id="barCb" style="background:var(--amber)"></span><span id="barShare" style="background:var(--emer)"></span></div>
+      <div class="barlbl"><span style="color:var(--amber)">共負</span><span style="color:var(--emer)">住戶分回</span></div>
+      <div class="big">
+        <div class="bcard"><div class="v" id="totalSale">—</div><div class="k">總銷 <span class="flab">億（[COMPUTED]）</span></div></div>
+        <div class="bcard"><div class="v" id="sharePct">—</div><div class="k">住戶分回比 <span class="flab">=1−共負比</span></div></div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ===== 健檢 + 敏感度 ===== -->
+<section id="health"><div class="wrap">
+  <h2>③ 健檢與敏感度 <span class="lab">FRAME · 結構檢核</span></h2>
+  <p class="ssub">健檢比對本庫檢核點；敏感度示範「售價／營建」各 ±10% 的連動。<b>敏感度看的是「方向與幅度」，不是精準預測。</b></p>
+  <div class="grid2">
+    <div class="panel">
+      <div style="font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--emer-l);margin-bottom:12px">健檢清單</div>
+      <div class="checks" id="checks"></div>
+    </div>
+    <div class="panel">
+      <div style="font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--emer-l);margin-bottom:12px">敏感度（分回比 / 共負比）</div>
+      <table class="sens" id="sens"></table>
+      <p style="font-size:12px;color:var(--mute);margin:12px 0 0">⚠️ [FRAME] 提醒：§162 一律<b>逐層</b>（總量法放大近 10 倍）；公設比常「顯示≠真值」，以「專有 ÷ (1−n)」回推驗證；單價／費率請標查證日。</p>
+    </div>
+  </div>
+  <details class="prov">
+    <summary>係數依據與信心等級（透明揭露）</summary>
+    <table>
+      <tr><td><b>0.3025 坪/㎡</b></td><td><span class="ct known">KNOWN·HIGH</span></td><td>1 ㎡＝0.3025 坪，定義換算</td></tr>
+      <tr><td><b>機電免計 ≤15%</b></td><td><span class="ct known">KNOWN·§162</span></td><td>建築技術規則§162：機電等空間 ≤ 基地容積 15%（僅一座直通樓梯者 ≤10%）</td></tr>
+      <tr><td><b>陽台≤10%・梯廳≤10%・合計≤15%</b></td><td><span class="ct known">KNOWN·§162</span></td><td>§162：逐層免計上限；超過部分計入。已內建驗證</td></tr>
+      <tr><td><b>雨遮</b></td><td><span class="ct known">KNOWN·HIGH</span></td><td>2018 起不計容積、不計坪（本模型未納入雨遮坪）</td></tr>
+      <tr><td><b>銷坪比 1.58–1.68</b></td><td><span class="ct common">COMMON·MED</span></td><td>住宅實務經驗區間，非統計真值；偏離須查公設比與免計</td></tr>
+      <tr><td><b>店舖 ≈ 住宅×1.4</b></td><td><span class="ct common">COMMON·LOW</span></td><td>粗略經驗，受區位影響極大，請自行替換</td></tr>
+      <tr><td><b>電梯井 4.2㎡/層</b></td><td><span class="ct frame">FRAME·LOW</span></td><td>專有面積扣減之近似項，非標準常數</td></tr>
+      <tr><td><b>公設比 / 各費率 / 單價</b></td><td><span class="ct input">使用者輸入</span></td><td>無內建真實數值；請依個案查證並標查證日</td></tr>
+      <tr><td><b>貸款利息基數</b></td><td><span class="ct frame">FRAME·LOW</span></td><td>本模型以工程費為基數係簡化（實務有循環參照），僅示意</td></tr>
+    </table>
+  </details>
+</div></section>
+
+<!-- ===== 對接 RE-DCF Core（Phase 1）===== -->
+<section id="import"><div class="wrap">
+  <h2>🔗 對接 RE-DCF Core <span class="lab">Phase 1 · JSON 交換</span></h2>
+  <p class="ssub"><b>RE-DCF Core 是唯一計算來源（SSOT）</b>；此區只「讀」它匯出的 <span class="flab">result</span>，<b>不重算公式</b>。把 Core（Tab⑤「下載案件 JSON」）匯出的檔案拖進來，即顯示權威結果並跑消費端健檢。無內建真實案件資料——請自備 JSON 或載入合成範例。</p>
+  <div class="grid2">
+    <div class="panel">
+      <div class="imp">
+        <div class="impbar">
+          <input type="file" id="jsonFile" accept="application/json,.json">
+          <button class="pbtn" id="pasteToggle">📋 改用貼上</button>
+          <button class="pbtn" id="sampleBtn">🧪 載入合成範例</button>
+          <button class="pbtn" id="clearImp">清除</button>
+        </div>
+        <textarea id="jsonPaste" placeholder='貼上 RE-DCF Core 案件 JSON…'></textarea>
+        <div class="impbar" id="pasteRun" style="display:none"><button class="pbtn ghost" id="parsePaste">解析貼上的 JSON</button></div>
+        <div class="imperr" id="impErr"></div>
+        <div class="ssot">📎 契約 <span id="ssotVer">schemas/project_schema.json</span>　·　數值＝Core 權威輸出，本頁不重算　·　🔒 你匯入的資料只留在本機瀏覽器，不上傳、不入庫。</div>
+      </div>
+      <table class="out" id="coreOut"></table>
+      <div id="ownersBox"></div>
+      <div class="impbar" id="prefillBar" style="display:none">
+        <button class="pbtn" id="prefillBtn">↧ 帶入下方教學試算欄位比對</button>
+        <span class="flab">教學近似，權威值以 Core 為準</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div style="font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--emer-l);margin-bottom:12px">Core 結果健檢（消費端）</div>
+      <div class="checks" id="coreChecks"><div class="chk"><span class="dot" style="background:var(--mute)"></span><div><b>尚未匯入</b><span class="s">載入後顯示 <b>Core 權威健檢</b>（result.warnings：門檻依案型×投報模式動態對照，判斷邏輯在 Core 端，本頁不自判）。舊格式（1.0）檔僅顯示數值並提示重新匯出。</span></div></div></div>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <span class="tag">FRAME · 內部自洽 ≠ 真實 · 信心上限 LOW</span>
+  <p><b style="color:#fff">免責：</b>本試算為都更投報帳務模型之教學示意，<b style="color:#fff">非估價、非財務或法律意見、非真實案件預測</b>。公式骨架與係數源自本庫 <a href="docs/投報分析架構-正確版.md" target="_blank" rel="noopener">投報分析架構（[FRAME]）</a>；<a href="https://law.moj.gov.tw/LawClass/LawSingleRela.aspx?PCODE=D0070115&FLNO=162&ty=L" target="_blank" rel="noopener">建築技術規則§162</a>、估價、共同負擔科目以《都市更新權利變換實施辦法》等現行條文與估價師核定為準（查證日 2026-06-19）。所有數字由使用者輸入，不含任何真實案件金額與案名。<b style="color:#fff">Phase 1</b>：可匯入 RE-DCF Core 之案件 JSON（只讀 result、不重算），支援 schema 1.1（Core 權威 warnings／版本戳／owners 逐戶分回表＋同意率＋Σ 不符提示），1.1 檔嚴格驗證三必要欄、1.0 舊檔相容（僅顯值不自判、提示重新匯出）；共負比等門檻判斷統一由 Core 提供，消費端自訂閘門已退場。匯入資料僅存於本機瀏覽器、不上傳。版本 1.3｜2026-07。</p>
+  <p style="margin-top:14px"><a href="index.html">🎯 開發儀表板</a> ｜ <a href="simulator.html">🎮 整合闖關</a> ｜ <a href="whitepaper.html">📈 整合總論</a> ｜ <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">🧮 RE-DCF-Tool（正式計算）</a> ｜ <a href="docs/投報分析架構-正確版.md" target="_blank" rel="noopener">📄 投報架構</a></p>
+</div></footer>
+
+<script>
+const $=id=>document.getElementById(id);
+const num=id=>parseFloat($(id).value)||0;
+const P=0.3025;                  // ㎡→坪 [COMMON]
+const fmt=(n,d=0)=>n.toLocaleString('en-US',{maximumFractionDigits:d,minimumFractionDigits:d});
+
+function pingyaoLayer(){
+  const A=num('siteA'), far=num('far'), bonus=num('bonus'), tdr=num('tdr');
+  const FA=A*far/100;
+  const AV=FA*(1+bonus/100+tdr/100);
+  const mep=AV*num('mep')/100;
+  const stair=(AV+mep)*num('stair')/100;
+  const balcony=(AV+mep+stair)*num('balcony')/100;
+  const lift=num('floors')*4.2;
+  const exclusive=AV+balcony-lift;
+  const common=num('common')/100;
+  const grossSale=exclusive/(1-common);        // 總銷面積 ㎡
+  const sellPing=grossSale*P;
+  const avPing=AV*P;
+  const ratio= avPing>0 ? sellPing/avPing : 0;  // 銷坪比
+  const gfaPing=(AV+mep+stair+balcony)*P + num('basement'); // 總樓地板坪(地上免計皆計營建)+地下
+  return {FA,AV,mep,stair,balcony,lift,exclusive,grossSale,sellPing,avPing,ratio,gfaPing,common};
+}
+
+function tobaoLayer(p){
+  const sellPing=p.sellPing;
+  const shopP=num('shopPct')/100;
+  const shopPing=sellPing*shopP, homePing=sellPing*(1-shopP);
+  const priceH=num('priceH'), shopPrice=priceH*num('shopMul');
+  const sale = homePing*priceH + shopPing*shopPrice + num('parking')*num('priceP'); // 萬
+  // 共同負擔六大科目
+  const build = num('buildCost')*p.gfaPing;                 // 營造小計(工程費基數)
+  const eng   = build*(1+num('design')/100+num('pm')/100);  // A 工程費
+  const maint = eng*num('maint')/100;                       // B 管維
+  const rights= sale*num('rights')/100 + num('relocate');   // C 權變
+  const interest= eng*num('interest')/100;                  // D 利息(示意,以工程費基數)
+  const vat   = sale*num('vat')/100;                        // E 稅捐
+  const mgmt  = sale*num('mgmtFee')/100;                    // F 管理
+  const burden= eng+maint+rights+interest+vat+mgmt;
+  const cbPct = sale>0 ? burden/sale*100 : 0;
+  const sharePct=100-cbPct;
+  return {sale,homePing,shopPing,eng,maint,rights,interest,vat,mgmt,burden,cbPct,sharePct};
+}
+
+function render(){
+  const p=pingyaoLayer();
+  $('out1').innerHTML=`
+    <tr><td>法定容積 FA</td><td>${fmt(p.FA)} ㎡</td></tr>
+    <tr class="hl"><td>允建容積（含獎勵+容移）</td><td>${fmt(p.AV)} ㎡</td></tr>
+    <tr><td>機電免計</td><td>${fmt(p.mep)} ㎡</td></tr>
+    <tr><td>梯廳免計（逐層）</td><td>${fmt(p.stair)} ㎡</td></tr>
+    <tr><td>陽台免計（逐層）</td><td>${fmt(p.balcony)} ㎡</td></tr>
+    <tr><td>− 電梯井</td><td>${fmt(p.lift)} ㎡</td></tr>
+    <tr><td>專有面積</td><td>${fmt(p.exclusive)} ㎡</td></tr>
+    <tr class="sum"><td>總銷面積（÷(1−公設比)）</td><td>${fmt(p.grossSale)} ㎡</td></tr>
+    <tr><td>≈ 銷售坪</td><td>${fmt(p.sellPing)} 坪</td></tr>
+    <tr><td>總樓地板（計營建）</td><td>${fmt(p.gfaPing)} 坪</td></tr>`;
+  $('sellPing').textContent=fmt(p.sellPing);
+  $('ratio').textContent=p.ratio.toFixed(3);
+  $('ratio').style.color=(p.ratio>=1.58&&p.ratio<=1.68)?'var(--emer-d)':'var(--amber)';
+
+  const t=tobaoLayer(p);
+  $('out2').innerHTML=`
+    <tr><td>住宅銷售（${fmt(t.homePing)}坪）</td><td>${fmt(t.sale - t.shopPing*num('priceH')*num('shopMul') - num('parking')*num('priceP'))} 萬</td></tr>
+    <tr class="sum"><td>總銷金額</td><td>${fmt(t.sale)} 萬</td></tr>
+    <tr><td>A 工程費（營造+設計+工管）</td><td>${fmt(t.eng)} 萬</td></tr>
+    <tr><td>B 管維費</td><td>${fmt(t.maint)} 萬</td></tr>
+    <tr><td>C 權變+拆補</td><td>${fmt(t.rights)} 萬</td></tr>
+    <tr><td>D 貸款利息（示意）</td><td>${fmt(t.interest)} 萬</td></tr>
+    <tr><td>E 稅捐（營業稅）</td><td>${fmt(t.vat)} 萬</td></tr>
+    <tr><td>F 管理/實施者費</td><td>${fmt(t.mgmt)} 萬</td></tr>
+    <tr class="sum"><td>共同負擔合計</td><td>${fmt(t.burden)} 萬</td></tr>`;
+  $('totalSale').textContent=fmt(t.sale/10000,2);
+  $('cbPct').textContent=t.cbPct.toFixed(1)+'%';
+  $('sharePct').textContent=t.sharePct.toFixed(1)+'%';
+  $('barCb').style.width=Math.max(0,Math.min(100,t.cbPct))+'%';
+  $('barShare').style.width=Math.max(0,Math.min(100,t.sharePct))+'%';
+
+  renderChecks(p,t);
+  renderSens(p);
+}
+
+function renderChecks(p,t){
+  const c=[];
+  // 銷坪比
+  if(p.ratio>=1.58&&p.ratio<=1.68) c.push(['ok','銷坪比落正常區間','銷坪比 '+p.ratio.toFixed(3)+'（住宅 1.58–1.68）']);
+  else c.push(['warn','銷坪比偏離','銷坪比 '+p.ratio.toFixed(3)+'，檢查公設比與 §162 免計參數']);
+  // 共負比
+  if(t.cbPct>65) c.push(['bad','共負比過高 → 分回 < 35%','共負比 '+t.cbPct.toFixed(1)+'%，須回頭檢視地主接受度與參數合理性']);
+  else if(t.cbPct>55) c.push(['warn','共負比偏高','共負比 '+t.cbPct.toFixed(1)+'%，逼近敏感區（>65% 為警戒）']);
+  else c.push(['ok','共負比尚屬合理','共負比 '+t.cbPct.toFixed(1)+'%，分回 '+t.sharePct.toFixed(1)+'%']);
+  // 公設比
+  if(p.common>=0.30&&p.common<=0.38) c.push(['ok','公設比於常見區間','以「專有 ÷ (1−n)」回推驗證真值（顯示≠真值是常見陷阱）']);
+  else c.push(['warn','公設比異常','請以回推法驗證真值']);
+  // 車位
+  if(num('parking')>50) c.push(['warn','車位 > 50 觸發雙車道','影響地下效率與營建成本，回寫總樓地板']);
+  else c.push(['ok','車位未觸發雙車道','—']);
+  // §162 法定上限驗證（KNOWN）
+  const mep=num('mep'),st=num('stair'),bal=num('balcony');
+  const over=[];
+  if(mep>15) over.push('機電 '+mep+'%>15%');
+  if(bal>10) over.push('陽台 '+bal+'%>10%');
+  if(st>10) over.push('梯廳 '+st+'%>10%');
+  if(bal+st>15) over.push('陽台+梯廳 '+(bal+st)+'%>15%');
+  if(over.length) c.push(['bad','§162 免計超出法定上限','超限：'+over.join('、')+'（超過部分依§162應計入容積，模型恐高估銷坪）']);
+  else c.push(['ok','§162 免計在法定上限內','陽台≤10、梯廳≤10、合計≤15、機電≤15（建築技術規則§162）；且須逐層，非總量法']);
+  $('checks').innerHTML=c.map(x=>`<div class="chk ${x[0]}"><span class="dot"></span><div><b>${x[1]}</b><span class="s">${x[2]}</span></div></div>`).join('');
+}
+
+function renderSens(p){
+  // 售價 ±10% → 分回比；營建 ±10% → 共負比
+  const base={priceH:num('priceH'),buildCost:num('buildCost')};
+  const rows=[];
+  const deltas=[-10,0,10];
+  function calc(dPrice,dBuild){
+    const oldH=$('priceH').value, oldB=$('buildCost').value;
+    $('priceH').value=base.priceH*(1+dPrice/100);
+    $('buildCost').value=base.buildCost*(1+dBuild/100);
+    const t=tobaoLayer(p);
+    $('priceH').value=oldH; $('buildCost').value=oldB;
+    return t;
+  }
+  let head='<tr><th>↓營建 ＼ 售價→</th>'+deltas.map(d=>`<th>${d>0?'+':''}${d}%</th>`).join('')+'</tr>';
+  deltas.forEach(db=>{
+    let r=`<td>${db>0?'+':''}${db}% 營建</td>`;
+    deltas.forEach(dp=>{
+      const t=calc(dp,db);
+      const base=(dp===0&&db===0);
+      r+=`<td class="${base?'base':''}">分${t.sharePct.toFixed(0)}/負${t.cbPct.toFixed(0)}</td>`;
+    });
+    rows.push('<tr>'+r+'</tr>');
+  });
+  $('sens').innerHTML=head+rows.join('');
+}
+
+// 路徑預設（都更／危老）— 僅調容積獎勵示意上限，並提示同意門檻
+const PATHS={
+  urban:{bonus:50, note:'都更：獎勵上限約法定 1.5 倍；同意門檻 自行劃定 3/4、政府劃定 1/2（§37）。'},
+  danger:{bonus:30, note:'危老：獎勵上限約法定 1.3 倍（時程獎勵已 2025 落日）；需 全體 100% 同意。'}
+};
+document.querySelectorAll('.pbtn[data-path]').forEach(b=>b.addEventListener('click',()=>{
+  const p=PATHS[b.dataset.path]; $('bonus').value=p.bonus; $('pathNote').textContent=p.note;
+  document.querySelectorAll('.pbtn[data-path]').forEach(x=>x.classList.remove('ghost'));
+  render();
+}));
+$('printBtn').addEventListener('click',()=>window.print());
+
+/* ===== Phase 1：匯入 RE-DCF Core JSON（只讀 result，不重算公式）===== */
+const CORE_META=[
+  ['容積・坪效',[['baseline_far','基準容積 FA','㎡'],['allow_floor_area','允建容積','㎡'],['used_floor_area','計入容積（修正後）','㎡'],['remaining_floor_area','容積餘量','㎡'],['balcony_exempt_area','陽台免計','㎡'],['stair_exempt_cap','安全梯免計上限','㎡'],['saleable_area','銷售坪','坪'],['efficiency_ratio','銷坪比','']]],
+  ['財務・投報',[['total_sales','總銷','萬'],['shared_cost','共同負擔合計','萬'],['shared_cost_ratio','共負比','%r'],['owner_return_value','地主分回價值','萬'],['owner_return_ratio','地主分回比','%r'],['return_rate','報酬率','%r']]],
+  ['估價',[['pre_renewal_value','更新前總值','萬'],['value_multiple','增值倍率','×']]]
+];
+let CORE=null;
+function fmtCore(v,u){ if(typeof v!=='number')return '—';
+  if(u==='%r')return (v*100).toFixed(1)+'%';
+  if(u==='×')return v.toFixed(2)+'×';
+  if(u==='')return v.toFixed(3);
+  return fmt(v,(u==='坪'||u==='㎡')?1:0)+' '+u; }
+function validateCore(j){ const e=[];
+  if(!j||typeof j!=='object')return['不是有效的 JSON 物件。'];
+  if(!j.schema_version)e.push('缺 schema_version');
+  if(!j.project||!j.project.name)e.push('缺 project.name');
+  if(!j.project||!j.project.renewal_type)e.push('缺 project.renewal_type');
+  if(!j.result)e.push('缺 result 區塊（唯一數值來源）');
+  else{ ['baseline_far','allow_floor_area','used_floor_area','remaining_floor_area','saleable_area','efficiency_ratio'].forEach(k=>{ if(typeof j.result[k]!=='number')e.push('result.'+k+' 缺或非數值'); });
+    if(parseFloat(j.schema_version)>=1.1){ // v1.1 起 warnings/computed_at/core_version 為必要欄
+      if(!Array.isArray(j.result.warnings))e.push('result.warnings 缺或非陣列（schema 1.1 必要）');
+      if(typeof j.result.computed_at!=='string')e.push('result.computed_at 缺（schema 1.1 必要）');
+      if(typeof j.result.core_version!=='string')e.push('result.core_version 缺（schema 1.1 必要）'); } }
+  return e; }
+function loadCore(j){ const eb=$('impErr'), errs=validateCore(j);
+  if(errs.length){eb.style.display='block';eb.textContent='⚠️ 不符合 RE-DCF Core 合約：\n・'+errs.join('\n・');$('coreOut').innerHTML='';$('prefillBar').style.display='none';return;}
+  eb.style.display='none';CORE=j;const r=j.result;
+  const tName={urban_renewal:'都更',danger_building:'危老'}[j.project.renewal_type]||j.project.renewal_type;
+  $('ssotVer').textContent='schema '+j.schema_version+'｜'+j.project.name+'（'+tName+'）'
+    +(r.core_version?'｜Core v'+r.core_version:'')+(r.computed_at?'｜算於 '+String(r.computed_at).slice(0,10):'');
+  let html='<tr class="sum"><td>案件（Core 權威輸出）</td><td>'+j.project.name+'</td></tr>';
+  CORE_META.forEach(([grp,rows])=>{ const present=rows.filter(([k])=>typeof r[k]==='number'); if(!present.length)return;
+    html+='<tr><td colspan="2" style="padding-top:10px;color:var(--emer-l);font-weight:800;font-size:11px;letter-spacing:.1em;text-transform:uppercase">'+grp+'</td></tr>';
+    present.forEach(([k,lab,u])=>{ const hl=(k==='saleable_area'||k==='shared_cost_ratio'||k==='owner_return_ratio'); html+='<tr class="'+(hl?'hl':'')+'"><td>'+lab+' <span class="flab">'+k+'</span></td><td>'+fmtCore(r[k],u)+'</td></tr>'; }); });
+  $('coreOut').innerHTML=html;
+  $('prefillBar').style.display=(j.land&&j.finance)?'flex':'none';
+  renderCoreChecks(j); renderOwners(j); }
+function renderCoreChecks(j){ const r=j.result,o=j.owners||[],b=j.building||{},c=[];
+  const W=Array.isArray(r.warnings)?r.warnings:null;
+  if(W){ // schema 1.1+：Core 隨附權威警告——消費端不再自行重判門檻
+    if(!W.length)c.push(['ok','Core 權威健檢：全數通過','此案無警告（判斷邏輯在 Core 端，依 renewal_type／投報模式對照門檻）']);
+    W.forEach(w=>{ const lv=w.level==='error'?'bad':w.level==='warn'?'warn':'ok';
+      c.push([lv,w.code||'WARNING',(w.message||'')+(w.field?'　·　'+w.field:'')]); });
+  } else { // schema 1.0 舊檔：門檻判斷已統一由 Core warnings 提供（依案型×投報模式動態對照），
+           // 消費端自訂門檻（含舊 70% 融資閘門）已退場——舊檔僅顯示數值，不做紅黃燈判斷
+    c.push(['warn','舊格式檔（schema '+j.schema_version+'）','未含 Core 權威健檢（warnings／computed_at／core_version），建議用新版 RE-DCF 重新匯出']);
+    c.push(['ok','銷坪比 '+r.efficiency_ratio.toFixed(3),'門檻帶判斷由 Core 的 EFFICIENCY_OUT_OF_BAND 提供，舊檔不自判']);
+    if(r.remaining_floor_area<0)c.push(['bad','容積超出允建',r.remaining_floor_area.toFixed(1)+' ㎡：計入容積 > 允建（算術事實，非門檻判斷）']);
+    else c.push(['ok','容積餘量 +'+r.remaining_floor_area.toFixed(1)+' ㎡','—']);
+    if(typeof r.shared_cost_ratio==='number')c.push(['ok','共負比 '+(r.shared_cost_ratio*100).toFixed(1)+'%','合理帶依案型×投報模式而異（危老 25–45／都更全管 30–50／合建 35–55），由 Core 的 SHARED_COST_HIGH/LOW 判斷，舊檔不自判']);
+    if(typeof b.balcony_exempt_pct==='number'||typeof b.stair_hall_exempt_pct==='number'){ const bal=b.balcony_exempt_pct||0,st=b.stair_hall_exempt_pct||0;
+      c.push(['ok','§162 免計基準：陽台 '+bal+'%・梯廳 '+st+'%','逐層免計已由 Core 計入「計入容積」，此為採用基準']); }
+  }
+  if(!o.length)c.push(['warn','owners[] 為空','逐戶分回／同意率需權利人清冊；現僅顯示總量（總量可信、逐戶不可算）']);
+  else c.push(['ok','owners['+o.length+']','已含權利人清冊，下方顯示逐戶分回與同意率']);
+  $('coreChecks').innerHTML=c.map(x=>`<div class="chk ${x[0]}"><span class="dot"></span><div><b>${x[1]}</b><span class="s">${x[2]}</span></div></div>`).join(''); }
+function renderOwners(j){ const o=j.owners||[],box=$('ownersBox'); if(!o.length){box.innerHTML='';return;}
+  const r=j.result, sumPre=o.reduce((a,b)=>a+(b.pre_value||0),0)||1;
+  // Σ 一致性：優先讀 Core 權威 OWNERS_*_MISMATCH；舊檔（無 warnings）本地備援自檢（容差 3%）
+  const W=Array.isArray(r.warnings)?r.warnings:null;
+  const sumShare=o.reduce((a,b)=>a+(b.land_share||0),0);
+  const mism=W?W.some(w=>w.code==='OWNERS_SHARE_MISMATCH'||w.code==='OWNERS_VALUE_MISMATCH')
+             :(Math.abs(sumShare-1)>0.03||(typeof r.pre_renewal_value==='number'&&Math.abs(sumPre-r.pre_renewal_value)>r.pre_renewal_value*0.03));
+  const mismBanner=mism?'<div class="chk warn" style="margin-bottom:10px"><span class="dot"></span><div><b>⚠️ 清冊加總與 Core 總量不符</b><span class="s">Σ持分 '+(sumShare*100).toFixed(1)+'%／Σ更新前值 '+fmt(sumPre)+' 萬 vs Core '+(typeof r.pre_renewal_value==='number'?fmt(r.pre_renewal_value):'—')+' 萬——逐戶數字<b>僅供參考</b>，請回 Core 端修正清冊後重新匯出</span></div></div>':'';
+  const th=j.project.renewal_type==='danger_building'?100:75;
+  const agreed=o.filter(x=>x.consent==='agreed').length, pct=agreed/o.length*100;
+  const IC={agreed:['✅','var(--emer-d)','同意'],pending:['⏳','var(--amber)','觀望'],opposed:['✖','var(--red)','反對']};
+  const rows=o.map(x=>{ const ic=IC[x.consent]||['—','var(--mute)',x.consent||'?'];
+    const rv=(x.return_value!=null)?x.return_value:((typeof r.owner_return_value==='number')?r.owner_return_value*(x.pre_value||0)/sumPre:null);
+    return '<tr><td>'+x.owner_id+'</td><td>'+((x.land_share||0)*100).toFixed(1)+'%</td><td>'+fmt(x.pre_value||0)+'</td>'
+      +'<td style="color:'+ic[1]+';font-weight:700;font-family:var(--sans)">'+ic[0]+' '+ic[2]+'</td><td>'+(rv!=null?fmt(rv):'—')+'</td></tr>'; }).join('');
+  box.innerHTML='<div style="font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--emer-l);margin:16px 0 6px">權利人清冊（'+o.length+' 戶）</div>'
+    +mismBanner
+    +'<div class="barlbl"><span>同意率（人數比）</span><span>'+agreed+'/'+o.length+'（'+pct.toFixed(1)+'%）｜門檻 '+th+'%'+(pct>=th?' ✓ 達標':'')+'</span></div>'
+    +'<div class="barwrap"><span style="background:'+(pct>=th?'var(--emer)':'var(--amber)')+';width:'+Math.min(100,pct)+'%"></span></div>'
+    +'<table class="out" style="margin-top:10px"><tr><td><b>代號</b></td><td><b>持分</b></td><td><b>更新前值(萬)</b></td><td><b>同意</b></td><td><b>分回估(萬)</b></td></tr>'+rows+'</table>'
+    +'<p style="font-size:11.5px;color:var(--mute);margin:8px 0 0">分回估＝依更新前價值比例攤分 owner_return_value（<b>示意</b>，Core 之 return_value 到位後以其為準）；同意率為<b>人數比</b>，實務尚有土地／樓地板面積雙門檻（§37），以法定程序為準。</p>'; }
+function prefillFromCore(){ if(!CORE)return; const L=CORE.land||{},B=CORE.building||{},F=CORE.finance||{},r=CORE.result;
+  const set=(id,v)=>{ if(v!=null&&!isNaN(v))$(id).value=v; };
+  set('siteA',L.site_area_sqm); set('far',L.far!=null?L.far*100:null); set('bonus',L.bonus_ratio!=null?L.bonus_ratio*100:null);
+  if(L.tdr_transfer_sqm!=null&&r.baseline_far)set('tdr',+(L.tdr_transfer_sqm/r.baseline_far*100).toFixed(1));
+  if(B.public_ratio!=null)set('common',B.public_ratio*100);
+  if(B.balcony_exempt_pct!=null)set('balcony',B.balcony_exempt_pct);
+  if(B.stair_hall_exempt_pct!=null)set('stair',B.stair_hall_exempt_pct);
+  set('priceH',F.residential_price); set('parking',F.parking_count); set('priceP',F.parking_price); set('buildCost',F.construction_price);
+  if(F.shop_price&&F.residential_price)set('shopMul',+(F.shop_price/F.residential_price).toFixed(2));
+  if(F.shop_area&&r.saleable_area)set('shopPct',+(F.shop_area/r.saleable_area*100).toFixed(1));
+  $('pathNote').textContent=''; render(); document.getElementById('l1').scrollIntoView({behavior:'smooth'}); }
+const SAMPLE_CORE={schema_version:"1.1",project:{name:"（合成範例）示範段",renewal_type:"urban_renewal"},
+  land:{site_area_sqm:1200,plaza_area_sqm:0,far:2.25,bonus_ratio:0.35,bonus_breakdown:{時程:0.1,規模:0.1,基本:0.15},tdr_transfer_sqm:300},
+  building:{public_ratio:0.33,stair_hall_exempt_pct:8,balcony_exempt_pct:10,unit_count:40},
+  owners:[
+    {owner_id:"W01",land_share:0.18,pre_building_area_sqm:210.5,pre_value:4716,consent:"agreed",min_unit_eligible:true},
+    {owner_id:"W02",land_share:0.22,pre_building_area_sqm:185.0,pre_value:5764,consent:"agreed",min_unit_eligible:true},
+    {owner_id:"W03",land_share:0.15,pre_building_area_sqm:0,pre_value:3930,consent:"agreed",min_unit_eligible:true},
+    {owner_id:"W04",land_share:0.20,pre_building_area_sqm:240.0,pre_value:5240,consent:"agreed",min_unit_eligible:true},
+    {owner_id:"W05",land_share:0.13,pre_building_area_sqm:96.5,pre_value:3406,consent:"pending",min_unit_eligible:true},
+    {owner_id:"W06",land_share:0.12,pre_building_area_sqm:33.0,pre_value:3144,consent:"opposed",min_unit_eligible:false}],
+  finance:{residential_price:60,shop_area:80,shop_price:84,parking_count:50,parking_price:200,construction_price:19},
+  result:{baseline_far:2700,allow_floor_area:3945,used_floor_area:3820,remaining_floor_area:125,stair_exempt_cap:591.75,balcony_exempt_area:410,saleable_area:1985,efficiency_ratio:1.66,total_sales:139500,shared_cost:80910,shared_cost_ratio:0.58,owner_return_value:58590,owner_return_ratio:0.42,return_rate:0.724,pre_renewal_value:26200,value_multiple:2.24,
+    computed_at:"2026-07-01T00:00:00+00:00",core_version:"0.2.0",
+    warnings:[{code:"SHARED_COST_HIGH",level:"warn",message:"共負比 58.0% 高於全案管理合理帶 30–50%（未達警示線 65%）",field:"shared_cost_ratio"}]}};
+$('jsonFile').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f)return; const rd=new FileReader();
+  rd.onload=()=>{ try{loadCore(JSON.parse(rd.result));}catch(err){$('impErr').style.display='block';$('impErr').textContent='⚠️ JSON 解析失敗：'+err.message;} }; rd.readAsText(f); });
+$('pasteToggle').addEventListener('click',()=>{ const t=$('jsonPaste'),show=t.style.display!=='block'; t.style.display=show?'block':'none'; $('pasteRun').style.display=show?'flex':'none'; });
+$('parsePaste').addEventListener('click',()=>{ try{loadCore(JSON.parse($('jsonPaste').value));}catch(err){$('impErr').style.display='block';$('impErr').textContent='⚠️ JSON 解析失敗：'+err.message;} });
+$('sampleBtn').addEventListener('click',()=>loadCore(JSON.parse(JSON.stringify(SAMPLE_CORE))));
+$('clearImp').addEventListener('click',()=>{ CORE=null;$('coreOut').innerHTML='';$('ownersBox').innerHTML='';$('impErr').style.display='none';$('jsonPaste').value='';$('jsonFile').value='';$('prefillBar').style.display='none';
+  $('coreChecks').innerHTML='<div class="chk"><span class="dot" style="background:var(--mute)"></span><div><b>尚未匯入</b><span class="s">載入 Core JSON 後顯示健檢。</span></div></div>'; });
+$('prefillBtn').addEventListener('click',prefillFromCore);
+
+document.querySelectorAll('input').forEach(el=>el.addEventListener('input',()=>{ $('pathNote').textContent=''; render();}));
+render();
+</script>
+</body>
+</html>

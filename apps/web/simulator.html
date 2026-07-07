@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>都市更新整合策略沙盤 v4 · Urban-Renewal</title>
+<meta name="description" content="都市更新整合策略沙盤推演：24 位有人格、情緒、家族的地主，依情境反應難度。練習談判、整合、決策。通用教學模型，不含真實案件資料。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Noto+Serif+TC:wght@700;900&family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --emer:#064e3b;--emer-d:#053d2e;--emer-l:#10b981;--mint:#ecfdf5;--mint-2:#d1fae5;
+    --warm:#f5f3ee;--paper:#fbfaf7;--card:#fff;
+    --ink:#1c1a17;--body:#44403c;--slate:#57534e;--mute:#a8a29e;--line:#e7e5e4;--line-2:#d6d3cd;
+    /* 情緒色 */
+    --sup:#16a34a;--sup-l:#dcfce7;--watch:#ca8a04;--watch-l:#fef9c3;--opp:#dc6a3a;--opp-l:#fde4d3;--hos:#9a3412;--hos-l:#f3d9cd;
+    --gold:#b08a3e;--blue:#2563eb;
+    --serif:"Playfair Display","Noto Serif TC",Georgia,serif;
+    --sans:"Inter","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.5;-webkit-font-smoothing:antialiased}
+  body.shake{animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+  a{color:var(--emer);text-decoration:none}a:hover{text-decoration:underline}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 18px}
+
+  nav.top{position:sticky;top:0;z-index:30;background:rgba(251,250,247,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  nav.top .wrap{display:flex;align-items:center;gap:8px;height:54px;overflow-x:auto;scrollbar-width:none}
+  nav.top .wrap::-webkit-scrollbar{display:none}
+  .brand{font-weight:800;margin-right:auto;display:flex;align-items:center;gap:9px;font-size:15px;white-space:nowrap}
+  .brand .mk{font-family:var(--serif);font-weight:800;letter-spacing:.02em}
+  .brand .v{font-size:11px;color:var(--gold);font-weight:700}
+  .brand .gd2{color:var(--emer-l);font-weight:800;margin-right:2px}
+  .brand:hover .mk{color:var(--emer-d)}
+  .nbtn{padding:6px 12px;border-radius:8px;font-size:13px;font-weight:600;border:1px solid var(--line-2);background:var(--card);color:var(--ink);cursor:pointer;white-space:nowrap}
+  .nbtn:hover{border-color:var(--emer);color:var(--emer-d);text-decoration:none}
+  .nbtn.solid{background:var(--emer);color:#fff;border-color:var(--emer)}.nbtn.solid:hover{background:var(--emer-d);color:#fff}
+  .nbtn.on{background:var(--gold);color:#fff;border-color:var(--gold)}
+
+  header.intro{padding:20px 0 4px}
+  header .kick{font-size:11.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--emer-l);font-weight:800}
+  header h1{font-family:var(--serif);font-size:clamp(23px,3.6vw,34px);margin:6px 0 4px;font-weight:800;letter-spacing:.01em}
+  header p{color:var(--slate);font-size:14px;margin:0;max-width:74ch}
+
+  /* HUD */
+  .hud{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:14px 0 8px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 8px;text-align:center;position:relative}
+  .stat .v{font-size:21px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;font-family:var(--serif)}
+  .stat .k{font-size:10.5px;color:var(--slate);margin-top:3px;font-weight:600}
+  .stat.alarm .v{color:var(--hos)}
+  .stat.up .v{color:var(--sup)}.stat.down .v{color:var(--hos)}
+  .delta{position:absolute;top:-5px;right:6px;font-size:12.5px;font-weight:800;pointer-events:none;opacity:0}
+  .delta.go{animation:flo 1s ease-out forwards}.delta.pos{color:var(--sup)}.delta.neg{color:var(--hos)}
+  @keyframes flo{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-20px)}}
+
+  .progwrap{margin:4px 0}
+  .pbar{height:24px;border-radius:7px;background:var(--line);overflow:hidden;position:relative}
+  .pbar>span{display:block;height:100%;background:linear-gradient(90deg,var(--emer-l),var(--emer));transition:width .55s cubic-bezier(.2,.7,.2,1)}
+  .pbar.gain>span{animation:gp .6s}@keyframes gp{50%{filter:brightness(1.3)}}
+  .pbar .thm{position:absolute;top:-4px;bottom:-4px;width:3px;background:var(--hos);z-index:2}
+  .pbar .thm::after{content:"門檻";position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--hos);font-weight:800;white-space:nowrap}
+  .plbl{display:flex;justify-content:space-between;font-size:12px;color:var(--slate);font-weight:700;margin-top:4px}
+  .plbl .goal{color:var(--emer-d)}
+  /* 情緒分布 */
+  .emo{display:flex;height:14px;border-radius:6px;overflow:hidden;margin:8px 0 2px;border:1px solid var(--line)}
+  .emo span{transition:width .5s}
+  .emolbl{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--slate);font-weight:600}
+  .emolbl i{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:4px;vertical-align:-1px}
+
+  .board{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-top:12px;align-items:start}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px;box-shadow:0 8px 26px -22px rgba(16,36,61,.4)}
+  .ph{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--emer-l);margin:0 0 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .ph .sub{color:var(--slate);font-weight:600;text-transform:none;letter-spacing:0;font-size:11.5px}
+  /* 地主格 */
+  .owners{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
+  .ow{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    cursor:pointer;border:1.5px solid transparent;transition:.25s;font-size:14px;position:relative;line-height:1}
+  .ow .pi{font-size:13px}.ow .fa{position:absolute;top:1px;right:3px;font-size:8px;color:var(--gold);font-weight:800}
+  .ow.sup{background:var(--sup-l);border-color:var(--sup)}
+  .ow.watch{background:var(--watch-l);border-color:var(--watch)}
+  .ow.opp{background:var(--opp-l);border-color:var(--opp)}
+  .ow.hos{background:var(--hos-l);border-color:var(--hos)}
+  .ow.sel{box-shadow:0 0 0 3px rgba(6,78,59,.3)}
+  .ow.bump{animation:bump .5s}@keyframes bump{50%{transform:scale(1.18)}}
+  .legend{display:flex;gap:11px;flex-wrap:wrap;font-size:11px;color:var(--slate);margin-top:9px}
+  .legend span{display:inline-flex;align-items:center;gap:5px;font-weight:600}
+  .sw{width:11px;height:11px;border-radius:3px}
+  /* 地主檔案 */
+  .prof{margin-top:11px;background:var(--warm);border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:12.5px;min-height:64px}
+  .prof .pn{font-weight:800;font-size:14px;display:flex;align-items:center;gap:7px}
+  .prof .band{font-size:11px;font-weight:700;padding:1px 8px;border-radius:999px;color:#fff}
+  .prof p{margin:5px 0 0;color:var(--slate)}
+  .prof .mini{height:7px;border-radius:99px;background:var(--line);overflow:hidden;margin:6px 0 2px}.prof .mini span{display:block;height:100%}
+
+  .hint1{display:none;background:var(--mint);border:1px dashed var(--emer-l);border-radius:9px;padding:8px 12px;font-size:12.5px;color:var(--emer-d);margin-top:11px}
+  .hint1.show{display:block}
+  .actions{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:11px}
+  .act{text-align:left;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px;cursor:pointer;transition:.15s;position:relative}
+  .act:hover:not(:disabled){border-color:var(--emer);transform:translateY(-2px);box-shadow:0 8px 20px -14px rgba(6,78,59,.5)}
+  .act:disabled{opacity:.4;cursor:not-allowed}
+  .act .em{font-size:17px}.act b{display:block;font-size:13.5px;margin:2px 0 1px}
+  .act .d{font-size:11px;color:var(--slate);display:block;line-height:1.35}
+  .act .cost{position:absolute;top:9px;right:10px;font-size:10px;font-weight:800;color:var(--watch);font-variant-numeric:tabular-nums}
+  .act .tagx{display:inline-block;font-size:9.5px;font-weight:700;color:var(--emer);background:var(--mint);border-radius:5px;padding:1px 6px;margin-top:5px}
+  .act .target{display:inline-block;font-size:9.5px;font-weight:700;color:var(--slate);margin-top:5px;margin-left:4px}
+  .act.win{border-color:var(--emer-l);background:var(--mint)}.act.win b{color:var(--emer-d)}
+
+  .log{margin-top:11px;background:var(--warm);border:1px solid var(--line);border-radius:10px;padding:9px 12px;max-height:118px;overflow-y:auto;font-size:12.5px}
+  .log .e{padding:3px 0;border-bottom:1px dashed var(--line-2)}.log .e:last-child{border-bottom:0}
+  .log .e.good{color:var(--emer-d)}.log .e.bad{color:var(--hos)}.log .e.evt{color:var(--opp)}.log .e.sys{color:var(--slate)}
+
+  .ro{margin-bottom:9px}.ro:last-child{margin-bottom:0}
+  .ro .lab{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--slate);margin-bottom:3px}
+  .ro .lab b{font-variant-numeric:tabular-nums}
+  .meter{height:8px;border-radius:99px;background:var(--line);overflow:hidden}.meter>span{display:block;height:100%;transition:width .45s,background .3s}
+  .romsg{font-size:11px;color:var(--mute);margin-top:3px;min-height:0}
+
+  #toasts{position:fixed;top:62px;left:50%;transform:translateX(-50%);z-index:55;display:flex;flex-direction:column;gap:7px;align-items:center;pointer-events:none;width:92%;max-width:440px}
+  .toast{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--emer-l);border-radius:10px;padding:10px 15px;font-size:13px;font-weight:600;box-shadow:0 14px 36px -16px rgba(0,0,0,.4);animation:tin .3s,tout .3s 2.5s forwards}
+  .toast.bad{border-left-color:var(--hos)}.toast.evt{border-left-color:var(--opp)}.toast.unlock{border-left-color:var(--gold)}
+  @keyframes tin{from{opacity:0;transform:translateY(-10px)}}@keyframes tout{to{opacity:0;transform:translateY(-10px)}}
+
+  .overlay{position:fixed;inset:0;z-index:60;background:rgba(28,26,23,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:18px}
+  .overlay.show{display:flex}
+  .modal{background:var(--paper);border-radius:16px;max-width:620px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 30px 80px -20px rgba(0,0,0,.5)}
+  .modal .mh{padding:17px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;position:sticky;top:0;background:var(--paper);z-index:2}
+  .modal .mh h3{font-family:var(--serif);margin:0;font-size:21px}
+  .modal .mh .x{margin-left:auto;cursor:pointer;font-size:22px;color:var(--mute);border:0;background:0;line-height:1}
+  .modal .mb{padding:18px 22px}
+  .scards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .scard{border:1.5px solid var(--line);border-radius:11px;padding:12px;cursor:pointer;transition:.15s;background:var(--card)}
+  .scard:hover{border-color:var(--emer)}.scard.on{border-color:var(--emer);box-shadow:0 0 0 3px var(--mint-2)}
+  .scard h4{margin:0 0 4px;font-size:14.5px}.scard p{margin:0;font-size:11.5px;color:var(--slate)}
+  .field{margin:15px 0 0}.field label{font-size:12.5px;font-weight:800;color:var(--emer-l);letter-spacing:.05em;display:block;margin-bottom:6px}
+  .row{display:flex;align-items:center;gap:10px}
+  input[type=range]{flex:1;accent-color:var(--emer)}
+  select,input[type=number]{font-family:var(--sans);font-size:14px;font-weight:600;border:1px solid var(--line-2);border-radius:8px;padding:7px 10px;background:var(--card)}
+  .difline{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:13px;color:var(--slate)}
+  .stars{color:var(--gold);font-size:16px;letter-spacing:1px}
+  .step{display:none}.step.on{display:block}
+  .stepnav{display:flex;align-items:center;gap:10px;margin-top:16px}
+  .dots{display:flex;gap:6px;margin-right:auto}.dot{width:8px;height:8px;border-radius:50%;background:var(--line-2)}.dot.on{background:var(--emer);width:20px;border-radius:5px}
+  .endbig{font-family:var(--serif);font-size:27px;font-weight:800;margin:0 0 4px}
+  .endbig.win{color:var(--emer)}.endbig.lose{color:var(--hos)}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:13px 0}
+  .stats .s{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:10px;text-align:center}
+  .stats .s b{display:block;font-size:19px;font-family:var(--serif)}.stats .s span{font-size:11px;color:var(--slate)}
+  .recap{background:var(--mint);border-radius:11px;padding:12px;font-size:13px;color:var(--emer-d)}
+  .cx{border:1px solid var(--line);border-radius:10px;margin-bottom:8px;overflow:hidden;background:var(--card)}.cx.lock{opacity:.5}
+  .cx summary{cursor:pointer;padding:11px 13px;font-weight:800;font-size:14px;list-style:none;display:flex;gap:9px;align-items:center}
+  .cx summary::-webkit-details-marker{display:none}.cx summary .em{font-size:16px}
+  .cx summary .tag{margin-left:auto;font-size:10px;font-weight:700;color:var(--emer);background:var(--mint);padding:2px 8px;border-radius:6px}
+  .cx.lock summary .tag{color:var(--mute);background:var(--warm)}
+  .cx .body{padding:10px 13px;font-size:12.5px;color:var(--body);border-top:1px solid var(--line)}
+
+  /* V4：財務面板 / 競爭建商 / 排序 */
+  .lab2{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--emer-l);margin:14px 0 7px;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+  .lab2 .si{color:var(--gold);background:var(--warm);border-radius:5px;padding:0 6px;font-size:9.5px}
+  .finbox .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .finbox .fc{background:var(--warm);border:1px solid var(--line);border-radius:8px;padding:8px;text-align:center}
+  .finbox .fc b{display:block;font-family:var(--serif);font-size:17px}.finbox .fc span{font-size:10.5px;color:var(--slate)}
+  .compbox{margin-top:8px}
+  .vsbar{height:9px;border-radius:99px;background:var(--line);overflow:hidden}.vsbar>span{display:block;height:100%;background:var(--emer);transition:width .5s}
+  .vsbar.comp{margin-top:3px}.vsbar.comp>span{background:var(--hos)}
+  .vslbl{display:flex;justify-content:space-between;font-size:11px;color:var(--slate);margin:3px 0}
+  .sortbar{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--slate);margin-bottom:8px;flex-wrap:wrap}
+  .sortb{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:6px;border:1px solid var(--line-2);background:var(--card);cursor:pointer}
+  .sortb.on{background:var(--emer);color:#fff;border-color:var(--emer)}
+  .sorthint{color:var(--mute);font-size:10.5px}
+  #fx{position:fixed;inset:0;pointer-events:none;z-index:58}
+  footer{margin-top:22px;padding:20px 0 40px;border-top:1px solid var(--line);color:var(--slate);font-size:12.5px;text-align:center}
+  footer a{margin:0 5px}.footdisc{max-width:74ch;margin:9px auto 0;font-size:11.5px;color:var(--mute)}
+  @media(max-width:860px){.hud{grid-template-columns:repeat(3,1fr)}.board{grid-template-columns:1fr}.scards{grid-template-columns:1fr}.owners{grid-template-columns:repeat(6,minmax(0,1fr))}.actions{grid-template-columns:1fr}}
+  @media(max-width:430px){.hud{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div id="toasts"></div>
+
+<nav class="top"><div class="wrap">
+  <a class="brand" href="index.html" title="回開發儀表板" style="text-decoration:none;color:inherit"><span class="gd2">⌂</span><span class="mk">都市更新整合策略沙盤</span><span class="v">v4</span></a>
+  <a class="nbtn" href="index.html">⌂ 首頁</a>
+  <button class="nbtn" id="btnHow">如何玩</button>
+  <button class="nbtn" id="btnCodex">概念圖鑑</button>
+  <button class="nbtn" id="btnSound">🔇</button>
+  <button class="nbtn" id="btnNew">換劇本</button>
+  <a class="nbtn solid" href="index.html">儀表板</a>
+</div></nav>
+
+<header class="intro"><div class="wrap">
+  <div class="kick">Strategic Simulation · 整合策略推演</div>
+  <h1>24 戶不是 24 個數字，是 24 個人</h1>
+  <p>每位地主有<b>人格、情緒、家族</b>，對不同策略反應不同；難度由<b>情境的人組成</b>決定。練習談判、整合與決策——都更最難的不是法規，是人。</p>
+</div></header>
+
+<main class="wrap">
+  <div class="hud">
+    <div class="stat" id="st-consent"><div class="delta"></div><div class="v">—</div><div class="k">同意戶數</div></div>
+    <div class="stat" id="st-budget"><div class="delta"></div><div class="v">—</div><div class="k">籌碼</div></div>
+    <div class="stat" id="st-time"><div class="delta"></div><div class="v">—</div><div class="k">剩餘月份</div></div>
+    <div class="stat" id="st-inst"><div class="delta"></div><div class="v">—</div><div class="k">制度信用</div></div>
+    <div class="stat" id="st-dev"><div class="delta"></div><div class="v">—</div><div class="k">建商信用</div></div>
+    <div class="stat" id="st-stage"><div class="delta"></div><div class="v">—</div><div class="k">階段/沉沒</div></div>
+  </div>
+  <div class="progwrap">
+    <div class="pbar" id="pbar"><span id="pb" style="width:0%"></span><i class="thm" id="thm" style="left:75%"></i></div>
+    <div class="plbl"><span id="pl-left">同意 0%</span><span class="goal" id="pl-goal">—</span><span id="pl-right">門檻 75%</span></div>
+    <div class="emo" id="emo" title="全體地主情緒分布：綠 支持｜黃 觀望｜橘 反對｜紅 敵對"></div>
+  </div>
+
+  <div class="board">
+    <div class="panel">
+      <p class="ph">案件盤面 <span class="sub" id="ph-n"></span></p>
+      <div class="sortbar">排序檢視：<button class="sortb on" data-s="emo">情緒</button><button class="sortb" data-s="pers">人格</button><button class="sortb" data-s="fam">家族</button><span class="sorthint">（盤面覺得亂時可分組）</span></div>
+      <div class="owners" id="owners"></div>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--sup-l);border:1.5px solid var(--sup)"></i>支持</span>
+        <span><i class="sw" style="background:var(--watch-l);border:1.5px solid var(--watch)"></i>觀望</span>
+        <span><i class="sw" style="background:var(--opp-l);border:1.5px solid var(--opp)"></i>反對</span>
+        <span><i class="sw" style="background:var(--hos-l);border:1.5px solid var(--hos)"></i>敵對</span>
+        <span style="color:var(--gold)">⌂ 族長</span>
+        <span style="color:var(--hos)">🧱 樞紐戶</span>
+        <span style="color:var(--hos)">🪨 高抗性</span>
+      </div>
+      <div class="prof" id="prof">👆 點任一地主看他的<b>人格・情緒・家族</b>。</div>
+      <div class="hint1" id="hint1"></div>
+      <div class="actions" id="actions"></div>
+      <div class="log" id="log"></div>
+    </div>
+    <div class="panel">
+      <p class="ph">即時回饋</p>
+      <div class="ro" id="whybox" style="background:var(--mint);border:1px solid var(--mint-2);border-radius:10px;padding:9px 11px;margin-bottom:13px">
+        <div class="lab"><span>🎓 即時解析（為什麼會這樣）</span><b id="why-cx" style="font-size:10.5px;color:var(--emer-l);font-weight:700"></b></div>
+        <div class="romsg" id="why-msg" style="color:var(--emer-d);min-height:34px">每做一個決策，這裡會解釋背後的<b>原因與概念</b>——遊戲不只是闖關，是看懂整合為什麼難。</div></div>
+      <div class="lab2" style="margin-top:0">📊 談判指標</div>
+      <div class="ro"><div class="lab"><span>🧱 釘子戶議價力</span><b id="lev-v">—</b></div>
+        <div class="meter"><span id="lev-bar" style="width:0%;background:var(--watch)"></span></div><div class="romsg" id="lev-msg"></div></div>
+      <div class="ro"><div class="lab"><span>🤝 平均接受傾向</span><b id="acc-v">—</b></div>
+        <div class="meter"><span id="acc-bar" style="width:0%;background:var(--emer-l)"></span></div><div class="romsg" id="acc-msg"></div></div>
+      <div class="ro"><div class="lab"><span>🤝🆚 競合分餅</span><b id="pie-v"></b></div>
+        <div class="meter"><span id="pie-bar" style="width:45%;background:var(--emer)"></span></div>
+        <div class="romsg" id="pie-msg"></div></div>
+      <div class="finbox" id="finbox"></div>
+      <div class="compbox"><div class="lab2">🏗️ 競爭建商整合進度</div>
+        <div class="vsbar"><span id="vsyou" style="width:0%"></span></div>
+        <div class="vslbl"><span>你 <b id="vsyouv">0%</b></span><span>對手 <b id="vscompv">0%</b></span></div>
+        <div class="vsbar comp"><span id="vscomp" style="width:0%"></span></div>
+        <div class="romsg" id="compmsg"></div></div>
+      <a class="nbtn" href="evaluator.html" style="display:block;text-align:center;margin-top:8px">🧮 想算真實數字？開試算</a>
+    </div>
+  </div>
+  <div id="endbox"></div>
+</main>
+
+<!-- 開場 -->
+<div class="overlay show" id="startOv"><div class="modal">
+  <div class="mh"><h3>選擇劇本與設定</h3></div>
+  <div class="mb">
+    <div class="field"><label>① 情境劇本（決定地主組成與難度）</label><div class="scards" id="scards"></div></div>
+    <div class="field"><label>② 地主數量（可手動調整）</label>
+      <div class="row"><input type="range" id="nrange" min="8" max="40" value="24" step="1"><b id="nval" style="width:48px;text-align:right;font-variant-numeric:tabular-nums">24 戶</b></div></div>
+    <div class="field"><label>③ 你的建商類型（建商信用）</label>
+      <div class="row"><select id="devsel">
+        <option value="20">上市建商（+20）</option><option value="10" selected>區域建商（+10）</option>
+        <option value="0">新創建商（0）</option><option value="-20">爭議建商（−20）</option></select></div></div>
+    <div class="difline">本局難度（依情境×人數×建商推算）：<span class="stars" id="difstars"></span><span id="diftxt"></span></div>
+    <button class="nbtn solid" id="startBtn" style="width:100%;margin-top:16px;padding:12px;font-size:15px">▶ 開始推演</button>
+  </div>
+</div></div>
+
+<!-- 如何玩 -->
+<div class="overlay" id="howOv"><div class="modal">
+  <div class="mh"><h3>如何玩（30 秒）</h3><button class="x" id="howX">×</button></div>
+  <div class="mb">
+    <div class="step on" data-s="0"><div style="font-size:32px">🎯</div><h4>目標</h4><p style="color:var(--body)">把<b>支持（同意）</b>的地主推過進度條<b>紅線（門檻）</b>，再按「啟動權利變換」收尾。每位地主滿意度 ≥80 才算「同意」。</p></div>
+    <div class="step" data-s="1"><div style="font-size:32px">🧑‍🤝‍🧑</div><h4>24 個真人，有難有易</h4><p style="color:var(--body)">每位地主有<b>人格</b>（保守/投資/情感/強勢/觀望），對策略反應不同——點地主看檔案。<b>族長</b>（⌂）帶動家族；<b>🧱樞紐戶</b>（高持分）與<b>🪨高抗性戶</b>很難搞，<b>一張卡搞不定，同招重複還會疲乏</b>，要換招、個別深談。</p></div>
+    <div class="step" data-s="2"><div style="font-size:32px">🎴</div><h4>策略卡看「對象」</h4><p style="color:var(--body)">每張卡對不同人格效果不同（例：透明說明會→保守/情感大加分；加碼分回→投資派）。先看盤面誰是多數，再選對的牌。</p></div>
+    <div class="step" data-s="3"><div style="font-size:32px">💡</div><h4>起手式＋兩個張力</h4><p style="color:var(--body)">先<b>可信承諾／第三方</b>拉信用（保守派吃這套），再<b>說明會＋家族溝通</b>滾多數。注意兩件事：<b>🏗️競爭建商</b>會趁你停滯／等待追上、甚至搶先送件讓你出局；<b>💹加碼分回</b>能換同意但壓低 ROI——你要<b>最高同意率還是最高報酬？</b>別硬上權變、別空等。</p></div>
+    <div class="stepnav"><div class="dots" id="howDots"></div><button class="nbtn" id="howPrev">上一步</button><button class="nbtn solid" id="howNext">下一步</button></div>
+  </div>
+</div></div>
+
+<div class="overlay" id="codexOv"><div class="modal">
+  <div class="mh"><h3>概念圖鑑 <span id="cxCount" style="font-size:13px;color:var(--slate);font-weight:600"></span></h3><button class="x" id="codexX">×</button></div>
+  <div class="mb" id="codexBody"></div>
+</div></div>
+<div class="overlay" id="endOv"><div class="modal"><div class="mb" id="endModal"></div></div></div>
+
+<footer><div class="wrap">
+  <a href="index.html">儀表板</a>｜<a href="evaluator.html">開發試算</a>｜<a href="whitepaper.html">整合總論</a>｜<a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">主庫</a>
+  <p class="footdisc">⚠️ 策略沙盤教學示意，地主／家族／參數皆為去識別化模型、非真實案件預測，不含任何真實案名、金額或人名。同意門檻依現行《都市更新條例》§37、《危老條例》（查證 2026-06-19）。版本 4.0 封版｜2026-06：難整合戶（樞紐／高抗性）・同招遞減・競爭建商時間賽局・整合花費計入 ROI・即時解析教學・UI 整理（單一圖例／精簡訊息流／指標分組）。</p>
+</div></footer>
+
+<script>
+/* ====================== 人格系統（Level 1） ====================== */
+const PERS={
+  cons:{k:'保守派',pi:'🛡️',d:'不信建商、重制度、不冒風險',resp:{說明:8,分回:3,承諾:14,第三方:12,家族:5,等待:0}},
+  inv :{k:'投資派',pi:'📈',d:'重利益、理性決策',resp:{說明:4,分回:15,承諾:6,第三方:6,家族:3,等待:0}},
+  emo :{k:'情感派',pi:'❤️',d:'重感情、重鄰里',resp:{說明:13,分回:4,承諾:7,第三方:4,家族:14,等待:1}},
+  dom :{k:'強勢派',pi:'♟️',d:'習慣主導、談判高手',resp:{說明:3,分回:7,承諾:5,第三方:4,家族:6,等待:0,協商:18}},
+  obs :{k:'觀望派',pi:'👀',d:'跟隨大眾、看同意率',resp:{說明:5,分回:5,承諾:5,第三方:4,家族:5,等待:0}},
+};
+const SURNAME=['王','李','陳','林','張','黃','吳','劉','蔡','許','鄭','郭','洪','周','曾','賴','邱'];
+/* 劇本：定義人格分布、家族計畫、起始滿意度、門檻、資源、難度權重 */
+const SCEN=[
+  {k:'🏙️ 一般都更',real:'條件中庸的常見都更案。',th:.75,baseSat:58,budget:100,time:24,inst:30,
+   dist:{cons:.3,inv:.3,emo:.2,dom:.1,obs:.1},fam:[{sz:3}],hard:1},
+  {k:'🏚️ 薄資本×釘子戶家族',real:'建商資本薄、信任赤字，末位戶家族抗拒。',th:.75,baseSat:46,budget:90,time:22,inst:14,
+   dist:{cons:.42,inv:.18,emo:.16,dom:.16,obs:.08},fam:[{sz:5,hostile:true}],hard:2.2},
+  {k:'🪳 都更蟑螂進場',real:'投機客集中部位、抬價、挑撥。',th:.75,baseSat:52,budget:82,time:22,inst:24,
+   dist:{cons:.22,inv:.4,emo:.12,dom:.22,obs:.04},fam:[{sz:3}],hard:1.8},
+  {k:'🧱 危老・全體同意',real:'危老需 100% 同意，人人握否決權。',th:1.0,baseSat:55,budget:100,time:20,inst:30,
+   dist:{cons:.34,inv:.24,emo:.22,dom:.12,obs:.08},fam:[{sz:2}],hard:2.6},
+];
+const EVENTS=[
+  {em:'💸',t:'釘子戶天價求償',m:'末位樞紐戶喊天價',why:'越接近門檻、餘戶越關鍵，末位戶的議價力越大——這就是 hold-up（套牢）。',cx:'釘子戶 hold-up',f:g=>hitPers(g,['dom','inv'],-10)},
+  {em:'↩️',t:'同意書撤回',m:'法定期內反悔',why:'同意可在法定期間內撤回；一戶反悔常引發鄰戶跟著動搖。',cx:'偏好雪崩',chain:1,f:g=>hitRandom(g,2,-14)},
+  {em:'⚖️',t:'都市設計審議卡關',m:'都審要求修正',why:'都審／環評等法定審議本身有不確定性，會吃掉時程。',cx:'審議時程風險',f:g=>{g.time-=2;}},
+  {em:'📐',t:'權變估價爭議',m:'更新前價值認知落差',why:'三家估價對「更新前價值」見解不同，地主覺得被低估 → 信任下滑。',cx:'估價爭議',f:g=>{g.inst=cl(g.inst-8);hitPers(g,['cons','inv'],-6);}},
+  {em:'🪳',t:'都更蟑螂抬價',m:'投機客集中部位',why:'投機客買進關鍵部位、墊高整合成本，逼你多花籌碼。',cx:'都更蟑螂',f:g=>{spend(g,18);}},
+  {em:'🎭',t:'假性反對哄抬',m:'以反對換更高分回',why:'部分地主策略性反對，目的是談更高分回，不是真不想更新。',cx:'策略性 holdout',chain:1,f:g=>hitPers(g,['dom'],-8)},
+  {em:'🔁',t:'一坪換一坪迷思',m:'期待錨點偏離',why:'地主錨定「一坪換一坪」，與權變實際分回有落差 → 抗拒。',cx:'錨定效應',f:g=>hitPers(g,['cons','emo'],-7)},
+  {em:'📋',t:'公聽會程序瑕疵',m:'送達瑕疵須重辦',why:'程序正義不足（送達／聽證瑕疵）會被撤銷重辦——這是釋字 709 的教訓。',cx:'正當行政程序',f:g=>{g.time-=1;}},
+  {em:'🏦',t:'資金信託不到位',m:'撥付延宕、信心崩',why:'信託撥款卡住，地主擔心「蓋到一半沒錢」→ 全體信心下滑。',cx:'信託機制',f:g=>{g.inst=cl(g.inst-10);hitAll(g,-4);}},
+  {em:'📰',t:'媒體負面報導',m:'建商被點名',why:'負面新聞直接打擊建商信用，保守派最敏感。',cx:'建商信用',f:g=>{g.dev=cl(g.dev-10,-30,30);hitPers(g,['cons'],-6);}},
+  {em:'📉',t:'容積獎勵調整',m:'政策縮減獎勵',why:'獎勵政策縮水 → 量體變小、總銷下降，整塊餅變小。',cx:'容積獎勵',f:g=>{g.fin.saleHit=Math.min(.4,g.fin.saleHit+.08);}},
+  {em:'🏛️',t:'議員介入',m:'隨機效果',why:'政治介入是雙面刃，可能助攻、也可能添亂。',cx:'外部變數',f:g=>{if(Math.random()<.5){hitAll(g,4);g.time+=1;}else{hitAll(g,-5);}}},
+  {em:'📝',t:'地主陳情',m:'陳情影響審議',why:'少數地主陳情會牽動審議節奏與其他人的情緒。',cx:'審議時程風險',f:g=>{hitRandom(g,2,-9);}},
+  {em:'🏗️',t:'對手搶辦說明會',m:'競爭建商挖牆腳',why:'對手也在搶同一批地主——你慢一步，他就多一分。',cx:'競合賽局',comp:8,f:g=>{g.comp.prog=Math.min(100,g.comp.prog+8);hitPers(g,['obs'],-6);}},
+  {em:'🎣',t:'地主被挖角',m:'對手開更好條件',why:'對手用更好條件挖走動搖中的地主，這是真實會發生的競爭流失。',cx:'競合賽局',comp:6,f:g=>{g.comp.prog=Math.min(100,g.comp.prog+6);const t=g.owners.filter(o=>o.sat<80)[0];if(t)t.sat=cl(t.sat-12);}},
+];
+const CONCEPTS=[
+  {id:'people',em:'🧑‍🤝‍🧑',t:'地主人格',tag:'核心',b:'保守/投資/情感/強勢/觀望，對策略反應不同。整合的第一步是「辨人」——同一張牌對保守派加分、對投資派沒用。'},
+  {id:'family',em:'⌂',t:'家族戶（族長效應）',tag:'機制',b:'一個家族多戶，但你只需說服<b>族長</b>——說服他帶動全家族同意，得罪他全家族倒戈。火力集中族長，效率最高。'},
+  {id:'emotion',em:'🌡️',t:'地主情緒',tag:'機制',b:'不是只有同意/不同意，而是支持→觀望→反對→敵對的連續滿意度。滿意度≥80 才算同意；敵對戶要先止血再回溫。'},
+  {id:'dev',em:'🏢',t:'制度信用 vs 建商信用',tag:'信任',b:'建商信用（公司本身：上市/區域/新創/爭議）＋制度信用（信託/續建/第三方）。爭議建商起步難，需用制度信用補。'},
+  {id:'coop',em:'🤝🆚',t:'競合分餅',tag:'賽局',b:'整合成功才有餅；建方分配拉太高→投資派以外都不買單→接受率崩。合作把餅做大、競爭分餅。'},
+  {id:'holdup',em:'🧱',t:'釘子戶 hold-up',tag:'機制',b:'議價力＝沉沒成本×樞紐性：階段越後、餘戶越關鍵，末位戶越能勒索。拖延與逼近門檻都養大它。'},
+  {id:'threshold',em:'🎯',t:'同意門檻',tag:'§37',b:'都更§37：自劃 3/4、政府劃定 1/2、面積>9/10 免計人數；危老 100%。危老劇本人人是釘子戶。'},
+  {id:'compete',em:'🏗️',t:'競爭建商（時間賽局）',tag:'賽局',b:'同一批地主，對手也在搶。你<b>停滯或等待</b>，對手就追上、甚至挖走動搖戶、搶先送件讓你出局。<b>速度本身就是籌碼</b>。'},
+  {id:'fatigue',em:'🔁',t:'邊際效用遞減',tag:'機制',b:'同一張策略卡重複用，效果一次比一次差；<b>高抗性戶（🪨）、樞紐戶（🧱）</b>更難被說動。整合要<b>換招、對症下藥</b>，不能一招到底。'},
+  {id:'irr',em:'💹',t:'IRR ↔ 同意率取捨',tag:'財務',b:'加碼分回能換到同意，但同步壓低建方報酬；每筆整合花費也計入成本、拉低 ROI。整合不是只追同意率、也不是只追報酬——是在兩者間<b>找平衡</b>。'},
+];
+
+/* ====================== 工具 ====================== */
+const $=id=>document.getElementById(id);
+const cl=(x,a=0,b=100)=>Math.max(a,Math.min(b,x));
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const AGREE=80;
+function band(s){return s>=80?'sup':s>=50?'watch':s>=20?'opp':'hos';}
+function bandName(s){return s>=80?'支持':s>=50?'觀望':s>=20?'反對':'敵對';}
+function bandColor(s){return s>=80?'var(--sup)':s>=50?'var(--watch)':s>=20?'var(--opp)':'var(--hos)';}
+let SOUND=false;
+function beep(t){if(!SOUND)return;try{const a=new(window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value={good:660,bad:200,evt:330,win:880,unlock:540}[t]||440;o.type=t==='bad'?'sawtooth':'sine';g.gain.setValueAtTime(.07,a.currentTime);g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+.25);o.start();o.stop(a.currentTime+.26);}catch(e){}}
+function toast(m,c){const t=document.createElement('div');t.className='toast '+(c||'');t.innerHTML=m;$('toasts').appendChild(t);setTimeout(()=>t.remove(),2900);}
+function shake(){document.body.classList.add('shake');setTimeout(()=>document.body.classList.remove('shake'),420);}
+function floatDelta(id,n){if(!n)return;const st=$(id),d=st.querySelector('.delta');d.textContent=(n>0?'+':'')+n;d.className='delta '+(n>0?'pos':'neg');void d.offsetWidth;d.classList.add('go');st.classList.add(n>0?'up':'down');setTimeout(()=>st.classList.remove('up','down'),500);}
+function confetti(){const c=$('fx'),x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;const P=[];for(let i=0;i<130;i++)P.push({x:Math.random()*c.width,y:-20-Math.random()*c.height*.4,r:4+Math.random()*5,vy:2+Math.random()*4,vx:-2+Math.random()*4,col:['#10b981','#064e3b','#b08a3e','#ca8a04','#2563eb'][rnd(0,4)]});let t=0;(function loop(){x.clearRect(0,0,c.width,c.height);t++;let al=false;P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.05;if(p.y<c.height+20){al=true;x.globalAlpha=Math.max(0,1-t/160);x.fillStyle=p.col;x.fillRect(p.x,p.y,p.r,p.r);}});if(al&&t<170)requestAnimationFrame(loop);else x.clearRect(0,0,c.width,c.height);})();}
+
+/* 影響地主滿意度的小工具（事件用） */
+function hitPers(g,ps,d){g.owners.forEach(o=>{if(ps.includes(o.pers))o.sat=cl(o.sat+d);});}
+function hitAll(g,d){g.owners.forEach(o=>o.sat=cl(o.sat+d));}
+function hitRandom(g,n,d){for(let i=0;i<n;i++){const o=g.owners[rnd(0,g.owners.length-1)];o.sat=cl(o.sat+d);}}
+/* 花籌碼＝整合成本，會計入開發成本、壓低 ROI（財務決策感） */
+function spend(g,n){g.budget-=n;g.intSpent=(g.intSpent||0)+n;}
+
+/* ====================== 狀態與生成 ====================== */
+let G,unlocked,selScen=0,selDev=10,selN=24,sel=-1,prevAgree=0;
+function pickPers(dist){const r=Math.random();let a=0;for(const k in dist){a+=dist[k];if(r<=a)return k;}return 'obs';}
+function difficulty(sc,N,dev){
+  // 情境權重 × 規模 × 建商信用 → 1~5
+  let d=sc.hard*2.0 + (sc.th>=1?1.2:0) + (N-24)/16 - dev/22 + (50-sc.baseSat)/22;
+  return cl(Math.round(d),1,5);
+}
+function genOwners(sc,N,dev){
+  const arr=[];
+  for(let i=0;i<N;i++){
+    const pers=pickPers(sc.dist);
+    let sat=cl(sc.baseSat + rnd(-12,12) + dev*0.4 + (pers==='cons'?-4:pers==='inv'?2:0));
+    arr.push({id:i,name:SURNAME[i%SURNAME.length]+'宅',no:i+1,pers,sat,infl:rnd(1,3),fam:null,leader:false,resist:1,kind:'',share:1,hits:{}});
+  }
+  // 家族：把前幾戶編入家族，選最高 influence 當族長
+  let idx=0, fid=0;
+  (sc.fam||[]).forEach(fp=>{
+    const sz=Math.min(fp.sz,N-idx); if(sz<2)return;
+    const members=[]; for(let j=0;j<sz;j++){const o=arr[idx++];o.fam=fid;members.push(o);}
+    const leader=members.reduce((a,b)=>b.infl>a.infl?b:a,members[0]);leader.leader=true;leader.infl=3;
+    members.forEach(o=>{o.famName=SURNAME[fid+8]+'家';if(fp.hostile&&o.leader)o.sat=cl(o.sat-18);});
+    fid++;
+  });
+  // 難整合的少數：1 位樞紐戶（高持分・高抗性・影響力滿格）＋數位高抗性戶，集中在末位（最後一哩最難）
+  const pool=arr.slice().sort((a,b)=>b.no-a.no);
+  const piv=pool.find(o=>!o.leader)||pool[0];
+  piv.kind='樞紐';piv.resist=.45;piv.infl=3;piv.share=2.4;piv.sat=cl(piv.sat-10);
+  const nHard=Math.max(1,Math.round(sc.hard*1.2));
+  let placed=0;
+  for(const o of pool){if(placed>=nHard)break;if(o.kind||o.leader)continue;o.kind='高抗';o.resist=.55;o.sat=cl(o.sat-6);placed++;}
+  return arr;
+}
+function agreeCount(g){return g.owners.filter(o=>o.sat>=AGREE).length;}
+function makeFin(sc,N){const site=Math.round(N*14),far=300,price=68;const av=site*far/100*1.3,sell=av*1.6,sale0=sell*price/10000;return {site,price,sale0:+sale0.toFixed(2),base:+(sale0*0.58).toFixed(2),intM:+(sale0*0.004).toFixed(3),saleHit:0,costHit:0};}
+function computeFin(g){if(!g.fin)g.fin=makeFin(SCEN[g.sc],g.N);const months=g.baseTime-g.time;const sale=g.fin.sale0*(1-g.fin.saleHit);
+  const integ=(g.intSpent||0)/100*0.9; // 整合花費（籌碼）計入開發成本（示意）→ 花越多 ROI 越低
+  const cost=g.fin.base+g.fin.intM*months+g.fin.costHit+integ;const dist=sale-cost,builder=dist*g.share,owner=dist*(1-g.share);return {sale,cost,builder,owner,integ,roi:cost>0?builder/cost*100:0};}
+function fcell(k,v,bad){return '<div class="fc"><b style="'+(bad?'color:var(--hos)':'')+'">'+v+'</b><span>'+k+'</span></div>';}
+function renderFin(){if(!G.fin)G.fin=makeFin(SCEN[G.sc],G.N);if(!G.comp)G.comp={prog:8};const f=computeFin(G);
+  $('finbox').innerHTML='<div class="lab2">💹 財務面板 <span class="si">示意・非估價</span></div><div class="fgrid">'
+    +fcell('預估總銷',f.sale.toFixed(1)+'億')+fcell('開發成本',f.cost.toFixed(1)+'億')
+    +fcell('建方毛利',(f.builder<0?'−':'')+Math.abs(f.builder).toFixed(1)+'億',f.builder<0)
+    +fcell('ROI',Math.round(f.roi)+'%',f.roi<0)+'</div>'
+    +'<div class="romsg" style="margin-top:4px">分回 建方 '+Math.round(G.share*100)+'% / 地主 '+(100-Math.round(G.share*100))+'%　·　整合花費已吃掉成本 '+(f.integ||0).toFixed(2)+'億（花越多 ROI 越低）</div>';
+  const you=Math.round(agreeCount(G)/G.N*100),comp=Math.round(G.comp.prog);
+  $('vsyou').style.width=you+'%';$('vscomp').style.width=comp+'%';$('vsyouv').textContent=you+'%';$('vscompv').textContent=comp+'%';
+  $('compmsg').innerHTML=comp>=you?'⚠️ 對手領先！太慢會被搶先（對手達 100% 你就出局）。':'你目前領先對手，保持節奏。';}
+function advanceComp(g,opts){if(g.over)return;if(!g.comp)g.comp={prog:8};opts=opts||{};
+  const you=agreeCount(g)/g.N*100;
+  let tick=rnd(1,3)+g.dif*0.5-(g.inst>55?1.5:0);
+  if(opts.wait)tick+=4;                                            // 你等待 → 對手猛追
+  if(g.comp._lastYou!=null && you<=g.comp._lastYou+0.4)tick+=2.5;  // 你這回合沒進展 → 對手加速
+  if(you>g.comp.prog+15)tick-=1.5;                                 // 你大幅領先 → 對手轉保守
+  g.comp._lastYou=you;
+  g.comp.prog=Math.min(100,Math.max(g.comp.prog,g.comp.prog+tick));
+  // 對手領先時，挖走一位動搖中（觀望）的地主
+  if(g.comp.prog>you+12){const t=g.owners.filter(o=>o.sat>=50&&o.sat<AGREE&&o.kind!=='樞紐').sort((a,b)=>b.sat-a.sat)[0];
+    if(t){t.sat=cl(t.sat-7);log('bad','🎣 對手挖角「'+t.no+'號 '+t.name+'」→ 滿意度 −7');
+      showWhy('對手挖角','你落後時，動搖中（觀望）的地主最容易被對手更好的條件帶走。','競合賽局');unlock('compete');}}
+  if(g.comp.prog>=you+10)unlock('compete');
+  if(g.comp.prog>=100)end(false,'競爭建商搶先衝到門檻、先一步送件——你被搶先整合，破局。輸給對手，不是因為你不努力，是因為你太慢。');
+}
+function sortOrder(){const idx=G.owners.map((_,i)=>i),s=G.sort||'emo';
+  if(s==='emo')idx.sort((a,b)=>G.owners[b].sat-G.owners[a].sat);
+  else if(s==='pers'){const od={cons:0,inv:1,emo:2,dom:3,obs:4};idx.sort((a,b)=>od[G.owners[a].pers]-od[G.owners[b].pers]);}
+  else if(s==='fam')idx.sort((a,b)=>((G.owners[a].fam==null?99:G.owners[a].fam)-(G.owners[b].fam==null?99:G.owners[b].fam))||(G.owners[b].leader?1:0)-(G.owners[a].leader?1:0));
+  return idx;}
+function init(){
+  const sc=SCEN[selScen],N=selN,dev=selDev;
+  G={sc:selScen,th:sc.th,N,needed:Math.ceil(N*sc.th),budget:sc.budget,time:sc.time,baseTime:sc.time,
+     inst:sc.inst,dev,share:.45,stage:5,round:0,calm:0,commits:{續建:0,增資:0,擔保:0},indep:0,over:false,
+     owners:genOwners(sc,N,dev),lastEvent:false,dif:difficulty(sc,N,dev),intSpent:0,_waited:0,
+     stats:{commit:0,trans:0,raise:0,fam:0}};
+  unlocked=new Set(['people','threshold','coop']);
+  G.fin=makeFin(sc,N);G.comp={prog:8};G.sort='emo';
+  sel=-1;prevAgree=agreeCount(G);
+  $('endbox').innerHTML='';$('endOv').classList.remove('show');$('log').innerHTML='';
+  $('ph-n').textContent='· '+N+' 戶 ·「'+sc.k+'」· 難度 '+'★'.repeat(G.dif);
+  log('sys','🏁 開局：'+sc.k+'（'+N+' 戶，難度 '+'★'.repeat(G.dif)+'）。先辨識地主人格，再對症下策略。');
+  buildActions();render(true);buildCodex();
+  $('prof').innerHTML='👆 點任一地主看他的<b>人格・情緒・家族</b>。';
+  $('hint1').classList.add('show');
+  $('hint1').innerHTML= G.inst<22||dev<0
+    ? '👉 <b>起手式：</b>信任偏低，先 <b>可信承諾／引入第三方</b> 把制度信用拉起來（保守派吃這套），再談分配。'
+    : '👉 <b>起手式：</b>先 <b>透明說明會</b>＋<b>家族溝通</b> 滾動多數，分配維持合理；別硬上權變、別一直等待。';
+  if(!localStorage.getItem('urV4Tut')){setTimeout(()=>{howGo(0);$('howOv').classList.add('show');},400);localStorage.setItem('urV4Tut','1');}
+  save();
+}
+function log(c,h){const e=document.createElement('div');e.className='e '+c;e.innerHTML=h;$('log').insertBefore(e,$('log').firstChild);}
+
+/* 衍生量 */
+function sunk(){return cl(.2+.8*((G.stage-5)/4),0,1);}
+function commitBonus(){return (G.commits.續建?.25:0)+(G.commits.增資?.18:0)+(G.commits.擔保?.12:0)+(G.indep?.12:0);}
+function acceptAvg(){ // 平均接受傾向：制度+建商信用、分配合理度
+  const trust=(G.inst/100)*.5+((G.dev+30)/60)*.3+commitBonus()*.5;
+  const greed=(G.share-.4)*1.2;
+  return cl(trust-greed+ .3,0,1);
+}
+function leverage(){const gap=G.needed-agreeCount(G),avail=G.N-agreeCount(G);
+  const pivOut=G.owners.some(o=>o.kind==='樞紐'&&o.sat<AGREE)?.22:0; // 樞紐戶還沒同意 → 議價力大增
+  if(gap<=0)return cl(.1*sunk()+pivOut*.5,0,1);return cl(sunk()*.7*(avail>0?gap/avail:1)+G.round*.01+pivOut,0,1);}
+function unlock(id){if(unlocked.has(id))return;unlocked.add(id);const c=CONCEPTS.find(x=>x.id===id);toast('🔓 解鎖：<b>'+c.t+'</b>','unlock');beep('unlock');buildCodex();}
+/* 即時解析：每個決策／事件解釋「為什麼」＋對應概念（教學感） */
+const CX2ID={'IRR ↔ 同意率取捨':'irr','競合賽局':'compete','釘子戶 hold-up':'holdup','制度信用':'dev','建商信用':'dev','信託機制':'dev','Preference Cascade 偏好瀑布':'family'};
+function showWhy(t,why,cx){if(!why)return;const m=$('why-msg');if(m)m.innerHTML='<b>'+t+'</b>：'+why;const c=$('why-cx');if(c)c.textContent=cx?'＃'+cx:'';if(cx&&CX2ID[cx])unlock(CX2ID[cx]);}
+
+/* 觀望派隨大眾漂移 */
+function bandwagon(){const rate=agreeCount(G)/G.N;let moved=0;
+  G.owners.forEach(o=>{if(o.pers==='obs'){const b=o.sat;o.sat=cl(o.sat+(rate*100-o.sat)*.18);if(o.sat-b>2)moved++;else if(b-o.sat>2)moved--;}});
+  if(moved>0)log('good','📊 觀望派跟風加入（'+moved+' 戶上升）— Bandwagon 從眾');
+  else if(moved<0)log('bad','📊 觀望派動搖（'+(-moved)+' 戶下降）— Bandwagon 反向');
+}
+
+/* ====================== 策略卡（Level 對象化 + 審議 tag） ====================== */
+const ACTS=[
+  {em:'📣',t:'公開透明說明會',cost:'籌-8 月-1',tag:'公聽會・公開展覽（§32-33）',target:'保守/情感',
+   d:'資訊透明，保守與情感派大加分',can:g=>g.budget>=8,run(g){spend(g,8);g.time-=1;g.inst=cl(g.inst+6);g.calm+=2;g.stats.trans++;
+     applyResp(g,'說明');unlock('emotion');log('good','📣 公開透明說明會 → 保守/情感派滿意度上升、制度信用 +6');
+     showWhy('公開透明說明會','資訊透明降低不確定性，重制度的保守派與重鄰里的情感派最買單；但同一招重複用會疲乏。','資訊不對稱');event(-.12);}},
+  {em:'💰',t:'加碼分回',cost:'籌-22 月-1',tag:'權利變換分配（權變辦法）',target:'投資',
+   d:'降建方分配，投資派最買單（但壓低 ROI）',can:g=>g.budget>=22,run(g){spend(g,22);g.time-=1;g.share=cl(g.share-.04,.3,.7)/1;g.stats.raise++;
+     applyResp(g,'分回');unlock('coop');unlock('irr');if(Math.random()<.25)toast('🪳 加碼引來投機客盯上…','evt');log('good','💰 加碼分回（建方降至 '+Math.round(g.share*100)+'%）→ 投資派滿意度上升、但建方 ROI 同步下降');
+     showWhy('加碼分回','讓利給地主能換到同意，卻同步壓低建方報酬——這就是 IRR 與同意率的取捨。看右側財務面板的 ROI 變化。','IRR ↔ 同意率取捨');event(.12);}},
+  {em:'🔒',t:'打出可信承諾',cost:'籌-15 月-1',tag:'信託專戶・續建機制',target:'保守/全體',
+   d:'續建/增資/擔保→制度信用＋保守派',can:g=>g.budget>=15&&!(g.commits.續建&&g.commits.增資&&g.commits.擔保),run(g){spend(g,15);g.time-=1;
+     let nm,a;if(!g.commits.續建){g.commits.續建=1;nm='續建機制';a=20;}else if(!g.commits.增資){g.commits.增資=1;nm='增資到位';a=15;}else{g.commits.擔保=1;nm='連帶擔保';a=10;}
+     g.inst=cl(g.inst+a);g.stats.commit++;applyResp(g,'承諾');unlock('dev');log('good','🔒 '+nm+' → 制度信用 +'+a+'、保守派回穩');
+     showWhy('打出可信承諾（'+nm+'）','地主最深的恐懼是「蓋到一半建商落跑」。續建／增資／擔保把承諾變成制度，這叫「制度信用 > 公司信用」。','制度信用');event(-.05);}},
+  {em:'⚖️',t:'引入獨立第三方',cost:'籌-12 月-1',tag:'估價師三家（權變§6）',target:'保守/投資',
+   d:'獨立估價/監督，破球員兼裁判',can:g=>g.budget>=12&&!g.indep,run(g){spend(g,12);g.time-=1;g.indep=1;g.inst=cl(g.inst+12);
+     applyResp(g,'第三方');unlock('dev');log('good','⚖️ 引入獨立第三方 → 制度信用 +12、保守/投資派回穩');
+     showWhy('引入獨立第三方','三家估價、獨立監督能破解「球員兼裁判」的疑慮，讓保守與投資派相信分配是公平的。','估價爭議');event(-.08);}},
+  {em:'🤝',t:'個別協商（強勢戶）',cost:'月-2',tag:'逐戶協議',target:'強勢/敵對戶',
+   d:'針對最棘手的強勢/敵對戶深談',can:g=>g.time>=2,run(g){g.time-=2;
+     const t=g.owners.filter(o=>o.sat<AGREE).sort((a,b)=>(a.pers==='dom'?-1:0)-(b.pers==='dom'?-1:0)||a.sat-b.sat)[0];
+     if(t){const g0=t.pers==='dom'?20:14;t.sat=cl(t.sat+g0*(t.kind==='樞紐'?.7:1));log('good','🤝 個別協商「'+t.no+'號 '+t.name+'」（'+PERS[t.pers].k+(t.kind?'・'+(t.kind==='樞紐'?'樞紐戶':'高抗性')+'':'')+'）→ 滿意度上升');
+       showWhy('個別協商','強勢戶與樞紐戶吃「面對面、被當一回事」這套；群體說明會對他們無感，要單獨深談。'+(t.kind==='樞紐'?'樞紐戶抗性高，一次談不動，要耐心。':''),'逐戶談判');}
+     event(0);}},
+  {em:'👪',t:'家族溝通（族長）',cost:'籌-6 月-2',tag:'同意比例整合',target:'族長→帶動全家族',
+   d:'說服族長，帶動整個家族',can:g=>g.time>=2&&g.budget>=6&&g.owners.some(o=>o.leader),run(g){spend(g,6);g.time-=2;g.stats.fam++;
+     const ld=g.owners.filter(o=>o.leader&&o.sat<AGREE).sort((a,b)=>a.sat-b.sat)[0]||g.owners.find(o=>o.leader);
+     ld.sat=cl(ld.sat+16);g.owners.forEach(o=>{if(o.fam===ld.fam&&!o.leader)o.sat=cl(o.sat+11);});
+     unlock('family');log('good','👪 家族溝通：說服「'+ld.famName+'」族長 → 帶動全家族滿意度上升');
+     showWhy('家族溝通（族長帶動）','族長一點頭，家族成員更容易跟進；火力集中族長最有效率——這是偏好瀑布的小型版。','Preference Cascade 偏好瀑布');event(-.05);}},
+  {em:'⏳',t:'等待觀望',cost:'月-2',tag:'時程風險',target:'—',
+   d:'近乎免費，但沉沒成本、議價力與對手都升',can:g=>g.time>=2,run(g){g.time-=2;g._waited=1;unlock('holdup');log('sys','⏳ 等待觀望（沉沒成本與議價力上升、對手趁機猛追）');
+     showWhy('等待觀望','時間不是中性的：你停下來，釘子戶議價力與沉沒成本上升、競爭對手趁機追上。拖延幾乎永遠是負期望值。','時間複利成本');event(.2);}},
+  {em:'🏁',t:'啟動權利變換',cost:'結算',tag:'事業計畫核定（§37）',target:'達門檻收尾',win:true,
+   d:'同意達門檻→闖關成功',can:g=>true,run(g){if(agreeCount(g)>=g.needed){end(true,'同意跨過門檻！啟動權利變換、餘戶依法強制納入——整合成功 🎉');return;}
+     g.time-=1;g.inst=cl(g.inst-10);hitAll(g,-3);log('bad','🏁 未達門檻硬上 → 反彈、制度信用 −10、全體滿意度下降');shake();event(.3);}},
+];
+function applyResp(g,key){ // 依人格反應曲線加滿意度，乘上接受傾向、抗性與「同招遞減」
+  const mult=.6+acceptAvg();let fatigued=false;
+  g.owners.forEach(o=>{const base=(PERS[o.pers].resp[key]||0);if(!base)return;
+    if(!o.hits)o.hits={};o.hits[key]=(o.hits[key]||0)+1;
+    const fatigue=Math.max(.3,Math.pow(.62,o.hits[key]-1)); // 重複同一招，效果遞減
+    if(o.hits[key]>=2)fatigued=true;
+    o.sat=cl(o.sat+base*mult*0.95*(o.resist||1)*fatigue);});
+  if(fatigued)unlock('fatigue');
+}
+function event(extra){
+  let p=(.26+G.round*.03+(extra||0)-G.calm*.12)*(0.7+G.dif*0.12);
+  if(G.calm>0)G.calm--;
+  if(Math.random()<p){const ev=EVENTS[rnd(0,EVENTS.length-1)];ev.f(G);
+    if(ev.chain&&G.lastEvent&&G.lastEvent.chain){unlock('emotion');toast('🌊 偏好雪崩：阻撓連鎖！','evt');}
+    G.lastEvent=ev;G.budget=Math.round(G.budget);
+    log('evt','🧱 '+ev.em+' <b>'+ev.t+'</b>（'+ev.m+'）');
+    showWhy('阻撓事件：'+ev.t,ev.why,ev.cx);
+    toast('🧱 '+ev.em+' '+ev.t,'evt');shake();beep('bad');
+  } else G.lastEvent=false;
+}
+function buildActions(){$('actions').innerHTML='';ACTS.forEach(a=>{const b=document.createElement('button');b.className='act'+(a.win?' win':'');
+  b.innerHTML='<span class="cost">'+a.cost+'</span><span class="em">'+a.em+'</span><b>'+a.t+'</b><span class="d">'+a.d+'</span><span class="tagx">⚖️ '+a.tag+'</span><span class="target">🎯 '+a.target+'</span>';
+  b.onclick=()=>doAct(a);$('actions').appendChild(b);});}
+function doAct(a){
+  if(G.over)return;$('hint1').classList.remove('show');
+  prevAgree=agreeCount(G);const pB=G.budget,pT=G.time,pI=G.inst;
+  a.run(G);bandwagon();advanceComp(G,{wait:G._waited});G._waited=0;G.round++;G.stage=Math.min(9,5+Math.floor((G.baseTime-G.time)/4));
+  if(leverage()>.6)unlock('holdup');
+  if(!G.over){if(G.time<=0)end(false,'時程耗盡，案件停擺、信心瓦解——整合破局。');else if(G.budget<0)end(false,'籌碼見底，無力再推——整合破局。');}
+  render();
+  floatDelta('st-consent',agreeCount(G)-prevAgree);floatDelta('st-budget',G.budget-pB);floatDelta('st-time',G.time-pT);floatDelta('st-inst',G.inst-pI);
+  if(agreeCount(G)>prevAgree){$('pbar').classList.add('gain');setTimeout(()=>$('pbar').classList.remove('gain'),600);beep('good');}
+  save();
+}
+function end(win,msg){
+  G.over=true;clearSave();log(win?'good':'bad',(win?'🏆 ':'💔 ')+msg);
+  if(win){confetti();beep('win');}else{shake();beep('bad');}
+  const used=Object.entries(G.commits).filter(([k,v])=>v).map(([k])=>k);if(G.indep)used.push('獨立第三方');
+  const months=G.baseTime-G.time,shareback=100-Math.round(G.share*100);
+  const hostile=G.owners.filter(o=>o.sat<20).length;
+  const quality= !win?'—':hostile===0?'無敵對戶':hostile<=2?'少數敵對':'仍有敵對戶';
+  const F=computeFin(G);const fgrade= !win?'':F.roi>=15?'🏆 完美整合（高報酬）':F.roi>=5?'✅ 整合成功':F.roi>=0?'⚠️ 整合成功・微利':'⚠️ 整合成功卻財務虧損';
+  const path=G.share<=.42?'你走的是<b>高同意率路線</b>——讓利換速度，整合快但建方報酬（IRR）較低。':G.share>=.47?'你走的是<b>高報酬路線</b>——守住建方分配，但同意更難拿、節奏更險。':'你走的是<b>平衡路線</b>——同意率與報酬之間取捨得宜。';
+  const key=win?('關鍵：'+(used.length?'<b>'+used.join('、')+'</b>＋':'')+'針對人格／家族出對牌。'+path+'　整合花費吃掉成本 '+(F.integ||0).toFixed(2)+'億。印證「都更最難的是人，不是法規」。')
+    :'卡關常因沒辨人格、信任不足、分配過貪、或被對手搶先。下次先用<b>可信承諾／第三方</b>顧保守派、<b>家族溝通</b>滾動多數，<b>樞紐／高抗性戶</b>用個別協商反覆攻，別硬上權變養大議價力、也別讓對手追上。';
+  $('endModal').innerHTML='<div class="endbig '+(win?'win':'lose')+'">'+(win?'🏆 整合成功':'💔 整合破局')+'</div>'
+    +'<p style="color:var(--slate);margin:0">'+msg+(win?'　·　<b>'+fgrade+'</b>（'+quality+'）':'')+'</p>'
+    +'<div class="stats">'
+    +'<div class="s"><b>'+months+'</b><span>用了幾個月</span></div><div class="s"><b>'+G.round+'</b><span>決策回合</span></div>'
+    +'<div class="s"><b>'+shareback+'%</b><span>地主分回比</span></div><div class="s"><b>'+agreeCount(G)+'/'+G.needed+'</b><span>同意/門檻</span></div>'
+    +'<div class="s"><b>'+G.inst+'</b><span>制度信用</span></div><div class="s"><b>'+Math.round(F.roi)+'%</b><span>建方 ROI(示意)</span></div><div class="s"><b>'+unlocked.size+'/'+CONCEPTS.length+'</b><span>解鎖名詞</span></div></div>'
+    +'<div class="recap">🎓 <b>復盤：</b>'+key+'</div>'
+    +'<div style="display:flex;gap:9px;margin-top:14px;flex-wrap:wrap"><button class="nbtn solid" id="eAgain">🔄 再玩一次</button><button class="nbtn" id="eNew">🗂️ 換劇本</button><button class="nbtn" id="eCx">📖 名詞('+unlocked.size+')</button></div>';
+  $('endOv').classList.add('show');
+  $('eAgain').onclick=()=>{$('endOv').classList.remove('show');init();};
+  $('eNew').onclick=()=>{$('endOv').classList.remove('show');openStart();};
+  $('eCx').onclick=()=>{$('endOv').classList.remove('show');openCodex();};
+  render();
+}
+
+/* ====================== 繪製 ====================== */
+function render(silent){
+  const ac=agreeCount(G),pct=Math.round(ac/G.N*100),thpct=Math.round(G.needed/G.N*100),gap=G.needed-ac;
+  $('st-consent').querySelector('.v').textContent=ac+'/'+G.N;
+  $('st-budget').querySelector('.v').textContent=G.budget;
+  $('st-time').querySelector('.v').textContent=G.time;
+  $('st-inst').querySelector('.v').textContent=G.inst;
+  $('st-dev').querySelector('.v').textContent=(G.dev>=0?'+':'')+G.dev;
+  $('st-stage').querySelector('.v').textContent='S'+G.stage;
+  $('st-time').classList.toggle('alarm',G.time<=4);$('st-budget').classList.toggle('alarm',G.budget<22);
+  $('pb').style.width=pct+'%';$('thm').style.left=thpct+'%';
+  $('pl-left').textContent='同意 '+pct+'%';$('pl-right').textContent='門檻 '+Math.round(G.th*100)+'%';
+  $('pl-goal').textContent= gap>0?('還差 '+gap+' 戶達標'):'✓ 已達標，按「啟動權變」收尾';
+  $('pl-goal').style.color= gap>0?'var(--emer-d)':'var(--emer)';
+  // 情緒分布
+  const cnt={sup:0,watch:0,opp:0,hos:0};G.owners.forEach(o=>cnt[band(o.sat)]++);
+  $('emo').innerHTML=['sup','watch','opp','hos'].map(b=>{const w=cnt[b]/G.N*100;const c={sup:'var(--sup)',watch:'var(--watch)',opp:'var(--opp)',hos:'var(--hos)'}[b];return '<span style="width:'+w+'%;background:'+c+'"></span>';}).join('');
+  // 盤面
+  $('owners').innerHTML=sortOrder().map(i=>{const o=G.owners[i],b=band(o.sat),isNew=!silent&&o.sat>=AGREE&&!o._wasAgree;
+    const km=o.kind==='樞紐'?'<span class="fa" style="left:3px;right:auto;color:var(--hos)">🧱</span>':o.kind==='高抗'?'<span class="fa" style="left:3px;right:auto;color:var(--hos)">🪨</span>':'';
+    return '<div class="ow '+b+(i===sel?' sel':'')+(isNew?' bump':'')+'" data-i="'+i+'" title="'+o.no+'號 '+(o.kind?o.kind+'戶':'')+'"><span class="pi">'+PERS[o.pers].pi+'</span>'+(o.leader?'<span class="fa">⌂</span>':'')+km+'</div>';}).join('');
+  G.owners.forEach(o=>o._wasAgree=o.sat>=AGREE);
+  document.querySelectorAll('.ow').forEach(el=>el.onclick=()=>{sel=+el.dataset.i;showProf();render(true);});
+  if(sel>=0)showProf();
+  // 議價力
+  const lev=leverage(),lp=Math.round(lev*100),lc=lev<.25?'var(--sup)':lev<.5?'var(--watch)':lev<.7?'var(--opp)':'var(--hos)';
+  $('lev-v').textContent=lp;$('lev-bar').style.width=lp+'%';$('lev-bar').style.background=lc;
+  $('lev-msg').innerHTML=gap<=0?'已達門檻，餘戶可循權變強制納入，議價力崩落。':(gap/(G.N-ac)>.8?'幾乎人人關鍵＋沉沒成本升 → 議價力高，慎防末位戶綁架。':'餘戶仍多、可替代，把握此時鎖定。');
+  // 接受傾向
+  const am=Math.round(acceptAvg()*100),aC=am<40?'var(--hos)':am<65?'var(--watch)':'var(--sup)';
+  $('acc-v').textContent=am+'%';$('acc-bar').style.width=am+'%';$('acc-bar').style.background=aC;
+  $('acc-msg').innerHTML=am<40?'偏低：先補<b>制度／建商信用</b>或壓低分配，保守派才會動。':am<65?'尚可：補承諾或說明會可再拉高。':'高：策略容易見效，火力推多數過門檻。';
+  // 競合
+  const sh=Math.round(G.share*100);$('pie-v').textContent='建方 '+sh+'% / 地主 '+(100-sh)+'%';$('pie-bar').style.width=sh+'%';
+  $('pie-bar').style.background=G.share>.55?'var(--hos)':'var(--emer)';
+  $('pie-msg').innerHTML=G.share>.55?'⚠️ 分太多：貪婪毀餅，投資派以外都不買單。':'分配尚屬合理，餅能做大。';
+  renderFin();
+  document.querySelectorAll('.act').forEach((b,i)=>{const a=ACTS[i];b.disabled=G.over||!a.can(G);if(a.win)b.classList.toggle('win',ac>=G.needed&&!G.over);});
+}
+function showProf(){const o=G.owners[sel];if(!o)return;const p=PERS[o.pers];
+  $('prof').innerHTML='<div class="pn">'+p.pi+' '+o.no+'號 '+o.name+(o.fam!=null?' <span style="color:var(--gold);font-size:12px">⌂'+o.famName+(o.leader?'·族長':'')+'</span>':'')
+    +' <span class="band" style="background:'+bandColor(o.sat)+'">'+bandName(o.sat)+'</span></div>'
+    +'<div class="mini"><span style="width:'+o.sat+'%;background:'+bandColor(o.sat)+'"></span></div>'
+    +'<p><b>'+p.k+'</b>（'+p.d+'）·滿意度 '+Math.round(o.sat)+'/100 ·影響力 '+'●'.repeat(o.infl)
+    +(o.kind==='樞紐'?' ·<b style="color:var(--hos)">🧱 樞紐戶</b>（高持分・抗性高，不同意會綁架全局）':o.kind==='高抗'?' ·<b style="color:var(--hos)">🪨 高抗性</b>（要反覆深談才動）':'')+'</p>'
+    +'<p style="color:var(--emer-d)">💡 對策：'+persTip(o.pers)+(o.kind?'。這是難整合戶，<b>別指望一張卡搞定</b>，用「個別協商」反覆攻。':'')+'</p>';
+}
+function persTip(k){return{cons:'重制度——先打可信承諾／引入第三方',inv:'重利益——加碼分回最有效',emo:'重感情——透明說明會＋家族溝通',dom:'談判高手——個別協商深談',obs:'看大眾——把整體同意率拉高他自然跟'}[k];}
+
+/* ====================== 概念圖鑑／存檔／控制 ====================== */
+function buildCodex(){const U=unlocked||new Set();$('cxCount').textContent='（已解鎖 '+U.size+'/'+CONCEPTS.length+'）';
+  $('codexBody').innerHTML=CONCEPTS.map(c=>{const u=U.has(c.id);return '<details class="cx'+(u?'':' lock')+'"><summary><span class="em">'+(u?c.em:'🔒')+'</span>'+(u?c.t:'？？？（玩到對應情境解鎖）')+'<span class="tag">'+(u?c.tag:'未解鎖')+'</span></summary><div class="body">'+(u?c.b:'繼續推演，玩到對應情境就會解鎖。')+'</div></details>';}).join('');}
+function save(){try{if(!G.over)localStorage.setItem('urV4Save',JSON.stringify({G,selScen,selDev,selN,unlocked:[...unlocked]}));}catch(e){}}
+function clearSave(){try{localStorage.removeItem('urV4Save');}catch(e){}}
+function refreshDif(){const d=difficulty(SCEN[selScen],selN,selDev);$('difstars').textContent='★'.repeat(d)+'☆'.repeat(5-d);$('diftxt').textContent='　'+['','很易','偏易','適中','偏難','極難'][d];}
+function openStart(){
+  $('scards').innerHTML=SCEN.map((s,i)=>'<div class="scard'+(i===selScen?' on':'')+'" data-i="'+i+'"><h4>'+s.k+'</h4><p>'+s.real+'　門檻 '+Math.round(s.th*100)+'%</p></div>').join('');
+  document.querySelectorAll('#scards .scard').forEach(c=>c.onclick=()=>{selScen=+c.dataset.i;document.querySelectorAll('#scards .scard').forEach(x=>x.classList.toggle('on',x===c));refreshDif();});
+  refreshDif();$('startOv').classList.add('show');
+}
+$('nrange').oninput=e=>{selN=+e.target.value;$('nval').textContent=selN+' 戶';refreshDif();};
+$('devsel').onchange=e=>{selDev=+e.target.value;refreshDif();};
+$('startBtn').onclick=()=>{$('startOv').classList.remove('show');init();};
+$('btnNew').onclick=openStart;
+document.querySelectorAll('.sortb').forEach(b=>b.onclick=()=>{if(!G)return;G.sort=b.dataset.s;document.querySelectorAll('.sortb').forEach(x=>x.classList.toggle('on',x===b));render(true);});
+$('btnHow').onclick=()=>{howGo(0);$('howOv').classList.add('show');};$('howX').onclick=()=>$('howOv').classList.remove('show');
+let howI=0;const STEPS=4;
+function howGo(n){howI=cl(n,0,STEPS-1);document.querySelectorAll('.step').forEach((s,i)=>s.classList.toggle('on',i===howI));
+  $('howDots').innerHTML=Array.from({length:STEPS},(_,i)=>'<span class="dot'+(i===howI?' on':'')+'"></span>').join('');
+  $('howPrev').style.visibility=howI===0?'hidden':'visible';$('howNext').textContent=howI===STEPS-1?'開始玩':'下一步';}
+$('howPrev').onclick=()=>howGo(howI-1);$('howNext').onclick=()=>{if(howI===STEPS-1)$('howOv').classList.remove('show');else howGo(howI+1);};
+$('btnCodex').onclick=openCodex;function openCodex(){buildCodex();$('codexOv').classList.add('show');}$('codexX').onclick=()=>$('codexOv').classList.remove('show');
+$('btnSound').onclick=()=>{SOUND=!SOUND;$('btnSound').textContent=SOUND?'🔊':'🔇';$('btnSound').classList.toggle('on',SOUND);if(SOUND)beep('good');};
+[$('howOv'),$('codexOv'),$('endOv')].forEach(o=>o.onclick=e=>{if(e.target===o)o.classList.remove('show');});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')[$('howOv'),$('codexOv'),$('endOv')].forEach(o=>o.classList.remove('show'));});
+addEventListener('resize',()=>{const c=$('fx');c.width=innerWidth;c.height=innerHeight;});
+
+(function(){
+  let s=null;try{s=JSON.parse(localStorage.getItem('urV4Save'));}catch(e){}
+  if(s&&s.G&&!s.G.over){G=s.G;selScen=s.selScen;selDev=s.selDev;selN=s.selN;unlocked=new Set(s.unlocked);sel=-1;prevAgree=agreeCount(G);
+    buildActions();render(true);buildCodex();$('ph-n').textContent='· '+G.N+' 戶 ·續玩中';log('sys','📂 偵測到上次進度，已續玩。要重來按「換劇本」。');$('startOv').classList.remove('show');
+  }else{openStart();buildCodex();}
+})();
+</script>
+</body>
+</html>

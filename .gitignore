@@ -24,7 +24,9 @@ Thumbs.db
 
 # 內部文件（含真實財務/案件資料，禁止上傳）
 供py/
-*.html
 永盛開發_知識庫.md
 都更/
 開發評估流程_SOP*.md
+# 註：原本這裡有 blanket `*.html`（沿自 RE-DCF-Tool，用來擋含真實資料的內部 HTML 報告）。
+# 但那條會把 apps/web 靜態站的頁面全部排除，導致 GitHub Pages 沒有 index.html→404。
+# 已移除。HTML 的資料安全改由 CI Gate 0（check_no_real_names.sh 掃全檔含 HTML）把關。
