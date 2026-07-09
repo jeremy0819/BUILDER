@@ -28,6 +28,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # ── M2-B：套件可安裝性（pyproject）——裝完後從非 repo 目錄 import 必須成功 ──
+      # 註：apps/streamlit/app.py 保留 sys.path 墊片（Streamlit Cloud 只裝 requirements.txt，
+      #     不會 pip install -e .；墊片是該環境的零風險路徑，兩者並存、互不干擾）。
+      - name: "Gate 1.5 — Package installability (pip install -e .)"
+        run: |
+          pip install -e .
+          cd /tmp && python -c "import core.redcf as r; print('installed import OK', r.CORE_VERSION)"
+
       # ── Gate 0：資料紀律（紅線）——真實案件段名零命中 ──────────────
       - name: "Gate 0 — No real names"
         run: bash check_no_real_names.sh
@@ -49,3 +57,7 @@ jobs:
       # ── Gate 4：靜態站本地連結（apps/web 死連結/404 即 Fail）──────────
       - name: "Gate 4 — Static web links"
         run: python tools/check_web_links.py
+
+      # ── Gate 5：URBAN STRAND 遊戲核心 headless（機制＋可贏性 8–24 週）──
+      - name: "Gate 5 — Simulator headless (node)"
+        run: node tests/web/test_os_simulator.mjs

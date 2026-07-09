@@ -154,9 +154,13 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
   <div class="cases" id="cases"></div>
   <div class="detail" id="detail"></div>
 
+  <div class="slab">三案對照（開發評估）</div>
+  <div class="detail" style="padding:16px 20px;overflow-x:auto" id="compare"></div>
+
   <div class="slab">工具與導覽</div>
   <div class="nav">
-    <a href="simulator.html"><div class="t">🎮 整合策略沙盤</div><div class="d">賽局理論模擬地主整合談判</div></a>
+    <a href="os-simulator.html"><div class="t">🕹️ URBAN STRAND <span class="ext">NEW</span></div><div class="d">整合戰術沙盤——建立在 Core 權威數字上的羈絆談判</div></a>
+    <a href="simulator.html"><div class="t">🎮 整合策略沙盤（V4 經典版）</div><div class="d">賽局理論模擬地主整合談判</div></a>
     <a href="evaluator.html"><div class="t">🧮 坪效×投報試算</div><div class="d">教學試算＋對接 Core JSON 匯入</div></a>
     <a href="guide.html"><div class="t">📖 都更 11 關指南</div><div class="d">S1–S11 流程與名詞小幫手</div></a>
     <a href="https://builder-9sczgrez3a3qsbmkebd6ey.streamlit.app/" target="_blank" rel="noopener"><div class="t">⚙️ RE-DCF 精確計算 <span class="ext">↗ Streamlit</span></div><div class="d">正式容積查核·坪效·投報計算工具</div></a>
@@ -222,9 +226,22 @@ function detail(c){
     <table class="ftbl" id="ftbl"><thead><tr><th>樓層</th><th>樓板 m²</th><th>計容積</th><th>梯廳</th><th>安全梯</th><th>陽台</th></tr></thead><tbody>${frows}</tbody></table></div>
   <div class="warns"><div class="slab" style="margin:8px 0 2px">Core 權威健檢 warnings[]</div>${warns}</div>`;
 }
+function compareTable(){
+  const rows=[["允建容積 m²",c=>n0(c.allow)],["計入容積 m²",c=>n2(c.used)],["容積餘量 m²",c=>n2(c.remaining)],
+    ["銷售坪數 坪",c=>n0(c.saleable)],["銷坪比",c=>n2(c.eff)],["總銷 萬",c=>n0(c.total_sales)],
+    ["共負比",c=>pct(c.scr)],["地主分回比",c=>pct(c.owner_ratio)],["投報率",c=>pct(c.return_rate)],
+    ["增值倍率",c=>c.vmult==null?"—":n2(c.vmult)+"×"],["健檢 warnings",c=>c.warnings.length+" 項"],["逐層資料",c=>c.floors_n+" 層"]];
+  const head=`<tr><th style="text-align:left;padding:7px 10px;color:var(--mute);font-size:11px;border-bottom:1px solid var(--line)">指標（皆為 Core result）</th>`+
+    CASES.map(c=>`<th style="text-align:right;padding:7px 10px;font-size:12px;border-bottom:1px solid var(--line)">案例 ${c.id}<br><span style="font-weight:500;color:var(--mute);font-size:10.5px">${c.type}</span></th>`).join("")+"</tr>";
+  const body=rows.map(([lab,f])=>`<tr><td style="padding:6px 10px;color:var(--mute);font-size:12px;border-bottom:1px solid var(--line)">${lab}</td>`+
+    CASES.map(c=>`<td class="tnum" style="text-align:right;padding:6px 10px;font-size:12.5px;border-bottom:1px solid var(--line)">${f(c)}</td>`).join("")+"</tr>").join("");
+  return `<table style="width:100%;border-collapse:collapse;min-width:520px">${head}${body}</table>
+  <div style="font-size:11px;color:var(--mute);margin-top:9px">跨案數字皆出自同一 core_version（0.2.0），可直接比較；不同 core_version 之 result 不可混比（ARCHITECTURE §4）。</div>`;
+}
 let active="C";
 function render(){
   document.getElementById("cases").innerHTML=CASES.map(caseCard).join("");
+  document.getElementById("compare").innerHTML=compareTable();
   document.getElementById("detail").innerHTML=detail(CASES.find(c=>c.id===active));
   document.querySelectorAll(".case").forEach(el=>{el.classList.toggle("active",el.dataset.id===active);el.onclick=()=>{active=el.dataset.id;render();};});
   const fb=document.getElementById("fbtn"),ft=document.getElementById("ftbl");

@@ -1,0 +1,476 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>URBAN STRAND · 整合戰術沙盤</title>
+<style>
+/* ————————————————————————————————————————————————
+   URBAN STRAND — 都更整合戰術沙盤（M2-C，Core JSON 橋接）
+   視覺：刻意單一深色電影主題（cinematic commit，非省略）。
+   紅線：本頁零財務/法規公式——右側權威數字全部逐字來自
+   RE-DCF Core result（案例D，schema v2.0）；遊戲層只處理
+   談判/羈絆/回合，與金額計算無關。
+———————————————————————————————————————————————— */
+:root{
+  --bg:#0a0d12; --panel:#11161d; --panel2:#0d1117; --line:#1f2833;
+  --ink:#dce6ec; --mute:#6d7c88; --dim:#43505a;
+  --strand:#4fd8e8; --strand-dim:#1d5a64; --amber:#ff8a4a; --amber-dim:#66351d;
+  --ok:#59d8a2; --err:#ef6a7a;
+  --mono:"SF Mono",ui-monospace,"Cascadia Mono",Menlo,Consolas,monospace;
+  --serif:"Noto Serif TC","Songti TC",serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  line-height:1.55;-webkit-font-smoothing:antialiased}
+body::after{ /* 極淡掃描線，電影質感 */
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;
+  background:repeating-linear-gradient(0deg,transparent 0 2px,#000 2px 3px)}
+.mono{font-family:var(--mono)} .tnum{font-variant-numeric:tabular-nums}
+a{color:var(--strand);text-decoration:none}
+
+/* ── 疊層（title / chapter / codec / ending）── */
+.ovl{position:fixed;inset:0;background:rgba(6,8,11,.96);z-index:40;display:none;
+  align-items:center;justify-content:center;padding:24px}
+.ovl.show{display:flex}
+.fadein{animation:fi .8s ease both}
+@keyframes fi{from{opacity:0;transform:translateY(10px)}to{opacity:1}}
+
+/* title */
+.title-box{max-width:660px;text-align:center}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.35em;color:var(--mute);text-transform:uppercase}
+.logo-strand{font-family:var(--mono);font-weight:700;font-size:clamp(38px,7vw,64px);
+  letter-spacing:.12em;margin:14px 0 4px;color:var(--ink)}
+.logo-strand b{color:var(--strand);font-weight:700}
+.tagline{font-family:var(--serif);font-size:17px;color:var(--mute);letter-spacing:.2em;margin-bottom:26px}
+.brief{background:var(--panel);border:1px solid var(--line);border-radius:10px;text-align:left;
+  padding:16px 18px;font-size:12.5px;color:var(--mute);margin:0 0 22px}
+.brief b{color:var(--ink)} .brief .hi{color:var(--amber)}
+.brief .src{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:10px}
+.btn{cursor:pointer;font-family:var(--mono);font-size:13px;letter-spacing:.18em;
+  background:none;border:1px solid var(--strand);color:var(--strand);
+  padding:12px 34px;border-radius:4px;text-transform:uppercase}
+.btn:hover{background:var(--strand);color:#04252b}
+.btn.ghost{border-color:var(--line);color:var(--mute);letter-spacing:.1em}
+.btn.ghost:hover{background:var(--line);color:var(--ink)}
+
+/* chapter card */
+.chapter{font-family:var(--serif);text-align:center}
+.chapter .no{font-family:var(--mono);font-size:12px;letter-spacing:.4em;color:var(--strand)}
+.chapter h2{font-size:clamp(26px,5vw,40px);font-weight:600;letter-spacing:.22em;margin:16px 0 10px}
+.chapter p{color:var(--mute);font-size:14px;letter-spacing:.12em}
+
+/* ── HUD ── */
+.wrap{max-width:1180px;margin:0 auto;padding:18px 16px 40px}
+header.hud{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+.hud .t{font-family:var(--mono);letter-spacing:.2em;font-size:14px}
+.hud .t b{color:var(--strand)}
+.hud .meta{font-family:var(--mono);font-size:11px;color:var(--mute);display:flex;gap:14px;flex-wrap:wrap}
+.hud .meta b{color:var(--ink)}
+.hud .meta .amber{color:var(--amber)}
+
+.progress{margin:2px 0 16px}
+.pbar{height:10px;background:var(--panel);border:1px solid var(--line);border-radius:999px;position:relative;overflow:hidden}
+.pbar>span{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--strand-dim),var(--strand))}
+.pbar .thr{position:absolute;right:0;top:-2px;bottom:-2px;width:2px;background:var(--amber)}
+.plab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;color:var(--mute);margin-top:5px}
+.plab b{color:var(--strand)}
+
+.cols{display:grid;grid-template-columns:1fr 330px;gap:16px}
+@media(max-width:900px){.cols{grid-template-columns:1fr}}
+
+/* 街區格網 */
+.board{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px}
+.blab{font-family:var(--mono);font-size:10.5px;letter-spacing:.25em;color:var(--dim);margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(8,1fr);gap:7px}
+.cell{aspect-ratio:1;border-radius:6px;border:1px solid var(--line);background:var(--panel);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;
+  font-family:var(--mono);font-size:10px;color:var(--mute);position:relative;transition:transform .1s}
+.cell:hover{transform:scale(1.06);z-index:2}
+.cell .st{font-size:9px;margin-top:2px;color:var(--dim)}
+.cell.agreed{border-color:var(--strand-dim);background:#0e2227;color:var(--strand);cursor:default}
+.cell.agreed .st{color:var(--strand-dim)}
+.cell.pending{border-color:#3a4550}
+.cell.opposed{border-color:var(--amber-dim);background:#1d1410;color:var(--amber)}
+.cell.boss::before{content:"▲";position:absolute;top:2px;right:4px;font-size:8px;color:var(--amber)}
+.cell.justflip{animation:flip .6s ease}
+@keyframes flip{0%{background:var(--strand);color:#04252b}100%{}}
+.legend{display:flex;gap:14px;margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--mute);flex-wrap:wrap}
+.sw{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+/* 右欄：Core 權威＋日誌 */
+.side{display:flex;flex-direction:column;gap:14px}
+.core{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:15px}
+.core .h{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);
+  font-size:10.5px;letter-spacing:.2em;color:var(--dim);margin-bottom:10px}
+.core .h .chip{border:1px solid var(--strand-dim);color:var(--strand);border-radius:4px;padding:1px 7px;font-size:9.5px}
+.core .row{display:flex;justify-content:space-between;font-size:12.5px;padding:3.5px 0;color:var(--mute)}
+.core .row b{color:var(--ink);font-family:var(--mono);font-size:12px}
+.core .warn{margin-top:9px;padding:8px 10px;border-radius:7px;font-size:11px;line-height:1.5}
+.core .warn.err{background:#241318;color:var(--err)}
+.core .warn.warn{background:#221a10;color:var(--amber)}
+.core .src{font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-top:10px}
+.log{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:13px 15px;
+  font-family:var(--mono);font-size:11px;color:var(--mute);max-height:250px;overflow-y:auto}
+.log .li{padding:3px 0;border-bottom:1px dashed #17202a}
+.log .li b{color:var(--strand)} .log .li .a{color:var(--amber)}
+.actions{display:flex;gap:9px;flex-wrap:wrap}
+.actions .btn{flex:1;padding:11px 8px;font-size:11px;letter-spacing:.12em}
+
+/* CODEC */
+.codec{max-width:640px;width:100%;background:var(--panel2);border:1px solid var(--strand-dim);
+  border-radius:12px;padding:0;overflow:hidden}
+.codec .freq{display:flex;justify-content:space-between;align-items:center;background:#0c1a1e;
+  padding:9px 16px;font-family:var(--mono);font-size:11px;color:var(--strand);letter-spacing:.2em}
+.codec .freq .wave{display:inline-flex;gap:2px;align-items:flex-end;height:12px}
+.codec .freq .wave i{width:3px;background:var(--strand);animation:wv .7s infinite ease-in-out;border-radius:1px}
+.codec .freq .wave i:nth-child(2){animation-delay:.15s}.codec .freq .wave i:nth-child(3){animation-delay:.3s}
+.codec .freq .wave i:nth-child(4){animation-delay:.45s}.codec .freq .wave i:nth-child(5){animation-delay:.6s}
+@keyframes wv{0%,100%{height:4px}50%{height:12px}}
+.codec .body{display:flex;gap:16px;padding:18px}
+@media(max-width:560px){.codec .body{flex-direction:column}}
+.codec .face{width:104px;height:120px;flex:none;border:1px solid var(--line);border-radius:8px;
+  background:
+   radial-gradient(circle at 50% 36%, #22303a 15px, transparent 16px),
+   radial-gradient(circle at 50% 88%, #22303a 26px, transparent 27px),
+   linear-gradient(#0e141a,#0e141a);
+  display:flex;align-items:flex-end;justify-content:center;
+  font-family:var(--mono);font-size:9.5px;color:var(--dim);padding-bottom:6px}
+.codec .who{font-size:15px;font-weight:700}
+.codec .role{font-family:var(--mono);font-size:10.5px;color:var(--strand);letter-spacing:.15em;margin:2px 0 10px}
+.codec .say{font-family:var(--serif);font-size:14px;color:var(--ink);min-height:66px;line-height:1.8}
+.codec .stat{font-family:var(--mono);font-size:10.5px;color:var(--mute);margin-top:8px}
+.codec .stat b{color:var(--amber)}
+.codec .foot{display:flex;gap:9px;padding:0 18px 18px}
+.codec .foot .btn{flex:1;font-size:11px;padding:10px 6px}
+.codec .foot .btn[disabled]{opacity:.35;cursor:not-allowed}
+
+/* ending credits */
+.credits{max-width:560px;text-align:center}
+.credits .roll{height:280px;overflow:hidden;position:relative;margin:22px 0;
+  -webkit-mask-image:linear-gradient(transparent,#000 18%,#000 82%,transparent)}
+.credits .roll .inner{animation:roll 26s linear infinite;font-family:var(--mono);font-size:12px;color:var(--mute);line-height:2.1}
+@keyframes roll{from{transform:translateY(280px)}to{transform:translateY(-110%)}}
+.credits .quote{font-family:var(--serif);font-size:16px;letter-spacing:.1em;color:var(--ink);line-height:2}
+.credits .stats{font-family:var(--mono);font-size:12px;color:var(--mute);margin:14px 0 22px}
+.credits .stats b{color:var(--strand)}
+footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;display:flex;
+  justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:10px;color:var(--dim)}
+</style>
+
+<!-- ═══════════ TITLE ═══════════ -->
+<div class="ovl show" id="ovl-title"><div class="title-box fadein">
+  <div class="eyebrow">BUILDER GAME STUDIOS × RE-DCF CORE presents</div>
+  <div class="logo-strand">URBAN <b>STRAND</b></div>
+  <div class="tagline">整合，是一種羈絆。</div>
+  <div class="brief">
+    <b>任務簡報 — 案例D（危老・合建，合成資料）</b><br>
+    這條街有 <b>48 戶</b>。34 戶已同意重建，<b class="hi">剩下 14 戶</b>。
+    危老條例要求<b class="hi">全體同意</b>——一戶都不能少。<br>
+    Core 的健檢已經說了實話：<span class="hi">「共負比 66.0% 超過警示線 60%，地主接受度明顯降低。」</span>
+    這場整合，開局就是困難模式。你有 <b>24 週</b>。
+    <div class="src">AUTHORITATIVE DATA · core v0.2.0 · schema v2.0 · input_hash 857f2f68a025 · 人物皆為虛構原型</div>
+  </div>
+  <button class="btn" id="btn-start">▶ START INTEGRATION</button>
+  <div style="margin-top:14px"><a href="index.html" style="font-family:var(--mono);font-size:10.5px;color:var(--dim)">← 返回開發評估儀表板</a></div>
+</div></div>
+
+<!-- ═══════════ CHAPTER ═══════════ -->
+<div class="ovl" id="ovl-chapter"><div class="chapter fadein">
+  <div class="no">EPISODE 1</div>
+  <h2>剩下的十四戶</h2>
+  <p>錢能算出共同負擔，算不出人為什麼搖頭。</p>
+</div></div>
+
+<!-- ═══════════ CODEC ═══════════ -->
+<div class="ovl" id="ovl-codec"><div class="codec fadein">
+  <div class="freq"><span id="cd-freq">FREQ 141.12</span>
+    <span class="wave"><i></i><i></i><i></i><i></i><i></i></span></div>
+  <div class="body">
+    <div class="face" id="cd-face">VISITOR</div>
+    <div style="flex:1">
+      <div class="who" id="cd-who">—</div>
+      <div class="role" id="cd-role">—</div>
+      <div class="say" id="cd-say">…</div>
+      <div class="stat" id="cd-stat"></div>
+    </div>
+  </div>
+  <div class="foot">
+    <button class="btn" id="cd-listen">傾聽（1 AP）</button>
+    <button class="btn" id="cd-offer">客製方案（1 AP · 50萬）</button>
+    <button class="btn ghost" id="cd-close">結束通話</button>
+  </div>
+</div></div>
+
+<!-- ═══════════ ENDING ═══════════ -->
+<div class="ovl" id="ovl-end"><div class="credits fadein">
+  <div class="eyebrow" id="end-eyebrow">INTEGRATION COMPLETE</div>
+  <div class="logo-strand" style="font-size:30px" id="end-title">STRAND FORMED</div>
+  <div class="quote" id="end-quote"></div>
+  <div class="stats" id="end-stats"></div>
+  <div class="roll" id="end-roll"><div class="inner" id="end-roll-inner"></div></div>
+  <button class="btn" onclick="location.reload()">RESTART</button>
+  <span style="display:inline-block;width:10px"></span>
+  <a class="btn ghost" href="index.html" style="text-decoration:none;display:inline-block">回儀表板</a>
+</div></div>
+
+<!-- ═══════════ HUD ═══════════ -->
+<div class="wrap">
+  <header class="hud">
+    <div class="t">URBAN <b>STRAND</b> <span style="color:var(--dim);font-size:10px;letter-spacing:.1em">· 整合戰術沙盤 M2-C</span></div>
+    <div class="meta">
+      <span>WEEK <b class="tnum" id="m-week">1</b>/24</span>
+      <span>AP <b class="tnum" id="m-ap">4</b></span>
+      <span>整合預算 <b class="tnum" id="m-budget">300</b>萬 <span style="color:var(--dim)">(沙盤)</span></span>
+      <span class="amber" id="m-hint"></span>
+    </div>
+  </header>
+
+  <div class="progress">
+    <div class="pbar"><span id="p-fill" style="width:0%"></span><div class="thr"></div></div>
+    <div class="plab"><span>同意 <b class="tnum" id="p-num">34/48</b></span><span>危老門檻＝全體同意（100%）</span></div>
+  </div>
+
+  <div class="cols">
+    <div class="board">
+      <div class="blab">STREET BLOCK · 48 HOUSEHOLDS · 點擊未同意戶開啟 CODEC</div>
+      <div class="grid" id="grid"></div>
+      <div class="legend">
+        <span><i class="sw" style="background:#0e2227;border:1px solid var(--strand-dim)"></i>已同意（羈絆）</span>
+        <span><i class="sw" style="background:var(--panel);border:1px solid #3a4550"></i>觀望</span>
+        <span><i class="sw" style="background:#1d1410;border:1px solid var(--amber-dim)"></i>反對</span>
+        <span>▲＝關鍵戶</span>
+      </div>
+      <div class="actions" style="margin-top:14px">
+        <button class="btn ghost" id="btn-brief">🏫 說明會（1 AP · 20萬）</button>
+        <button class="btn" id="btn-week">結束本週 ▸</button>
+      </div>
+    </div>
+
+    <div class="side">
+      <div class="core">
+        <div class="h"><span>RE-DCF CORE · 權威財務</span><span class="chip">v0.2.0 · 只讀</span></div>
+        <div class="row"><span>總銷</span><b class="tnum">226,089 萬</b></div>
+        <div class="row"><span>共同負擔比</span><b class="tnum">66.0%</b></div>
+        <div class="row"><span>地主分回比</span><b class="tnum">34.0%</b></div>
+        <div class="row"><span>投報率</span><b class="tnum">51.5%</b></div>
+        <div class="row"><span>更新前價值 / 增值倍率</span><b class="tnum">36,300 萬 · 2.12×</b></div>
+        <div class="warn err">SHARED_COST_HIGH — 共負比 66.0% 超過警示線 60%，地主接受度明顯降低（＝本局難度來源）</div>
+        <div class="warn warn">EFFICIENCY_OUT_OF_BAND — 銷坪比 1.704 不在正常帶 1.58–1.68</div>
+        <div class="warn err">VOLUME_EXCEEDED — 容積超出允建 37.50 m²，需調整設計</div>
+        <div class="src">result 逐字引用（schema v2.0 · computed 2026-07-01 · input_hash 857f2f68a025）。本頁遊戲層零財務公式。</div>
+      </div>
+      <div class="log" id="log"></div>
+    </div>
+  </div>
+
+  <footer class="pg">
+    <span>URBAN STRAND — 沙盤為示意（羈絆/談判為遊戲機制），權威數字只來自 Core。人物皆為虛構原型，零真實案件資料。</span>
+    <span><a href="index.html">DASHBOARD</a> · <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">BUILDER</a></span>
+  </footer>
+</div>
+
+<script>
+/*SIMCORE-BEGIN*/
+/* SIMCORE — 純遊戲邏輯（零 DOM、零財務公式；可被 node headless 測試直接 eval）。
+   決定性：固定種子；效果表為常數 → 同操作序列必同結果（可測）。 */
+const SIMCORE = (() => {
+  const WEEKS_MAX = 24, AP_MAX = 4, BUDGET0 = 300, AGREE_AT = 75;
+  const COLS = 8, ROWS = 6, N = 48, BOSS = 47; // W47＝守著祖厝的關鍵戶
+
+  function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;
+    let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;
+    return ((t^t>>>14)>>>0)/4294967296}}
+
+  // 固定佈局：把 14 個未同意戶打散在街區各處（deterministic 洗牌）
+  function layout(){
+    const ids=[...Array(N)].map((_,i)=>i+1), rng=mulberry32(20260707);
+    for(let i=N-1;i>0;i--){const j=Math.floor(rng()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]];}
+    return ids; // grid 位置 k → 戶編號 ids[k]
+  }
+
+  const PERSONAS_P=[["頂樓加蓋的房東","擔心分回坪數變小"],["夜市麵店老闆","怕搬遷斷了生意"],
+    ["剛結婚的年輕夫妻","貸款壓力大"],["退休的國中老師","想搞懂每一個數字"],
+    ["二代接手的診所","診所停業成本高"]];
+  const PERSONAS_O=[["投資置產客","只談報酬率"],["前任里長伯","被上一次都更傷過"],
+    ["獨居的阿嬤","兒女都在國外"],["守著祖厝的伯伯","「這是阿公起的厝。」"]];
+
+  function create(){
+    const rng=mulberry32(1412);           // 固定種子＝可重現
+    const pos=layout();
+    const units={};
+    for(let i=1;i<=N;i++){
+      const consent = i<=34?"agreed": i<=44?"pending":"opposed";
+      const boss = (i===BOSS);
+      const stance = consent==="agreed"?100 : consent==="pending"?32+Math.floor(rng()*13) : (boss?12:15);
+      const P = consent==="pending"?PERSONAS_P[(i-35)%PERSONAS_P.length]
+              : consent==="opposed"?PERSONAS_O[(i-45)%PERSONAS_O.length] : ["住戶","已同意"];
+      units[i]={id:i,consent,stance,boss,listens:0,offers:0,persona:P[0],trait:P[1],flipWeek:consent==="agreed"?0:null};
+    }
+    return {week:1,ap:AP_MAX,budget:BUDGET0,units,pos,log:[],over:false,won:false,
+            briefedWeek:0,spent:0,acts:0};
+  }
+  const idAt=(s,k)=>s.pos[k];
+  const cellOf=(s,id)=>s.pos.indexOf(id);
+  function neighbors(s,id){
+    const k=cellOf(s,id),r=Math.floor(k/COLS),c=k%COLS,out=[];
+    if(r>0)out.push(idAt(s,k-COLS)); if(r<ROWS-1)out.push(idAt(s,k+COLS));
+    if(c>0)out.push(idAt(s,k-1));    if(c<COLS-1)out.push(idAt(s,k+1));
+    return out;
+  }
+  function agreedCount(s){return Object.values(s.units).filter(u=>u.consent==="agreed").length}
+  function _flip(s,u){u.consent="agreed";u.stance=100;u.flipWeek=s.week;
+    s.log.unshift({w:s.week,t:`✚ ${code(u.id)}（${u.persona}）同意了——新的羈絆。`});}
+  const code=id=>"W"+String(id).padStart(2,"0");
+  function _check(s,u){if(u.boss&&u.consent!=="agreed")return; // 祖厝不看氣氛，只認傾聽
+    if(u.consent!=="agreed"&&u.stance>=AGREE_AT)_flip(s,u);
+    if(agreedCount(s)===N){s.over=true;s.won=true;}}
+
+  function listen(s,id){
+    const u=s.units[id];
+    if(s.over||s.ap<1||u.consent==="agreed")return{ok:false};
+    s.ap--;s.acts++;u.listens++;
+    let d;
+    if(u.boss){ d=8;
+      if(u.listens>=3){u.stance=100;_flip(s,u);
+        s.log.unshift({w:s.week,t:"◆ 祖厝的門開了。他只是需要有人坐下來聽完。"});
+        _check(s,u);return{ok:true,d:"convert"};}
+    } else d = u.consent==="pending" ? (u.listens===1?11:8) : (u.listens===1?9:7);
+    u.stance=Math.min(100,u.stance+d);_check(s,u);return{ok:true,d};
+  }
+  function offer(s,id){
+    const u=s.units[id];
+    if(s.over||s.ap<1||s.budget<50||u.consent==="agreed")return{ok:false};
+    s.ap--;s.budget-=50;s.spent+=50;s.acts++;u.offers++;
+    if(u.boss){u.stance=Math.max(5,u.stance-5);
+      s.log.unshift({w:s.week,t:"✕ 「你以為錢能解決？」——關鍵戶的門關得更緊了。"});
+      return{ok:true,d:-5};}
+    const base=u.consent==="pending"?18:11;
+    const d=Math.round(base*Math.pow(.5,u.offers-1));   // 同招遞減
+    u.stance=Math.min(100,u.stance+d);_check(s,u);return{ok:true,d};
+  }
+  function briefing(s){
+    if(s.over||s.ap<1||s.budget<20||s.briefedWeek===s.week)return{ok:false};
+    s.ap--;s.budget-=20;s.spent+=20;s.briefedWeek=s.week;s.acts++;
+    for(const u of Object.values(s.units)) if(u.consent!=="agreed"&&!u.boss)
+      {u.stance=Math.min(100,u.stance+(u.consent==="pending"?5:3));_check(s,u);}
+    s.log.unshift({w:s.week,t:"🏫 說明會：把 Core 的數字攤在桌上。透明，是最便宜的誠意。"});
+    return{ok:true};
+  }
+  const EVENTS={4:"comp",9:"news",14:"comp2",19:"rain"};
+  function endWeek(s){
+    if(s.over)return;
+    // 羈絆效應：已同意鄰居把人拉過來
+    for(const u of Object.values(s.units)) if(u.consent!=="agreed"&&!u.boss){
+      const k=neighbors(s,u.id).filter(n=>s.units[n].consent==="agreed").length;
+      if(k>0){u.stance=Math.min(100,u.stance+Math.min(3,k));_check(s,u);}   // 羈絆：+1/鄰居，上限3
+    }
+    s.week++;
+    const ev=EVENTS[s.week];
+    if(ev==="comp"||ev==="comp2"){const d=ev==="comp"?6:5;
+      for(const u of Object.values(s.units)) if(u.consent!=="agreed")u.stance=Math.max(5,u.stance-d);
+      s.log.unshift({w:s.week,t:"⚡ 競爭建商放出風聲——未同意戶動搖了。"});}
+    if(ev==="news"){for(const u of Object.values(s.units)) if(u.consent!=="agreed"&&!u.boss)
+      {u.stance=Math.min(100,u.stance+4);_check(s,u);}
+      s.log.unshift({w:s.week,t:"📰 Core 數字公開見報。資訊透明，流言止步。"});}
+    if(ev==="rain"){for(const u of Object.values(s.units)) if(u.consent!=="agreed"&&u.listens>0)
+      {u.stance=Math.min(100,u.stance+2);_check(s,u);}
+      s.log.unshift({w:s.week,t:"🌧 大雨。你還是來了——他們記得。"});}
+    s.ap=AP_MAX;
+    if(s.week>WEEKS_MAX&&!s.won){s.over=true;s.won=false;}
+    return ev;
+  }
+  return{create,listen,offer,briefing,endWeek,agreedCount,neighbors,code,
+         WEEKS_MAX,AP_MAX,BUDGET0,AGREE_AT,BOSS,N};
+})();
+/*SIMCORE-END*/
+
+/* ── 渲染層（DOM）── */
+const S=SIMCORE.create();
+let sel=null;
+const $=id=>document.getElementById(id);
+
+const CODEC_SAY={
+  pending:["「我不是反對……我是怕。你們的數字，我看不懂。」",
+    "「隔壁的都簽了？……他們真的懂自己簽了什麼嗎？」",
+    "「你再說一次，分回是怎麼算的？慢慢說。」"],
+  opposed:["「上一次也是這樣說的。然後呢？」",
+    "「我這個年紀，搬去哪裡？」",
+    "「數字很漂亮。人呢？」"],
+  boss:["「這是阿公起的厝。你坐下，我泡茶。」",
+    "「你是第一個沒有急著拿合約出來的。」",
+    "「……好。你聽完了。換我問你：你會住進來嗎？」"],
+  offerOk:"「……方案我收下。讓我想想。」",
+  offerBoss:"「你以為錢能解決？」"
+};
+
+function render(){
+  $("m-week").textContent=Math.min(S.week,24);
+  $("m-ap").textContent=S.ap;
+  $("m-budget").textContent=S.budget;
+  const n=SIMCORE.agreedCount(S);
+  $("p-num").textContent=n+"/48";
+  $("p-fill").style.width=(n/48*100)+"%";
+  $("m-hint").textContent = S.budget<50?"預算吃緊":"";
+  const g=$("grid");g.innerHTML="";
+  S.pos.forEach(id=>{
+    const u=S.units[id];
+    const d=document.createElement("div");
+    d.className="cell "+u.consent+(u.boss?" boss":"")+(u.flipWeek===S.week&&u.consent==="agreed"?" justflip":"");
+    d.innerHTML=`<span>${SIMCORE.code(id)}</span><span class="st">${u.consent==="agreed"?"✓":u.stance}</span>`;
+    if(u.consent!=="agreed")d.onclick=()=>openCodec(id);
+    g.appendChild(d);
+  });
+  $("log").innerHTML=S.log.slice(0,30).map(l=>`<div class="li"><b>W${l.w}</b> ${l.t}</div>`).join("");
+  if(S.over)ending();
+}
+function openCodec(id){
+  sel=id;const u=S.units[id];
+  $("cd-freq").textContent="FREQ 141."+String(10+id).padStart(2,"0");
+  $("cd-who").textContent=SIMCORE.code(id)+" · "+u.persona;
+  $("cd-role").textContent=(u.boss?"KEY HOLDOUT ▲":u.consent.toUpperCase())+" · "+u.trait;
+  const pool=u.boss?CODEC_SAY.boss:CODEC_SAY[u.consent]||CODEC_SAY.pending;
+  type(pool[Math.min(u.listens,pool.length-1)]);
+  $("cd-stat").innerHTML=`信任 <b>${u.stance}</b>/100 ${u.boss?"· 對「客製方案」免疫——只能傾聽":""}`;
+  $("cd-offer").disabled=!!u.boss;
+  $("ovl-codec").classList.add("show");
+}
+let typing=null;
+function type(txt){clearInterval(typing);const el=$("cd-say");el.textContent="";let i=0;
+  typing=setInterval(()=>{el.textContent=txt.slice(0,++i);if(i>=txt.length)clearInterval(typing)},22);}
+$("cd-close").onclick=()=>{$("ovl-codec").classList.remove("show");render();};
+$("cd-listen").onclick=()=>{const r=SIMCORE.listen(S,sel);
+  if(!r.ok){type("（AP 不足——本週的腳程用完了。）");return;}
+  const u=S.units[sel];
+  if(u.consent==="agreed"){$("ovl-codec").classList.remove("show");render();return;}
+  const pool=u.boss?CODEC_SAY.boss:CODEC_SAY[u.consent];
+  type(pool[Math.min(u.listens-1,pool.length-1)]+`　（信任 +${r.d}）`);
+  $("cd-stat").innerHTML=`信任 <b>${u.stance}</b>/100`;render();};
+$("cd-offer").onclick=()=>{const r=SIMCORE.offer(S,sel);
+  if(!r.ok){type("（AP 或預算不足。）");return;}
+  const u=S.units[sel];
+  if(u.consent==="agreed"){$("ovl-codec").classList.remove("show");render();return;}
+  type((u.boss?CODEC_SAY.offerBoss:CODEC_SAY.offerOk)+`　（${r.d>0?"+":""}${r.d}，同招遞減）`);
+  $("cd-stat").innerHTML=`信任 <b>${u.stance}</b>/100`;render();};
+$("btn-brief").onclick=()=>{SIMCORE.briefing(S);render();};
+$("btn-week").onclick=()=>{SIMCORE.endWeek(S);render();};
+
+function ending(){
+  const won=S.won;
+  $("end-eyebrow").textContent=won?"INTEGRATION COMPLETE":"TIME OVER";
+  $("end-title").innerHTML=won?'STRAND <b style="color:var(--strand)">FORMED</b>':'STRAND <b style="color:var(--amber)">BROKEN</b>';
+  $("end-quote").textContent=won
+    ?"「整合完成的那一天，沒有煙火。只有四十八戶人，第一次同時點頭。」——但真正的建設，現在才開始。"
+    :"「時間並沒有站在這條街這邊。」——還有人沒被聽見。再來一次。";
+  $("end-stats").innerHTML=`用時 <b>${Math.min(S.week,24)} 週</b> · 行動 <b>${S.acts}</b> 次 · 整合花費 <b>${S.spent} 萬</b>（沙盤示意）<br>權威財務不因沙盤而變：分回比 34.0%／投報率 51.5%（Core v0.2.0）`;
+  const names=[...Array(48)].map((_,i)=>SIMCORE.code(i+1)+"　"+(S.units[i+1].persona||"住戶"));
+  $("end-roll-inner").innerHTML=["— 這條街的四十八戶 —",...names,"","GAME DESIGN · 沙盤機制（示意）","AUTHORITATIVE NUMBERS · RE-DCF CORE v0.2.0","SPECIAL THANKS · 每一位願意坐下來聽的人"].join("<br>");
+  $("ovl-end").classList.add("show");
+}
+
+$("btn-start").onclick=()=>{
+  $("ovl-title").classList.remove("show");
+  $("ovl-chapter").classList.add("show");
+  setTimeout(()=>{$("ovl-chapter").classList.remove("show");},1900);
+};
+render();
+</script>
