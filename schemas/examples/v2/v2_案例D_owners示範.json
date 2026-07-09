@@ -1,0 +1,1242 @@
+{
+  "schema_version": "2.0",
+  "project": {
+    "id": "案例D",
+    "name": "案例D（owners 示範）",
+    "case_type": "danger_building"
+  },
+  "input": {
+    "site": {
+      "site_area_sqm": 1500.0,
+      "plaza_area_sqm": 0.0,
+      "far": 2.4,
+      "bonus_ratio": 0.4,
+      "tdr_transfer_sqm": 1080.0
+    },
+    "building": {
+      "public_ratio": 0.34,
+      "stair_hall_exempt_pct": 5,
+      "balcony_exempt_pct": 10,
+      "unit_count": 48
+    },
+    "floors": [
+      {
+        "enabled": true,
+        "level": "B1F",
+        "floor_area_sqm": 1300.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 0.0,
+        "safety_stair_sqm": 0.0,
+        "balcony_sqm": 0.0
+      },
+      {
+        "enabled": true,
+        "level": "B2F",
+        "floor_area_sqm": 1300.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 0.0,
+        "safety_stair_sqm": 0.0,
+        "balcony_sqm": 0.0
+      },
+      {
+        "enabled": true,
+        "level": "B3F",
+        "floor_area_sqm": 1300.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 0.0,
+        "safety_stair_sqm": 0.0,
+        "balcony_sqm": 0.0
+      },
+      {
+        "enabled": true,
+        "level": "1F",
+        "floor_area_sqm": 750.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 75.0,
+        "safety_stair_sqm": 235.0,
+        "balcony_sqm": 0.0
+      },
+      {
+        "enabled": true,
+        "level": "2F",
+        "floor_area_sqm": 430.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 21.5,
+        "safety_stair_sqm": 178.0,
+        "balcony_sqm": 43.0
+      },
+      {
+        "enabled": true,
+        "level": "3F",
+        "floor_area_sqm": 500.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 25.0,
+        "safety_stair_sqm": 40.0,
+        "balcony_sqm": 50.0
+      },
+      {
+        "enabled": true,
+        "level": "4F",
+        "floor_area_sqm": 500.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 25.0,
+        "safety_stair_sqm": 40.0,
+        "balcony_sqm": 50.0
+      },
+      {
+        "enabled": true,
+        "level": "5F",
+        "floor_area_sqm": 500.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 25.0,
+        "safety_stair_sqm": 40.0,
+        "balcony_sqm": 50.0
+      },
+      {
+        "enabled": true,
+        "level": "6F",
+        "floor_area_sqm": 500.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 25.0,
+        "safety_stair_sqm": 40.0,
+        "balcony_sqm": 50.0
+      },
+      {
+        "enabled": true,
+        "level": "7F",
+        "floor_area_sqm": 500.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 25.0,
+        "safety_stair_sqm": 40.0,
+        "balcony_sqm": 50.0
+      },
+      {
+        "enabled": true,
+        "level": "8F",
+        "floor_area_sqm": 500.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 25.0,
+        "safety_stair_sqm": 40.0,
+        "balcony_sqm": 50.0
+      },
+      {
+        "enabled": true,
+        "level": "9F",
+        "floor_area_sqm": 500.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 25.0,
+        "safety_stair_sqm": 40.0,
+        "balcony_sqm": 50.0
+      },
+      {
+        "enabled": true,
+        "level": "10F",
+        "floor_area_sqm": 500.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 25.0,
+        "safety_stair_sqm": 40.0,
+        "balcony_sqm": 50.0
+      },
+      {
+        "enabled": true,
+        "level": "11F",
+        "floor_area_sqm": 500.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 25.0,
+        "safety_stair_sqm": 40.0,
+        "balcony_sqm": 50.0
+      },
+      {
+        "enabled": true,
+        "level": "12F",
+        "floor_area_sqm": 500.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 25.0,
+        "safety_stair_sqm": 40.0,
+        "balcony_sqm": 50.0
+      },
+      {
+        "enabled": true,
+        "level": "13F",
+        "floor_area_sqm": 500.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 25.0,
+        "safety_stair_sqm": 40.0,
+        "balcony_sqm": 50.0
+      },
+      {
+        "enabled": true,
+        "level": "14F",
+        "floor_area_sqm": 500.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 25.0,
+        "safety_stair_sqm": 40.0,
+        "balcony_sqm": 50.0
+      },
+      {
+        "enabled": true,
+        "level": "15F",
+        "floor_area_sqm": 500.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 25.0,
+        "safety_stair_sqm": 40.0,
+        "balcony_sqm": 50.0
+      },
+      {
+        "enabled": true,
+        "level": "R1F",
+        "floor_area_sqm": 94.0,
+        "counted_far_sqm": 0.0,
+        "stair_hall_sqm": 0.0,
+        "safety_stair_sqm": 0.0,
+        "balcony_sqm": 0.0
+      }
+    ],
+    "finance": {
+      "residential_price": 65.0,
+      "shop_area": 90.0,
+      "shop_price": 100.0,
+      "parking_count": 78,
+      "parking_price": 230.0,
+      "construction_price": 20.0
+    },
+    "owners": [
+      {
+        "owner_id": "W01",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W02",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W03",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W04",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W05",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W06",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W07",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W08",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W09",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W10",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W11",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W12",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W13",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W14",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W15",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W16",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W17",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W18",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W19",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W20",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W21",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W22",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W23",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W24",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W25",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W26",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W27",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W28",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W29",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W30",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W31",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W32",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W33",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W34",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W35",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W36",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W37",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W38",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W39",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W40",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W41",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W42",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W43",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W44",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W45",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "opposed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W46",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "opposed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W47",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "opposed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W48",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "opposed",
+        "min_unit_eligible": true
+      }
+    ],
+    "scenario": {
+      "name": "baseline",
+      "bonus_breakdown": {
+        "時程": 0.3,
+        "規模": 0.08,
+        "基本": 0.02
+      }
+    }
+  },
+  "engine": {
+    "params": {
+      "案件名稱": "案例D（owners 示範）",
+      "基地面積": 1500.0,
+      "人行廣場": 0.0,
+      "容積率": 2.4,
+      "獎勵率": 0.4,
+      "容積移轉": 1080.0,
+      "公設比": 0.34,
+      "梯廳免計基準": 5,
+      "陽台免計基準": 10,
+      "面積表計入容積": 6120.0,
+      "住宅單價": 65.0,
+      "店舖坪數": 90.0,
+      "店舖單價": 100.0,
+      "車位數": 78,
+      "車位單價": 230.0,
+      "營造單價": 20.0,
+      "戶數": 48,
+      "權變戶數": 0,
+      "土融土地成本": 50000.0,
+      "地價": 80.0,
+      "既有建物面積": 0.0,
+      "建物單價": 0.0,
+      "屋齡": 45,
+      "財務覆寫": {
+        "代銷費率": 0.06,
+        "信託費率": 0.011
+      }
+    },
+    "floors": [
+      {
+        "啟用": true,
+        "樓層": "B1F",
+        "樓板": 1300.0,
+        "計容積": 0.0,
+        "梯廳": 0.0,
+        "安全梯": 0.0,
+        "陽台": 0.0
+      },
+      {
+        "啟用": true,
+        "樓層": "B2F",
+        "樓板": 1300.0,
+        "計容積": 0.0,
+        "梯廳": 0.0,
+        "安全梯": 0.0,
+        "陽台": 0.0
+      },
+      {
+        "啟用": true,
+        "樓層": "B3F",
+        "樓板": 1300.0,
+        "計容積": 0.0,
+        "梯廳": 0.0,
+        "安全梯": 0.0,
+        "陽台": 0.0
+      },
+      {
+        "啟用": true,
+        "樓層": "1F",
+        "樓板": 750.0,
+        "計容積": 0.0,
+        "梯廳": 75.0,
+        "安全梯": 235.0,
+        "陽台": 0.0
+      },
+      {
+        "啟用": true,
+        "樓層": "2F",
+        "樓板": 430.0,
+        "計容積": 0.0,
+        "梯廳": 21.5,
+        "安全梯": 178.0,
+        "陽台": 43.0
+      },
+      {
+        "啟用": true,
+        "樓層": "3F",
+        "樓板": 500.0,
+        "計容積": 0.0,
+        "梯廳": 25.0,
+        "安全梯": 40.0,
+        "陽台": 50.0
+      },
+      {
+        "啟用": true,
+        "樓層": "4F",
+        "樓板": 500.0,
+        "計容積": 0.0,
+        "梯廳": 25.0,
+        "安全梯": 40.0,
+        "陽台": 50.0
+      },
+      {
+        "啟用": true,
+        "樓層": "5F",
+        "樓板": 500.0,
+        "計容積": 0.0,
+        "梯廳": 25.0,
+        "安全梯": 40.0,
+        "陽台": 50.0
+      },
+      {
+        "啟用": true,
+        "樓層": "6F",
+        "樓板": 500.0,
+        "計容積": 0.0,
+        "梯廳": 25.0,
+        "安全梯": 40.0,
+        "陽台": 50.0
+      },
+      {
+        "啟用": true,
+        "樓層": "7F",
+        "樓板": 500.0,
+        "計容積": 0.0,
+        "梯廳": 25.0,
+        "安全梯": 40.0,
+        "陽台": 50.0
+      },
+      {
+        "啟用": true,
+        "樓層": "8F",
+        "樓板": 500.0,
+        "計容積": 0.0,
+        "梯廳": 25.0,
+        "安全梯": 40.0,
+        "陽台": 50.0
+      },
+      {
+        "啟用": true,
+        "樓層": "9F",
+        "樓板": 500.0,
+        "計容積": 0.0,
+        "梯廳": 25.0,
+        "安全梯": 40.0,
+        "陽台": 50.0
+      },
+      {
+        "啟用": true,
+        "樓層": "10F",
+        "樓板": 500.0,
+        "計容積": 0.0,
+        "梯廳": 25.0,
+        "安全梯": 40.0,
+        "陽台": 50.0
+      },
+      {
+        "啟用": true,
+        "樓層": "11F",
+        "樓板": 500.0,
+        "計容積": 0.0,
+        "梯廳": 25.0,
+        "安全梯": 40.0,
+        "陽台": 50.0
+      },
+      {
+        "啟用": true,
+        "樓層": "12F",
+        "樓板": 500.0,
+        "計容積": 0.0,
+        "梯廳": 25.0,
+        "安全梯": 40.0,
+        "陽台": 50.0
+      },
+      {
+        "啟用": true,
+        "樓層": "13F",
+        "樓板": 500.0,
+        "計容積": 0.0,
+        "梯廳": 25.0,
+        "安全梯": 40.0,
+        "陽台": 50.0
+      },
+      {
+        "啟用": true,
+        "樓層": "14F",
+        "樓板": 500.0,
+        "計容積": 0.0,
+        "梯廳": 25.0,
+        "安全梯": 40.0,
+        "陽台": 50.0
+      },
+      {
+        "啟用": true,
+        "樓層": "15F",
+        "樓板": 500.0,
+        "計容積": 0.0,
+        "梯廳": 25.0,
+        "安全梯": 40.0,
+        "陽台": 50.0
+      },
+      {
+        "啟用": true,
+        "樓層": "R1F",
+        "樓板": 94.0,
+        "計容積": 0.0,
+        "梯廳": 0.0,
+        "安全梯": 0.0,
+        "陽台": 0.0
+      }
+    ],
+    "case_type": "危老",
+    "mode": "合建",
+    "owners": [
+      {
+        "owner_id": "W01",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W02",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W03",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W04",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W05",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W06",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W07",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W08",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W09",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W10",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W11",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W12",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W13",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W14",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W15",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W16",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W17",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W18",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W19",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W20",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W21",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W22",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W23",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W24",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W25",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W26",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W27",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W28",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W29",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W30",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W31",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W32",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W33",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W34",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "agreed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W35",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W36",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W37",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W38",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W39",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W40",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W41",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W42",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W43",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W44",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "pending",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W45",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "opposed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W46",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "opposed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W47",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "opposed",
+        "min_unit_eligible": true
+      },
+      {
+        "owner_id": "W48",
+        "land_share": 0.020833,
+        "pre_building_area_sqm": 0.0,
+        "pre_value": 0.0,
+        "consent": "opposed",
+        "min_unit_eligible": true
+      }
+    ]
+  },
+  "result": {
+    "baseline_far": 3600.0,
+    "allow_floor_area": 6120.0,
+    "used_floor_area": 6157.5,
+    "remaining_floor_area": -37.5,
+    "stair_exempt_cap": 918.0,
+    "balcony_exempt_area": 693.0,
+    "saleable_area": 3153.84,
+    "efficiency_ratio": 1.704,
+    "total_sales": 226089.0,
+    "shared_cost": 149230.0,
+    "shared_cost_ratio": 0.66,
+    "owner_return_value": 76860.0,
+    "owner_return_ratio": 0.34,
+    "return_rate": 0.515,
+    "pre_renewal_value": 36300.0,
+    "value_multiple": 2.12,
+    "warnings": [
+      {
+        "code": "EFFICIENCY_OUT_OF_BAND",
+        "level": "warn",
+        "message": "銷坪比 1.704 不在正常帶 1.58–1.68",
+        "field": "efficiency_ratio"
+      },
+      {
+        "code": "VOLUME_EXCEEDED",
+        "level": "error",
+        "message": "容積超出允建 37.50 m²，需調整設計",
+        "field": "remaining_floor_area"
+      },
+      {
+        "code": "SHARED_COST_HIGH",
+        "level": "error",
+        "message": "共負比 66.0% 超過警示線 60%，地主接受度明顯降低",
+        "field": "shared_cost_ratio"
+      },
+      {
+        "code": "OWNERS_VALUE_MISMATCH",
+        "level": "warn",
+        "message": "Σ pre_value = 0，與 result.pre_renewal_value 36,300 偏離 100.0%（容差 3%）",
+        "field": "owners"
+      }
+    ],
+    "computed_at": "2026-07-01T00:00:00+00:00",
+    "core_version": "0.2.0"
+  },
+  "provenance": {
+    "core_version": "0.2.0",
+    "computed_at": "2026-07-01T00:00:00+00:00",
+    "input_hash": "sha256:857f2f68a025cfd6eb3dcd746e2a5f701aca2d96eb3218b4066b2c8098e0b9e0",
+    "law_db_version": "builtin-2026-07"
+  }
+}

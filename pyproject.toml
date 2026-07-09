@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "redcf-core"
+version = "0.2.0"
+description = "Urban Renewal OS — RE-DCF 計算核心（容積/坪效/共負/投報/估值）；唯一公式來源（SSOT）"
+readme = "docs/redcf/README-redcf.md"
+requires-python = ">=3.11"
+license = {text = "Proprietary"}
+authors = [{name = "jeremy0819"}]
+dependencies = ["pandas>=2.0"]
+
+[project.optional-dependencies]
+contract = ["jsonschema>=4.0"]
+dev = ["pytest>=8.0", "jsonschema>=4.0"]
+
+# core.redcf 為唯一套件；app/tools/tests 不打包。
+# M2-B：加此檔後可 `pip install -e .`，讓 app.py/tests 改用標準匯入、移除 sys.path 墊片（漸進）。
+[tool.setuptools]
+packages = ["core", "core.redcf"]
+
+[tool.setuptools.package-data]
+"core.redcf" = ["*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

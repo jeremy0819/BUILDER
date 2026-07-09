@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://urban-renewal-os/schemas/project_schema_v2.json",
+  "title": "Urban Renewal OS — Project JSON (schema v2.0)",
+  "description": "完整可重算合約：input 含逐層 floors[]，engine 為 Core 重算快照，provenance 帶 input_hash。給 Core 此檔即可重算出 result。",
+  "type": "object",
+  "required": ["schema_version", "project", "input", "result", "provenance"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "project": {
+      "type": "object",
+      "required": ["name", "case_type"],
+      "properties": {
+        "id": {"type": "string"},
+        "name": {"type": "string"},
+        "case_type": {"type": "string", "enum": ["urban_renewal", "danger_building"]}
+      }
+    },
+    "input": {
+      "type": "object",
+      "required": ["site", "building", "finance"],
+      "properties": {
+        "site": {
+          "type": "object",
+          "required": ["site_area_sqm", "far"],
+          "properties": {
+            "site_area_sqm": {"type": "number", "minimum": 0},
+            "plaza_area_sqm": {"type": "number", "minimum": 0},
+            "far": {"type": "number", "minimum": 0},
+            "bonus_ratio": {"type": "number", "minimum": 0},
+            "tdr_transfer_sqm": {"type": "number", "minimum": 0}
+          }
+        },
+        "building": {
+          "type": "object",
+          "properties": {
+            "public_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+            "stair_hall_exempt_pct": {"type": "number", "minimum": 0},
+            "balcony_exempt_pct": {"type": "number", "minimum": 0},
+            "unit_count": {"type": "integer", "minimum": 0}
+          }
+        },
+        "floors": {
+          "type": "array",
+          "description": "逐層樓板表（v1.1 缺口）。存在時 result 可由 Core 回放重算。",
+          "items": {
+            "type": "object",
+            "required": ["level", "floor_area_sqm"],
+            "properties": {
+              "enabled": {"type": "boolean"},
+              "level": {"type": "string"},
+              "floor_area_sqm": {"type": "number", "minimum": 0},
+              "counted_far_sqm": {"type": "number", "minimum": 0},
+              "stair_hall_sqm": {"type": "number", "minimum": 0},
+              "safety_stair_sqm": {"type": "number", "minimum": 0},
+              "balcony_sqm": {"type": "number", "minimum": 0}
+            }
+          }
+        },
+        "finance": {
+          "type": "object",
+          "properties": {
+            "residential_price": {"type": "number", "minimum": 0},
+            "shop_area": {"type": "number", "minimum": 0},
+            "shop_price": {"type": "number", "minimum": 0},
+            "parking_count": {"type": "integer", "minimum": 0},
+            "parking_price": {"type": "number", "minimum": 0},
+            "construction_price": {"type": "number", "minimum": 0}
+          }
+        },
+        "owners": {"type": "array"},
+        "scenario": {
+          "type": "object",
+          "properties": {
+            "name": {"type": "string"},
+            "bonus_breakdown": {"type": "object"}
+          }
+        },
+        "input_complete": {
+          "type": "boolean",
+          "description": "false＝缺 floors 等重算必需輸入（多為 v1.x 遷移而來），result 保留但不可回放。"
+        }
+      }
+    },
+    "engine": {
+      "type": "object",
+      "description": "Core 重算快照（中文 key，消費端忽略）。recompute(engine) 可回放出 result。"
+    },
+    "result": {"type": "object"},
+    "provenance": {
+      "type": "object",
+      "required": ["core_version", "input_hash"],
+      "properties": {
+        "core_version": {"type": "string"},
+        "computed_at": {"type": "string"},
+        "input_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "law_db_version": {"type": "string"}
+      }
+    }
+  }
+}
