@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://urban-renewal-os/schemas/v2/metadata.schema.json",
+  "title": "Urban Renewal OS — Metadata view (schema v2.0)",
+  "description": "溯源與可重算指紋子區塊（provenance）的獨立驗證視圖。實體定義委派給 project_schema_v2.json#/$defs/metadata（D4：不分叉合約）。版本 2.0；遷移＝core/redcf/migrations.py；驗證＝core.redcf.api.validate(view='metadata')。",
+  "$ref": "https://urban-renewal-os/schemas/project_schema_v2.json#/$defs/metadata"
+}

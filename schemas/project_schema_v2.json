@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://urban-renewal-os/schemas/project_schema_v2.json",
   "title": "Urban Renewal OS — Project JSON (schema v2.0)",
-  "description": "完整可重算合約：input 含逐層 floors[]，engine 為 Core 重算快照，provenance 帶 input_hash。給 Core 此檔即可重算出 result。",
+  "description": "完整可重算合約：input 含逐層 floors[]，engine 為 Core 重算快照，provenance 帶 input_hash。給 Core 此檔即可重算出 result。單一權威檔（架構裁決 D4）：input/output/metadata 三視圖統一由本檔 $defs 定義，schemas/v2/*.schema.json 只是 $ref 委派、共用同一版本，不分叉合約。",
   "type": "object",
   "required": ["schema_version", "project", "input", "result", "provenance"],
   "properties": {
@@ -16,7 +16,17 @@
         "case_type": {"type": "string", "enum": ["urban_renewal", "danger_building"]}
       }
     },
+    "input": {"$ref": "#/$defs/input"},
+    "engine": {
+      "type": "object",
+      "description": "Core 重算快照（中文 key，消費端忽略）。recompute(engine) 可回放出 result。"
+    },
+    "result": {"$ref": "#/$defs/output"},
+    "provenance": {"$ref": "#/$defs/metadata"}
+  },
+  "$defs": {
     "input": {
+      "title": "Input view — 使用者/案件輸入（消費端可單獨驗證此區塊）",
       "type": "object",
       "required": ["site", "building", "finance"],
       "properties": {
@@ -82,12 +92,47 @@
         }
       }
     },
-    "engine": {
+    "output": {
+      "title": "Output view — Core 計算結果（消費端唯一權威數字來源，只讀不重算）",
+      "description": "SSOT：所有欄位由 core.redcf 產生。前端/Dashboard/Simulator 一律讀此區塊、不得自行重算（含 warnings 門檻）。欄位為選填以相容部分計算（無投報/無估值時省略對應欄位）。",
       "type": "object",
-      "description": "Core 重算快照（中文 key，消費端忽略）。recompute(engine) 可回放出 result。"
+      "properties": {
+        "baseline_far": {"type": "number", "description": "基準容積 FA（L2）"},
+        "allow_floor_area": {"type": "number", "description": "允建容積（L2–L4）"},
+        "used_floor_area": {"type": "number", "description": "計入容積（修正後）"},
+        "remaining_floor_area": {"type": "number", "description": "容積餘量（負值＝超出）"},
+        "stair_exempt_cap": {"type": "number", "description": "安全梯免計上限"},
+        "balcony_exempt_area": {"type": "number", "description": "陽台免計面積"},
+        "saleable_area": {"type": "number", "minimum": 0, "description": "銷售坪數（L4.5）"},
+        "efficiency_ratio": {"type": "number", "minimum": 0, "description": "銷坪比（L4.5）"},
+        "total_sales": {"type": "number", "description": "總銷（L6）"},
+        "shared_cost": {"type": "number", "description": "共同負擔（L6）"},
+        "shared_cost_ratio": {"type": "number", "description": "共負比（L6）"},
+        "owner_return_value": {"type": "number", "description": "地主分回價值（L6）"},
+        "owner_return_ratio": {"type": "number", "description": "地主分回比（L6）"},
+        "return_rate": {"type": "number", "description": "報酬率（L6）"},
+        "pre_renewal_value": {"type": "number", "description": "更新前總值（L7）"},
+        "value_multiple": {"type": "number", "description": "增值倍率＝分回/更新前（L7）"},
+        "warnings": {
+          "type": "array",
+          "description": "Core 統一健檢，消費端只讀不重判門檻。",
+          "items": {
+            "type": "object",
+            "required": ["code", "level", "message"],
+            "properties": {
+              "code": {"type": "string"},
+              "level": {"type": "string", "enum": ["info", "warn", "error"]},
+              "message": {"type": "string"},
+              "field": {"type": "string"}
+            }
+          }
+        },
+        "computed_at": {"type": "string", "description": "ISO 8601 計算時間"},
+        "core_version": {"type": "string", "description": "產生此 result 的核心版本"}
+      }
     },
-    "result": {"type": "object"},
-    "provenance": {
+    "metadata": {
+      "title": "Metadata view — 溯源與可重算指紋（provenance）",
       "type": "object",
       "required": ["core_version", "input_hash"],
       "properties": {

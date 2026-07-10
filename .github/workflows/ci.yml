@@ -61,3 +61,7 @@ jobs:
       # ── Gate 5：URBAN STRAND 遊戲核心 headless（機制＋可贏性 8–24 週）──
       - name: "Gate 5 — Simulator headless (node)"
         run: node tests/web/test_os_simulator.mjs
+
+      # ── Gate 6：Schema 凍結守衛（v1.1 + v2.0 + 三視圖位元組不可變）──
+      - name: "Gate 6 — Schema freeze guard"
+        run: python tools/check_schema_freeze.py

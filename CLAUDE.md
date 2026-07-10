@@ -1,10 +1,11 @@
 # BUILDER（→ Urban-Renewal-OS）— Session 索引
 
 > 本 repo 是 Urban Renewal OS 的目標容器（monorepo）。現況：**M1 完成（os-v0.1.0-alpha 已發）＋
-> M2-A 進行中**：schema v2.0 完整可重算合約落地（`schemas/project_schema_v2.json`＋
-> `core/redcf/recompute.py`＋`migrations.py`＋v2 範例＋pyproject），儀表板已顯示逐層/可重算驗證/provenance。
-> M2 待續：owners 輸入 UI、財務層 recompute 擴充、新整合模擬器（見 `docs/releases/ROADMAP_M2-M8.md`）。
-> 本檔只做路由——保持 ≤150 行。
+> M2 收斂完成（七項 FINAL REVIEW 全 PASS，見 `docs/releases/M2_CLOSE_REPORT.md`）**：
+> schema v2.0 完整可重算合約**已凍結**（`project_schema_v2.json`＋三視圖 `schemas/v2/*`＋Gate 6 hash 守衛）、
+> Core 四動詞門面 `core/redcf/api.py`（calculate/validate/serialize/deserialize）、
+> UI 綁定 `docs/architecture/UI_BINDING_MAP.md`、預備發布 `os-v0.2.0-beta`。
+> 下一步：**M3 — 權利變換/找補＋owners UI**（見 `docs/releases/ROADMAP_M2-M8.md`）。本檔只做路由——保持 ≤150 行。
 
 ## 開工前必讀（依序，共約 10 分鐘）
 

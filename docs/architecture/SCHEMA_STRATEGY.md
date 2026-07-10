@@ -1,8 +1,10 @@
 # Schema 策略：版本、相容、遷移（隨 Architecture Freeze 凍結）
 
-> 檔案形態裁決見 ARCHITECTURE.md D4：單一 `project_schema.json` ＋ `$defs`，不拆七檔。
-> 現行 v1.1 **凍結中**（基準 sha256 見 RE-DCF《歷史乾淨度報告.md》），本檔規劃的 v2.0 在
-> **P1（合併完成後）**才動工。凍結期任何 schema 需求 → 記 backlog，不動檔案。
+> 檔案形態裁決見 ARCHITECTURE.md D4：單一權威檔 ＋ `$defs`，不拆成多個獨立來源檔。
+> **現況（M2 收斂）**：v1.1 與 **v2.0 皆已凍結**。v2.0＝`schemas/project_schema_v2.json`，
+> 內含 `$defs.input/output/metadata` 三段實體定義；`schemas/v2/{input,output,metadata}.schema.json`
+> 為三視圖，各以一行 `$ref` 委派回權威檔（D4 不破：零重複、共用同一版本）。凍結守衛＝
+> `tools/check_schema_freeze.py`（Gate 6）。凍結期任何 schema 需求 → 記 backlog，走版本升級流程，不直接改檔。
 
 ---
 

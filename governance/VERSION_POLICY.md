@@ -10,10 +10,13 @@
 
 | 版本 | 載體（真實來源） | 現值 | bump 時機 |
 |---|---|---|---|
-| **Schema Version** | `schemas/project_schema.json` 內 `schema_version` 欄位 | 1.1（凍結） | 加 optional 欄位＝minor；改名/改型別/刪欄位/改必填＝major（見 SCHEMA_STRATEGY） |
+| **Schema Version** | `schemas/project_schema.json`（v1.1）＋`schemas/project_schema_v2.json`＋`schemas/v2/*.schema.json`（v2.0）內 `schema_version` | 1.1＋2.0（**皆凍結**） | 加 optional 欄位＝minor；改名/改型別/刪欄位/改必填＝major（見 SCHEMA_STRATEGY）。凍結守衛＝`tools/check_schema_freeze.py`（Gate 6） |
 | **CORE_VERSION** | `core/redcf/_version.py` 的 `CORE_VERSION` | 0.2.0 | 計算公式、費率、law_db 內容、合約結構變動才 bump；**消費端追溯依據，不可斷號** |
 | **App Version** | `apps/streamlit/app.py` 的 `APP_VERSION`；各 HTML 內版號（evaluator v1.3、simulator V4） | v4.9 / v1.3 / V4 | 純介面/行為變更才 bump（cosmetic）；`BUILD_DATE` 每次部署恆更新 |
-| **OS Release** | git tag `os-vX.Y.Z`（聚合版本，**新增機制**） | 未發（首發＝os-v0.1.0-alpha） | 每次正式 release 打 tag，對應一組凍結的上述三者 |
+| **OS Release** | git tag `os-vX.Y.Z`（聚合版本，**新增機制**） | os-v0.1.0-alpha 已發；os-v0.2.0-beta 預備中 | 每次正式 release 打 tag，對應一組凍結的上述三者 |
+
+> **凍結 hash 基準**（唯一來源＝`tools/check_schema_freeze.py` `FROZEN` 表）：v1.1 `e37e10db…`、
+> v2.0 `f1c466a3…`、三視圖見腳本。要改凍結檔＝走版本升級流程（新 `schema_version`＋遷移器＋更新 FROZEN），不得直接改檔。
 
 ## 2. 三層關係（誰依賴誰）
 

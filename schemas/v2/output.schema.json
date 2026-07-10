@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://urban-renewal-os/schemas/v2/output.schema.json",
+  "title": "Urban Renewal OS — Output view (schema v2.0)",
+  "description": "Core 計算結果子區塊（result）的獨立驗證視圖，UI Binding Map 的權威來源。實體定義委派給 project_schema_v2.json#/$defs/output（D4：不分叉合約）。SSOT：消費端只讀不重算。版本 2.0；遷移＝core/redcf/migrations.py；驗證＝core.redcf.api.validate(view='output')。",
+  "$ref": "https://urban-renewal-os/schemas/project_schema_v2.json#/$defs/output"
+}

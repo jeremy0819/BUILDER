@@ -1,0 +1,7 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://urban-renewal-os/schemas/v2/input.schema.json",
+  "title": "Urban Renewal OS — Input view (schema v2.0)",
+  "description": "案件/使用者輸入子區塊的獨立驗證視圖。實體定義委派給單一權威檔 project_schema_v2.json#/$defs/input（架構裁決 D4：不分叉合約）。版本＝父檔 schema_version 2.0；遷移＝core/redcf/migrations.py；驗證＝core.redcf.api.validate(view='input')。",
+  "$ref": "https://urban-renewal-os/schemas/project_schema_v2.json#/$defs/input"
+}
