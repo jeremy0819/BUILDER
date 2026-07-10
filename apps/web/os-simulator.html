@@ -3,29 +3,40 @@
 <title>URBAN STRAND · 整合戰術沙盤</title>
 <style>
 /* ————————————————————————————————————————————————
-   URBAN STRAND v2 — 都更整合戰術沙盤（M2-C＋playtest 回饋版）
-   新增：①建築規劃階段（開發模式×規模，方案數字由 Core recompute 產生）
-        ②整合旅程軌（里程碑＋章節推進）＋ S1–S11 階段條
-        ③家族羈絆層；羈絆改為「接觸過才會生效」
-   紅線：本頁零財務/法規公式——所有方案財務數字皆 Core 預算結果（見 SCEN 註記）；
-   遊戲層規則（信任/週數修正）為沙盤機制，已標示。
+   URBAN STRAND v2 — 都更整合戰術沙盤（介面統一版 / unified layout）
+   顧問回饋：程式架構無虞，介面需「統一、別亂」。本次＝資訊設計整併，非重寫遊戲：
+     ①單一設計語彙（一套 card / label / 間距節奏，取代散落的六種面板樣式）
+     ②「進度脊」＝把 S1–S11 都更流程 與 整合旅程軌 併成一體（原本兩條進度條互相打架）
+     ③地主矩陣復位為主舞台（hero）；Core 試算與行動日誌收為右側「情報欄」
+   保留原有 Kojima/codec 世界觀（深藍黑＋strand 青＋掃描線）。SIMCORE 邏輯零改動。
+   紅線：本頁零財務/法規公式——方案財務皆 Core 預算結果（見 SCEN 註記）。
 ———————————————————————————————————————————————— */
 :root{
-  --bg:#0a0d12; --panel:#11161d; --panel2:#0d1117; --line:#1f2833;
+  --bg:#0a0d12; --panel:#11161d; --panel2:#0d1117; --line:#1f2833; --line2:#2a3644;
   --ink:#dce6ec; --mute:#6d7c88; --dim:#43505a;
   --strand:#4fd8e8; --strand-dim:#1d5a64; --amber:#ff8a4a; --amber-dim:#66351d;
   --ok:#59d8a2; --err:#ef6a7a;
   --mono:"SF Mono",ui-monospace,"Cascadia Mono",Menlo,Consolas,monospace;
   --serif:"Noto Serif TC","Songti TC",serif;
+  --sans:-apple-system,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --r:12px; --r-sm:7px;
 }
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--ink);
-  font-family:-apple-system,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
   line-height:1.55;-webkit-font-smoothing:antialiased}
-body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;
+body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;z-index:1;
   background:repeating-linear-gradient(0deg,transparent 0 2px,#000 2px 3px)}
 .mono{font-family:var(--mono)} .tnum{font-variant-numeric:tabular-nums}
 a{color:var(--strand);text-decoration:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* 統一標籤語彙：所有面板/區塊的小標都用這一種 */
+.lbl{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;color:var(--dim);text-transform:uppercase}
+
+/* 統一卡片語彙：取代原本 board/core/log/journey 各自的樣式 */
+.card{background:var(--panel2);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px}
+.card-tag{font-family:var(--mono);font-size:9.5px;color:var(--mute);border:1px solid var(--line2);border-radius:5px;padding:2px 8px}
 
 .ovl{position:fixed;inset:0;background:rgba(6,8,11,.96);z-index:40;display:none;
   align-items:center;justify-content:center;padding:24px;overflow-y:auto}
@@ -47,8 +58,9 @@ a{color:var(--strand);text-decoration:none}
   background:none;border:1px solid var(--strand);color:var(--strand);
   padding:12px 34px;border-radius:4px;text-transform:uppercase}
 .btn:hover{background:var(--strand);color:#04252b}
+.btn:focus-visible{outline:2px solid var(--strand);outline-offset:2px}
 .btn[disabled]{opacity:.3;cursor:not-allowed}
-.btn.ghost{border-color:var(--line);color:var(--mute);letter-spacing:.1em}
+.btn.ghost{border-color:var(--line2);color:var(--mute);letter-spacing:.1em}
 .btn.ghost:hover{background:var(--line);color:var(--ink)}
 
 .chapter{font-family:var(--serif);text-align:center}
@@ -56,11 +68,11 @@ a{color:var(--strand);text-decoration:none}
 .chapter h2{font-size:clamp(26px,5vw,40px);font-weight:600;letter-spacing:.22em;margin:16px 0 10px}
 .chapter p{color:var(--mute);font-size:14px;letter-spacing:.12em}
 
-/* ── 建築規劃階段（PLAN PHASE）── */
+/* ── PLAN PHASE（建築規劃 → 整合難度）── */
 .plan-box{max-width:860px;width:100%}
 .plan-box h2{font-family:var(--mono);font-size:15px;letter-spacing:.3em;color:var(--strand);margin:0 0 4px}
 .plan-box .sub{font-size:12.5px;color:var(--mute);margin-bottom:18px}
-.plan-lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.25em;color:var(--dim);margin:18px 0 9px}
+.plan-lab{font-family:var(--mono);font-size:10.5px;letter-spacing:.25em;color:var(--dim);margin:18px 0 9px;text-transform:uppercase}
 .optrow{display:grid;gap:11px}
 .optrow.two{grid-template-columns:1fr 1fr}
 .optrow.three{grid-template-columns:repeat(3,1fr)}
@@ -68,6 +80,7 @@ a{color:var(--strand);text-decoration:none}
 .opt{cursor:pointer;background:var(--panel);border:1.5px solid var(--line);border-radius:11px;padding:13px 15px;transition:border-color .12s}
 .opt:hover{border-color:var(--dim)}
 .opt.sel{border-color:var(--strand);background:#0d1b1f}
+.opt:focus-visible{outline:2px solid var(--strand);outline-offset:2px}
 .opt .on{font-weight:750;font-size:14px}
 .opt .od{font-size:11.5px;color:var(--mute);margin-top:3px;line-height:1.6}
 .opt .stats{font-family:var(--mono);font-size:10.5px;margin-top:9px;line-height:1.9;color:var(--mute)}
@@ -79,32 +92,48 @@ a{color:var(--strand);text-decoration:none}
 .plan-src{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:16px}
 .plan-go{margin-top:18px;text-align:center}
 
-/* ── HUD ── */
-.wrap{max-width:1180px;margin:0 auto;padding:18px 16px 40px}
-header.hud{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
-  border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
-.hud .t{font-family:var(--mono);letter-spacing:.2em;font-size:14px}
-.hud .t b{color:var(--strand)}
-.hud .meta{font-family:var(--mono);font-size:11px;color:var(--mute);display:flex;gap:14px;flex-wrap:wrap}
-.hud .meta b{color:var(--ink)}
-.hud .meta .amber{color:var(--amber)}
+/* ── 版心 ── */
+.wrap{max-width:1180px;margin:0 auto;padding:18px 16px 40px;position:relative;z-index:2}
 
-/* ── S1–S11 階段條（都更全程層次）── */
-.phases{display:flex;gap:0;align-items:center;font-family:var(--mono);font-size:10px;color:var(--dim);
-  margin:4px 0 14px;flex-wrap:wrap}
-.ph{display:flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--line);border-radius:999px;margin:2px 6px 2px 0}
-.ph.done{color:var(--strand-dim);border-color:var(--strand-dim)}
-.ph.now{color:var(--strand);border-color:var(--strand);box-shadow:0 0 12px rgba(79,216,232,.15)}
-.ph.now::before{content:"◉ ";animation:pulse 1.6s infinite}
+/* ── ① 指揮列（識別 + 資源，統一為 pill）── */
+header.cmd{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
+  border:1px solid var(--line);border-radius:var(--r);background:var(--panel2);padding:12px 16px;margin-bottom:14px}
+.cmd-id{font-family:var(--mono);letter-spacing:.2em;font-size:14px}
+.cmd-id b{color:var(--strand)}
+.cmd-id span{color:var(--dim);font-size:10.5px;letter-spacing:.1em;margin-left:6px}
+.cmd-res{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch}
+.res{display:flex;align-items:baseline;gap:6px;background:var(--panel);border:1px solid var(--line);
+  border-radius:999px;padding:5px 13px;font-family:var(--mono)}
+.res .rk{font-size:9.5px;letter-spacing:.18em;color:var(--mute);text-transform:uppercase}
+.res b{font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
+.res .rs{font-size:10px;color:var(--dim)}
+.res.hint{border-color:var(--amber-dim);color:var(--amber);font-size:11px;align-items:center;padding:5px 13px}
+.res.hint:empty{display:none}
+
+/* ── ② 進度脊：都更流程（S1–S11）＋整合旅程 併為一體 ── */
+.spine{background:var(--panel2);border:1px solid var(--line);border-radius:var(--r);padding:16px 20px 22px;margin-bottom:16px}
+.spine-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}
+.spine-count{font-family:var(--mono);font-size:11px;color:var(--mute);letter-spacing:.05em}
+.spine-count b{color:var(--strand)}
+/* 流程步進器（取代原 pills，改為有連線的 stepper，讀得出「現在在哪一關」） */
+.process{display:flex;align-items:flex-start;gap:0;margin:0 2px 8px;overflow-x:auto;padding-bottom:4px}
+.pstep{flex:1 1 0;min-width:88px;position:relative;text-align:center;padding-top:16px}
+.pstep::before{content:"";position:absolute;top:5px;left:calc(-50% + 5px);width:100%;height:2px;background:var(--line)}
+.pstep:first-child::before{display:none}
+.pstep .dot{position:absolute;top:0;left:50%;transform:translateX(-50%);width:11px;height:11px;border-radius:50%;
+  background:var(--panel);border:2px solid var(--dim)}
+.pstep .pn{font-family:var(--mono);font-size:10.5px;color:var(--dim);letter-spacing:.04em;line-height:1.4;display:block}
+.pstep.done .dot{background:var(--strand-dim);border-color:var(--strand-dim)}
+.pstep.done::before{background:var(--strand-dim)}
+.pstep.done .pn{color:var(--mute)}
+.pstep.now .dot{background:var(--strand);border-color:var(--strand);box-shadow:0 0 12px rgba(79,216,232,.5)}
+.pstep.now .pn{color:var(--strand)}
+.pstep.now .pn::before{content:"◉ ";animation:pulse 1.6s infinite}
 @keyframes pulse{50%{opacity:.4}}
-.ph .arr{color:var(--dim)}
-
-/* ── 整合旅程軌（拉長＋推進感）── */
-.journey{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:18px 20px 26px;margin-bottom:16px}
-.journey .jh{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;
-  letter-spacing:.22em;color:var(--dim);margin-bottom:16px}
-.journey .jh b{color:var(--strand);letter-spacing:0}
-.rail{position:relative;height:8px;background:var(--panel);border:1px solid var(--line);border-radius:999px;margin:26px 8px 34px}
+/* 旅程軌（＝目前「整合」這一關的逐戶進度） */
+.rail-cap{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.1em;margin:14px 2px 0}
+.rail-cap b{color:var(--strand)}
+.rail{position:relative;height:8px;background:var(--panel);border:1px solid var(--line);border-radius:999px;margin:28px 8px 34px}
 .rail .fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;
   background:linear-gradient(90deg,var(--strand-dim),var(--strand));transition:width .9s cubic-bezier(.2,.8,.2,1)}
 .rail .walker{position:absolute;top:-9px;width:24px;height:24px;margin-left:-12px;border-radius:50%;
@@ -118,15 +147,16 @@ header.hud{display:flex;justify-content:space-between;align-items:center;gap:12p
 .node.hit .nl{color:var(--strand)}
 .node .nn{display:block;font-size:10.5px;font-weight:700}
 
-.cols{display:grid;grid-template-columns:1fr 330px;gap:16px}
-@media(max-width:900px){.cols{grid-template-columns:1fr}}
-.board{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px}
-.blab{font-family:var(--mono);font-size:10.5px;letter-spacing:.25em;color:var(--dim);margin-bottom:10px}
-.grid{display:grid;grid-template-columns:repeat(8,1fr);gap:7px}
-.cell{aspect-ratio:1;border-radius:6px;border:1px solid var(--line);background:var(--panel);
+/* ── ③ 主舞台（地主矩陣 hero）＋ 情報欄 ── */
+.stage{display:grid;grid-template-columns:1fr 330px;gap:16px;align-items:start}
+@media(max-width:900px){.stage{grid-template-columns:1fr}}
+.hero{padding:18px}
+.grid{display:grid;grid-template-columns:repeat(8,1fr);gap:8px}
+.cell{aspect-ratio:1;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--panel);
   display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;
-  font-family:var(--mono);font-size:10px;color:var(--mute);position:relative;transition:transform .1s}
-.cell:hover{transform:scale(1.06);z-index:2}
+  font-family:var(--mono);font-size:10px;color:var(--mute);position:relative;transition:transform .1s,border-color .1s}
+.cell:hover{transform:scale(1.06);z-index:2;border-color:var(--strand-dim)}
+.cell:focus-visible{outline:2px solid var(--strand);outline-offset:1px;z-index:3}
 .cell .st{font-size:9px;margin-top:2px;color:var(--dim)}
 .cell.agreed{border-color:var(--strand-dim);background:#0e2227;color:var(--strand);cursor:default}
 .cell.agreed .st{color:var(--strand-dim)}
@@ -136,25 +166,23 @@ header.hud{display:flex;justify-content:space-between;align-items:center;gap:12p
 .cell.fam::after{content:"⌂";position:absolute;bottom:1px;right:4px;font-size:8px;color:var(--dim)}
 .cell.justflip{animation:flip .6s ease}
 @keyframes flip{0%{background:var(--strand);color:#04252b}100%{}}
-.legend{display:flex;gap:14px;margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--mute);flex-wrap:wrap}
+.legend{display:flex;gap:14px;margin-top:14px;font-family:var(--mono);font-size:10px;color:var(--mute);flex-wrap:wrap}
 .sw{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-.side{display:flex;flex-direction:column;gap:14px}
-.core{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:15px}
-.core .h{display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);
-  font-size:10.5px;letter-spacing:.2em;color:var(--dim);margin-bottom:10px}
-.core .h .chip{border:1px solid var(--strand-dim);color:var(--strand);border-radius:4px;padding:1px 7px;font-size:9.5px}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px;border-top:1px solid var(--line);padding-top:15px}
+.actions .btn{flex:1;padding:11px 8px;font-size:11px;letter-spacing:.12em}
+
+.intel{display:flex;flex-direction:column;gap:14px}
 .core .row{display:flex;justify-content:space-between;font-size:12.5px;padding:3.5px 0;color:var(--mute)}
 .core .row b{color:var(--ink);font-family:var(--mono);font-size:12px}
-.core .warn{margin-top:9px;padding:8px 10px;border-radius:7px;font-size:11px;line-height:1.5}
+.core .warn{margin-top:9px;padding:8px 10px;border-radius:var(--r-sm);font-size:11px;line-height:1.5}
 .core .warn.err{background:#241318;color:var(--err)}
 .core .warn.warn{background:#221a10;color:var(--amber)}
-.core .src{font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-top:10px}
-.log{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:13px 15px;
-  font-family:var(--mono);font-size:11px;color:var(--mute);max-height:230px;overflow-y:auto}
-.log .li{padding:3px 0;border-bottom:1px dashed #17202a}
-.log .li b{color:var(--strand)}
-.actions{display:flex;gap:9px;flex-wrap:wrap}
-.actions .btn{flex:1;padding:11px 8px;font-size:11px;letter-spacing:.12em}
+.core .src{font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-top:11px}
+.chip{border:1px solid var(--strand-dim);color:var(--strand);border-radius:4px;padding:1px 7px;font-size:9.5px;font-family:var(--mono)}
+.log-body{font-family:var(--mono);font-size:11px;color:var(--mute);max-height:230px;overflow-y:auto}
+.log-body .li{padding:3px 0;border-bottom:1px dashed #17202a}
+.log-body .li b{color:var(--strand)}
+.log-body:empty::after{content:"（尚無行動。點一戶開始。）";color:var(--dim)}
 
 .codec{max-width:640px;width:100%;background:var(--panel2);border:1px solid var(--strand-dim);border-radius:12px;overflow:hidden}
 .codec .freq{display:flex;justify-content:space-between;align-items:center;background:#0c1a1e;
@@ -259,28 +287,37 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
   <a class="btn ghost" href="index.html" style="text-decoration:none;display:inline-block">回儀表板</a>
 </div></div>
 
-<!-- ═══ HUD ═══ -->
+<!-- ═══ GAME（統一版面）═══ -->
 <div class="wrap">
-  <header class="hud">
-    <div class="t">URBAN <b>STRAND</b> <span style="color:var(--dim);font-size:10px;letter-spacing:.1em" id="hud-scen">· 整合戰術沙盤</span></div>
-    <div class="meta">
-      <span>WEEK <b class="tnum" id="m-week">1</b>/<span class="tnum" id="m-weeks">24</span></span>
-      <span>AP <b class="tnum" id="m-ap">4</b></span>
-      <span>整合預算 <b class="tnum" id="m-budget">300</b>萬 <span style="color:var(--dim)">(沙盤)</span></span>
-      <span class="amber" id="m-hint"></span>
+  <!-- ① 指揮列 -->
+  <header class="cmd">
+    <div class="cmd-id">URBAN <b>STRAND</b><span id="hud-scen">· 整合戰術沙盤</span></div>
+    <div class="cmd-res">
+      <div class="res"><span class="rk">Week</span><b class="tnum" id="m-week">1</b><span class="rs">/<span class="tnum" id="m-weeks">24</span></span></div>
+      <div class="res"><span class="rk">AP</span><b class="tnum" id="m-ap">4</b></div>
+      <div class="res"><span class="rk">整合預算</span><b class="tnum" id="m-budget">300</b><span class="rs">萬 · 沙盤</span></div>
+      <div class="res hint" id="m-hint"></div>
     </div>
   </header>
 
-  <div class="phases" id="phases"></div>
-
-  <div class="journey">
-    <div class="jh"><span>INTEGRATION JOURNEY · 整合旅程</span><span>同意 <b class="tnum" id="p-num">34/48</b> · 目標 <b class="tnum" id="p-target">48</b> 戶</span></div>
+  <!-- ② 進度脊：都更流程 + 整合旅程 一體 -->
+  <section class="spine">
+    <div class="spine-head">
+      <span class="lbl">都更流程 · 整合進度</span>
+      <span class="spine-count">同意 <b class="tnum" id="p-num">34/48</b> · 目標 <b class="tnum" id="p-target">48</b> 戶</span>
+    </div>
+    <div class="process" id="phases"></div>
+    <div class="rail-cap" id="rail-cap">目前關卡：<b>整合</b> — 逐戶爭取同意，跨過門檻才進入「事業計畫」。</div>
     <div class="rail" id="rail"></div>
-  </div>
+  </section>
 
-  <div class="cols">
-    <div class="board">
-      <div class="blab">STREET BLOCK · 48 HOUSEHOLDS · 點擊未同意戶開啟 CODEC · ⌂＝家族</div>
+  <!-- ③ 主舞台（地主矩陣）+ 情報欄 -->
+  <div class="stage">
+    <section class="hero card">
+      <div class="card-head">
+        <span class="lbl">Street Block · 這條街的 48 戶</span>
+        <span class="card-tag">點未同意戶開啟 CODEC · ⌂＝家族</span>
+      </div>
       <div class="grid" id="grid"></div>
       <div class="legend">
         <span><i class="sw" style="background:#0e2227;border:1px solid var(--strand-dim)"></i>已同意（羈絆）</span>
@@ -288,19 +325,23 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
         <span><i class="sw" style="background:#1d1410;border:1px solid var(--amber-dim)"></i>反對</span>
         <span>▲＝關鍵戶</span><span>羈絆只對「接觸過」的戶生效</span>
       </div>
-      <div class="actions" style="margin-top:14px">
+      <div class="actions">
         <button class="btn ghost" id="btn-brief">🏫 說明會（1 AP · 20萬）</button>
         <button class="btn" id="btn-week">結束本週 ▸</button>
       </div>
-    </div>
-    <div class="side">
-      <div class="core" id="corebox"></div>
-      <div class="log" id="log"></div>
-    </div>
+    </section>
+
+    <aside class="intel">
+      <section class="card core" id="corebox"></section>
+      <section class="card" id="logcard">
+        <div class="card-head"><span class="lbl">Field Log · 行動日誌</span></div>
+        <div class="log-body" id="log"></div>
+      </section>
+    </aside>
   </div>
 
   <footer class="pg">
-    <span>URBAN STRAND v2 — 沙盤機制為示意；方案財務皆 Core 預算結果。人物皆虛構原型，零真實資料。</span>
+    <span>URBAN STRAND v2 · 統一版面 — 沙盤機制為示意；方案財務皆 Core 預算結果。人物皆虛構原型，零真實資料。</span>
     <span><a href="index.html">DASHBOARD</a> · <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">BUILDER</a></span>
   </footer>
 </div>
@@ -461,7 +502,7 @@ const SIMCORE = (() => {
 })();
 /*SIMCORE-END*/
 
-/* ── 渲染層 ── */
+/* ── 渲染層（統一版面）── */
 const $=id=>document.getElementById(id);
 const pct=x=>(x*100).toFixed(1)+"%";
 const n0=x=>x==null?"—":Math.round(x).toLocaleString();
@@ -476,7 +517,9 @@ const CODEC_SAY={
     "「……好。你聽完了。換我問你：你會住進來嗎？」"],
   offerOk:"「……方案我收下。讓我想想。」", offerBoss:"「你以為錢能解決？」"
 };
-const PHASES=["S1-3 前期評估","整合","事業計畫","審議","權利變換","拆除開工"];
+/* 都更 S1–S11 主流程（本局在「整合」關；抵達目標＝推進到「事業計畫」） */
+const PHASES=["前期評估","整合","事業計畫","審議","權利變換","拆除開工"];
+const PHASE_NOW=1;   // 目前關卡索引（整合）
 
 /* PLAN PHASE UI */
 const MODES=[
@@ -487,7 +530,7 @@ function scaleCard(sk){
   const sc=SIMCORE.SCEN["weilao_"+sk];
   const off=SIMCORE.TRUST_OFF[sk];
   const okvol=sc.remaining>=0;
-  return `<div class="opt" data-scale="${sk}">
+  return `<div class="opt" tabindex="0" data-scale="${sk}">
     <div class="on">${sc.label}<span class="mono" style="font-size:10px;color:var(--dim)">　獎勵率 ${sc.bonus}</span></div>
     <div class="stats">
       允建 <b class="tnum">${n0(sc.allow)}</b> m² · 餘量 <b class="tnum" style="color:${okvol?'var(--ok)':'var(--err)'}">${sc.remaining>0?'+':''}${sc.remaining}</b><br>
@@ -501,7 +544,7 @@ function scaleCard(sk){
     </div></div>`;
 }
 function renderPlan(){
-  $("opt-mode").innerHTML=MODES.map(m=>`<div class="opt" data-mode="${m.k}">
+  $("opt-mode").innerHTML=MODES.map(m=>`<div class="opt" tabindex="0" data-mode="${m.k}">
     <div class="on">${m.n}</div><div class="od">${m.d}</div>
     <div class="fx">${m.fx.map(x=>`<span class="fxc">${x}</span>`).join("")}</div></div>`).join("");
   $("opt-scale").innerHTML=["S","M","L"].map(scaleCard).join("");
@@ -514,17 +557,19 @@ function syncPlan(){
   $("btn-plan-go").disabled=!(plan.mode&&plan.scale);
 }
 
-/* HUD 渲染 */
-function renderPhases(){
+/* ② 進度脊：流程步進器 + 旅程軌 */
+function renderProcess(){
   $("phases").innerHTML=PHASES.map((p,i)=>{
-    const cls=i===0?"done":i===1?"now":"";
-    return `<span class="ph ${cls}">${i===0?"✓ ":""}${p}</span>`;
+    const cls=i<PHASE_NOW?"done":i===PHASE_NOW?"now":"";
+    return `<div class="pstep ${cls}"><span class="dot"></span><span class="pn">S${i+1}<br>${p}</span></div>`;
   }).join("");
 }
 function renderJourney(){
   // rail 每次全量重建（不得引用重建前的子節點——舊版曾因取 stale walker 拋錯，rail 卡死）
   const n=SIMCORE.agreedCount(S), t=S.target, p=Math.min(1,Math.max(0,(n-34)/(t-34)));
   $("p-num").textContent=n+"/48"; $("p-target").textContent=t;
+  const goal=S.cfg.mode==="weilao"?"全員 48 戶同意":"80% 門檻（39 戶）送件";
+  $("rail-cap").innerHTML=`目前關卡：<b>整合</b> — 逐戶爭取同意，跨過 ${goal} 才推進到「事業計畫」。`;
   let nodes="";
   const sts=[{n:34,name:"啟程"},...S.milestones.map(m=>({n:m.n,name:m.name})),{n:t,name:S.cfg.mode==="weilao"?"全員羈絆":"送件門檻"}];
   for(const st of sts){
@@ -533,11 +578,12 @@ function renderJourney(){
   }
   $("rail").innerHTML=`<div class="fill" style="width:${p*100}%"></div>${nodes}<div class="walker" style="left:${p*100}%">⇢</div>`;
 }
+/* ③ 情報欄：Core 試算 */
 function renderCore(){
   const sc=S.scen;
   $("hud-scen").textContent=`· ${S.cfg.mode==="weilao"?"危老":"都更"} × ${sc.label}`;
   $("corebox").innerHTML=`
-    <div class="h"><span>RE-DCF CORE · 本方案財務</span><span class="chip">v0.2.0 · 只讀</span></div>
+    <div class="card-head"><span class="lbl">RE-DCF Core · 本方案財務</span><span class="chip">v0.2.0 · 只讀</span></div>
     <div class="row"><span>允建容積 / 餘量</span><b class="tnum">${n0(sc.allow)} m² / ${sc.remaining>0?'+':''}${sc.remaining}</b></div>
     <div class="row"><span>總銷</span><b class="tnum">${n0(sc.total)} 萬</b></div>
     <div class="row"><span>共同負擔比</span><b class="tnum">${pct(sc.scr)}</b></div>
@@ -558,7 +604,9 @@ function render(){
     const d=document.createElement("div");
     d.className="cell "+u.consent+(u.boss?" boss":"")+(u.family>=0?" fam":"")+(u.flipWeek===S.week&&u.consent==="agreed"?" justflip":"");
     d.innerHTML=`<span>${SIMCORE.code(id)}</span><span class="st">${u.consent==="agreed"?"✓":u.stance}</span>`;
-    if(u.consent!=="agreed")d.onclick=()=>openCodec(id);
+    if(u.consent!=="agreed"){d.tabIndex=0;d.setAttribute("role","button");
+      d.onclick=()=>openCodec(id);
+      d.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openCodec(id);}};}
     g.appendChild(d);
   });
   $("log").innerHTML=S.log.slice(0,30).map(l=>`<div class="li"><b>W${l.w}</b> ${l.t}</div>`).join("");
@@ -624,9 +672,9 @@ $("btn-start").onclick=()=>{
 $("btn-plan-go").onclick=()=>{
   $("ovl-plan").classList.remove("show");
   S=SIMCORE.create({mode:plan.mode,scale:plan.scale});
-  renderPhases(); renderCore(); render();
+  renderProcess(); renderCore(); render();
   chapter("EPISODE 1","剩下的十四戶","錢能算出共同負擔，算不出人為什麼搖頭。",1900);
 };
 /* 預設先建一局（危老×基準）供背景顯示；正式開局在規劃定案後重建 */
-S=SIMCORE.create(); renderPhases(); renderCore(); render();
+S=SIMCORE.create(); renderProcess(); renderCore(); render();
 </script>
