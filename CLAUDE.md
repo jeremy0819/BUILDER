@@ -34,6 +34,7 @@
 | 排優先序／判斷某功能該不該現在做 | `docs/architecture/ROADMAP.md`（P0–P3） |
 | 了解已知風險與文件衝突裁決 | `docs/architecture/ARCH_REVIEW.md`、`docs/architecture/FREEZE_REVIEW-2026-07.md` |
 | 版本規則／發布流程／授權 | `governance/VERSION_POLICY.md`、`docs/releases/`（CHECKLIST、LICENSE_ANALYSIS） |
+| 都更開發模式／整合方法論／遊戲架構 | `docs/handbook/`（整合人手冊、URBAN_STRAND架構手冊）；狀態報告 `docs/releases/PROGRESS_REPORT-2026-07.md` |
 | CI 五道 Gate 怎麼跑／怎麼修 | `.github/workflows/ci.yml`＋`tools/check_*.py` |
 | harness 常見翻車與修法 | `governance/DIAGNOSIS.md` |
 | 交接脈絡與低信心警示 | `governance/LETTER_TO_FUTURE_SESSIONS.md` |

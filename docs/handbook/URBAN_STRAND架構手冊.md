@@ -1,0 +1,151 @@
+# URBAN STRAND 架構手冊
+### Game Architecture Handbook（整合戰術沙盤・至 M2）
+
+> **這本手冊是誰的：** 要維護／擴充 URBAN STRAND（`apps/web/os-simulator.html`）的人。
+> **它做什麼：** 講清楚遊戲的**分層架構、SSOT 邊界、可測性、統一版面**，讓下一位（可能是較弱的模型）改得動又不踩紅線。
+> **一句定位：** URBAN STRAND 是**方法論的可玩化**——把《整合人手冊》的「模式→共負比→整合難度」因果鏈，做成一款小島秀夫式的「羈絆」戰術遊戲。**它不是計算來源；權威財務數字全部來自 `core/redcf`。**
+> 對照：`docs/handbook/整合人手冊.md`（領域）、`docs/architecture/UI_BINDING_MAP.md`（綁定）、`tests/web/test_os_simulator.mjs`（驗收）。
+
+---
+
+## 1. 三層架構（最重要的一張圖）
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ ③ 呈現層 DOM/CSS（統一版面）                             │
+│   指揮列 / 進度脊 / 地主矩陣 hero / 情報欄 / CODEC / 結局  │
+│   —— 可自由改版；不含遊戲規則，只把 state 畫出來           │
+├─────────────────────────────────────────────────────────┤
+│ ② 遊戲邏輯 SIMCORE（純函式，零 DOM，零財務公式）          │
+│   create/listen/offer/briefing/endWeek/…                 │
+│   —— node headless 可測；改這裡必跑 test_os_simulator.mjs │
+├─────────────────────────────────────────────────────────┤
+│ ① 真源 SCEN（Core recompute 烘焙的唯讀常數）              │
+│   6 方案財務（危老/都更 × S/M/L）＝ core/redcf 匯出        │
+│   —— 只讀；遊戲層一條財務公式都不准寫（紅線）              │
+└─────────────────────────────────────────────────────────┘
+        ▲ 權威數字來源：core/redcf（SSOT），非遊戲
+```
+
+**紅線（違反＝停止並回報）：**
+1. 遊戲層**零財務/法規公式**。財務值只能是 `SCEN` 裡 Core 預算好的常數；要改財務＝改 `core/redcf` 重新匯出，不是在 JS 裡算。
+2. `SIMCORE` 區塊（`/*SIMCORE-BEGIN*/…/*SIMCORE-END*/`）改動**必跑** `node tests/web/test_os_simulator.mjs`，24 測不綠不 commit。
+3. 靜態純度：單一自含 HTML、零依賴、零建置、可離線——不引入 bundler/framework/CDN/外部字型。
+
+---
+
+## 2. SIMCORE — 遊戲邏輯層（可測核心）
+
+**位置：** `apps/web/os-simulator.html` 內 `/*SIMCORE-BEGIN*/ … /*SIMCORE-END*/`。
+**抽出方式：** headless 測試用 regex 抽這段 → `new Function(src+"; return SIMCORE;")()` 在 node 跑（零 DOM）。所以 **SIMCORE 內不得引用任何 `document`/`window`**。
+
+**對外 API（穩定）：**
+
+| 函式 | 語意 |
+|---|---|
+| `create(cfg)` | 開一局；`cfg={mode:"weilao"\|"duegeng", scale:"S"\|"M"\|"L"}` |
+| `listen(s,id)` | 傾聽（1 AP）；BOSS 三次傾聽轉同意 |
+| `offer(s,id)` | 客製方案（1 AP·50萬）；BOSS 免疫且反感 |
+| `briefing(s)` | 說明會（1 AP·20萬）；全體 pending/opposed 微升 |
+| `endWeek(s)` | 結週；羈絆結算（接觸過才生效）＋事件＋勝負判定 |
+| `agreedCount/neighbors/code/pendingMilestone` | 查詢/工具 |
+
+**關鍵常數（改動＝改難度，需重測平衡）：**
+`AP_MAX=4 · BUDGET0=300 · AGREE_AT=75 · N=48 · BOSS=W47 · FAMILY=[[36,39,44],[38,42],[40,43,46]]`
+`TRUST_OFF={S:-5,M:0,L:4} · weeksOf=24-(L?2:0)-(都更?2:0) · targetOf=危老48/都更39`
+
+**設計不變式（headless 測試守的事）：**
+- 48 戶、固定種子可重現（`mulberry32`）。
+- 傾聽首次 +11、同招遞減（offer 11→6）。
+- BOSS 對錢免疫（−5）、三次傾聽轉同意（＝「祖厝只認有人坐下來聽完」）。
+- 羈絆**只對接觸過（touched）的戶生效**（v2 設計：連結要先伸出手）。
+- 家族一人點頭全家 +8。
+- 可贏性：貪心策略 8–24 週達標；掛機 26 週必輸（零接觸＝零羈絆＝零翻轉）。
+
+> **為什麼要可測：** 遊戲平衡是「數值設計」，一改就可能讓掛機也能贏（曾發生：羈絆滾雪球把 BOSS 推過門檻）。24 個 headless 測試把「可贏但不能躺贏」釘住，是改遊戲的安全網。
+
+---
+
+## 3. SCEN — Core 真源層（SSOT 邊界）
+
+`SCEN` 是一張 6 格表：`{weilao|duegeng}_{S|M|L}` → `{allow, remaining, saleable, total, scr, ratio, rr, warn[]}`。
+
+**這些數字哪來的：** `core/redcf` 的 `recompute(engine)`——同一塊基地（案例D 合成資料），改變獎勵率輸入（0.20/0.40/0.52）與模式，Core 算出 6 組 result，**烘焙**進遊戲當唯讀常數（computed 2026-07-01 · core 0.2.0 · schema v2.0）。
+
+**SSOT 如何在遊戲裡執法：**
+- 遊戲的財務顯示（PLAN PHASE 情境卡、右側 Core 試算情報欄）**全部讀 SCEN**，不重算。
+- 遊戲難度（開局信任 `TRUST_OFF`、週數）是**遊戲規則**，但**依 Core 的共負比對應**——共負 72%（超融資閘門）→ 信任 −5；共負 62.9% → +4。財務與人心的綁定是設計，不是巧合（見《整合人手冊》§4）。
+- `warn[]`（`SHARED_COST_HIGH`/`VOLUME_EXCEEDED`/`EFFICIENCY_OUT_OF_BAND`）也來自 Core 的 `result.warnings`——遊戲只顯示，不自判門檻。
+
+> **要更新 SCEN 數字時：** 在 `core/redcf` 跑 `recompute` 產生新 result → 貼進 SCEN → 跑 headless 確認平衡未破。**絕不**在 JS 裡改算式。
+
+---
+
+## 4. 呈現層 — 統一版面（M2 顧問回饋後）
+
+顧問回饋：程式架構無虞，但介面「有點亂」（六種面板各長各樣、兩條進度條打架、地主矩陣失去主角地位）。M2 的介面統一＝**資訊設計整併，非重寫遊戲**（SIMCORE byte 不變）。
+
+**四區塊（單一設計語彙）：**
+
+| 區塊 | 內容 | 對應 |
+|---|---|---|
+| ① 指揮列 `header.cmd` | 識別＋資源 pill（Week/AP/預算） | 統一為一種 `.res` pill |
+| ② 進度脊 `.spine` | **S1–S6 都更流程步進器＋逐戶整合旅程軌一體** | 原本 `.phases`＋`.journey` 兩條合一 |
+| ③ 主舞台 `.hero` | **48 戶矩陣（hero）**＋圖例＋行動鈕 | 矩陣復位為主角 |
+| 情報欄 `.intel` | Core 試算卡＋行動日誌卡 | 統一 `.card`/`.lbl` 語彙 |
+
+**設計系統 token（沿用 Kojima/codec 世界觀，單一主題成立——霓虹主控台不需要淺色版）：**
+`--bg:#0a0d12 · --strand:#4fd8e8（青，唯一 accent）· --amber:#ff8a4a（語意警示，非 accent）· --ok/--err · mono+serif+sans`。
+統一原語：`.card`（面板）、`.lbl`（小標）、`.res`（資源 pill）、`.chip`（狀態）。
+
+**無障礙（M2 補）：** 矩陣格與 PLAN 選項可鍵盤操作（`tabindex`＋`role=button`＋Enter/Space）、`:focus-visible` 樣式、`prefers-reduced-motion` 關閉動畫。
+
+**渲染函式（呈現層，可改）：** `renderProcess()`（流程步進器）、`renderJourney()`（旅程軌，**每次全量重建**——舊版曾引用重建前的 stale walker 而卡死，切記不要）、`renderCore()`（情報欄）、`render()`（矩陣＋日誌＋章節/結局）、`openCodec()`（對話）。
+
+---
+
+## 5. 遊戲流程與敘事（Kojima 式）
+
+```
+TITLE → PLAN PHASE（①模式 ②規模，Core 6 方案）→ EPISODE 1
+   → [每週] 點矩陣未同意戶 → CODEC（傾聽/客製/結束）→ 結束本週
+      · 里程碑觸發章節卡（牆上的裂縫/大勢底定/最後一哩）
+      · 事件（第4週競爭建商/第9週見報/第14週競爭/第19週雨）
+   → 達門檻＝INTEGRATION COMPLETE / 逾期＝TIME OVER → 結局＋credits
+```
+
+**敘事即機制（diegetic difficulty）：**
+- 難度來自 Core 的 `warnings`／共負比，不是憑空調數值——「共負比偏高＝地主接受度下降」直接寫在情報欄。
+- BOSS（W47 祖厝）對錢免疫、只認傾聽＝把「制度信用＞金錢」做成關卡（《整合人手冊》§3/§6）。
+- 都更 80% vs 危老 100% 兩條路＝「範圍紀律」的可玩化（《整合人手冊》§9）。
+
+---
+
+## 6. 測試與驗收（改遊戲的 SOP）
+
+| 動作 | 必跑 | 綠燈標準 |
+|---|---|---|
+| 改 SIMCORE（邏輯/平衡） | `node tests/web/test_os_simulator.mjs` | 24 passed |
+| 改呈現層（DOM/CSS） | Chromium 實開一局（driver：start→mode→scale→go）+ 看 console | 零 error、四區塊正常 |
+| 改連結/檔名 | `python tools/check_web_links.py`（Gate 4） | 連結全可達 |
+| 任何 commit 前 | `bash check_no_real_names.sh`（Gate 0） | 零命中 |
+
+> CI 對應：**Gate 5**＝`node tests/web/test_os_simulator.mjs`。遊戲核心紅了擋 merge。
+
+---
+
+## 7. 至 M2 的邊界與待辦（別現在做）
+
+**M2 已具備：** PLAN PHASE（模式×規模 Core 6 方案）、進度脊（流程＋旅程一體）、48 戶矩陣、CODEC、家族羈絆、BOSS、事件、可測可贏、統一版面、無障礙基礎。
+
+**M2 尚未做（依《整合人手冊》待落地，勿提前）：**
+- 三態地主＋選屋籌碼（接 M3 權利變換）。
+- 融資閘門燈號（<70% 綠燈）。
+- 信託信用非金錢籌碼（M5–M6）。
+- 交屋流動性結局分支（M6）。
+
+> **擴充紀律：** 上述任一項若涉及新財務數字，一律先在 `core/redcf` 實作＋走 schema 升級，再把結果烘焙進 SCEN——**遊戲層永遠零公式**。新機制要能在 `test_os_simulator.mjs` 補上不變式測試，否則不算完成。
+
+---
+
+*版本：URBAN STRAND 架構手冊 v1（至 M2）｜2026-07-11｜對應 `apps/web/os-simulator.html`（統一版）＋`tests/web/test_os_simulator.mjs`（24 測）。SIMCORE 邏輯與 SCEN 真源在 M2 收斂；呈現層完成統一版面。零真實案件資料。*
