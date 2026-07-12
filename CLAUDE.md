@@ -1,11 +1,12 @@
 # BUILDER（→ Urban-Renewal-OS）— Session 索引
 
-> 本 repo 是 Urban Renewal OS 的目標容器（monorepo）。現況：**M1 完成（os-v0.1.0-alpha 已發）＋
-> M2 收斂完成（七項 FINAL REVIEW 全 PASS，見 `docs/releases/M2_CLOSE_REPORT.md`）**：
-> schema v2.0 完整可重算合約**已凍結**（`project_schema_v2.json`＋三視圖 `schemas/v2/*`＋Gate 6 hash 守衛）、
-> Core 四動詞門面 `core/redcf/api.py`（calculate/validate/serialize/deserialize）、
-> UI 綁定 `docs/architecture/UI_BINDING_MAP.md`、預備發布 `os-v0.2.0-beta`。
-> 下一步：**M3 — 權利變換/找補＋owners UI**（見 `docs/releases/ROADMAP_M2-M8.md`）。本檔只做路由——保持 ≤150 行。
+> 本 repo 是 Urban Renewal OS 的目標容器（monorepo）。現況：**M2 關閉（os-v0.2.0-beta 已發布）＋
+> M3 進行中（權利變換/找補）**：core 0.3.0（`rights.py` §56 逐戶分回＋找補，見 `CHANGELOG.md`）、
+> schema **v2.1**（`project_schema_v2_1.json`，owner_allocations；v1.1/v2.0/v2.1 皆凍結，Gate 6 守衛）、
+> Streamlit Tab⑤ owners CSV → 逐戶權變。**入口＝URBAN STRAND OS shell（`apps/web/index.html`）**，
+> 儀表板在 `apps/web/dashboard.html`，其他介面皆為 shell 之模組。分支 `main` 與 feature 同步推進。
+> M3 待續：更新前價值係數（🔴 需使用者核准）、三態地主/選屋（見 `docs/releases/ROADMAP_M2-M8.md`）。
+> 本檔只做路由——保持 ≤150 行。
 
 ## 開工前必讀（依序，共約 10 分鐘）
 

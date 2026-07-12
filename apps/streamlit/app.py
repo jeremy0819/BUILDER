@@ -49,7 +49,7 @@ from core.redcf import (
     calc_容積查核, calc_坪效, calc_開發評效,
     calc_投報全案, calc_投報敏感度,
     calc_獎勵率合計, check_bonus_limit,
-    calc_更新前價值, build_project_json, CORE_VERSION,
+    calc_更新前價值, build_project_json, build_owner_allocations, CORE_VERSION,
     平方米換坪, 樓層欄位,
     財務率預設, 範本參數, 範本樓層表, 範本案件類型, 範本獎勵拆解, 範本模式,
     解析上傳, 產生報告,
@@ -1234,6 +1234,53 @@ B1F 防空避難室　▶ §117</div>
                            edited.to_csv(index=False).encode("utf-8-sig"),
                            f"{P['案件名稱']}_逐層表.csv", "text/csv")
 
+        # ── M3：地主清冊 CSV → §56 逐戶權變（比照逐層表；計算全在 Core）──
+        st.divider()
+        st.markdown(f"**👥 地主清冊 → 逐戶權利變換（M3｜core {CORE_VERSION}）**")
+        st.caption("CSV 欄位：`owner_id,pre_value`（必填）＋`land_share,selected_value,consent`（選填）。"
+                   "pre_value＝更新前權利價值（萬元）；Core 依 §56 比例分配「地主分回總值」→ 逐戶 "
+                   "return_value；有 selected_value（選配價值）者算找補。"
+                   "⚠️ 真實清冊僅限本地使用，勿存入公開版控。")
+        owners清冊 = []
+        owners檔 = st.file_uploader("上傳地主清冊 CSV（合成/去識別化）", type=["csv"], key="owners_csv")
+        if owners檔 is not None:
+            _df_o = pd.read_csv(owners檔)
+            if not {"owner_id", "pre_value"}.issubset(_df_o.columns):
+                st.error("CSV 需含 owner_id 與 pre_value 兩欄")
+            elif 投 is None:
+                st.warning("請先於 Step 4 完成投報計算（需要地主分回總值作分配母數）")
+            else:
+                for _r in _df_o.to_dict("records"):
+                    o = {"owner_id": str(_r["owner_id"]),
+                         "land_share": float(_r.get("land_share") or 0.0),
+                         "pre_building_area_sqm": float(_r.get("pre_building_area_sqm") or 0.0),
+                         "pre_value": float(_r.get("pre_value") or 0.0),
+                         "consent": str(_r.get("consent") or "pending")}
+                    if pd.notna(_r.get("selected_value")):
+                        o["selected_value"] = float(_r["selected_value"])
+                    owners清冊.append(o)
+                選配 = {o["owner_id"]: o["selected_value"]
+                        for o in owners清冊 if "selected_value" in o}
+                分配 = build_owner_allocations(owners清冊, 投["地主分回價值"], 選配)
+                逐戶 = pd.DataFrame([{
+                    "戶別": a["owner_id"], "更新前權值(萬)": a.get("pre_value", 0.0),
+                    "權值比例": a["權值比例"], "分回 return_value(萬)": a["return_value"],
+                    "找補 equalization(萬)": a.get("equalization"),
+                } for a in 分配])
+                st.dataframe(逐戶, use_container_width=True, hide_index=True)
+                st.caption(f"Σ 分回 = {逐戶['分回 return_value(萬)'].sum():,.0f} 萬 ＝ 地主分回總值"
+                           f"（§56 守恆）｜找補：正=補入／負=找出／空=未選配。")
+                st.download_button("⬇️ 下載逐戶權變表(CSV)",
+                                   逐戶.to_csv(index=False).encode("utf-8-sig"),
+                                   f"{P['案件名稱']}_逐戶權變.csv", "text/csv")
+                # 分回/找補回填 owners，隨案件 JSON 一併匯出（v1.1 已定義這兩欄）
+                _by_id = {a["owner_id"]: a for a in 分配}
+                for o in owners清冊:
+                    o.pop("selected_value", None)
+                    o["return_value"] = _by_id[o["owner_id"]]["return_value"]
+                    if _by_id[o["owner_id"]].get("equalization") is not None:
+                        o["equalization"] = _by_id[o["owner_id"]]["equalization"]
+
         # ── 案件 JSON 合約（RE-DCF Core 對外唯一資料格式，schema v1.1）──
         st.divider()
         st.markdown(f"**🔗 案件 JSON（Core 合約 v1.1｜core {CORE_VERSION}）**")
@@ -1246,7 +1293,7 @@ B1F 防空避難室　▶ §117</div>
             案件類型=st.session_state.get("案件類型", "都更"),
             獎勵拆解=st.session_state.get("獎勵拆解", {}),
             投報模式=投報模式,
-            owners=[],  # 地主清冊 UI 尚未建置（P1 待真實清冊資料），先輸出空陣列
+            owners=owners清冊,  # M3：上方 CSV 匯入（含 Core 回填之 return_value/equalization）；未上傳＝空陣列
         )
         st.download_button(
             "⬇️ 下載案件 JSON",

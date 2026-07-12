@@ -1,0 +1,308 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Urban Renewal OS · 開發評估儀表板</title>
+<style>
+:root{
+  --accent:#5A3FE0; --accent-2:#8A6BF5; --accent-soft:#eeeafb;
+  --bg:#f5f4f9; --panel:#ffffff; --ink:#171529; --mute:#67637d; --line:#e7e4f0;
+  --err:#d1394b; --warn:#b7791f; --info:#2563eb; --ok:#0f9d6a;
+  --err-bg:#fcebed; --warn-bg:#fbf2e1; --info-bg:#e9f0fe; --ok-bg:#e6f7f0;
+  --shadow:0 1px 2px rgba(23,21,41,.05),0 12px 30px rgba(23,21,41,.07);
+  --r:18px; --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --accent:#9a86ff; --accent-2:#b9abff; --accent-soft:#221d3c;
+  --bg:#0d0c15; --panel:#181626; --ink:#edeafb; --mute:#a6a2c0; --line:#2a2740;
+  --err:#f4788a; --warn:#e0aa55; --info:#82a8f8; --ok:#4fd3a4;
+  --err-bg:#2b1519; --warn-bg:#2a2112; --info-bg:#151f31; --ok-bg:#10261e;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 12px 30px rgba(0,0,0,.4);
+}}
+:root[data-theme="light"]{--accent:#5A3FE0;--accent-2:#8A6BF5;--accent-soft:#eeeafb;--bg:#f5f4f9;--panel:#fff;--ink:#171529;--mute:#67637d;--line:#e7e4f0;--err:#d1394b;--warn:#b7791f;--info:#2563eb;--ok:#0f9d6a;--err-bg:#fcebed;--warn-bg:#fbf2e1;--info-bg:#e9f0fe;--ok-bg:#e6f7f0;--shadow:0 1px 2px rgba(23,21,41,.05),0 12px 30px rgba(23,21,41,.07)}
+:root[data-theme="dark"]{--accent:#9a86ff;--accent-2:#b9abff;--accent-soft:#221d3c;--bg:#0d0c15;--panel:#181626;--ink:#edeafb;--mute:#a6a2c0;--line:#2a2740;--err:#f4788a;--warn:#e0aa55;--info:#82a8f8;--ok:#4fd3a4;--err-bg:#2b1519;--warn-bg:#2a2112;--info-bg:#151f31;--ok-bg:#10261e;--shadow:0 1px 2px rgba(0,0,0,.35),0 12px 30px rgba(0,0,0,.4)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+.wrap{max-width:1140px;margin:0 auto;padding:30px 20px 64px}
+.tnum{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--mono)}
+a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+
+header.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px;flex:none;letter-spacing:.02em}
+h1{font-size:23px;margin:0;letter-spacing:-.02em;font-weight:800}
+.sub{color:var(--mute);font-size:13px;margin-top:2px}
+.pills{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.pill{font-size:11.5px;font-weight:650;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--mute);white-space:nowrap}
+.pill.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 35%,transparent);background:var(--ok-bg)}
+.pill.accent{color:#fff;background:var(--accent);border-color:transparent}
+.tgl{cursor:pointer;font-size:12px;font-weight:650;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--mute)}
+.tgl:hover{border-color:var(--accent);color:var(--accent)}
+
+.ssot{display:flex;gap:11px;align-items:flex-start;background:var(--accent-soft);
+  border:1px solid color-mix(in srgb,var(--accent) 22%,transparent);border-radius:13px;
+  padding:11px 15px;margin:20px 0 24px;font-size:12.5px}
+.ssot b{color:var(--accent)}
+
+.slab{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--mute);font-weight:700;margin:28px 2px 13px}
+
+.cases{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:760px){.cases{grid-template-columns:1fr}}
+.case{cursor:pointer;background:var(--panel);border:1.5px solid var(--line);border-radius:var(--r);padding:17px;
+  box-shadow:var(--shadow);transition:border-color .15s,transform .15s;position:relative}
+.case:hover{transform:translateY(-2px)}
+.case.active{border-color:var(--accent)}
+.case.active::after{content:"";position:absolute;inset:-1.5px;border-radius:var(--r);border:1.5px solid var(--accent);pointer-events:none}
+.case .ct{font-size:11px;font-weight:700;letter-spacing:.03em;color:var(--accent);text-transform:uppercase}
+.case .cn{font-size:17px;font-weight:750;margin:3px 0 13px;letter-spacing:-.01em}
+.case .row{display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0;color:var(--mute)}
+.case .row b{color:var(--ink);font-weight:700}
+.case .flags{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--mute)}
+.dot{width:9px;height:9px;border-radius:50%}
+.dot.err{background:var(--err)} .dot.warn{background:var(--warn)} .dot.info{background:var(--info)}
+
+.detail{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:24px;margin-top:16px}
+.dhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:15px;margin-bottom:8px;border-bottom:1px solid var(--line)}
+.dhead h2{margin:0;font-size:20px;font-weight:800;letter-spacing:-.01em}
+.dhead h2 small{font-size:13px;font-weight:500;color:var(--mute);margin-left:8px}
+
+/* provenance 溯源條 —— M2 v2.0 新能力 */
+.prov{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0 20px}
+.chip{font-size:11px;font-weight:600;padding:4px 9px;border-radius:8px;background:var(--bg);color:var(--mute);border:1px solid var(--line)}
+.chip.verify{background:var(--ok-bg);color:var(--ok);border-color:color-mix(in srgb,var(--ok) 35%,transparent)}
+.chip b{color:var(--ink);font-weight:700}
+.chip .mono{font-size:10.5px}
+
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}
+@media(max-width:760px){.grid4{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--bg);border-radius:13px;padding:14px 15px}
+.kpi .k{font-size:11.5px;color:var(--mute);font-weight:600}
+.kpi .v{font-size:24px;font-weight:800;margin-top:3px;letter-spacing:-.025em}
+.kpi .u{font-size:12px;color:var(--mute);font-weight:600;margin-left:3px}
+.kpi .n{font-size:11.5px;color:var(--mute);margin-top:3px}
+.kpi .n.bad{color:var(--err)} .kpi .n.good{color:var(--ok)}
+
+.bars{margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:640px){.bars{grid-template-columns:1fr}}
+.blk h3{font-size:13px;margin:0 0 11px;color:var(--mute);font-weight:700}
+.bar{height:13px;border-radius:999px;background:var(--line);position:relative;overflow:hidden;margin:8px 0}
+.bar>span{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent-2))}
+.bar.over>span{background:linear-gradient(90deg,var(--err),#ef8f9c)}
+.barlab{display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
+.barlab b{color:var(--ink)}
+.donut{display:flex;align-items:center;gap:17px}
+.ring{width:98px;height:98px;border-radius:50%;flex:none;display:grid;place-items:center;position:relative}
+.ring::before{content:"";position:absolute;inset:13px;background:var(--panel);border-radius:50%}
+.ring .rv{position:relative;font-size:20px;font-weight:800}
+.band{font-size:12px;color:var(--mute);line-height:1.85}
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-weight:700;font-size:11px}
+
+/* 逐層樓板表 —— v2.0 floors[] */
+.floors{margin-top:22px}
+.fbtn{cursor:pointer;font-size:12.5px;font-weight:650;color:var(--accent);background:none;border:none;padding:0}
+.ftbl{width:100%;border-collapse:collapse;margin-top:11px;font-size:12px;display:none}
+.ftbl.show{display:table}
+.ftbl th{text-align:right;color:var(--mute);font-weight:600;padding:6px 10px;border-bottom:1px solid var(--line);font-size:11px}
+.ftbl th:first-child{text-align:left}
+.ftbl td{text-align:right;padding:5px 10px;border-bottom:1px solid var(--line)}
+.ftbl td:first-child{text-align:left;font-weight:600}
+.ftbl tr:last-child td{border-bottom:none}
+
+.warns{margin-top:22px;display:flex;flex-direction:column;gap:8px}
+.wi{display:flex;gap:11px;align-items:flex-start;padding:10px 14px;border-radius:11px;font-size:13px}
+.wi.err{background:var(--err-bg)} .wi.warn{background:var(--warn-bg)} .wi.info{background:var(--info-bg)}
+.wi .code{font-weight:800;font-size:11px;flex:none;margin-top:1px}
+.wi.err .code{color:var(--err)} .wi.warn .code{color:var(--warn)} .wi.info .code{color:var(--info)}
+
+.consent{margin-top:22px;background:var(--bg);border-radius:13px;padding:17px}
+.consent .big{font-size:15px;font-weight:750;margin-bottom:9px}
+.pbar{height:16px;border-radius:999px;background:var(--line);position:relative;overflow:hidden}
+.pbar>span{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--ok),#5cd6aa)}
+.pbar .thr{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);opacity:.55}
+
+.nav{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+@media(max-width:760px){.nav{grid-template-columns:1fr 1fr}}
+@media(max-width:460px){.nav{grid-template-columns:1fr}}
+.nav a{display:block;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:15px 16px;box-shadow:var(--shadow)}
+.nav a:hover{text-decoration:none;border-color:var(--accent)}
+.nav .t{font-weight:750;color:var(--ink);font-size:14px}
+.nav .d{font-size:12px;color:var(--mute);margin-top:2px}
+.nav .ext{font-size:11px;color:var(--accent);font-weight:650}
+
+footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-size:12px;color:var(--mute);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="logo">UR<br>OS</div>
+      <div><h1>Urban Renewal OS</h1><div class="sub">都市更新／危老 開發評估儀表板</div></div>
+    </div>
+    <div class="pills">
+      <a class="pill" href="index.html" style="text-decoration:none">⌂ OS 主選單</a>
+      <span class="pill ok">● CI 綠</span>
+      <span class="pill accent">Core v0.3.0</span>
+      <span class="pill">schema v2.0 / v2.1</span>
+      <span class="tgl" id="tgl">◐ 主題</span>
+    </div>
+  </header>
+
+  <div class="ssot"><span>🔒</span><div>所有數字皆由 <b>RE-DCF Core</b> 計算（Result JSON）；儀表板<b>只讀渲染、不重算</b>（SSOT）。
+  v2.0 合約含<b>逐層樓板</b>與<b>可重算驗證</b>：給 Core 這份輸入即可回放出同一組 result。以下為 3 個<b>合成範例</b>，零真實資料。</div></div>
+
+  <div class="slab">案件總覽 · 點卡片切換</div>
+  <div class="cases" id="cases"></div>
+  <div class="detail" id="detail"></div>
+
+  <div class="slab">三案對照（開發評估）</div>
+  <div class="detail" style="padding:16px 20px;overflow-x:auto" id="compare"></div>
+
+  <div class="slab">M3 · 權利變換 逐戶分回（§56，schema v2.1 範例）</div>
+  <div class="detail" style="padding:16px 20px;overflow-x:auto" id="alloc"></div>
+
+  <div class="slab">OS 模組（完整主選單見 <a href="index.html">URBAN STRAND OS</a>）</div>
+  <div class="nav">
+    <a href="os-simulator.html"><div class="t">🕹️ URBAN STRAND <span class="ext">NEW</span></div><div class="d">整合戰術沙盤——建立在 Core 權威數字上的羈絆談判</div></a>
+    <a href="simulator.html"><div class="t">🎮 整合策略沙盤（V4 經典版）</div><div class="d">賽局理論模擬地主整合談判</div></a>
+    <a href="evaluator.html"><div class="t">🧮 坪效×投報試算</div><div class="d">教學試算＋對接 Core JSON 匯入</div></a>
+    <a href="guide.html"><div class="t">📖 都更 11 關指南</div><div class="d">S1–S11 流程與名詞小幫手</div></a>
+    <a href="https://builder-9sczgrez3a3qsbmkebd6ey.streamlit.app/" target="_blank" rel="noopener"><div class="t">⚙️ RE-DCF 精確計算 <span class="ext">↗ Streamlit</span></div><div class="d">正式容積查核·坪效·投報計算工具</div></a>
+    <a href="whitepaper.html"><div class="t">📈 整合開發總論</div><div class="d">開發評估方法論白皮書</div></a>
+    <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener"><div class="t">📦 程式庫 <span class="ext">↗ GitHub</span></div><div class="d">Urban Renewal OS monorepo</div></a>
+  </div>
+
+  <footer><span>數字來源：core/redcf Result JSON（schema v2.0／v2.1 合成範例）</span><span>Urban Renewal OS · <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">BUILDER</a></span></footer>
+</div>
+
+<script>
+const CASES = [{"id":"A","name":"都更・全案管理","type":"都更全案管理","allow":7616.0,"used":7616.2,"remaining":-0.2,"saleable":3825.99,"eff":1.661,"total_sales":270471.0,"scr":0.5592,"return_rate":0.7882,"owner_ratio":0.4408,"pre_value":62920.0,"vmult":1.89,"owners":0,"agreed":0,"threshold":0.8,"warnings":[{"code":"VOLUME_EXCEEDED","level":"err","msg":"容積超出允建 0.20 m²，需調整設計"},{"code":"SHARED_COST_HIGH","level":"warn","msg":"共負比 55.9% 高於合理區間上限 50%"}],"floors_n":26,"floors":[{"lv":"21F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":29.0},{"lv":"20F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":29.0},{"lv":"19F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":29.0},{"lv":"18F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":29.0},{"lv":"17F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":29.0},{"lv":"16F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":32.0},{"lv":"15F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":32.0},{"lv":"14F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":32.0},{"lv":"13F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":32.0},{"lv":"12F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":32.0},{"lv":"11F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":32.0},{"lv":"10F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":32.0},{"lv":"9F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":32.0},{"lv":"8F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":32.0},{"lv":"7F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":32.0},{"lv":"6F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":32.0},{"lv":"5F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":32.0},{"lv":"4F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":32.0},{"lv":"3F","fa":440.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":32.0},{"lv":"2F","fa":444.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":32.5},{"lv":"1F+1MF","fa":880.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":23.5},{"lv":"B1F","fa":1000.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":0.0},{"lv":"B2F","fa":1000.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":0.0},{"lv":"B3F","fa":1000.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":0.0},{"lv":"B4F","fa":1000.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":0.0},{"lv":"B5F","fa":1000.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":0.0}],"core_version":"0.2.0","computed_at":"2026-07-01","input_hash":"80c3f9984a96","law_db":"builtin-2026-07","verified":true},{"id":"C","name":"防災都更","type":"防災都更","allow":4017.6,"used":4049.52,"remaining":-31.92,"saleable":2054.85,"eff":1.691,"total_sales":293500.0,"scr":0.2972,"return_rate":2.3646,"owner_ratio":0.7028,"pre_value":null,"vmult":null,"owners":0,"agreed":0,"threshold":0.8,"warnings":[{"code":"EFFICIENCY_OUT_OF_BAND","level":"warn","msg":"銷坪比 1.691 不在正常帶 1.58–1.68"},{"code":"VOLUME_EXCEEDED","level":"err","msg":"容積超出允建 31.92 m²，需調整設計"},{"code":"SHARED_COST_LOW","level":"info","msg":"共負比 29.7% 低於合理區間下限 30%，建議覆核參數"}],"floors_n":15,"floors":[{"lv":"1F","fa":336.0,"cf":0.0,"st":29.0,"ss":41.0,"bc":21.0},{"lv":"2F","fa":334.0,"cf":0.0,"st":14.5,"ss":41.0,"bc":35.5},{"lv":"3F","fa":334.0,"cf":0.0,"st":14.5,"ss":41.0,"bc":35.5},{"lv":"4F","fa":334.0,"cf":0.0,"st":14.5,"ss":41.0,"bc":35.5},{"lv":"5F","fa":334.0,"cf":0.0,"st":14.5,"ss":41.0,"bc":35.5},{"lv":"6F","fa":334.0,"cf":0.0,"st":14.5,"ss":41.0,"bc":35.5},{"lv":"7F","fa":334.0,"cf":0.0,"st":14.5,"ss":41.0,"bc":35.5},{"lv":"8F","fa":334.0,"cf":0.0,"st":14.5,"ss":41.0,"bc":35.5},{"lv":"9F","fa":334.0,"cf":0.0,"st":14.5,"ss":41.0,"bc":35.5},{"lv":"10F","fa":334.0,"cf":0.0,"st":14.5,"ss":41.0,"bc":35.5},{"lv":"11F","fa":334.0,"cf":0.0,"st":14.5,"ss":41.0,"bc":35.5},{"lv":"12F","fa":334.0,"cf":0.0,"st":14.5,"ss":41.0,"bc":35.5},{"lv":"13F","fa":334.0,"cf":0.0,"st":14.5,"ss":41.0,"bc":35.5},{"lv":"14F","fa":334.0,"cf":0.0,"st":14.5,"ss":41.0,"bc":35.5},{"lv":"15F","fa":334.0,"cf":0.0,"st":14.5,"ss":41.0,"bc":35.5}],"core_version":"0.2.0","computed_at":"2026-07-01","input_hash":"f7d00c5585fd","law_db":"builtin-2026-07","verified":true},{"id":"D","name":"危老・合建","type":"危老合建（owners 示範）","allow":6120.0,"used":6157.5,"remaining":-37.5,"saleable":3153.84,"eff":1.704,"total_sales":226089.0,"scr":0.66,"return_rate":0.515,"owner_ratio":0.34,"pre_value":36300.0,"vmult":2.12,"owners":48,"agreed":34,"threshold":1.0,"warnings":[{"code":"EFFICIENCY_OUT_OF_BAND","level":"warn","msg":"銷坪比 1.704 不在正常帶 1.58–1.68"},{"code":"VOLUME_EXCEEDED","level":"err","msg":"容積超出允建 37.50 m²，需調整設計"},{"code":"SHARED_COST_HIGH","level":"err","msg":"共負比 66.0% 超過警示線 60%，地主接受度明顯降低"},{"code":"OWNERS_VALUE_MISMATCH","level":"warn","msg":"Σ pre_value = 0，與 result.pre_renewal_value 36,300 偏離 100.0%（容差 3%）"}],"floors_n":19,"floors":[{"lv":"B1F","fa":1300.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":0.0},{"lv":"B2F","fa":1300.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":0.0},{"lv":"B3F","fa":1300.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":0.0},{"lv":"1F","fa":750.0,"cf":0.0,"st":75.0,"ss":235.0,"bc":0.0},{"lv":"2F","fa":430.0,"cf":0.0,"st":21.5,"ss":178.0,"bc":43.0},{"lv":"3F","fa":500.0,"cf":0.0,"st":25.0,"ss":40.0,"bc":50.0},{"lv":"4F","fa":500.0,"cf":0.0,"st":25.0,"ss":40.0,"bc":50.0},{"lv":"5F","fa":500.0,"cf":0.0,"st":25.0,"ss":40.0,"bc":50.0},{"lv":"6F","fa":500.0,"cf":0.0,"st":25.0,"ss":40.0,"bc":50.0},{"lv":"7F","fa":500.0,"cf":0.0,"st":25.0,"ss":40.0,"bc":50.0},{"lv":"8F","fa":500.0,"cf":0.0,"st":25.0,"ss":40.0,"bc":50.0},{"lv":"9F","fa":500.0,"cf":0.0,"st":25.0,"ss":40.0,"bc":50.0},{"lv":"10F","fa":500.0,"cf":0.0,"st":25.0,"ss":40.0,"bc":50.0},{"lv":"11F","fa":500.0,"cf":0.0,"st":25.0,"ss":40.0,"bc":50.0},{"lv":"12F","fa":500.0,"cf":0.0,"st":25.0,"ss":40.0,"bc":50.0},{"lv":"13F","fa":500.0,"cf":0.0,"st":25.0,"ss":40.0,"bc":50.0},{"lv":"14F","fa":500.0,"cf":0.0,"st":25.0,"ss":40.0,"bc":50.0},{"lv":"15F","fa":500.0,"cf":0.0,"st":25.0,"ss":40.0,"bc":50.0},{"lv":"R1F","fa":94.0,"cf":0.0,"st":0.0,"ss":0.0,"bc":0.0}],"core_version":"0.2.0","computed_at":"2026-07-01","input_hash":"857f2f68a025","law_db":"builtin-2026-07","verified":true}];
+const pct=x=>x==null?"—":(x*100).toFixed(1)+"%";
+const n0=x=>x==null?"—":Math.round(x).toLocaleString();
+const n2=x=>x==null?"—":x.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+
+function caseCard(c){
+  const flags=c.warnings.map(w=>`<span class="dot ${w.level}" title="${w.code}"></span>`).join("");
+  return `<div class="case" data-id="${c.id}">
+    <div class="ct">${c.type}</div><div class="cn">案例 ${c.id}　${c.name}</div>
+    <div class="row"><span>允建容積</span><b class="tnum">${n0(c.allow)} m²</b></div>
+    <div class="row"><span>共負比</span><b class="tnum">${pct(c.scr)}</b></div>
+    <div class="row"><span>投報率</span><b class="tnum">${pct(c.return_rate)}</b></div>
+    <div class="flags">${flags}<span>${c.warnings.length} 項健檢 · ${c.floors_n} 層</span></div></div>`;
+}
+function ring(v){const p=Math.min(v*100,100);
+  const col=v>0.60?"var(--err)":v>0.50?"var(--warn)":v<0.30?"var(--info)":"var(--ok)";
+  return `<div class="ring" style="background:conic-gradient(${col} ${p}%, var(--line) 0)"><span class="rv tnum">${pct(v)}</span></div>`;}
+
+function detail(c){
+  const usedPct=Math.min(c.used/c.allow*100,100), over=c.remaining<0, effOk=c.eff>=1.58&&c.eff<=1.68;
+  const val=c.pre_value!=null?`<div class="kpi"><div class="k">更新前價值</div><div class="v tnum">${n0(c.pre_value)}<span class="u">萬</span></div><div class="n">增值倍率 ${n2(c.vmult)}×</div></div>`:`<div class="kpi"><div class="k">更新前價值</div><div class="v">—</div><div class="n">本案未估值</div></div>`;
+  const warns=c.warnings.map(w=>`<div class="wi ${w.level}"><span class="code">${w.code}</span><span style="color:var(--ink)">${w.msg}</span></div>`).join("");
+  const consent=c.owners>0?(()=>{const r=c.agreed/c.owners;return `<div class="consent"><div class="big">地主同意進度　<span class="tnum">${c.agreed}/${c.owners} 戶（${pct(r)}）</span></div><div class="pbar"><span style="width:${r*100}%"></span><div class="thr" style="left:${c.threshold*100}%"></div></div><div class="barlab" style="margin-top:7px"><span>目前同意率</span><span>門檻線 ${pct(c.threshold)}（${c.type.indexOf("危老")>=0?"危老需全體同意":"法定門檻"}）</span></div></div>`;})():"";
+  const frows=c.floors.slice(0,40).map(f=>`<tr><td>${f.lv}</td><td class="tnum">${n2(f.fa)}</td><td class="tnum">${n2(f.cf)}</td><td class="tnum">${n2(f.st)}</td><td class="tnum">${n2(f.ss)}</td><td class="tnum">${n2(f.bc)}</td></tr>`).join("");
+  return `
+  <div class="dhead"><h2>案例 ${c.id}　${c.name}<small>${c.type}</small></h2></div>
+  <div class="prov">
+    <span class="chip verify">✓ 可重算驗證通過</span>
+    <span class="chip">逐層 <b>${c.floors_n}</b> 層</span>
+    <span class="chip">core <b>${c.core_version}</b></span>
+    <span class="chip">law_db <b>${c.law_db}</b></span>
+    <span class="chip">computed <b>${c.computed_at}</b></span>
+    <span class="chip">input_hash <b class="mono">${c.input_hash}…</b></span>
+  </div>
+  <div class="grid4">
+    <div class="kpi"><div class="k">允建容積</div><div class="v tnum">${n0(c.allow)}<span class="u">m²</span></div><div class="n ${over?'bad':'good'}">餘量 ${n2(c.remaining)} m²${over?'（超出）':''}</div></div>
+    <div class="kpi"><div class="k">銷售坪數</div><div class="v tnum">${n0(c.saleable)}<span class="u">坪</span></div><div class="n ${effOk?'good':'bad'}">銷坪比 ${n2(c.eff)}${effOk?'（正常）':'（帶外）'}</div></div>
+    <div class="kpi"><div class="k">投報率</div><div class="v tnum">${pct(c.return_rate)}</div><div class="n">地主分回比 ${pct(c.owner_ratio)}</div></div>
+    ${val}
+  </div>
+  <div class="bars">
+    <div class="blk"><h3>容積帳（L2–L4）</h3><div class="barlab"><span>計入 ／ 允建</span><b class="tnum">${n2(c.used)} / ${n2(c.allow)} m²</b></div>
+      <div class="bar ${over?'over':''}"><span style="width:${usedPct}%"></span></div>
+      <div class="barlab"><span>${over?'⚠ 已打滿並超出，需調整設計':'尚有餘裕'}</span><b class="tnum">總銷 ${n0(c.total_sales)} 萬</b></div></div>
+    <div class="blk"><h3>共同負擔比（L6）</h3><div class="donut">${ring(c.scr)}<div class="band">合理帶依案型：
+      <span class="tag" style="background:var(--info-bg);color:var(--info)">危老 25–45%</span>
+      <span class="tag" style="background:var(--ok-bg);color:var(--ok)">都更全管 30–50%</span>
+      <span class="tag" style="background:var(--warn-bg);color:var(--warn)">合建 35–55%</span><br>門檻由 Core 判斷</div></div></div>
+  </div>
+  ${consent}
+  <div class="floors"><button class="fbtn" id="fbtn">▸ 展開逐層樓板表（${c.floors_n} 層，v2.0 合約新增）</button>
+    <table class="ftbl" id="ftbl"><thead><tr><th>樓層</th><th>樓板 m²</th><th>計容積</th><th>梯廳</th><th>安全梯</th><th>陽台</th></tr></thead><tbody>${frows}</tbody></table></div>
+  <div class="warns"><div class="slab" style="margin:8px 0 2px">Core 權威健檢 warnings[]</div>${warns}</div>`;
+}
+function compareTable(){
+  const rows=[["允建容積 m²",c=>n0(c.allow)],["計入容積 m²",c=>n2(c.used)],["容積餘量 m²",c=>n2(c.remaining)],
+    ["銷售坪數 坪",c=>n0(c.saleable)],["銷坪比",c=>n2(c.eff)],["總銷 萬",c=>n0(c.total_sales)],
+    ["共負比",c=>pct(c.scr)],["地主分回比",c=>pct(c.owner_ratio)],["投報率",c=>pct(c.return_rate)],
+    ["增值倍率",c=>c.vmult==null?"—":n2(c.vmult)+"×"],["健檢 warnings",c=>c.warnings.length+" 項"],["逐層資料",c=>c.floors_n+" 層"]];
+  const head=`<tr><th style="text-align:left;padding:7px 10px;color:var(--mute);font-size:11px;border-bottom:1px solid var(--line)">指標（皆為 Core result）</th>`+
+    CASES.map(c=>`<th style="text-align:right;padding:7px 10px;font-size:12px;border-bottom:1px solid var(--line)">案例 ${c.id}<br><span style="font-weight:500;color:var(--mute);font-size:10.5px">${c.type}</span></th>`).join("")+"</tr>";
+  const body=rows.map(([lab,f])=>`<tr><td style="padding:6px 10px;color:var(--mute);font-size:12px;border-bottom:1px solid var(--line)">${lab}</td>`+
+    CASES.map(c=>`<td class="tnum" style="text-align:right;padding:6px 10px;font-size:12.5px;border-bottom:1px solid var(--line)">${f(c)}</td>`).join("")+"</tr>").join("");
+  return `<table style="width:100%;border-collapse:collapse;min-width:520px">${head}${body}</table>
+  <div style="font-size:11px;color:var(--mute);margin-top:9px">跨案數字皆出自同一 core_version（0.2.0），可直接比較；不同 core_version 之 result 不可混比（ARCHITECTURE §4）。</div>`;
+}
+let active="C";
+function render(){
+  document.getElementById("cases").innerHTML=CASES.map(caseCard).join("");
+  document.getElementById("compare").innerHTML=compareTable();
+  document.getElementById("detail").innerHTML=detail(CASES.find(c=>c.id===active));
+  document.querySelectorAll(".case").forEach(el=>{el.classList.toggle("active",el.dataset.id===active);el.onclick=()=>{active=el.dataset.id;render();};});
+  const fb=document.getElementById("fbtn"),ft=document.getElementById("ftbl");
+  if(fb)fb.onclick=()=>{const s=ft.classList.toggle("show");fb.textContent=(s?"▾ 收合":"▸ 展開")+fb.textContent.slice(2);};
+}
+render();
+
+/* ── M3：逐戶權變表（schema v2.1 範例 v2_1_案例D_權變示範.json，Core 0.3.0 產出、只讀）──
+   §56：依更新前權利價值(pre_value)比例分配地主分回總值；equalization＝選配−分回。
+   權值分布（合成）：W01–W04 店面戶 ×1.8，W05–W48 均一。本表零前端計算。 */
+const ALLOC = {
+  hash:"737dbda4cd7d", core:"0.3.0", schema:"2.1", computed:"2026-07-01",
+  owner_return_value:76860.0, n:48,
+  rows:[
+    {id:"W01",pre:1276.17,share:0.035156,ret:2702.12,eq:97.88},
+    {id:"W02",pre:1276.17,share:0.035156,ret:2702.12,eq:-102.12},
+    {id:"W03",pre:1276.17,share:0.035156,ret:2702.12,eq:null},
+    {id:"W04",pre:1276.17,share:0.035156,ret:2702.12,eq:null},
+    {id:"W05–W48（×44）",pre:708.98,share:0.019531,ret:1501.17,eq:null},
+  ],
+  sum_ret:76859.96,
+};
+function allocTable(){
+  const td='padding:6px 10px;font-size:12.5px;border-bottom:1px solid var(--line)';
+  const eqCell=eq=>eq==null?`<span style="color:var(--mute)">— 未選配</span>`
+    :eq>0?`<span style="color:var(--warn)">+${eq.toFixed(2)} 補入</span>`
+    :`<span style="color:var(--ok)">${eq.toFixed(2)} 找出</span>`;
+  const rows=ALLOC.rows.map(r=>`<tr>
+    <td style="${td}" class="tnum">${r.id}</td>
+    <td style="${td};text-align:right" class="tnum">${n2(r.pre)}</td>
+    <td style="${td};text-align:right" class="tnum">${(r.share*100).toFixed(4)}%</td>
+    <td style="${td};text-align:right" class="tnum">${n2(r.ret)}</td>
+    <td style="${td};text-align:right" class="tnum">${eqCell(r.eq)}</td></tr>`).join("");
+  return `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:11px;font-size:11px;color:var(--mute)">
+      <span class="chip">✓ 可重算驗證通過</span><span class="chip">core <b>${ALLOC.core}</b></span>
+      <span class="chip">schema <b>v${ALLOC.schema}</b></span><span class="chip">input_hash <b class="mono">${ALLOC.hash}…</b></span>
+      <span class="chip">§56 權利變換</span></div>
+    <table style="width:100%;border-collapse:collapse;min-width:560px">
+      <thead><tr>
+        <th style="${td};text-align:left;color:var(--mute);font-size:11px">戶別</th>
+        <th style="${td};text-align:right;color:var(--mute);font-size:11px">更新前權值（萬）</th>
+        <th style="${td};text-align:right;color:var(--mute);font-size:11px">權值比例</th>
+        <th style="${td};text-align:right;color:var(--mute);font-size:11px">分回 return_value（萬）</th>
+        <th style="${td};text-align:right;color:var(--mute);font-size:11px">找補 equalization（萬）</th>
+      </tr></thead><tbody>${rows}
+      <tr><td style="${td};font-weight:700">Σ 48 戶</td><td style="${td}"></td>
+        <td style="${td};text-align:right" class="tnum">100%</td>
+        <td style="${td};text-align:right;font-weight:700" class="tnum">${n2(ALLOC.sum_ret)}</td>
+        <td style="${td};text-align:right;color:var(--mute)">＝ 地主分回總值 ${n0(ALLOC.owner_return_value)} 萬（守恆）</td></tr>
+      </tbody></table>
+    <div style="font-size:11px;color:var(--mute);margin-top:9px">
+      逐戶數字由 <b>core/redcf rights.py</b>（§56 比例分配）產出並烘焙於此，前端只讀不重算；
+      找補＝選配價值 − 分回（正=補入／負=找出；未選配待輸入）。完整 48 戶見
+      <span class="mono">schemas/examples/v2/v2_1_案例D_權變示範.json</span>；
+      自己的清冊 → <a href="https://builder-9sczgrez3a3qsbmkebd6ey.streamlit.app/" target="_blank" rel="noopener">RE-DCF 精確計算</a> 上傳 owners CSV。</div>`;
+}
+document.getElementById("alloc").innerHTML=allocTable();
+const root=document.documentElement;
+document.getElementById("tgl").onclick=()=>{const cur=root.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");root.setAttribute("data-theme",cur==="dark"?"light":"dark");};
+</script>

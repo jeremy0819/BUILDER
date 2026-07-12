@@ -16,7 +16,7 @@
 - 溯源列（provenance）綁 `$defs/metadata`：`core_version` / `input_hash` /
   `law_db_version` / `computed_at`。跨案比較前必須同 `core_version`（ARCHITECTURE §4）。
 
-## 1. Dashboard（`apps/web/index.html`）
+## 1. Dashboard（`apps/web/dashboard.html`；OS 入口＝shell `apps/web/index.html`，純導覽零數字）
 
 | UI 元素 | Schema Field（`result.*`） | Core Source |
 |---|---|---|
@@ -57,19 +57,19 @@
 > 測試 `test_os_simulator.mjs` 守「遊戲層零財務公式」）。遊戲難度來自 `warnings`／共負帶，
 > 屬 Kojima 式「診斷即敘事」——數字仍是 Core 的。
 
-## 3. M3 owners 輸入 UI（尚未實作，先登記綁定契約）
+## 3. M3 owners 輸入與逐戶權變（**已落地**：schema v2.1 ＋ core 0.3.0）
 
-M3 會新增地主清冊輸入。輸出側綁定**現在就固定**，避免 M3 臨時發明欄位：
+| UI 元素 | Schema Field | Core Source | 狀態 |
+|---|---|---|---|
+| Streamlit Tab⑤ 地主清冊 CSV 匯入 | `input.owners[]`（`owner_id`/`pre_value`/`selected_value`…，v2.1 定義） | 輸入；一致性檢查 `contract._validate_owners` | ✅ |
+| Streamlit 逐戶權變表＋CSV 下載 | `result.owner_allocations[]`（`value_share`/`return_value`/`equalization`） | `rights.calc_權利變換`＋`rights.calc_找補`（§56） | ✅ |
+| Dashboard「M3 權利變換」區塊 | `result.owner_allocations[]`（v2.1 範例烘焙，只讀） | 同上（`recompute` 附掛） | ✅ |
+| 「持分合計 ≠ 1」提示 | `warnings[OWNERS_SHARE_MISMATCH]` | `contract._validate_owners` | ✅ |
+| 「Σ權值 偏離更新前總值」提示 | `warnings[OWNERS_VALUE_MISMATCH]` | `contract._validate_owners` | ✅ |
+| 三態地主／選屋順序籌碼（沙盤） | 待定（接 `min_unit_eligible`＋選配） | 遊戲層讀 Core 分配 | ⏳ M3 後段 |
 
-| 規劃中 UI 元素 | Schema Field | Core Source |
-|---|---|---|
-| 地主清冊表格（輸入） | `input.owners[]`（`land_share`/`pre_value` 等） | 輸入；一致性檢查 `contract._validate_owners` |
-| 「持分合計 ≠ 1」提示 | `warnings[OWNERS_SHARE_MISMATCH]` | `contract._validate_owners` |
-| 「Σ權值 偏離更新前總值」提示 | `warnings[OWNERS_VALUE_MISMATCH]` | `contract._validate_owners` |
-| 權利變換分回（M3 新公式） | `result` 新欄（待 M3 定案，走 SCHEMA v2.x 升級） | `calc_權利變換`（M3 於 `core/redcf/` 新增） |
-
-> M3 新增 result 欄＝schema 變更＝走版本升級流程（新 `schema_version` + 遷移器 +
-> 更新 `tools/check_schema_freeze.py` 基準），不得直接改凍結檔。
+> v2.1 升級即依本表流程執行：新 `schema_version`＋遷移器 `2.0→2.1`＋
+> `check_schema_freeze.py` 基準 +1——凍結檔（v1.1/v2.0）位元組未動。
 
 ## 4. 維護規則
 

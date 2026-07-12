@@ -4,6 +4,9 @@
 > **這本手冊是誰的：** 要維護／擴充 URBAN STRAND（`apps/web/os-simulator.html`）的人。
 > **它做什麼：** 講清楚遊戲的**分層架構、SSOT 邊界、可測性、統一版面**，讓下一位（可能是較弱的模型）改得動又不踩紅線。
 > **一句定位：** URBAN STRAND 是**方法論的可玩化**——把《整合人手冊》的「模式→共負比→整合難度」因果鏈，做成一款小島秀夫式的「羈絆」戰術遊戲。**它不是計算來源；權威財務數字全部來自 `core/redcf`。**
+> **M3 起 URBAN STRAND 同時是 OS 的架構主體**：`apps/web/index.html`＝URBAN STRAND OS shell（主選單，
+> 純導覽零計算），儀表板（`dashboard.html`）、試算、V4 經典沙盤、指南、白皮書、簡報、Streamlit 皆為
+> 掛在 shell 之下的模組；本頁（`os-simulator.html`）是 shell 的主線任務。
 > 對照：`docs/handbook/整合人手冊.md`（領域）、`docs/architecture/UI_BINDING_MAP.md`（綁定）、`tests/web/test_os_simulator.mjs`（驗收）。
 
 ---
