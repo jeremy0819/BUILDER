@@ -3,7 +3,7 @@
 core/redcf/migrations.py — Project JSON 版本遷移器（M2-A）
 ==========================================================
 遷移器只住在 Core（SCHEMA_STRATEGY §3）；消費端不得各自寫轉換邏輯。
-鏈式：1.0 → 1.1 → 2.0。給任何舊版 doc，migrate() 回傳 2.0 形狀。
+鏈式：1.0 → 1.1 → 2.0 → 2.1。給任何舊版 doc，migrate() 回傳最新（2.1）形狀。
 
 關鍵限制：v1.x 合約不含逐層 floors[]，故遷移後 result **保留但不可回放**
 （input.input_complete = false）。要取得可重算的 v2 檔，需由 Core 端重新匯出
@@ -79,14 +79,23 @@ def _1_1_to_2_0(doc: dict) -> dict:
     }
 
 
-_CHAIN = {"1.0": _1_0_to_1_1, "1.1": _1_1_to_2_0}
+def _2_0_to_2_1(doc: dict) -> dict:
+    """2.0 → 2.1：純選填欄位新增（owners 逐戶欄位、result.owner_allocations），
+    故遷移＝版號提升，結構不動。逐戶分回表需 Core 重算才會出現（recompute）。"""
+    doc = dict(doc)
+    doc["schema_version"] = "2.1"
+    return doc
+
+
+_CHAIN = {"1.0": _1_0_to_1_1, "1.1": _1_1_to_2_0, "2.0": _2_0_to_2_1}
+_LATEST = "2.1"
 
 
 def migrate(doc: dict) -> dict:
-    """把任何舊版 doc 鏈式遷移到 schema 2.0。已是 2.0 則原樣回傳。"""
+    """把任何舊版 doc 鏈式遷移到最新 schema（2.1）。已是最新則原樣回傳。"""
     doc = dict(doc)
     guard = 0
-    while doc.get("schema_version") != "2.0":
+    while doc.get("schema_version") != _LATEST:
         ver = doc.get("schema_version", "1.0")
         step = _CHAIN.get(ver)
         if step is None:

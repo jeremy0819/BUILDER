@@ -21,6 +21,8 @@ FROZEN = {
         "e37e10dbe19f5bbf51234a12fa8e60af34d4c854ac05566aa3e87f7d35bd4a96",  # v1.1
     "schemas/project_schema_v2.json":
         "f1c466a3162655634baf19973dcb061a8e64643d08302a1dc3f6cdd0df38e6b1",  # v2.0
+    "schemas/project_schema_v2_1.json":
+        "20405192063c367614f5b64faaae194d58adb416b43b8780140710dc6919d344",  # v2.1（M3）
     "schemas/v2/input.schema.json":
         "b420313ed74305b13d10d3a1a27d1795b0ab211dd2756f45355dd633a8a19ae2",
     "schemas/v2/output.schema.json":

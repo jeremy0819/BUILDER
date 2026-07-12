@@ -82,7 +82,39 @@ def build_v2(鍵, 案名, owners=None):
     return doc
 
 
+def build_v2_1_owners權變():
+    """v2.1 範例（M3）：owners 帶更新前權利價值 pre_value → Core 產出 §56 逐戶分回表。
+
+    合成權值分布：前四戶（店面，虛構）權值 ×1.8、其餘均一；Σpre_value 錨定在
+    Core 算出的更新前總值（避免 OWNERS_VALUE_MISMATCH）。W01/W02 帶 selected_value
+    示範找補（補入／找出）。零真實資料。
+    """
+    鍵D = "案例D（危老・合建）"
+    PD = dict(範本參數[鍵D])
+    戶數 = int(PD["戶數"])
+    # 乾跑一次取更新前總值當 Σpre_value 錨點（錨點也是 Core 算的，非手填）
+    乾跑 = recompute({"params": PD, "floors": 範本樓層表(鍵D).to_dict("records"),
+                     "case_type": 範本案件類型[鍵D], "mode": 範本模式[鍵D],
+                     "owners": []}, COMPUTED_AT)
+    更新前總值 = 乾跑["pre_renewal_value"]
+    權重 = [1.8 if i < 4 else 1.0 for i in range(戶數)]
+    Σw = sum(權重)
+    consents = ["agreed"] * 34 + ["pending"] * 10 + ["opposed"] * 4
+    owners = [{"owner_id": f"W{i+1:02d}", "land_share": round(1.0 / 戶數, 6),
+               "pre_building_area_sqm": 0.0,
+               "pre_value": round(更新前總值 * 權重[i] / Σw, 2),
+               "consent": consents[i % len(consents)], "min_unit_eligible": True}
+              for i in range(戶數)]
+    owners[0]["selected_value"] = 2800.0   # W01 選配＞分回 → 補入
+    owners[1]["selected_value"] = 2600.0   # W02 選配＜分回 → 找出
+    doc = build_v2(鍵D, "案例D（權利變換示範）", owners=owners)
+    doc["schema_version"] = "2.1"          # 2.1＝純選填新增（migrations._2_0_to_2_1）
+    assert doc["result"].get("owner_allocations"), "v2.1 範例應含 owner_allocations"
+    return doc
+
+
 def main():
+    only = next((a.split("=", 1)[1] for a in sys.argv[1:] if a.startswith("--only=")), None)
     os.makedirs(OUT_DIR, exist_ok=True)
     cases = [("案例A（都更・全案管理）", "案例A", "v2_案例A_都更全案管理.json", None),
              ("案例C（防災都更）", "案例C", "v2_案例C_防災都更_容積超出.json", None),
@@ -97,17 +129,27 @@ def main():
                 "consent": consents[i % len(consents)], "min_unit_eligible": True}
                for i in range(戶數)]
 
-    print("產生 schema v2.0 範例（完整可重算，全部合成資料）...")
-    for 鍵, 案名, 檔, _ in cases:
-        doc = build_v2(鍵, 案名)
+    def _want(檔):
+        return only is None or only in 檔
+
+    def _write(doc, 檔, note):
         json.dump(doc, open(os.path.join(OUT_DIR, 檔), "w", encoding="utf-8"),
                   ensure_ascii=False, indent=2)
-        print(f"  ✅ {檔}（floors {len(doc['input']['floors'])} 層, 可重算驗證 PASS）")
-    docD = build_v2(鍵D, "案例D（owners 示範）", owners=ownersD)
-    json.dump(docD, open(os.path.join(OUT_DIR, "v2_案例D_owners示範.json"), "w", encoding="utf-8"),
-              ensure_ascii=False, indent=2)
-    print(f"  ✅ v2_案例D_owners示範.json（owners {len(ownersD)} 戶, 可重算驗證 PASS）")
-    print(f"\n完成，共 4 個 v2 範例於 {OUT_DIR}")
+        print(f"  ✅ {檔}（{note}, 可重算驗證 PASS）")
+
+    print("產生 v2 範例（完整可重算，全部合成資料）...")
+    for 鍵, 案名, 檔, _ in cases:
+        if _want(檔):
+            doc = build_v2(鍵, 案名)
+            _write(doc, 檔, f"floors {len(doc['input']['floors'])} 層")
+    if _want("v2_案例D_owners示範.json"):
+        docD = build_v2(鍵D, "案例D（owners 示範）", owners=ownersD)
+        _write(docD, "v2_案例D_owners示範.json", f"owners {len(ownersD)} 戶")
+    if _want("v2_1_案例D_權變示範.json"):
+        doc21 = build_v2_1_owners權變()
+        _write(doc21, "v2_1_案例D_權變示範.json",
+               f"schema 2.1, owner_allocations {len(doc21['result']['owner_allocations'])} 戶")
+    print(f"\n完成（--only={only or '全部'}），輸出於 {OUT_DIR}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,177 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://urban-renewal-os/schemas/project_schema_v2_1.json",
+  "title": "Urban Renewal OS — Project JSON (schema v2.1)",
+  "description": "v2.0（完整可重算合約）的 minor 升級：純新增選填欄位——input.owners[] 逐戶欄位定義（含 selected_value 選配價值）與 result.owner_allocations[]（§56 權利變換逐戶分回＋找補，Core 產出）。v2.0 檔皆為合法 v2.1 檔（遷移＝版號提升）。單一權威檔（D4）：三視圖 schemas/v2/* 沿用（新增欄位為選填，視圖驗證相容）。",
+  "type": "object",
+  "required": ["schema_version", "project", "input", "result", "provenance"],
+  "properties": {
+    "schema_version": {"const": "2.1"},
+    "project": {
+      "type": "object",
+      "required": ["name", "case_type"],
+      "properties": {
+        "id": {"type": "string"},
+        "name": {"type": "string"},
+        "case_type": {"type": "string", "enum": ["urban_renewal", "danger_building"]}
+      }
+    },
+    "input": {"$ref": "#/$defs/input"},
+    "engine": {
+      "type": "object",
+      "description": "Core 重算快照（中文 key，消費端忽略）。recompute(engine) 可回放出 result（含 owner_allocations）。"
+    },
+    "result": {"$ref": "#/$defs/output"},
+    "provenance": {"$ref": "#/$defs/metadata"}
+  },
+  "$defs": {
+    "input": {
+      "title": "Input view — 使用者/案件輸入（v2.1：owners 逐戶欄位定義）",
+      "type": "object",
+      "required": ["site", "building", "finance"],
+      "properties": {
+        "site": {
+          "type": "object",
+          "required": ["site_area_sqm", "far"],
+          "properties": {
+            "site_area_sqm": {"type": "number", "minimum": 0},
+            "plaza_area_sqm": {"type": "number", "minimum": 0},
+            "far": {"type": "number", "minimum": 0},
+            "bonus_ratio": {"type": "number", "minimum": 0},
+            "tdr_transfer_sqm": {"type": "number", "minimum": 0}
+          }
+        },
+        "building": {
+          "type": "object",
+          "properties": {
+            "public_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+            "stair_hall_exempt_pct": {"type": "number", "minimum": 0},
+            "balcony_exempt_pct": {"type": "number", "minimum": 0},
+            "unit_count": {"type": "integer", "minimum": 0}
+          }
+        },
+        "floors": {
+          "type": "array",
+          "description": "逐層樓板表。存在時 result 可由 Core 回放重算。",
+          "items": {
+            "type": "object",
+            "required": ["level", "floor_area_sqm"],
+            "properties": {
+              "enabled": {"type": "boolean"},
+              "level": {"type": "string"},
+              "floor_area_sqm": {"type": "number", "minimum": 0},
+              "counted_far_sqm": {"type": "number", "minimum": 0},
+              "stair_hall_sqm": {"type": "number", "minimum": 0},
+              "safety_stair_sqm": {"type": "number", "minimum": 0},
+              "balcony_sqm": {"type": "number", "minimum": 0}
+            }
+          }
+        },
+        "finance": {
+          "type": "object",
+          "properties": {
+            "residential_price": {"type": "number", "minimum": 0},
+            "shop_area": {"type": "number", "minimum": 0},
+            "shop_price": {"type": "number", "minimum": 0},
+            "parking_count": {"type": "integer", "minimum": 0},
+            "parking_price": {"type": "number", "minimum": 0},
+            "construction_price": {"type": "number", "minimum": 0}
+          }
+        },
+        "owners": {
+          "type": "array",
+          "description": "地主清冊（v2.1 定義逐戶欄位；權利事實為輸入，分回/找補由 Core 產出）。",
+          "items": {
+            "type": "object",
+            "required": ["owner_id"],
+            "properties": {
+              "owner_id": {"type": "string", "description": "匿名代號（W01…），零真實姓名"},
+              "land_share": {"type": "number", "minimum": 0, "maximum": 1, "description": "土地持分（0–1）"},
+              "pre_building_area_sqm": {"type": "number", "minimum": 0},
+              "pre_value": {"type": "number", "minimum": 0, "description": "更新前權利價值（萬元）；§56 分配比例的分子"},
+              "selected_value": {"type": "number", "minimum": 0, "description": "選配不動產價值（萬元，選填）；提供時 Core 產出 equalization"},
+              "consent": {"type": "string", "enum": ["agreed", "pending", "opposed"]},
+              "min_unit_eligible": {"type": "boolean", "description": "是否達最小分配單元（未達者領補償金）"}
+            }
+          }
+        },
+        "scenario": {
+          "type": "object",
+          "properties": {
+            "name": {"type": "string"},
+            "bonus_breakdown": {"type": "object"}
+          }
+        },
+        "input_complete": {
+          "type": "boolean",
+          "description": "false＝缺 floors 等重算必需輸入（多為 v1.x 遷移而來），result 保留但不可回放。"
+        }
+      }
+    },
+    "output": {
+      "title": "Output view — Core 計算結果（v2.1：新增 owner_allocations 逐戶分回表）",
+      "description": "SSOT：所有欄位由 core.redcf 產生。前端/Dashboard/Simulator 一律讀此區塊、不得自行重算（含 warnings 門檻與逐戶分配）。欄位為選填以相容部分計算。",
+      "type": "object",
+      "properties": {
+        "baseline_far": {"type": "number", "description": "基準容積 FA（L2）"},
+        "allow_floor_area": {"type": "number", "description": "允建容積（L2–L4）"},
+        "used_floor_area": {"type": "number", "description": "計入容積（修正後）"},
+        "remaining_floor_area": {"type": "number", "description": "容積餘量（負值＝超出）"},
+        "stair_exempt_cap": {"type": "number", "description": "安全梯免計上限"},
+        "balcony_exempt_area": {"type": "number", "description": "陽台免計面積"},
+        "saleable_area": {"type": "number", "minimum": 0, "description": "銷售坪數（L4.5）"},
+        "efficiency_ratio": {"type": "number", "minimum": 0, "description": "銷坪比（L4.5）"},
+        "total_sales": {"type": "number", "description": "總銷（L6）"},
+        "shared_cost": {"type": "number", "description": "共同負擔（L6）"},
+        "shared_cost_ratio": {"type": "number", "description": "共負比（L6）"},
+        "owner_return_value": {"type": "number", "description": "地主分回價值（L6，逐戶分配的母數）"},
+        "owner_return_ratio": {"type": "number", "description": "地主分回比（L6）"},
+        "return_rate": {"type": "number", "description": "報酬率（L6）"},
+        "pre_renewal_value": {"type": "number", "description": "更新前總值（L7）"},
+        "value_multiple": {"type": "number", "description": "增值倍率＝分回/更新前（L7）"},
+        "owner_allocations": {
+          "type": "array",
+          "description": "M3 權利變換逐戶分回表（都更條例 §56：依更新前權利價值比例分配）。Core 產出，消費端只讀。",
+          "items": {
+            "type": "object",
+            "required": ["owner_id", "value_share", "return_value"],
+            "properties": {
+              "owner_id": {"type": "string"},
+              "pre_value": {"type": "number", "description": "更新前權利價值（萬元，輸入回填）"},
+              "value_share": {"type": "number", "minimum": 0, "maximum": 1, "description": "權值比例（Σ=1）"},
+              "return_value": {"type": "number", "description": "逐戶分回價值（萬元）"},
+              "equalization": {"type": ["number", "null"], "description": "找補金（萬元；正=補入/負=找出；null=尚未選配）"}
+            }
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "description": "Core 統一健檢，消費端只讀不重判門檻。",
+          "items": {
+            "type": "object",
+            "required": ["code", "level", "message"],
+            "properties": {
+              "code": {"type": "string"},
+              "level": {"type": "string", "enum": ["info", "warn", "error"]},
+              "message": {"type": "string"},
+              "field": {"type": "string"}
+            }
+          }
+        },
+        "computed_at": {"type": "string", "description": "ISO 8601 計算時間"},
+        "core_version": {"type": "string", "description": "產生此 result 的核心版本"}
+      }
+    },
+    "metadata": {
+      "title": "Metadata view — 溯源與可重算指紋（provenance）",
+      "type": "object",
+      "required": ["core_version", "input_hash"],
+      "properties": {
+        "core_version": {"type": "string"},
+        "computed_at": {"type": "string"},
+        "input_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "law_db_version": {"type": "string"}
+      }
+    }
+  }
+}

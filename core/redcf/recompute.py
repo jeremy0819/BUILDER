@@ -25,6 +25,7 @@ from core.redcf.efficiency import calc_坪效
 from core.redcf.finance import calc_投報全案, 財務率預設
 from core.redcf.valuation import calc_更新前價值
 from core.redcf.contract import build_result_json
+from core.redcf.rights import calc_權利變換, calc_找補
 
 # verify 逐欄位容差：面積/金額用絕對值 0.5；比率用 1e-6
 _容差_絕對 = 0.5
@@ -65,8 +66,29 @@ def recompute(engine: dict, computed_at: str = None) -> dict:
                         P.get("建物單價", 0.0), int(P.get("屋齡", 45)))
           if P.get("地價", 0) > 0 else None)
 
-    return build_result_json(容, 坪, 投, 前, 案件類型, 模式,
-                             engine.get("owners"), computed_at)
+    result = build_result_json(容, 坪, 投, 前, 案件類型, 模式,
+                               engine.get("owners"), computed_at)
+
+    # ── M3（schema v2.1）：逐戶權利變換分配 ──
+    # owners 帶更新前權利價值（pre_value）時，附上 §56 比例分配的逐戶分回表；
+    # 有 selected_value（選配價值）者一併算找補。全部委派 rights.py，本處零公式。
+    owners = engine.get("owners") or []
+    if owners and any(o.get("pre_value", 0) > 0 for o in owners) \
+            and "owner_return_value" in result:
+        分配 = calc_權利變換(owners, result["owner_return_value"])
+        選配 = {o.get("owner_id"): o["selected_value"]
+                for o in owners if o.get("selected_value") is not None}
+        if 選配:
+            分配 = calc_找補(分配, 選配)
+        result["owner_allocations"] = [
+            {"owner_id": o.get("owner_id"),
+             "pre_value": o.get("pre_value", 0.0),
+             "value_share": o["權值比例"],
+             "return_value": o["return_value"],
+             **({"equalization": o["equalization"]} if "equalization" in o else {})}
+            for o in 分配]
+
+    return result
 
 
 def input_hash(engine: dict) -> str:

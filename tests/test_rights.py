@@ -57,3 +57,41 @@ def test_零估值不臆測():
     zero = [{"owner_id": "X", "pre_value": 0.0}, {"owner_id": "Y", "pre_value": 0.0}]
     alloc = calc_權利變換(zero, _可分配)
     assert all(o["return_value"] == 0.0 and o["權值比例"] == 0.0 for o in alloc)
+
+
+# ── v2.1 範例：owner_allocations 可由 engine 回放（黃金判準延伸到逐戶）──
+import json
+import pathlib
+
+根 = pathlib.Path(__file__).resolve().parents[1]
+_V21 = 根 / "schemas" / "examples" / "v2" / "v2_1_案例D_權變示範.json"
+
+
+def test_v2_1_逐戶分回_可回放():
+    """recompute(engine) 的 owner_allocations 應與 v2.1 檔內存檔逐戶相等。"""
+    from core.redcf import calculate
+    doc = json.load(open(_V21, encoding="utf-8"))
+    r = calculate(doc["engine"], doc["result"]["computed_at"])
+    assert r["owner_allocations"] == doc["result"]["owner_allocations"]
+
+
+def test_v2_1_逐戶守恆與找補():
+    doc = json.load(open(_V21, encoding="utf-8"))
+    al = doc["result"]["owner_allocations"]
+    assert len(al) == 48
+    assert abs(sum(a["return_value"] for a in al) - doc["result"]["owner_return_value"]) < 0.5
+    w01 = next(a for a in al if a["owner_id"] == "W01")
+    w02 = next(a for a in al if a["owner_id"] == "W02")
+    w05 = next(a for a in al if a["owner_id"] == "W05")
+    assert w01["equalization"] > 0 > w02["equalization"]   # 補入／找出
+    assert w05.get("equalization") is None                 # 未選配＝待輸入
+    # 無 OWNERS_VALUE_MISMATCH（Σpre_value 錨定更新前總值）
+    assert "OWNERS_VALUE_MISMATCH" not in [w["code"] for w in doc["result"]["warnings"]]
+
+
+def test_v2_1_通過_api_validate():
+    """api.validate 對 2.1 檔選 v2_1 權威檔；結構＋可重算雙驗證全過。"""
+    from core.redcf import validate
+    doc = json.load(open(_V21, encoding="utf-8"))
+    ok, errs = validate(doc)
+    assert ok, errs

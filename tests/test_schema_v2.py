@@ -31,9 +31,11 @@ def test_v2_可重算_逐欄位相等(path):
 
 @pytest.mark.parametrize("path", V2_FILES, ids=[pathlib.Path(p).stem for p in V2_FILES])
 def test_v2_通過schema(path):
+    """依 doc 的 schema_version 選對應權威檔（2.0 → v2、2.1 → v2_1）驗證。"""
     jsonschema = pytest.importorskip("jsonschema")
-    schema = _load(根 / "schemas" / "project_schema_v2.json")
-    jsonschema.validate(_load(path), schema)
+    doc = _load(path)
+    檔名 = "project_schema_v2_1.json" if doc["schema_version"] == "2.1" else "project_schema_v2.json"
+    jsonschema.validate(doc, _load(根 / "schemas" / 檔名))
 
 
 @pytest.mark.parametrize("path", V2_FILES, ids=[pathlib.Path(p).stem for p in V2_FILES])
@@ -44,13 +46,13 @@ def test_v2_provenance_input_hash穩定(path):
     assert doc["provenance"]["input_hash"] == input_hash(doc["engine"])
 
 
-def test_v1_1_遷移到_2_0():
-    """v1.1 範例 → migrate → 2.0 形狀；缺 floors 故標 input_complete=false、不可回放。"""
+def test_v1_1_遷移到最新():
+    """v1.1 範例 → migrate → 最新（2.1）形狀；缺 floors 故 input_complete=false、不可回放。"""
     from core.redcf.migrations import migrate
     v1 = _load(根 / "schemas" / "examples" / "合成案例C_防災都更_容積超出.json")
     assert v1["schema_version"] == "1.1"
     v2 = migrate(v1)
-    assert v2["schema_version"] == "2.0"
+    assert v2["schema_version"] == "2.1"
     assert v2["input"]["input_complete"] is False
     assert v2["input"]["site"]["far"] == v1["land"]["far"]      # 輸入有搬對
     assert v2["result"] == v1["result"]                          # result 原樣保留
@@ -58,7 +60,7 @@ def test_v1_1_遷移到_2_0():
 
 
 def test_遷移具冪等性():
-    """已是 2.0 的檔再 migrate 應原樣回傳。"""
+    """任何 v2 檔 migrate 後皆為最新（2.1）；已是 2.1 者原樣回傳。"""
     from core.redcf.migrations import migrate
-    doc = _load(V2_FILES[0])
-    assert migrate(doc)["schema_version"] == "2.0"
+    for p in V2_FILES:
+        assert migrate(_load(p))["schema_version"] == "2.1"

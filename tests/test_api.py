@@ -67,17 +67,17 @@ def test_serialize_deserialize_roundtrip():
     from core.redcf import serialize, deserialize
     doc = _load(V2_FILES[0])
     back = deserialize(serialize(doc))
-    assert back["schema_version"] == "2.0"
+    assert back["schema_version"] == "2.1"        # deserialize 正規化到最新
     assert back["provenance"]["input_hash"] == doc["provenance"]["input_hash"]
 
 
 def test_deserialize_自動遷移舊版():
-    """給 v1.1 檔，deserialize 預設遷移到 2.0 形狀。"""
+    """給 v1.1 檔，deserialize 預設遷移到最新（2.1）形狀。"""
     from core.redcf import deserialize
     v1 = _load(根 / "schemas" / "examples" / "合成案例C_防災都更_容積超出.json")
     assert v1["schema_version"] == "1.1"
     out = deserialize(v1)
-    assert out["schema_version"] == "2.0"
+    assert out["schema_version"] == "2.1"
     assert out["input"]["input_complete"] is False
 
 
