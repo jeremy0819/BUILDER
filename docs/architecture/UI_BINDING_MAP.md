@@ -66,6 +66,8 @@
 | Dashboard「M3 權利變換」區塊 | `result.owner_allocations[]`（v2.1 範例烘焙，只讀） | 同上（`recompute` 附掛） | ✅ |
 | 「持分合計 ≠ 1」提示 | `warnings[OWNERS_SHARE_MISMATCH]` | `contract._validate_owners` | ✅ |
 | 「Σ權值 偏離更新前總值」提示 | `warnings[OWNERS_VALUE_MISMATCH]` | `contract._validate_owners` | ✅ |
+| Dashboard「現金流結構」區塊 | 非 result 欄（Core 匯出烘焙；contract 欄位待 v2.2/M4） | `finance.calc_投報全案`（A–G 科目實額）＋`cashflow.calc_現金流分期`（結構分期） | ✅ M3 結構版 |
+| 遊戲「整合資金流」卡 | 遊戲層支出紀錄（沙盤，非 Core 財務） | SIMCORE `spent`（呈現層記帳） | ✅ |
 | 三態地主／選屋順序籌碼（沙盤） | 待定（接 `min_unit_eligible`＋選配） | 遊戲層讀 Core 分配 | ⏳ M3 後段 |
 
 > v2.1 升級即依本表流程執行：新 `schema_version`＋遷移器 `2.0→2.1`＋

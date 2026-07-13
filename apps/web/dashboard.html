@@ -161,6 +161,9 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
   <div class="slab">M3 · 權利變換 逐戶分回（§56，schema v2.1 範例）</div>
   <div class="detail" style="padding:16px 20px;overflow-x:auto" id="alloc"></div>
 
+  <div class="slab">M3 · 現金流結構（共同負擔 A–G 科目 → 分期出資，示意分期）</div>
+  <div class="detail" style="padding:16px 20px;overflow-x:auto" id="cashflow"></div>
+
   <div class="slab">OS 模組（完整主選單見 <a href="index.html">URBAN STRAND OS</a>）</div>
   <div class="nav">
     <a href="os-simulator.html"><div class="t">🕹️ URBAN STRAND <span class="ext">NEW</span></div><div class="d">整合戰術沙盤——建立在 Core 權威數字上的羈絆談判</div></a>
@@ -250,6 +253,42 @@ function render(){
   document.querySelectorAll(".case").forEach(el=>{el.classList.toggle("active",el.dataset.id===active);el.onclick=()=>{active=el.dataset.id;render();};});
   const fb=document.getElementById("fbtn"),ft=document.getElementById("ftbl");
   if(fb)fb.onclick=()=>{const s=ft.classList.toggle("show");fb.textContent=(s?"▾ 收合":"▸ 展開")+fb.textContent.slice(2);};
+  document.getElementById("cashflow").innerHTML=cashflowView(active);
+}
+
+/* ── M3：現金流結構（Core calc_現金流分期 烘焙；8 期均勻＝結構示意）──
+   科目金額＝calc_投報全案 A–G 實額（零前端計算）；S 曲線/IRR 屬 M4 校準（待核准）。 */
+const CF={"A":{"cats":{"A":99090,"B":991,"C":6736,"D":3121,"E":12644,"F":28670},"labels":{"A":"A工程費用","B":"B管維費用","C":"C權變費用","D":"D貸款利息","E":"E稅捐","F":"F管理費用"},"cum":[18906,37813,56720,75626,94532,113439,132346,151252],"peak":151252},
+"C":{"cats":{"A":36896,"B":369,"C":11182,"D":1162,"E":5923,"F":31698},"labels":{"A":"A工程費用","B":"B管維費用","C":"C權變費用","D":"D貸款利息","E":"E稅捐","F":"F管理費用"},"cum":[10904,21808,32712,43616,54520,65424,76328,87232],"peak":87232},
+"D":{"cats":{"A":71616,"B":716,"D":6456,"E":4389,"F":16052,"G":50000},"labels":{"A":"A工程費用","B":"B管維費用","D":"D貸款利息","E":"E稅捐","F":"F管理費用","G":"G土地成本"},"cum":[18654,37307,55961,74615,93269,111922,130576,149230],"peak":149230}};
+const CF_COL={A:"var(--accent)",B:"var(--accent-2)",C:"var(--info)",D:"var(--warn)",E:"var(--err)",F:"var(--ok)",G:"var(--mute)"};
+function cashflowView(id){
+  const cf=CF[id]; if(!cf) return "";
+  const total=cf.peak;
+  const segs=Object.entries(cf.cats).map(([k,v])=>
+    `<span title="${cf.labels[k]} ${n0(v)} 萬" style="display:inline-block;height:100%;width:${(v/total*100).toFixed(2)}%;background:${CF_COL[k]}"></span>`).join("");
+  const legend=Object.entries(cf.cats).map(([k,v])=>
+    `<span style="display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--mute)"><i style="width:9px;height:9px;border-radius:3px;background:${CF_COL[k]};display:inline-block"></i>${cf.labels[k]} <b class="tnum" style="color:var(--ink)">${n0(v)}</b> 萬</span>`).join("");
+  const maxH=86;
+  const bars=cf.cum.map((v,i)=>
+    `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+      <div class="tnum" style="font-size:10px;color:var(--mute)">${i===cf.cum.length-1?n0(v):""}</div>
+      <div title="第${i+1}期 累積 ${n0(v)} 萬" style="width:70%;height:${Math.max(4,v/cf.peak*maxH)}px;border-radius:5px 5px 0 0;background:linear-gradient(180deg,var(--accent-2),var(--accent))"></div>
+      <div style="font-size:10px;color:var(--mute)">${i+1}</div></div>`).join("");
+  return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start" class="cfgrid">
+    <div>
+      <div style="font-size:12.5px;font-weight:700;margin-bottom:9px">案例 ${id} · 共同負擔科目結構 <span class="tnum" style="color:var(--mute);font-weight:600">共 ${n0(total)} 萬</span></div>
+      <div style="height:20px;border-radius:8px;overflow:hidden;display:flex;background:var(--line)">${segs}</div>
+      <div style="display:flex;gap:13px;flex-wrap:wrap;margin-top:11px">${legend}</div>
+    </div>
+    <div>
+      <div style="font-size:12.5px;font-weight:700;margin-bottom:9px">累積出資曲線（8 期均勻・示意）<span style="color:var(--mute);font-weight:600">峰值資金 ${n0(cf.peak)} 萬</span></div>
+      <div style="display:flex;align-items:flex-end;gap:3px;height:${maxH+34}px;border-bottom:1px solid var(--line)">${bars}</div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:var(--mute);margin-top:12px">科目金額＝Core <b>calc_投報全案</b> 實額；分期＝<b>calc_現金流分期</b>（均勻分佈，<b>structural 示意</b>）。
+  實案 S 曲線、IRR/NPV、貸款攤還排程屬 <b>M4 校準範圍</b>（需使用者核准費率/曲線後實作）——本區先把「錢何時進場」的結構立起來。前端零計算。</div>
+  <style>@media(max-width:760px){.cfgrid{grid-template-columns:1fr!important}}</style>`;
 }
 render();
 

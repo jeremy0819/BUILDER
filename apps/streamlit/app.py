@@ -2,7 +2,7 @@
 """
 RE-DCF-Tool — 都更/危老前期評估工具（v4.9 Core 合約 v1.1：warnings/owners/版本追溯）
 ==============================================================
-永盛開發建設「建築坪效與前期評估」Excel 財務模型的程式化版本。
+「建築坪效與前期評估」Excel 財務模型的程式化版本。
 本檔僅為 UI（Demo）；所有計算公式來自 core/ package（Urban Renewal Core Engine）。
 執行：streamlit run app.py
 
@@ -1312,7 +1312,7 @@ B1F 防空避難室　▶ §117</div>
         f'<div style="margin-top:2rem;padding:13px 2px 4px;border-top:1px solid #E7E9F2;'
         f'display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;'
         f'font-size:11.5px;color:#9AA1B5">'
-        f'<span>🏗️ <b style="color:#6B7280">RE-DCF-Tool {APP_VERSION}</b>　永盛開發建設 前期評估</span>'
+        f'<span>🏗️ <b style="color:#6B7280">RE-DCF-Tool {APP_VERSION}</b>　都更/危老 前期評估</span>'
         f'<span style="color:#C9CEDB">build {_build}　·　圖說為真　·　§162 逐層查核　·　都市更新權利變換實施辦法</span>'
         f'</div>', unsafe_allow_html=True)
 

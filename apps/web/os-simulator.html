@@ -101,13 +101,21 @@ header.cmd{display:flex;justify-content:space-between;align-items:center;gap:14p
 .cmd-id{font-family:var(--mono);letter-spacing:.2em;font-size:14px}
 .cmd-id b{color:var(--strand)}
 .cmd-id span{color:var(--dim);font-size:10.5px;letter-spacing:.1em;margin-left:6px}
+/* 資源儀表（v3：從小 pill 升級為明顯的 meter——一眼讀出剩多少） */
 .cmd-res{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch}
-.res{display:flex;align-items:baseline;gap:6px;background:var(--panel);border:1px solid var(--line);
-  border-radius:999px;padding:5px 13px;font-family:var(--mono)}
+.res{display:flex;flex-direction:column;gap:4px;background:var(--panel);border:1px solid var(--line);
+  border-radius:10px;padding:7px 14px;font-family:var(--mono);min-width:118px}
 .res .rk{font-size:9.5px;letter-spacing:.18em;color:var(--mute);text-transform:uppercase}
-.res b{font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
-.res .rs{font-size:10px;color:var(--dim)}
-.res.hint{border-color:var(--amber-dim);color:var(--amber);font-size:11px;align-items:center;padding:5px 13px}
+.res .rv{display:flex;align-items:baseline;gap:5px}
+.res b{font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1}
+.res .rs{font-size:10.5px;color:var(--dim)}
+.rbar{height:5px;border-radius:999px;background:var(--line);overflow:hidden}
+.rbar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--strand-dim),var(--strand));transition:width .4s}
+.rbar.low span{background:linear-gradient(90deg,var(--amber-dim),var(--amber))}
+.pips{display:flex;gap:5px;padding:3px 0 1px}
+.pips i{width:12px;height:12px;border-radius:50%;background:var(--strand);box-shadow:0 0 8px rgba(79,216,232,.45)}
+.pips i.off{background:var(--line);box-shadow:none}
+.res.hint{border-color:var(--amber-dim);color:var(--amber);font-size:11px;justify-content:center;min-width:0}
 .res.hint:empty{display:none}
 
 /* ── ② 進度脊：都更流程（S1–S11）＋整合旅程 併為一體 ── */
@@ -115,30 +123,27 @@ header.cmd{display:flex;justify-content:space-between;align-items:center;gap:14p
 .spine-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px}
 .spine-count{font-family:var(--mono);font-size:11px;color:var(--mute);letter-spacing:.05em}
 .spine-count b{color:var(--strand)}
-/* 流程步進器（取代原 pills，改為有連線的 stepper，讀得出「現在在哪一關」） */
-.process{display:flex;align-items:flex-start;gap:0;margin:0 2px 8px;overflow-x:auto;padding-bottom:4px}
-.pstep{flex:1 1 0;min-width:88px;position:relative;text-align:center;padding-top:16px}
-.pstep::before{content:"";position:absolute;top:5px;left:calc(-50% + 5px);width:100%;height:2px;background:var(--line)}
-.pstep:first-child::before{display:none}
-.pstep .dot{position:absolute;top:0;left:50%;transform:translateX(-50%);width:11px;height:11px;border-radius:50%;
-  background:var(--panel);border:2px solid var(--dim)}
-.pstep .pn{font-family:var(--mono);font-size:10.5px;color:var(--dim);letter-spacing:.04em;line-height:1.4;display:block}
-.pstep.done .dot{background:var(--strand-dim);border-color:var(--strand-dim)}
-.pstep.done::before{background:var(--strand-dim)}
-.pstep.done .pn{color:var(--mute)}
-.pstep.now .dot{background:var(--strand);border-color:var(--strand);box-shadow:0 0 12px rgba(79,216,232,.5)}
-.pstep.now .pn{color:var(--strand)}
-.pstep.now .pn::before{content:"◉ ";animation:pulse 1.6s infinite}
+/* 流程麵包屑（v3 精簡：一行小 pill，資訊保留、視覺減重——版面主角讓給旅程軌） */
+.crumbs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-family:var(--mono);font-size:10px;margin-bottom:14px}
+.crumb{border:1px solid var(--line);border-radius:999px;padding:2.5px 10px;color:var(--dim);white-space:nowrap}
+.crumb.done{color:var(--mute);border-color:var(--strand-dim)}
+.crumb.now{color:var(--strand);border-color:var(--strand);box-shadow:0 0 10px rgba(79,216,232,.2)}
+.crumb.now::before{content:"◉ ";animation:pulse 1.6s infinite}
+.crumbs .sep{color:var(--dim)}
 @keyframes pulse{50%{opacity:.4}}
+/* 大進度讀數（v3：同意 % 一眼可讀） */
+.spine-pct{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--strand);line-height:1}
+.spine-pct small{font-size:11px;color:var(--mute);font-weight:400;margin-left:7px}
 /* 旅程軌（＝目前「整合」這一關的逐戶進度） */
 .rail-cap{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.1em;margin:14px 2px 0}
 .rail-cap b{color:var(--strand)}
-.rail{position:relative;height:8px;background:var(--panel);border:1px solid var(--line);border-radius:999px;margin:28px 8px 34px}
+.rail{position:relative;height:16px;background:var(--panel);border:1px solid var(--line);border-radius:999px;margin:26px 8px 36px}
 .rail .fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;
-  background:linear-gradient(90deg,var(--strand-dim),var(--strand));transition:width .9s cubic-bezier(.2,.8,.2,1)}
-.rail .walker{position:absolute;top:-9px;width:24px;height:24px;margin-left:-12px;border-radius:50%;
-  background:var(--strand);color:#04252b;font-size:11px;display:grid;place-items:center;
-  box-shadow:0 0 18px rgba(79,216,232,.5);transition:left .9s cubic-bezier(.2,.8,.2,1)}
+  background:linear-gradient(90deg,var(--strand-dim),var(--strand));transition:width .9s cubic-bezier(.2,.8,.2,1);
+  box-shadow:0 0 16px rgba(79,216,232,.35)}
+.rail .walker{position:absolute;top:-8px;width:30px;height:30px;margin-left:-15px;border-radius:50%;
+  background:var(--strand);color:#04252b;font-size:13px;display:grid;place-items:center;
+  box-shadow:0 0 22px rgba(79,216,232,.6);transition:left .9s cubic-bezier(.2,.8,.2,1)}
 .node{position:absolute;top:-4px;width:14px;height:14px;margin-left:-7px;border-radius:50%;
   background:var(--panel);border:2px solid var(--dim)}
 .node.hit{background:var(--strand);border-color:var(--strand)}
@@ -155,9 +160,15 @@ header.cmd{display:flex;justify-content:space-between;align-items:center;gap:14p
 .cell{aspect-ratio:1;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--panel);
   display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;
   font-family:var(--mono);font-size:10px;color:var(--mute);position:relative;transition:transform .1s,border-color .1s}
-.cell:hover{transform:scale(1.06);z-index:2;border-color:var(--strand-dim)}
+.cell:hover{transform:scale(1.06);z-index:2}
+.cell.pending:hover,.cell.opposed:hover{border-color:var(--strand);box-shadow:0 0 14px rgba(79,216,232,.35);color:var(--ink)}
 .cell:focus-visible{outline:2px solid var(--strand);outline-offset:1px;z-index:3}
 .cell .st{font-size:9px;margin-top:2px;color:var(--dim)}
+/* v3：信任量條——每格底部一條，全街信任分布一眼可讀（值仍是遊戲 state，非計算） */
+.cell .tb{position:absolute;left:3px;right:3px;bottom:3px;height:3px;border-radius:2px;background:rgba(255,255,255,.06)}
+.cell .tb span{display:block;height:100%;border-radius:2px;background:var(--strand-dim)}
+.cell.opposed .tb span{background:var(--amber-dim)}
+.cell.agreed .tb{display:none}
 .cell.agreed{border-color:var(--strand-dim);background:#0e2227;color:var(--strand);cursor:default}
 .cell.agreed .st{color:var(--strand-dim)}
 .cell.pending{border-color:#3a4550}
@@ -169,7 +180,13 @@ header.cmd{display:flex;justify-content:space-between;align-items:center;gap:14p
 .legend{display:flex;gap:14px;margin-top:14px;font-family:var(--mono);font-size:10px;color:var(--mute);flex-wrap:wrap}
 .sw{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 .actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px;border-top:1px solid var(--line);padding-top:15px}
-.actions .btn{flex:1;padding:11px 8px;font-size:11px;letter-spacing:.12em}
+.actions .btn{flex:1;padding:13px 8px;font-size:12px;letter-spacing:.12em}
+.btn.urgent{animation:urge 1.2s infinite;border-width:2px}
+@keyframes urge{50%{box-shadow:0 0 18px rgba(79,216,232,.55)}}
+/* v3：沙盤資金流小卡（遊戲層支出紀錄，非 Core 財務） */
+.flow{display:flex;align-items:flex-end;gap:2px;height:46px;margin-top:4px}
+.flow i{flex:1;min-width:3px;border-radius:2px 2px 0 0;background:var(--amber-dim)}
+.flow i.now{background:var(--amber)}
 
 .intel{display:flex;flex-direction:column;gap:14px}
 .core .row{display:flex;justify-content:space-between;font-size:12.5px;padding:3.5px 0;color:var(--mute)}
@@ -293,9 +310,15 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
   <header class="cmd">
     <div class="cmd-id">URBAN <b>STRAND</b><span id="hud-scen">· 整合戰術沙盤</span></div>
     <div class="cmd-res">
-      <div class="res"><span class="rk">Week</span><b class="tnum" id="m-week">1</b><span class="rs">/<span class="tnum" id="m-weeks">24</span></span></div>
-      <div class="res"><span class="rk">AP</span><b class="tnum" id="m-ap">4</b></div>
-      <div class="res"><span class="rk">整合預算</span><b class="tnum" id="m-budget">300</b><span class="rs">萬 · 沙盤</span></div>
+      <div class="res"><span class="rk">Week 時程</span>
+        <div class="rv"><b class="tnum" id="m-week">1</b><span class="rs">/<span class="tnum" id="m-weeks">24</span> 週</span></div>
+        <div class="rbar" id="m-weekbar"><span style="width:4%"></span></div></div>
+      <div class="res"><span class="rk">AP 行動點</span>
+        <div class="pips" id="m-ap-pips"><i></i><i></i><i></i><i></i></div>
+        <div class="rv" style="display:none"><b id="m-ap">4</b></div></div>
+      <div class="res"><span class="rk">整合預算（沙盤）</span>
+        <div class="rv"><b class="tnum" id="m-budget">300</b><span class="rs">萬 · 已投入 <span class="tnum" id="m-spent">0</span></span></div>
+        <div class="rbar" id="m-budgetbar"><span style="width:100%"></span></div></div>
       <div class="res hint" id="m-hint"></div>
     </div>
   </header>
@@ -303,10 +326,15 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
   <!-- ② 進度脊：都更流程 + 整合旅程 一體 -->
   <section class="spine">
     <div class="spine-head">
-      <span class="lbl">都更流程 · 整合進度</span>
-      <span class="spine-count">同意 <b class="tnum" id="p-num">34/48</b> · 目標 <b class="tnum" id="p-target">48</b> 戶</span>
+      <div>
+        <div class="lbl" style="margin-bottom:7px">都更流程 · 整合進度</div>
+        <div class="crumbs" id="phases"></div>
+      </div>
+      <div style="text-align:right">
+        <div class="spine-pct"><span class="tnum" id="p-pct">0%</span><small>門檻達成率</small></div>
+        <div class="spine-count" style="margin-top:4px">同意 <b class="tnum" id="p-num">34/48</b> · 目標 <b class="tnum" id="p-target">48</b> 戶</div>
+      </div>
     </div>
-    <div class="process" id="phases"></div>
     <div class="rail-cap" id="rail-cap">目前關卡：<b>整合</b> — 逐戶爭取同意，跨過門檻才進入「事業計畫」。</div>
     <div class="rail" id="rail"></div>
   </section>
@@ -333,6 +361,13 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
 
     <aside class="intel">
       <section class="card core" id="corebox"></section>
+      <section class="card">
+        <div class="card-head"><span class="lbl">整合資金流 · 每週投入</span><span class="card-tag">沙盤紀錄</span></div>
+        <div class="flow" id="flowbars"></div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:7px">
+          累計 <b class="tnum" id="flow-total" style="color:var(--amber)">0</b> 萬 ·
+          說明會 20／客製方案 50（案件財務見上方 Core 卡）</div>
+      </section>
       <section class="card" id="logcard">
         <div class="card-head"><span class="lbl">Field Log · 行動日誌</span></div>
         <div class="log-body" id="log"></div>
@@ -557,17 +592,18 @@ function syncPlan(){
   $("btn-plan-go").disabled=!(plan.mode&&plan.scale);
 }
 
-/* ② 進度脊：流程步進器 + 旅程軌 */
+/* ② 進度脊：流程麵包屑（精簡一行）＋ 旅程軌 */
 function renderProcess(){
   $("phases").innerHTML=PHASES.map((p,i)=>{
     const cls=i<PHASE_NOW?"done":i===PHASE_NOW?"now":"";
-    return `<div class="pstep ${cls}"><span class="dot"></span><span class="pn">S${i+1}<br>${p}</span></div>`;
-  }).join("");
+    return `<span class="crumb ${cls}">${i<PHASE_NOW?"✓ ":""}S${i+1} ${p}</span>`;
+  }).join(`<span class="sep">›</span>`);
 }
 function renderJourney(){
   // rail 每次全量重建（不得引用重建前的子節點——舊版曾因取 stale walker 拋錯，rail 卡死）
   const n=SIMCORE.agreedCount(S), t=S.target, p=Math.min(1,Math.max(0,(n-34)/(t-34)));
   $("p-num").textContent=n+"/48"; $("p-target").textContent=t;
+  $("p-pct").textContent=Math.round(p*100)+"%";
   const goal=S.cfg.mode==="weilao"?"全員 48 戶同意":"80% 門檻（39 戶）送件";
   $("rail-cap").innerHTML=`目前關卡：<b>整合</b> — 逐戶爭取同意，跨過 ${goal} 才推進到「事業計畫」。`;
   let nodes="";
@@ -592,18 +628,42 @@ function renderCore(){
     ${sc.warn.map(w=>`<div class="warn ${w==="SHARED_COST_HIGH"||w==="VOLUME_EXCEEDED"?"err":"warn"}">${w}${w==="SHARED_COST_HIGH"?` — 共負比 ${pct(sc.scr)} 偏高，地主接受度下降（＝難度來源）`:w==="VOLUME_EXCEEDED"?` — 超容 ${Math.abs(sc.remaining)} m²，需調整設計`:""}</div>`).join("")}
     <div class="src">recompute(engine) 預算結果 · schema v2.0 · 遊戲層零財務公式</div>`;
 }
+/* v3 呈現層記帳：每週支出快照（UI 紀錄，非 SIMCORE 狀態、非財務公式） */
+const FLOW={hist:{}};
+function renderFlow(){
+  FLOW.hist[S.week]=S.spent;
+  const weeks=Math.min(S.week,S.weeksMax);
+  let bars="",peak=20;
+  const spendOf=w=>(FLOW.hist[w]??0)-(FLOW.hist[w-1]??0);
+  for(let w=1;w<=weeks;w++)peak=Math.max(peak,spendOf(w));
+  for(let w=1;w<=weeks;w++){
+    const s=Math.max(0,spendOf(w));
+    bars+=`<i class="${w===S.week?'now':''}" title="W${w} 投入 ${s} 萬" style="height:${Math.max(3,s/peak*44)}px"></i>`;
+  }
+  $("flowbars").innerHTML=bars;
+  $("flow-total").textContent=S.spent;
+}
 function render(){
-  $("m-week").textContent=Math.min(S.week,S.weeksMax);
-  $("m-weeks").textContent=S.weeksMax;
-  $("m-ap").textContent=S.ap; $("m-budget").textContent=S.budget;
+  const wk=Math.min(S.week,S.weeksMax);
+  $("m-week").textContent=wk; $("m-weeks").textContent=S.weeksMax;
+  $("m-weekbar").firstElementChild.style.width=Math.min(100,wk/S.weeksMax*100)+"%";
+  $("m-weekbar").classList.toggle("low",S.weeksMax-wk<=4);
+  $("m-ap-pips").innerHTML=[...Array(SIMCORE.AP_MAX)].map((_,i)=>`<i class="${i<S.ap?'':'off'}"></i>`).join("");
+  $("m-budget").textContent=S.budget; $("m-spent").textContent=S.spent;
+  $("m-budgetbar").firstElementChild.style.width=Math.max(0,S.budget/SIMCORE.BUDGET0*100)+"%";
+  $("m-budgetbar").classList.toggle("low",S.budget<50);
   $("m-hint").textContent=S.budget<50?"預算吃緊":"";
-  renderJourney();
+  $("btn-week").classList.toggle("urgent",S.ap===0&&!S.over);
+  renderJourney(); renderFlow();
   const g=$("grid");g.innerHTML="";
   S.pos.forEach(id=>{
     const u=S.units[id];
     const d=document.createElement("div");
     d.className="cell "+u.consent+(u.boss?" boss":"")+(u.family>=0?" fam":"")+(u.flipWeek===S.week&&u.consent==="agreed"?" justflip":"");
-    d.innerHTML=`<span>${SIMCORE.code(id)}</span><span class="st">${u.consent==="agreed"?"✓":u.stance}</span>`;
+    d.innerHTML=`<span>${SIMCORE.code(id)}</span><span class="st">${u.consent==="agreed"?"✓":u.stance}</span>`+
+      (u.consent!=="agreed"?`<span class="tb"><span style="width:${u.stance}%"></span></span>`:"");
+    d.title=u.consent==="agreed"?`${SIMCORE.code(id)} 已同意`
+      :`${SIMCORE.code(id)} · ${u.persona} · 信任 ${u.stance}/100${u.boss?" · 關鍵戶▲":""} — 點擊開啟 CODEC`;
     if(u.consent!=="agreed"){d.tabIndex=0;d.setAttribute("role","button");
       d.onclick=()=>openCodec(id);
       d.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openCodec(id);}};}
@@ -672,6 +732,7 @@ $("btn-start").onclick=()=>{
 $("btn-plan-go").onclick=()=>{
   $("ovl-plan").classList.remove("show");
   S=SIMCORE.create({mode:plan.mode,scale:plan.scale});
+  FLOW.hist={};                       // 新局：清空沙盤資金流紀錄
   renderProcess(); renderCore(); render();
   chapter("EPISODE 1","剩下的十四戶","錢能算出共同負擔，算不出人為什麼搖頭。",1900);
 };

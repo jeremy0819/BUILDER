@@ -1,6 +1,6 @@
 # 🏗️ RE-DCF-Tool — 都更/危老前期評估工具
 
-> 永盛開發建設內部工具。輸入土地與**逐層**建築參數，自動完成容積查核（建築技術規則 §162）、銷售坪效、開發評效，並偵測六大法規踩坑點。  
+> 內部工具。輸入土地與**逐層**建築參數，自動完成容積查核（建築技術規則 §162）、銷售坪效、開發評效，並偵測六大法規踩坑點。  
 > **圖說（面積表）為唯一真實依據**，工具逐層偵測免計超出並補計，不蓋過建築師圖說。
 
 🔗 **線上使用：[re-dcf-tool-ovmbnrh45ew2khaklhhn3t.streamlit.app](https://re-dcf-tool-ovmbnrh45ew2khaklhhn3t.streamlit.app)**
@@ -123,4 +123,4 @@ python schemas/examples/generate_examples.py   # 重新產生合約範例 JSON
 
 ---
 
-*永盛開發建設內部工具　｜　v4 UI 重設計版　｜　開發分支：`claude/claude-md-docs-ls9Bu`　→　部署：`main`*
+*內部工具　｜　v4 UI 重設計版　｜　開發分支：`claude/claude-md-docs-ls9Bu`　→　部署：`main`*

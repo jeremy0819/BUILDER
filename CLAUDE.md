@@ -5,6 +5,7 @@
 > schema **v2.1**（`project_schema_v2_1.json`，owner_allocations；v1.1/v2.0/v2.1 皆凍結，Gate 6 守衛）、
 > Streamlit Tab⑤ owners CSV → 逐戶權變。**入口＝URBAN STRAND OS shell（`apps/web/index.html`）**，
 > 儀表板在 `apps/web/dashboard.html`，其他介面皆為 shell 之模組。分支 `main` 與 feature 同步推進。
+> 現金流結構 v1 已落地（`cashflow.py` 均勻分期＝結構示意；S 曲線/IRR＝M4 🔴）。
 > M3 待續：更新前價值係數（🔴 需使用者核准）、三態地主/選屋（見 `docs/releases/ROADMAP_M2-M8.md`）。
 > 本檔只做路由——保持 ≤150 行。
 

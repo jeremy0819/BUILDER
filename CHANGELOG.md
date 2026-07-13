@@ -13,6 +13,11 @@
   （含 `selected_value`）＋ `result.owner_allocations[]`；權威檔
   `schemas/project_schema_v2_1.json`（凍結，Gate 6）；遷移鏈補 `2.0 → 2.1`。
 - **recompute**：owners 帶 `pre_value` 時附逐戶分回表（委派 rights.py，本體零公式）。
+- **新增** `core/redcf/cashflow.py`：`calc_現金流分期`——共同負擔 A–G 科目 ×
+  期別權重的**純算術分配**（逐期出資/累積/峰值，守恆到分）。權重為輸入；
+  未提供＝均勻分佈並標記 `structural=True`（結構示意）。**實案 S 曲線與
+  IRR/NPV 屬 M4 校準範圍（🔴 使用者核准）**，本版不臆造。
+- **資料紀律**：`check_no_real_names.sh` 守衛清單納入關係企業名稱（工作區已全數移除）。
 - 既有黃金測試期望值**零變動**；v2.0 檔案位元組不變（凍結維持）。
 
 ## 0.2.0 — 2026-07（M1–M2 基準）

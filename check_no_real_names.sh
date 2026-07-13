@@ -4,12 +4,12 @@
 # 用法：在 repo 根目錄執行  bash check_no_real_names.sh
 set -u
 FAIL=0
-if grep -rnE "竹蓮|安和|安民|中正|龜山" \
+if grep -rnE "竹蓮|安和|安民|中正|龜山|永盛" \
      --exclude-dir=.git --exclude-dir=__pycache__ --exclude-dir=node_modules \
      --exclude=check_no_real_names.sh --exclude=歷史乾淨度報告.md . ; then
   FAIL=1
 fi
-if find . -path ./.git -prune -o -print | grep -E "竹蓮|安和|安民|中正|龜山" ; then
+if find . -path ./.git -prune -o -print | grep -E "竹蓮|安和|安民|中正|龜山|永盛" ; then
   FAIL=1
 fi
 if [ "$FAIL" -eq 1 ]; then
