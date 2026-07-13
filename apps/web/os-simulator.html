@@ -1,15 +1,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>URBAN STRAND · 整合戰術沙盤</title>
+<title>整合人 THE INTEGRATOR · 整合戰術沙盤</title>
 <style>
 /* ————————————————————————————————————————————————
-   URBAN STRAND v2 — 都更整合戰術沙盤（介面統一版 / unified layout）
+   《整合人 THE INTEGRATOR》v3 — 都更整合戰術沙盤（原開發代號 URBAN STRAND）
    顧問回饋：程式架構無虞，介面需「統一、別亂」。本次＝資訊設計整併，非重寫遊戲：
      ①單一設計語彙（一套 card / label / 間距節奏，取代散落的六種面板樣式）
      ②「進度脊」＝把 S1–S11 都更流程 與 整合旅程軌 併成一體（原本兩條進度條互相打架）
      ③地主矩陣復位為主舞台（hero）；Core 試算與行動日誌收為右側「情報欄」
    保留原有 Kojima/codec 世界觀（深藍黑＋strand 青＋掃描線）。SIMCORE 邏輯零改動。
    紅線：本頁零財務/法規公式——方案財務皆 Core 預算結果（見 SCEN 註記）。
+   命名：2026-07-13 移除小島秀夫簽名元素（STRAND/羈絆/CODEC/FREQ 141.12/presents 卡）
+   ——trade dress 歸零；遊戲機制與測試不變，「羈絆」機制改稱「鄰里效應」。
 ———————————————————————————————————————————————— */
 :root{
   --bg:#0a0d12; --panel:#11161d; --panel2:#0d1117; --line:#1f2833; --line2:#2a3644;
@@ -238,9 +240,9 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
 
 <!-- ═══ TITLE ═══ -->
 <div class="ovl show" id="ovl-title"><div class="title-box fadein">
-  <div class="eyebrow">BUILDER GAME STUDIOS × RE-DCF CORE presents</div>
-  <div class="logo-strand">URBAN <b>STRAND</b></div>
-  <div class="tagline">整合，是一種羈絆。</div>
+  <div class="eyebrow">URBAN RENEWAL OS · RE-DCF CORE</div>
+  <div class="logo-strand">整合<b>人</b></div>
+  <div class="tagline">THE INTEGRATOR — 整合，是把每一戶聽完。</div>
   <div class="brief">
     <b>任務簡報 — 案例D 街區（合成資料）</b><br>
     這條街有 <b>48 戶</b>。34 戶已同意重建，<b class="hi">剩下 14 戶</b>。
@@ -267,14 +269,14 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
 
 <!-- ═══ CHAPTER ═══ -->
 <div class="ovl" id="ovl-chapter"><div class="chapter fadein">
-  <div class="no" id="ch-no">EPISODE 1</div>
+  <div class="no" id="ch-no">第 1 章</div>
   <h2 id="ch-title">剩下的十四戶</h2>
   <p id="ch-sub">錢能算出共同負擔，算不出人為什麼搖頭。</p>
 </div></div>
 
-<!-- ═══ CODEC ═══ -->
+<!-- ═══ 門前對話（拜訪對話框）═══ -->
 <div class="ovl" id="ovl-codec"><div class="codec fadein">
-  <div class="freq"><span id="cd-freq">FREQ 141.12</span>
+  <div class="freq"><span id="cd-freq">門前對話</span>
     <span class="wave"><i></i><i></i><i></i><i></i><i></i></span></div>
   <div class="body">
     <div class="face" id="cd-face">VISITOR</div>
@@ -295,7 +297,7 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
 <!-- ═══ ENDING ═══ -->
 <div class="ovl" id="ovl-end"><div class="credits fadein">
   <div class="eyebrow" id="end-eyebrow">INTEGRATION COMPLETE</div>
-  <div class="logo-strand" style="font-size:30px" id="end-title">STRAND FORMED</div>
+  <div class="logo-strand" style="font-size:30px" id="end-title">整合成立</div>
   <div class="quote" id="end-quote"></div>
   <div class="stats" id="end-stats"></div>
   <div class="roll" id="end-roll"><div class="inner" id="end-roll-inner"></div></div>
@@ -308,7 +310,7 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
 <div class="wrap">
   <!-- ① 指揮列 -->
   <header class="cmd">
-    <div class="cmd-id">URBAN <b>STRAND</b><span id="hud-scen">· 整合戰術沙盤</span></div>
+    <div class="cmd-id">整合<b>人</b> THE INTEGRATOR<span id="hud-scen">· 整合戰術沙盤</span></div>
     <div class="cmd-res">
       <div class="res"><span class="rk">Week 時程</span>
         <div class="rv"><b class="tnum" id="m-week">1</b><span class="rs">/<span class="tnum" id="m-weeks">24</span> 週</span></div>
@@ -344,14 +346,14 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
     <section class="hero card">
       <div class="card-head">
         <span class="lbl">Street Block · 這條街的 48 戶</span>
-        <span class="card-tag">點未同意戶開啟 CODEC · ⌂＝家族</span>
+        <span class="card-tag">點未同意戶展開門前對話 · ⌂＝家族</span>
       </div>
       <div class="grid" id="grid"></div>
       <div class="legend">
-        <span><i class="sw" style="background:#0e2227;border:1px solid var(--strand-dim)"></i>已同意（羈絆）</span>
+        <span><i class="sw" style="background:#0e2227;border:1px solid var(--strand-dim)"></i>已同意</span>
         <span><i class="sw" style="background:var(--panel);border:1px solid #3a4550"></i>觀望</span>
         <span><i class="sw" style="background:#1d1410;border:1px solid var(--amber-dim)"></i>反對</span>
-        <span>▲＝關鍵戶</span><span>羈絆只對「接觸過」的戶生效</span>
+        <span>▲＝關鍵戶</span><span>鄰里效應：只對「接觸過」的戶生效</span>
       </div>
       <div class="actions">
         <button class="btn ghost" id="btn-brief">🏫 說明會（1 AP · 20萬）</button>
@@ -376,7 +378,7 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
   </div>
 
   <footer class="pg">
-    <span>URBAN STRAND v2 · 統一版面 — 沙盤機制為示意；方案財務皆 Core 預算結果。人物皆虛構原型，零真實資料。</span>
+    <span>《整合人》v3 — 沙盤機制為示意；方案財務皆 Core 預算結果。人物皆為虛構原型，零真實資料。</span>
     <span><a href="index.html">OS 主選單</a> · <a href="dashboard.html">DASHBOARD</a> · <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">BUILDER</a></span>
   </footer>
 </div>
@@ -389,7 +391,7 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
 const SIMCORE = (() => {
   const AP_MAX = 4, BUDGET0 = 300, AGREE_AT = 75;
   const COLS = 8, ROWS = 6, N = 48, BOSS = 47;
-  const FAMILY = [[36,39,44],[38,42],[40,43,46]];   // 家族羈絆（虛構原型）
+  const FAMILY = [[36,39,44],[38,42],[40,43,46]];   // 家族連動（虛構原型）
 
   // Core 預算方案（tools：recompute(engine)；computed 2026-07-01 · core 0.2.0）
   const SCEN = {
@@ -464,8 +466,8 @@ const SIMCORE = (() => {
   }
   function _flip(s,u){
     u.consent="agreed";u.stance=100;u.flipWeek=s.week;
-    s.log.unshift({w:s.week,t:`✚ ${code(u.id)}（${u.persona}）同意了——新的羈絆。`});
-    if(u.family>=0){ // 家族羈絆：一人點頭，全家鬆動
+    s.log.unshift({w:s.week,t:`✚ ${code(u.id)}（${u.persona}）同意了——又一扇門開了。`});
+    if(u.family>=0){ // 家族連動：一人點頭，全家鬆動
       for(const fid of FAMILY[u.family]) if(fid!==u.id){
         const f=s.units[fid];
         if(f.consent!=="agreed"&&!f.boss){f.stance=Math.min(100,f.stance+8);f.touched=true;
@@ -515,7 +517,7 @@ const SIMCORE = (() => {
     if(s.over)return;
     for(const u of Object.values(s.units)) if(u.consent!=="agreed"&&!u.boss&&u.touched){
       const k=neighbors(s,u.id).filter(n=>s.units[n].consent==="agreed").length;
-      if(k>0){u.stance=Math.min(100,u.stance+Math.min(3,k));_check(s,u);}  // 羈絆：接觸過才生效
+      if(k>0){u.stance=Math.min(100,u.stance+Math.min(3,k));_check(s,u);}  // 鄰里效應：接觸過才生效
     }
     s.week++;
     const ev=EVENTS[s.week];
@@ -543,7 +545,7 @@ const pct=x=>(x*100).toFixed(1)+"%";
 const n0=x=>x==null?"—":Math.round(x).toLocaleString();
 let S=null, sel=null, plan={mode:null,scale:null};
 
-const CODEC_SAY={
+const DOOR_SAY={
   pending:["「我不是反對……我是怕。你們的數字，我看不懂。」",
     "「隔壁的都簽了？……他們真的懂自己簽了什麼嗎？」",
     "「你再說一次，分回是怎麼算的？慢慢說。」"],
@@ -607,7 +609,7 @@ function renderJourney(){
   const goal=S.cfg.mode==="weilao"?"全員 48 戶同意":"80% 門檻（39 戶）送件";
   $("rail-cap").innerHTML=`目前關卡：<b>整合</b> — 逐戶爭取同意，跨過 ${goal} 才推進到「事業計畫」。`;
   let nodes="";
-  const sts=[{n:34,name:"啟程"},...S.milestones.map(m=>({n:m.n,name:m.name})),{n:t,name:S.cfg.mode==="weilao"?"全員羈絆":"送件門檻"}];
+  const sts=[{n:34,name:"啟程"},...S.milestones.map(m=>({n:m.n,name:m.name})),{n:t,name:S.cfg.mode==="weilao"?"全員點頭":"送件門檻"}];
   for(const st of sts){
     const x=((st.n-34)/(t-34))*100;
     nodes+=`<div class="node ${n>=st.n?'hit':''}" style="left:${x}%"><div class="nl"><span class="nn tnum">${st.n}</span>${st.name}</div></div>`;
@@ -652,7 +654,7 @@ function render(){
   $("m-budget").textContent=S.budget; $("m-spent").textContent=S.spent;
   $("m-budgetbar").firstElementChild.style.width=Math.max(0,S.budget/SIMCORE.BUDGET0*100)+"%";
   $("m-budgetbar").classList.toggle("low",S.budget<50);
-  $("m-hint").textContent=S.budget<50?"預算吃緊":"";
+  $("m-hint").textContent=(S.cfg.mode==="weilao"&&SIMCORE.agreedCount(S)===S.target-1&&!S.over)?"⚠ 只差最後一戶":(S.budget<50?"預算吃緊":"");
   $("btn-week").classList.toggle("urgent",S.ap===0&&!S.over);
   renderJourney(); renderFlow();
   const g=$("grid");g.innerHTML="";
@@ -663,7 +665,7 @@ function render(){
     d.innerHTML=`<span>${SIMCORE.code(id)}</span><span class="st">${u.consent==="agreed"?"✓":u.stance}</span>`+
       (u.consent!=="agreed"?`<span class="tb"><span style="width:${u.stance}%"></span></span>`:"");
     d.title=u.consent==="agreed"?`${SIMCORE.code(id)} 已同意`
-      :`${SIMCORE.code(id)} · ${u.persona} · 信任 ${u.stance}/100${u.boss?" · 關鍵戶▲":""} — 點擊開啟 CODEC`;
+      :`${SIMCORE.code(id)} · ${u.persona} · 信任 ${u.stance}/100${u.boss?" · 關鍵戶▲":""} — 點擊展開對話`;
     if(u.consent!=="agreed"){d.tabIndex=0;d.setAttribute("role","button");
       d.onclick=()=>openCodec(id);
       d.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openCodec(id);}};}
@@ -671,7 +673,7 @@ function render(){
   });
   $("log").innerHTML=S.log.slice(0,30).map(l=>`<div class="li"><b>W${l.w}</b> ${l.t}</div>`).join("");
   const m=SIMCORE.pendingMilestone(S);
-  if(m&&!S.over)chapter("EPISODE "+m.ep, m.name, "同意 "+SIMCORE.agreedCount(S)+" 戶——路，開始往前走了。",1700);
+  if(m&&!S.over)chapter("第 "+m.ep+" 章", m.name, "同意 "+SIMCORE.agreedCount(S)+" 戶——路，開始往前走了。",1700);
   if(S.over)ending();
 }
 function chapter(no,title,sub,ms){
@@ -681,10 +683,10 @@ function chapter(no,title,sub,ms){
 }
 function openCodec(id){
   sel=id;const u=S.units[id];
-  $("cd-freq").textContent="FREQ 141."+String(10+id).padStart(2,"0");
+  $("cd-freq").textContent="門前對話 · 門牌 "+SIMCORE.code(id);
   $("cd-who").textContent=SIMCORE.code(id)+" · "+u.persona;
   $("cd-role").textContent=(u.boss?"KEY HOLDOUT ▲":u.consent.toUpperCase())+" · "+u.trait+(u.family>=0?" · ⌂家族":"");
-  const pool=u.boss?CODEC_SAY.boss:CODEC_SAY[u.consent]||CODEC_SAY.pending;
+  const pool=u.boss?DOOR_SAY.boss:DOOR_SAY[u.consent]||DOOR_SAY.pending;
   type(pool[Math.min(u.listens,pool.length-1)]);
   $("cd-stat").innerHTML=`信任 <b>${u.stance}</b>/100 ${u.boss?"· 對「客製方案」免疫——只能傾聽":""}`;
   $("cd-offer").disabled=!!u.boss;
@@ -698,27 +700,30 @@ $("cd-listen").onclick=()=>{const r=SIMCORE.listen(S,sel);
   if(!r.ok){type("（AP 不足——本週的腳程用完了。）");return;}
   const u=S.units[sel];
   if(u.consent==="agreed"){$("ovl-codec").classList.remove("show");render();return;}
-  const pool=u.boss?CODEC_SAY.boss:CODEC_SAY[u.consent];
+  const pool=u.boss?DOOR_SAY.boss:DOOR_SAY[u.consent];
   type(pool[Math.min(u.listens-1,pool.length-1)]+`　（信任 +${r.d}）`);
   $("cd-stat").innerHTML=`信任 <b>${u.stance}</b>/100`;render();};
 $("cd-offer").onclick=()=>{const r=SIMCORE.offer(S,sel);
   if(!r.ok){type("（AP 或預算不足。）");return;}
   const u=S.units[sel];
   if(u.consent==="agreed"){$("ovl-codec").classList.remove("show");render();return;}
-  type((u.boss?CODEC_SAY.offerBoss:CODEC_SAY.offerOk)+`　（${r.d>0?"+":""}${r.d}，同招遞減）`);
+  type((u.boss?DOOR_SAY.offerBoss:DOOR_SAY.offerOk)+`　（${r.d>0?"+":""}${r.d}，同招遞減）`);
   $("cd-stat").innerHTML=`信任 <b>${u.stance}</b>/100`;render();};
 $("btn-brief").onclick=()=>{SIMCORE.briefing(S);render();};
 $("btn-week").onclick=()=>{SIMCORE.endWeek(S);render();};
 
 function ending(){
-  const won=S.won, sc=S.scen;
-  $("end-eyebrow").textContent=won?"INTEGRATION COMPLETE":"TIME OVER";
-  $("end-title").innerHTML=won?'STRAND <b style="color:var(--strand)">FORMED</b>':'STRAND <b style="color:var(--amber)">BROKEN</b>';
+  const won=S.won, sc=S.scen, n=SIMCORE.agreedCount(S);
+  const 差一戶=!won&&S.cfg.mode==="weilao"&&n===S.target-1;   // ② 47/48＝歸零：全遊戲最殘酷的一格
+  $("end-eyebrow").textContent=won?"INTEGRATION COMPLETE":(差一戶?`${n}/${S.target} — 差一扇門`:"TIME OVER");
+  $("end-title").innerHTML=won?'整合<b style="color:var(--strand)">成立</b>':(差一戶?'差<b style="color:var(--amber)">一戶</b>':'整合<b style="color:var(--amber)">破局</b>');
   $("end-quote").textContent=won
     ?(S.cfg.mode==="weilao"
       ?"「整合完成的那一天，沒有煙火。只有四十八戶人，第一次同時點頭。」——階段推進：整合 ✓ → 事業計畫。"
       :"「八成的門開了。剩下的人，制度會替你繼續對話。」——階段推進：整合 ✓ → 事業計畫（未同意戶進入權利變換）。")
-    :"「時間並沒有站在這條街這邊。」——還有人沒被聽見。回到規劃桌，再來一次。";
+    :(差一戶
+      ?`「${n} 戶點了頭。差一戶——在危老 100% 的規則裡，${n} 戶等於零戶。」你不是輸給誰，是輸給最後一扇沒開的門。回去，把那扇門聽完。`
+      :"「時間並沒有站在這條街這邊。」——還有人沒被聽見。回到規劃桌，再來一次。");
   $("end-stats").innerHTML=`方案 <b>${S.cfg.mode==="weilao"?"危老":"都更"} × ${sc.label}</b> · 用時 <b>${Math.min(S.week,S.weeksMax)}/${S.weeksMax} 週</b> · 行動 <b>${S.acts}</b> 次 · 整合花費 <b>${S.spent} 萬</b>（沙盤）<br>本方案 Core 財務：總銷 ${n0(sc.total)} 萬 · 共負 ${pct(sc.scr)} · 分回 ${pct(sc.ratio)} · 投報 ${pct(sc.rr)}`;
   const names=[...Array(48)].map((_,i)=>SIMCORE.code(i+1)+"　"+(S.units[i+1].persona||"住戶"));
   $("end-roll-inner").innerHTML=["— 這條街的四十八戶 —",...names,"","GAME DESIGN · 沙盤機制（示意）","AUTHORITATIVE NUMBERS · RE-DCF CORE v0.2.0","SPECIAL THANKS · 每一位願意坐下來聽的人"].join("<br>");
@@ -734,7 +739,7 @@ $("btn-plan-go").onclick=()=>{
   S=SIMCORE.create({mode:plan.mode,scale:plan.scale});
   FLOW.hist={};                       // 新局：清空沙盤資金流紀錄
   renderProcess(); renderCore(); render();
-  chapter("EPISODE 1","剩下的十四戶","錢能算出共同負擔，算不出人為什麼搖頭。",1900);
+  chapter("第 1 章","剩下的十四戶","錢能算出共同負擔，算不出人為什麼搖頭。",1900);
 };
 /* 預設先建一局（危老×基準）供背景顯示；正式開局在規劃定案後重建 */
 S=SIMCORE.create(); renderProcess(); renderCore(); render();

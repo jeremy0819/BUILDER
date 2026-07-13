@@ -40,7 +40,7 @@
 > `c.eff`←`efficiency_ratio`、`c.scr`←`shared_cost_ratio`、`c.owner_ratio`←`owner_return_ratio`、
 > `c.vmult`←`value_multiple`、`c.floors_n`←`len(input.floors)`）。別名只是顯示層改名，值不變。
 
-## 2. 整合模擬器 URBAN STRAND（`apps/web/os-simulator.html`）
+## 2. 整合模擬器《整合人 THE INTEGRATOR》（原代號 URBAN STRAND；`apps/web/os-simulator.html`）
 
 模擬器**遊戲層**（住戶說服、羈絆、AP/週）是自有狀態機，**不是 Core 數字**；但
 「PLAN PHASE 沙盤」的財務格是 **Core 重算後烘焙進 `SCEN` 表**的唯讀值（SSOT）。
@@ -55,7 +55,7 @@
 
 > 紅線：`SCEN` 表的財務值只能由 Core 匯出更新，**不得在 JS 內改算式**（headless
 > 測試 `test_os_simulator.mjs` 守「遊戲層零財務公式」）。遊戲難度來自 `warnings`／共負帶，
-> 屬 Kojima 式「診斷即敘事」——數字仍是 Core 的。
+> 屬「診斷即敘事」設計——數字仍是 Core 的。
 
 ## 3. M3 owners 輸入與逐戶權變（**已落地**：schema v2.1 ＋ core 0.3.0）
 
