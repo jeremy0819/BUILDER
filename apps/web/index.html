@@ -4,10 +4,12 @@
 <style>
 /* ————————————————————————————————————————————————
    URBAN RENEWAL OS — 主選單（shell）
-   定位：本頁是唯一入口，《整合人》沙盤為主線任務，
-   其他介面（儀表板/試算/V4 沙盤/指南/白皮書/簡報/Streamlit）皆為掛在
-   主體之下的「模組」。設計語彙沿用 os-simulator（strand 世界觀，單一深色
-   主題為刻意選擇）。本頁零公式、零計算——只有導覽與狀態（SSOT 紅線）。
+   定位：本頁是唯一入口。資訊架構＝OS 三段流程：
+     ① 資料輸入（開發評估儀表板＋坪效×投報試算）＝把案件參數喂進系統
+     ② 參數推演（整合人沙盤）＝以遊戲反映整合難度
+     ③ 結算報告（遊戲內產出）＝故事化的復盤
+   延伸資源（RE-DCF/簡報/總論/指南/程式庫）收進可展開區塊，不佔主視覺（避免介面混亂）。
+   本頁零公式、零計算——只有導覽與狀態（SSOT 紅線）。
 ———————————————————————————————————————————————— */
 :root{
   --bg:#0a0d12; --panel:#11161d; --panel2:#0d1117; --line:#1f2833; --line2:#2a3644;
@@ -39,23 +41,30 @@ header{display:flex;justify-content:space-between;align-items:center;gap:12px;fl
 .chip{border:1px solid var(--line2);color:var(--mute);border-radius:999px;padding:3px 10px;letter-spacing:.06em}
 .chip.hot{border-color:var(--strand-dim);color:var(--strand)}
 
-/* HERO：主線＝整合戰術沙盤 */
-.hero{text-align:center;padding:52px 10px 40px}
+/* HERO */
+.hero{text-align:center;padding:46px 10px 22px}
 .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.35em;color:var(--mute);text-transform:uppercase}
-.logo{font-family:var(--mono);font-weight:700;font-size:clamp(40px,7.5vw,72px);
+.logo{font-family:var(--mono);font-weight:700;font-size:clamp(38px,7vw,66px);
   letter-spacing:.12em;margin:14px 0 2px}
 .logo b{color:var(--strand)}
 .logo .os{color:var(--dim);font-size:.42em;vertical-align:.62em;letter-spacing:.3em;margin-left:8px}
-.tagline{font-family:var(--serif);font-size:16.5px;color:var(--mute);letter-spacing:.22em;margin:4px 0 30px}
-.cta{display:inline-block;cursor:pointer;font-family:var(--mono);font-size:13.5px;letter-spacing:.2em;
-  border:1px solid var(--strand);color:var(--strand);padding:14px 42px;border-radius:4px;text-transform:uppercase}
-.cta:hover{background:var(--strand);color:#04252b}
-.sub-cta{display:block;margin-top:16px;font-family:var(--mono);font-size:11px;color:var(--dim)}
-.sub-cta a{color:var(--mute)} .sub-cta a:hover{color:var(--strand)}
+.tagline{font-family:var(--serif);font-size:16.5px;color:var(--mute);letter-spacing:.22em;margin:4px 0 0}
+
+/* 三段流程帶 */
+.pipe{display:flex;align-items:stretch;gap:0;margin:30px 0 8px;flex-wrap:wrap}
+.pstage{flex:1 1 210px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;
+  padding:14px 16px;position:relative;min-width:200px}
+.pstage .pn{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--dim)}
+.pstage .ph{font-weight:750;font-size:15px;margin:5px 0 3px}
+.pstage .pd{font-size:11.5px;color:var(--mute);line-height:1.6}
+.pstage.mid{border-color:var(--strand-dim);background:linear-gradient(135deg,#0d1b1f,var(--panel2))}
+.pstage.mid .ph{color:var(--strand)}
+.parrow{display:flex;align-items:center;color:var(--dim);font-size:20px;padding:0 6px}
+@media(max-width:720px){.parrow{transform:rotate(90deg);padding:2px 0;justify-content:center;width:100%}}
 
 /* 模組格 */
 .sect{font-family:var(--mono);font-size:10.5px;letter-spacing:.28em;color:var(--dim);
-  text-transform:uppercase;margin:26px 0 13px;display:flex;align-items:center;gap:12px}
+  text-transform:uppercase;margin:30px 0 13px;display:flex;align-items:center;gap:12px}
 .sect::after{content:"";flex:1;height:1px;background:var(--line)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
 .mod{display:block;background:var(--panel2);border:1px solid var(--line);border-radius:12px;
@@ -67,9 +76,27 @@ header{display:flex;justify-content:space-between;align-items:center;gap:12px;fl
 .mod .mt .tag.ext{border-color:var(--line2);color:var(--mute)}
 .mod .md{font-size:12px;color:var(--mute);margin-top:5px;line-height:1.65}
 .mod.main{grid-column:1 / -1;background:linear-gradient(135deg,#0d1b1f 0%,var(--panel2) 55%);
-  border-color:var(--strand-dim);padding:19px 21px}
-.mod.main .mt{font-size:17px}
-.mod.main .md{font-size:12.5px;max-width:640px}
+  border-color:var(--strand-dim);padding:20px 22px}
+.mod.main .mt{font-size:18px}
+.mod.main .md{font-size:12.5px;max-width:660px}
+.mod.main .cta-in{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:11.5px;
+  letter-spacing:.15em;border:1px solid var(--strand);color:var(--strand);border-radius:4px;padding:8px 20px;text-transform:uppercase}
+.mod.main:hover .cta-in{background:var(--strand);color:#04252b}
+
+/* 延伸資源（收合，避免主畫面混亂） */
+details.more{margin-top:26px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+details.more>summary{cursor:pointer;list-style:none;padding:14px 18px;font-family:var(--mono);font-size:11px;
+  letter-spacing:.2em;color:var(--mute);text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::after{content:"▾ 展開";color:var(--dim);font-size:10px}
+details.more[open]>summary::after{content:"▴ 收合"}
+details.more>summary:hover{color:var(--strand)}
+.more-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:1px;background:var(--line);border-top:1px solid var(--line)}
+.more-grid a{background:var(--panel2);padding:13px 16px;color:var(--ink)}
+.more-grid a:hover{background:var(--panel)}
+.more-grid .rt{font-weight:700;font-size:13px;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.more-grid .rt .x{font-family:var(--mono);font-size:8.5px;color:var(--mute);border:1px solid var(--line2);border-radius:4px;padding:1px 6px}
+.more-grid .rd{font-size:11px;color:var(--mute);margin-top:3px;line-height:1.5}
 
 /* SSOT 紀律條 */
 .ssot{margin-top:26px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;
@@ -77,7 +104,7 @@ header{display:flex;justify-content:space-between;align-items:center;gap:12px;fl
 .ssot b{color:var(--ink)}
 .ssot .mono{color:var(--dim);font-size:10px}
 
-footer{margin-top:30px;border-top:1px solid var(--line);padding-top:13px;display:flex;
+footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display:flex;
   justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:10px;color:var(--dim)}
 </style>
 
@@ -88,7 +115,7 @@ footer{margin-top:30px;border-top:1px solid var(--line);padding-top:13px;display
       <span class="chip hot">core 0.3.0</span>
       <span class="chip">schema v2.1</span>
       <span class="chip">os-v0.2.0-beta 已發布</span>
-      <span class="chip">M3 權利變換 · 進行中</span>
+      <span class="chip">M3 Workflow · 設計中</span>
     </span>
   </header>
 
@@ -96,58 +123,72 @@ footer{margin-top:30px;border-top:1px solid var(--line);padding-top:13px;display
     <div class="eyebrow">Urban Renewal Operating System</div>
     <div class="logo">URBAN <b>RENEWAL</b><span class="os">OS</span></div>
     <div class="tagline">一塊地，一群人，一個真源。</div>
-    <a class="cta" href="os-simulator.html">▶ 進入整合戰術沙盤</a>
-    <span class="sub-cta">或先看 <a href="dashboard.html">開發評估儀表板</a> — 三案例 Core 權威數字與逐戶權變</span>
   </div>
 
-  <div class="sect">主線 Main Quest</div>
+  <!-- OS 三段流程：輸入 → 推演 → 結算 -->
+  <div class="pipe">
+    <a class="pstage" href="dashboard.html">
+      <div class="pn">STAGE 01</div><div class="ph">① 資料輸入</div>
+      <div class="pd">開發評估儀表板＋坪效×投報試算——把案件參數（容積/財務/清冊）喂進系統，Core 算出權威 result。</div>
+    </a>
+    <div class="parrow">→</div>
+    <a class="pstage mid" href="os-simulator.html">
+      <div class="pn">STAGE 02</div><div class="ph">② 參數推演</div>
+      <div class="pd">整合人沙盤——同一份 Core 數字，用傾聽與信任把住戶帶過門檻。參數決定難度，遊戲反映整合。</div>
+    </a>
+    <div class="parrow">→</div>
+    <div class="pstage">
+      <div class="pn">STAGE 03</div><div class="ph">③ 結算報告</div>
+      <div class="pd">遊戲結束生成故事化復盤——這一局的關鍵決策、逐戶結果、Core 財務，一份可收藏的結算。</div>
+    </div>
+  </div>
+
+  <div class="sect">② 主線 · 參數推演</div>
   <div class="grid">
     <a class="mod main" href="os-simulator.html">
       <div class="mt">🕹️ 整合人 THE INTEGRATOR · 整合戰術沙盤 <span class="tag">CORE-POWERED</span><span class="tag">v3</span></div>
-      <div class="md">建築規劃（開發模式 × 規模）決定共負比，共負比決定人心——在 Core 權威數字之上，
-      用傾聽與信任把 48 戶帶過門檻。危老 100%／都更 80% 兩條路線。</div>
+      <div class="md">開發模式 × 建築規模決定共負比，共負比決定人心——在 Core 權威數字之上，用傾聽把住戶帶過門檻。
+      危老 100%／都更 80% 兩條路線；遊戲結束生成故事結算報告。</div>
+      <span class="cta-in">▶ 進入沙盤</span>
     </a>
   </div>
 
-  <div class="sect">評估與計算 Evaluation</div>
+  <div class="sect">① 資料輸入 · Project Data</div>
   <div class="grid">
     <a class="mod" href="dashboard.html">
       <div class="mt">📊 開發評估儀表板 <span class="tag">CORE-POWERED</span></div>
-      <div class="md">三案例可重算驗證、逐層樓板、provenance 溯源、跨案比較，＋M3 逐戶權變示範（schema v2.1）。</div>
+      <div class="md">三案例可重算驗證、逐層樓板、provenance 溯源、跨案比較、逐戶權變（§56）與現金流結構（schema v2.1）。</div>
     </a>
     <a class="mod" href="evaluator.html">
       <div class="mt">🧮 坪效×投報試算</div>
-      <div class="md">教學試算（示意）＋「對接 Core」JSON 匯入——權威數字一律以匯入的 result 為準。</div>
-    </a>
-    <a class="mod" href="https://builder-9sczgrez3a3qsbmkebd6ey.streamlit.app/" target="_blank" rel="noopener">
-      <div class="mt">⚙️ RE-DCF 精確計算 <span class="tag ext">↗ STREAMLIT</span></div>
-      <div class="md">正式容積查核（§162 逐層）・坪效・投報；地主清冊 CSV → §56 逐戶權變；匯出案件 JSON。</div>
+      <div class="md">教學試算（示意）＋「對接 Core」JSON 匯入——匯出的 result 可餵給儀表板與沙盤。權威數字一律以 result 為準。</div>
     </a>
   </div>
 
-  <div class="sect">訓練與知識 Training &amp; Knowledge</div>
-  <div class="grid">
-    <a class="mod" href="simulator.html">
-      <div class="mt">🎮 整合策略沙盤 <span class="tag ext">V4 經典版</span></div>
-      <div class="md">賽局理論模擬地主整合談判（封版保留；新主線見《整合人》）。</div>
-    </a>
-    <a class="mod" href="guide.html">
-      <div class="mt">📖 都更 11 關指南</div>
-      <div class="md">S1–S11 全生命週期流程與名詞小幫手。</div>
-    </a>
-    <a class="mod" href="whitepaper.html">
-      <div class="mt">📈 整合開發總論</div>
-      <div class="md">開發評估方法論白皮書——法規×估價×趨勢×人文的最上位框架。</div>
-    </a>
-    <a class="mod" href="briefing.html">
-      <div class="mt">🗣️ 住戶說明會簡報</div>
-      <div class="md">對住戶溝通的制式簡報範本（HTML）。</div>
-    </a>
-    <a class="mod" href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">
-      <div class="mt">🗂️ 程式庫 <span class="tag ext">↗ GITHUB</span></div>
-      <div class="md">Urban Renewal OS monorepo——計算核心、凍結合約、CI 七道 Gate、治理與手冊。</div>
-    </a>
-  </div>
+  <!-- 延伸資源：收合，避免主畫面混亂 -->
+  <details class="more">
+    <summary>延伸資源 · 計算工具 / 方法論 / 程式庫</summary>
+    <div class="more-grid">
+      <a href="https://builder-9sczgrez3a3qsbmkebd6ey.streamlit.app/" target="_blank" rel="noopener">
+        <div class="rt">⚙️ RE-DCF 精確計算 <span class="x">↗ STREAMLIT</span></div>
+        <div class="rd">正式容積查核（§162 逐層）・坪效・投報；地主清冊 CSV → §56 逐戶權變；匯出案件 JSON。</div></a>
+      <a href="guide.html">
+        <div class="rt">📖 都更 11 關指南</div>
+        <div class="rd">S1–S11 全生命週期流程與名詞小幫手。</div></a>
+      <a href="whitepaper.html">
+        <div class="rt">📈 整合開發總論</div>
+        <div class="rd">開發評估方法論白皮書——法規×估價×趨勢×人文。</div></a>
+      <a href="briefing.html">
+        <div class="rt">🗣️ 住戶說明會簡報</div>
+        <div class="rd">對住戶溝通的制式簡報範本（HTML）。</div></a>
+      <a href="simulator.html">
+        <div class="rt">🎮 整合策略沙盤 <span class="x">V4 經典版</span></div>
+        <div class="rd">封版保留；優點已蒸餾進《整合人》主線。</div></a>
+      <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">
+        <div class="rt">🗂️ 程式庫 <span class="x">↗ GITHUB</span></div>
+        <div class="rd">Urban Renewal OS monorepo——計算核心、凍結合約、CI Gate、治理與手冊。</div></a>
+    </div>
+  </details>
 
   <div class="ssot">
     <b>數字紀律（SSOT）</b>：全 OS 只有一個計算來源 <span class="mono">core/redcf</span>。
@@ -157,7 +198,7 @@ footer{margin-top:30px;border-top:1px solid var(--line);padding-top:13px;display
   </div>
 
   <footer>
-    <span>URBAN RENEWAL OS — 主選單 · 其他介面皆為本體之模組</span>
+    <span>URBAN RENEWAL OS — 輸入 → 推演 → 結算 · 其他介面皆為本體之模組</span>
     <span><a href="os-simulator.html">沙盤</a> · <a href="dashboard.html">儀表板</a> · <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">BUILDER</a></span>
   </footer>
 </div>

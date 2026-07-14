@@ -101,6 +101,12 @@ s = SIMCORE.create();
 for (let i = 0; i < 26 && !s.over; i++) SIMCORE.endWeek(s);
 ok(s.over === true && s.won === false && SIMCORE.agreedCount(s) === 34, "掛機＝零進展、必輸");
 
+// ── 9b. 說明會刷分必輸（傾聽經濟學 D1：說明會只暖不closing，最後一哩得逐戶聽）──
+ok(SIMCORE.BRIEF_CEIL < SIMCORE.AGREE_AT, "說明會上限 < 同意門檻（單靠說明會無法翻轉）");
+s = SIMCORE.create({mode:"duegeng",scale:"L"});   // 最寬鬆配置也擋得住
+for (let i = 0; i < 30 && !s.over; i++) { if (s.budget >= 20) SIMCORE.briefing(s); SIMCORE.endWeek(s); }
+ok(s.won === false && SIMCORE.agreedCount(s) === 34, "只刷說明會＋結束週＝零翻轉、必輸");
+
 // ── 10. 里程碑（旅程軌推進感）──
 s = SIMCORE.create();
 ok(s.milestones.length >= 3 && s.milestones[0].n > 34 && s.milestones.at(-1).n < 48, "危老里程碑站設置合理");

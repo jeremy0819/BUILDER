@@ -105,19 +105,26 @@ header.cmd{display:flex;justify-content:space-between;align-items:center;gap:14p
 .cmd-id span{color:var(--dim);font-size:10.5px;letter-spacing:.1em;margin-left:6px}
 /* 資源儀表（v3：從小 pill 升級為明顯的 meter——一眼讀出剩多少） */
 .cmd-res{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch}
-.res{display:flex;flex-direction:column;gap:4px;background:var(--panel);border:1px solid var(--line);
-  border-radius:10px;padding:7px 14px;font-family:var(--mono);min-width:118px}
-.res .rk{font-size:9.5px;letter-spacing:.18em;color:var(--mute);text-transform:uppercase}
+.res{display:flex;flex-direction:column;gap:5px;background:var(--panel);border:1px solid var(--line);
+  border-radius:11px;padding:9px 16px;font-family:var(--mono);min-width:132px}
+.res .rk{font-size:10px;letter-spacing:.18em;color:var(--mute);text-transform:uppercase}
 .res .rv{display:flex;align-items:baseline;gap:5px}
-.res b{font-size:20px;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1}
-.res .rs{font-size:10.5px;color:var(--dim)}
-.rbar{height:5px;border-radius:999px;background:var(--line);overflow:hidden}
+.res b{font-size:26px;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1}
+.res .rs{font-size:11px;color:var(--dim)}
+.rbar{height:6px;border-radius:999px;background:var(--line);overflow:hidden}
 .rbar span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--strand-dim),var(--strand));transition:width .4s}
 .rbar.low span{background:linear-gradient(90deg,var(--amber-dim),var(--amber))}
-.pips{display:flex;gap:5px;padding:3px 0 1px}
-.pips i{width:12px;height:12px;border-radius:50%;background:var(--strand);box-shadow:0 0 8px rgba(79,216,232,.45)}
+/* AP 行動點：放大 pip＋數字讀數，一眼看出本週還能做幾件事 */
+.res.ap{border-color:var(--strand-dim)}
+.ap-row{display:flex;align-items:center;gap:9px}
+.ap-num{font-size:26px;color:var(--strand);font-variant-numeric:tabular-nums;line-height:1;font-weight:700}
+.ap-num small{font-size:12px;color:var(--dim);font-weight:400}
+.pips{display:flex;gap:6px}
+.pips i{width:18px;height:18px;border-radius:50%;background:var(--strand);box-shadow:0 0 10px rgba(79,216,232,.5)}
 .pips i.off{background:var(--line);box-shadow:none}
-.res.hint{border-color:var(--amber-dim);color:var(--amber);font-size:11px;justify-content:center;min-width:0}
+.res.hint{border-color:var(--amber);color:var(--amber);font-size:12px;font-weight:700;justify-content:center;min-width:0;
+  animation:hintpulse 1.3s infinite}
+@keyframes hintpulse{50%{box-shadow:0 0 16px rgba(255,138,74,.4)}}
 .res.hint:empty{display:none}
 
 /* ── ② 進度脊：都更流程（S1–S11）＋整合旅程 併為一體 ── */
@@ -133,9 +140,9 @@ header.cmd{display:flex;justify-content:space-between;align-items:center;gap:14p
 .crumb.now::before{content:"◉ ";animation:pulse 1.6s infinite}
 .crumbs .sep{color:var(--dim)}
 @keyframes pulse{50%{opacity:.4}}
-/* 大進度讀數（v3：同意 % 一眼可讀） */
-.spine-pct{font-family:var(--mono);font-size:26px;font-weight:700;color:var(--strand);line-height:1}
-.spine-pct small{font-size:11px;color:var(--mute);font-weight:400;margin-left:7px}
+/* 大進度讀數（v4：門檻達成率巨型可讀） */
+.spine-pct{font-family:var(--mono);font-size:40px;font-weight:700;color:var(--strand);line-height:1}
+.spine-pct small{font-size:12px;color:var(--mute);font-weight:400;margin-left:8px;letter-spacing:.1em}
 /* 旅程軌（＝目前「整合」這一關的逐戶進度） */
 .rail-cap{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.1em;margin:14px 2px 0}
 .rail-cap b{color:var(--strand)}
@@ -236,6 +243,34 @@ header.cmd{display:flex;justify-content:space-between;align-items:center;gap:14p
 .credits .stats b{color:var(--strand)}
 footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;display:flex;
   justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:10px;color:var(--dim)}
+
+/* ── 結算報告（③ 故事化復盤）── */
+.report{max-width:760px;width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:14px;
+  padding:26px 28px;max-height:92vh;overflow-y:auto}
+.rep-head{text-align:center;border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:18px}
+.rep-title{font-family:var(--mono);font-weight:700;font-size:clamp(30px,6vw,46px);letter-spacing:.08em;margin:10px 0 8px}
+.rep-verdict{font-family:var(--serif);font-size:15px;color:var(--mute);line-height:1.9;max-width:600px;margin:0 auto}
+.rep-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+@media(max-width:560px){.rep-stats{grid-template-columns:repeat(2,1fr)}}
+.rep-kpi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 13px;text-align:center}
+.rep-kpi .k{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:var(--mute);text-transform:uppercase}
+.rep-kpi .v{font-size:23px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:3px}
+.rep-kpi .v.win{color:var(--strand)} .rep-kpi .v.lose{color:var(--amber)}
+.rep-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+@media(max-width:640px){.rep-cols{grid-template-columns:1fr}}
+.rep-sect{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;margin-bottom:10px}
+.rep-story .beat{display:flex;gap:9px;padding:5px 0;font-size:12.5px;line-height:1.5;border-bottom:1px dashed #17202a}
+.rep-story .beat .w{font-family:var(--mono);font-size:10px;color:var(--strand);flex:none;padding-top:2px;min-width:26px}
+.rep-houses{max-height:280px;overflow-y:auto}
+.rep-houses .hrow{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:4px 0;border-bottom:1px dashed #17202a}
+.rep-houses .hrow .who{color:var(--ink)}.rep-houses .hrow .who .p{color:var(--mute);font-size:11px}
+.rep-houses .hrow .st{font-family:var(--mono);font-size:11px;flex:none}
+.rep-houses .hrow .st.ok{color:var(--strand)} .rep-houses .hrow .st.no{color:var(--amber)}
+.rep-core{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:18px}
+.rep-core .rc-row{display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0;color:var(--mute)}
+.rep-core .rc-row b{color:var(--ink);font-family:var(--mono)}
+.rep-core .src{font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-top:9px}
+.rep-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 </style>
 
 <!-- ═══ TITLE ═══ -->
@@ -294,16 +329,25 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
   </div>
 </div></div>
 
-<!-- ═══ ENDING ═══ -->
-<div class="ovl" id="ovl-end"><div class="credits fadein">
-  <div class="eyebrow" id="end-eyebrow">INTEGRATION COMPLETE</div>
-  <div class="logo-strand" style="font-size:30px" id="end-title">整合成立</div>
-  <div class="quote" id="end-quote"></div>
-  <div class="stats" id="end-stats"></div>
-  <div class="roll" id="end-roll"><div class="inner" id="end-roll-inner"></div></div>
-  <button class="btn" onclick="location.reload()">RESTART</button>
-  <span style="display:inline-block;width:10px"></span>
-  <a class="btn ghost" href="dashboard.html" style="text-decoration:none;display:inline-block">回儀表板</a>
+<!-- ═══ 結算報告（③ 故事化復盤）═══ -->
+<div class="ovl" id="ovl-end"><div class="report fadein">
+  <div class="rep-head">
+    <div class="eyebrow" id="end-eyebrow">結算報告</div>
+    <div class="rep-title" id="end-title">整合成立</div>
+    <div class="rep-verdict" id="end-quote"></div>
+  </div>
+  <div class="rep-stats" id="end-stats"></div>
+  <div class="rep-cols">
+    <div><div class="rep-sect">這一局的故事</div><div class="rep-story" id="end-story"></div></div>
+    <div><div class="rep-sect">逐戶結局</div><div class="rep-houses" id="end-houses"></div></div>
+  </div>
+  <div class="rep-sect">本方案 Core 財務結算（唯讀）</div>
+  <div class="rep-core" id="end-core"></div>
+  <div class="rep-actions">
+    <button class="btn" onclick="location.reload()">↻ 再來一局</button>
+    <button class="btn ghost" id="end-copy">⧉ 複製戰報</button>
+    <a class="btn ghost" href="dashboard.html" style="text-decoration:none;display:inline-block">回儀表板</a>
+  </div>
 </div></div>
 
 <!-- ═══ GAME（統一版面）═══ -->
@@ -315,9 +359,11 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
       <div class="res"><span class="rk">Week 時程</span>
         <div class="rv"><b class="tnum" id="m-week">1</b><span class="rs">/<span class="tnum" id="m-weeks">24</span> 週</span></div>
         <div class="rbar" id="m-weekbar"><span style="width:4%"></span></div></div>
-      <div class="res"><span class="rk">AP 行動點</span>
-        <div class="pips" id="m-ap-pips"><i></i><i></i><i></i><i></i></div>
-        <div class="rv" style="display:none"><b id="m-ap">4</b></div></div>
+      <div class="res ap"><span class="rk">AP 本週行動點</span>
+        <div class="ap-row">
+          <span class="ap-num"><span class="tnum" id="m-ap">4</span><small>/4</small></span>
+          <div class="pips" id="m-ap-pips"><i></i><i></i><i></i><i></i></div>
+        </div></div>
       <div class="res"><span class="rk">整合預算（沙盤）</span>
         <div class="rv"><b class="tnum" id="m-budget">300</b><span class="rs">萬 · 已投入 <span class="tnum" id="m-spent">0</span></span></div>
         <div class="rbar" id="m-budgetbar"><span style="width:100%"></span></div></div>
@@ -389,7 +435,7 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
    SCEN＝Core recompute 預算的 6 方案權威數字（案例D 基地，獎勵率×模式變化）——
    前端只讀；沙盤效果（trustOff/weeks）為遊戲規則表，非財務計算。 */
 const SIMCORE = (() => {
-  const AP_MAX = 4, BUDGET0 = 300, AGREE_AT = 75;
+  const AP_MAX = 4, BUDGET0 = 300, AGREE_AT = 75, BRIEF_CEIL = 60;
   const COLS = 8, ROWS = 6, N = 48, BOSS = 47;
   const FAMILY = [[36,39,44],[38,42],[40,43,46]];   // 家族連動（虛構原型）
 
@@ -507,10 +553,15 @@ const SIMCORE = (() => {
   function briefing(s){
     if(s.over||s.ap<1||s.budget<20||s.briefedWeek===s.week)return{ok:false};
     s.ap--;s.budget-=20;s.spent+=20;s.briefedWeek=s.week;s.acts++;
-    for(const u of Object.values(s.units)) if(u.consent!=="agreed"&&!u.boss)
-      {u.stance=Math.min(100,u.stance+(u.consent==="pending"?5:3));u.touched=true;_check(s,u);}
-    s.log.unshift({w:s.week,t:"🏫 說明會：把 Core 的數字攤在桌上。透明，是最便宜的誠意。"});
-    return{ok:true};
+    // 說明會＝大眾資訊場：只把「還沒暖起來」的戶暖到上限 BRIEF_CEIL(<門檻)；
+    // 不設 touched（鄰里效應需個別接觸）、不可能單靠說明會翻轉——最後一哩得逐戶傾聽。
+    let warmed=0;
+    for(const u of Object.values(s.units)) if(u.consent!=="agreed"&&!u.boss){
+      const nv=Math.min(BRIEF_CEIL,u.stance+(u.consent==="pending"?5:3));
+      if(nv>u.stance){u.stance=nv;warmed++;}
+    }
+    s.log.unshift({w:s.week,t:`🏫 說明會：把數字攤在桌上，${warmed} 戶願意多聽一點——但簽名，還得一個一個聽完。`});
+    return{ok:true,warmed};
   }
   const EVENTS={4:"comp",9:"news",14:"comp2",19:"rain"};
   function endWeek(s){
@@ -535,7 +586,7 @@ const SIMCORE = (() => {
     return ev;
   }
   return{create,listen,offer,briefing,endWeek,agreedCount,neighbors,code,pendingMilestone,
-         SCEN,TRUST_OFF,FAMILY,AP_MAX,BUDGET0,AGREE_AT,BOSS,N};
+         SCEN,TRUST_OFF,FAMILY,AP_MAX,BUDGET0,AGREE_AT,BRIEF_CEIL,BOSS,N};
 })();
 /*SIMCORE-END*/
 
@@ -713,20 +764,61 @@ $("btn-brief").onclick=()=>{SIMCORE.briefing(S);render();};
 $("btn-week").onclick=()=>{SIMCORE.endWeek(S);render();};
 
 function ending(){
-  const won=S.won, sc=S.scen, n=SIMCORE.agreedCount(S);
+  const won=S.won, sc=S.scen, n=SIMCORE.agreedCount(S), wk=Math.min(S.week,S.weeksMax);
   const 差一戶=!won&&S.cfg.mode==="weilao"&&n===S.target-1;   // ② 47/48＝歸零：全遊戲最殘酷的一格
-  $("end-eyebrow").textContent=won?"INTEGRATION COMPLETE":(差一戶?`${n}/${S.target} — 差一扇門`:"TIME OVER");
+  const modeL=S.cfg.mode==="weilao"?"危老":"都更", target=S.target;
+  $("end-eyebrow").textContent=won?"結算報告 · 整合成立":(差一戶?`結算報告 · 差一扇門`:"結算報告 · 時間到");
   $("end-title").innerHTML=won?'整合<b style="color:var(--strand)">成立</b>':(差一戶?'差<b style="color:var(--amber)">一戶</b>':'整合<b style="color:var(--amber)">破局</b>');
   $("end-quote").textContent=won
     ?(S.cfg.mode==="weilao"
-      ?"「整合完成的那一天，沒有煙火。只有四十八戶人，第一次同時點頭。」——階段推進：整合 ✓ → 事業計畫。"
-      :"「八成的門開了。剩下的人，制度會替你繼續對話。」——階段推進：整合 ✓ → 事業計畫（未同意戶進入權利變換）。")
+      ?`第 ${wk} 週，最後一扇門開了。${target} 戶第一次同時點頭——整合成立，階段推進：整合 ✓ → 事業計畫。`
+      :`八成的門開了（${n}/${48}）。剩下的人，制度會替你繼續對話——階段推進：整合 ✓ → 事業計畫，未同意戶進入權利變換。`)
     :(差一戶
-      ?`「${n} 戶點了頭。差一戶——在危老 100% 的規則裡，${n} 戶等於零戶。」你不是輸給誰，是輸給最後一扇沒開的門。回去，把那扇門聽完。`
-      :"「時間並沒有站在這條街這邊。」——還有人沒被聽見。回到規劃桌，再來一次。");
-  $("end-stats").innerHTML=`方案 <b>${S.cfg.mode==="weilao"?"危老":"都更"} × ${sc.label}</b> · 用時 <b>${Math.min(S.week,S.weeksMax)}/${S.weeksMax} 週</b> · 行動 <b>${S.acts}</b> 次 · 整合花費 <b>${S.spent} 萬</b>（沙盤）<br>本方案 Core 財務：總銷 ${n0(sc.total)} 萬 · 共負 ${pct(sc.scr)} · 分回 ${pct(sc.ratio)} · 投報 ${pct(sc.rr)}`;
-  const names=[...Array(48)].map((_,i)=>SIMCORE.code(i+1)+"　"+(S.units[i+1].persona||"住戶"));
-  $("end-roll-inner").innerHTML=["— 這條街的四十八戶 —",...names,"","GAME DESIGN · 沙盤機制（示意）","AUTHORITATIVE NUMBERS · RE-DCF CORE v0.2.0","SPECIAL THANKS · 每一位願意坐下來聽的人"].join("<br>");
+      ?`${n} 戶點了頭。差一戶——在危老 100% 的規則裡，${n} 戶等於零戶。你不是輸給誰，是輸給最後一扇沒開的門。`
+      :`時間走完了 ${S.weeksMax} 週，同意停在 ${n}/${target}。還有人沒被聽見——回到規劃桌，換個規模或模式，再來一次。`);
+
+  // 四格戰報數據
+  $("end-stats").innerHTML=[
+    ["結果", won?"成立":(差一戶?"差一戶":"破局"), won?"win":"lose"],
+    ["同意 / 目標", `${n}/${target}`, ""],
+    ["用時", `${wk}/${S.weeksMax} 週`, ""],
+    ["整合花費", `${S.spent} 萬`, ""],
+  ].map(([k,v,c])=>`<div class="rep-kpi"><div class="k">${k}</div><div class="v ${c}">${v}</div></div>`).join("");
+
+  // 這一局的故事：從行動日誌蒸餾關鍵節點（時間正序），只留「有故事的」事件
+  const 章=[...S.log].reverse().filter(l=>/[✚⌂◆⚡📰🌧]/u.test(l.t));   // u 旗標：避免代理對半字元誤配（🏫≠🌧）
+  const beats = 章.length ? 章.slice(-9) : [{w:1,t:"這一局你沒有敲任何一扇門——下次，先坐下來聽一戶說話。"}];
+  const strip=t=>t.replace(/^[✚⌂◆⚡📰🌧]\s*/u,"");
+  $("end-story").innerHTML=beats.map(l=>`<div class="beat"><span class="w">W${l.w}</span><span>${strip(l.t)}</span></div>`).join("");
+
+  // 逐戶結局：未同意戶列出（含關鍵戶），已同意收斂為一行
+  const us=Object.values(S.units), holdouts=us.filter(u=>u.consent!=="agreed");
+  let rows=`<div class="hrow"><span class="who">✓ 已同意 ${n} 戶</span><span class="st ok">整合成立</span></div>`;
+  rows+=holdouts.sort((a,b)=>(b.boss?1:0)-(a.boss?1:0)||b.stance-a.stance).map(u=>{
+    const lab=u.boss?"關鍵戶 ▲":(u.consent==="opposed"?"反對":"觀望");
+    return `<div class="hrow"><span class="who">${SIMCORE.code(u.id)} <span class="p">${u.persona}</span></span><span class="st no">${lab} · 信任 ${u.stance}</span></div>`;
+  }).join("");
+  if(!holdouts.length) rows+=`<div class="hrow"><span class="who" style="color:var(--strand)">全街點頭，無人掉隊。</span><span></span></div>`;
+  $("end-houses").innerHTML=rows;
+
+  // Core 財務結算（唯讀，權威數字）
+  $("end-core").innerHTML=`
+    <div class="rc-row"><span>方案</span><b>${modeL} × ${sc.label}（獎勵率 ${sc.bonus}）</b></div>
+    <div class="rc-row"><span>總銷</span><b>${n0(sc.total)} 萬</b></div>
+    <div class="rc-row"><span>共同負擔比</span><b>${pct(sc.scr)}</b></div>
+    <div class="rc-row"><span>地主分回比 / 投報率</span><b>${pct(sc.ratio)} / ${pct(sc.rr)}</b></div>
+    <div class="src">recompute(engine) 預算結果 · 逐戶分回/找補見開發評估儀表板（§56, schema v2.1）· 遊戲層零財務公式</div>`;
+
+  // 複製戰報（純文字，供分享/回饋）
+  $("end-copy").onclick=()=>{
+    const txt=`【整合人 THE INTEGRATOR 戰報】\n方案：${modeL}×${sc.label}｜結果：${won?"整合成立":(差一戶?"差一戶":"破局")}\n`
+      +`同意 ${n}/${target}｜用時 ${wk}/${S.weeksMax} 週｜花費 ${S.spent} 萬\n`
+      +`Core：總銷 ${n0(sc.total)}萬 · 共負 ${pct(sc.scr)} · 投報 ${pct(sc.rr)}\n`
+      +beats.map(l=>`W${l.w} ${strip(l.t)}`).join("\n");
+    navigator.clipboard?.writeText(txt).then(
+      ()=>{$("end-copy").textContent="✓ 已複製";setTimeout(()=>$("end-copy").textContent="⧉ 複製戰報",1600);},
+      ()=>{$("end-copy").textContent="（瀏覽器不支援）";});
+  };
   $("ovl-end").classList.add("show");
 }
 
