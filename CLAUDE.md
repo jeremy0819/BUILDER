@@ -4,7 +4,8 @@
 > M3 進行中（權利變換/找補）**：core 0.3.0（`rights.py` §56 逐戶分回＋找補，見 `CHANGELOG.md`）、
 > schema **v2.1**（`project_schema_v2_1.json`，owner_allocations；v1.1/v2.0/v2.1 皆凍結，Gate 6 守衛）、
 > Streamlit Tab⑤ owners CSV → 逐戶權變。**入口＝URBAN RENEWAL OS shell（`apps/web/index.html`）**；沙盤《整合人》（原 URBAN STRAND，小島簽名已移除），
-> 儀表板在 `apps/web/dashboard.html`，其他介面皆為 shell 之模組。分支 `main` 與 feature 同步推進。
+> 儀表板在 `apps/web/dashboard.html`，其他介面皆為 shell 之模組。**分支＝單線 `main`**（2026-07-13
+> 收斂完成：預設分支 main、其餘分支已刪；release 綁 tag。開發、部署、連結一律以 main 為準）。
 > 現金流結構 v1 已落地（`cashflow.py` 均勻分期＝結構示意；S 曲線/IRR＝M4 🔴）。
 > M3 待續：更新前價值係數（🔴 需使用者核准）、三態地主/選屋（見 `docs/releases/ROADMAP_M2-M8.md`）。
 > 本檔只做路由——保持 ≤150 行。

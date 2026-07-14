@@ -9,8 +9,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - release/os-v0.1.0-alpha
-      - claude/urban-renewal-os-arch-freeze-svoum0
+      - main            # 2026-07-13 分支收斂為單線 main（舊觸發分支已刪除）
     paths:
       - "apps/web/**"
       - ".github/workflows/pages.yml"
