@@ -1,0 +1,497 @@
+{
+  "schema_version": "wf-1.0",
+  "project": {
+    "project_id": "prj-cased",
+    "code_name": "案例D",
+    "case_type": "danger_building",
+    "mode": "合建",
+    "stage": "S5",
+    "stage_history": [
+      {
+        "stage": "S1",
+        "ts": "2026-03-01"
+      },
+      {
+        "stage": "S4",
+        "ts": "2026-05-10"
+      },
+      {
+        "stage": "S5",
+        "ts": "2026-06-20"
+      }
+    ],
+    "active_snapshot": "snap-01",
+    "snapshots": [
+      {
+        "id": "snap-01",
+        "label": "送審版",
+        "schema_version": "2.1",
+        "input_hash": "sha256:737dbda4cd7d863a6b4e00ecdf626c215d77ee6a08510d36a4720601a026e3be",
+        "core_version": "0.3.0",
+        "computed_at": "2026-07-01T00:00:00+00:00",
+        "file_ref": "local:v2_1_案例D_權變示範.json"
+      }
+    ]
+  },
+  "stakeholders": [
+    {
+      "stakeholder_id": "W01",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 1276.17,
+      "min_unit_eligible": true,
+      "tags": [
+        "店面"
+      ]
+    },
+    {
+      "stakeholder_id": "W02",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 1276.17,
+      "min_unit_eligible": true,
+      "tags": [
+        "店面"
+      ]
+    },
+    {
+      "stakeholder_id": "W03",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 1276.17,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W04",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 1276.17,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W05",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W06",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W07",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W08",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W09",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W10",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W11",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W12",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W13",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W14",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W15",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W16",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W17",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W18",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W19",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W20",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W21",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W22",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W23",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W24",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W25",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W26",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W27",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W28",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W29",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W30",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W31",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W32",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W33",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W34",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W35",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W36",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true,
+      "family_group": "F1"
+    },
+    {
+      "stakeholder_id": "W37",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W38",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true,
+      "family_group": "F2"
+    },
+    {
+      "stakeholder_id": "W39",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true,
+      "family_group": "F1"
+    },
+    {
+      "stakeholder_id": "W40",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true,
+      "family_group": "F3"
+    },
+    {
+      "stakeholder_id": "W41",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "W42",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true,
+      "family_group": "F2"
+    },
+    {
+      "stakeholder_id": "W43",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true,
+      "family_group": "F3"
+    },
+    {
+      "stakeholder_id": "W44",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true,
+      "family_group": "F1"
+    },
+    {
+      "stakeholder_id": "W45",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true,
+      "tags": [
+        "投資置產"
+      ]
+    },
+    {
+      "stakeholder_id": "W46",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true,
+      "family_group": "F3"
+    },
+    {
+      "stakeholder_id": "W47",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true,
+      "tags": [
+        "祖厝",
+        "關鍵戶"
+      ]
+    },
+    {
+      "stakeholder_id": "W48",
+      "role": "owner",
+      "land_share": 0.020833,
+      "pre_value": 708.98,
+      "min_unit_eligible": true
+    },
+    {
+      "stakeholder_id": "R01",
+      "role": "consultant",
+      "tags": [
+        "全案管理"
+      ]
+    },
+    {
+      "stakeholder_id": "B01",
+      "role": "bank",
+      "tags": [
+        "都更融資"
+      ]
+    }
+  ],
+  "consent_events": [
+    {
+      "event_id": "ev-0001",
+      "stakeholder_id": "W37",
+      "ts": "2026-06-25",
+      "kind": "contacted"
+    },
+    {
+      "event_id": "ev-0002",
+      "stakeholder_id": "W37",
+      "ts": "2026-07-02",
+      "kind": "visited",
+      "note": "關心分回坪數"
+    },
+    {
+      "event_id": "ev-0003",
+      "stakeholder_id": "W44",
+      "ts": "2026-07-03",
+      "kind": "verbal_ok"
+    },
+    {
+      "event_id": "ev-0004",
+      "stakeholder_id": "W44",
+      "ts": "2026-07-08",
+      "kind": "signed"
+    },
+    {
+      "event_id": "ev-0005",
+      "stakeholder_id": "W47",
+      "ts": "2026-07-05",
+      "kind": "visited",
+      "note": "祖厝，需時間"
+    },
+    {
+      "event_id": "ev-0006",
+      "stakeholder_id": "W45",
+      "ts": "2026-07-06",
+      "kind": "declined",
+      "note": "只談報酬率"
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "t-001",
+      "title": "三家估價師遴選",
+      "stage": "S7",
+      "status": "todo",
+      "due": "2026-08-01",
+      "owner_role": "consultant"
+    },
+    {
+      "task_id": "t-002",
+      "title": "公聽會通知",
+      "stage": "S5",
+      "status": "doing",
+      "due": "2026-07-20"
+    },
+    {
+      "task_id": "t-003",
+      "title": "事業計畫送審",
+      "stage": "S8",
+      "status": "blocked"
+    }
+  ],
+  "decisions": [
+    {
+      "decision_id": "d-001",
+      "ts": "2026-05-10",
+      "stage": "S4",
+      "title": "採合建模式",
+      "context": "地主不願承擔融資風險",
+      "options": [
+        "全案管理",
+        "合建"
+      ],
+      "chosen": "合建",
+      "rationale": "共負比與地主接受度權衡",
+      "consequences": "建商取得部分利益、地主省心",
+      "evidence": {
+        "input_hash": "sha256:737dbda4cd7d863a6b4e00ecdf626c215d77ee6a08510d36a4720601a026e3be",
+        "core_version": "0.3.0",
+        "result_fields_cited": [
+          "shared_cost_ratio",
+          "owner_return_ratio"
+        ]
+      }
+    }
+  ]
+}

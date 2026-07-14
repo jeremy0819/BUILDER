@@ -29,6 +29,7 @@ from core.redcf.finance import (
 from core.redcf.valuation import calc_更新前價值
 from core.redcf.rights import calc_權利變換, calc_找補, build_owner_allocations
 from core.redcf.cashflow import calc_現金流分期
+from core.redcf.workflow import validate_workflow, migrate_workflow, derive_consent_state
 from core.redcf.contract import (
     SCHEMA_VERSION, build_result_json, build_project_json,
 )
@@ -56,6 +57,8 @@ __all__ = [
     "calc_更新前價值",
     # 權利變換／找補（M3）
     "calc_權利變換", "calc_找補", "build_owner_allocations", "calc_現金流分期",
+    # 案件管理層（M3-C Workflow OS）
+    "validate_workflow", "migrate_workflow", "derive_consent_state",
     # 合約
     "SCHEMA_VERSION", "CORE_VERSION", "build_result_json", "build_project_json",
     # M2 Core Interface（四動詞 + 可重算/遷移）

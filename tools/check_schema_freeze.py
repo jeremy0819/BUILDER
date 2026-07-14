@@ -29,6 +29,8 @@ FROZEN = {
         "1d5445f8afecb6fb49276842d5022e24c1f8489f088578a7924e20630fe547f3",
     "schemas/v2/metadata.schema.json":
         "6bb6694a88f911cb9bf184e381784e821dfb97c053e400bc81c89cb25768348d",
+    "schemas/workflow_schema.json":
+        "1328690f7783b273fee6b3ebaff6fbd7c678e87deb22eb7fc0e2dda7cd5f8324",  # wf-1.0（M3-C）
 }
 
 

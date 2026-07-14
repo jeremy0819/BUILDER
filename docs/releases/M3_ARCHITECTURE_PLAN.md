@@ -251,7 +251,7 @@ CI：T1/T5 進 Gate 1（pytest）；T2/T3 進新 **Gate 7 — Workspace headless
 
 | 批 | 內容 | 驗收 |
 |---|---|---|
-| C1 | `workflow_schema.json` wf-1.0＋合成範例＋T1/T5＋Gate 6 凍結 | pytest 綠；凍結 7 檔 |
+| C1 | ✅ **完成** `workflow_schema.json` wf-1.0＋`core/redcf/workflow.py`＋合成範例＋T1/T5＋Gate 6 凍結 | pytest 61 綠；凍結 7 檔 |
 | C2 | workspace.html 骨架＋案件列表＋匯入 v2.1 建案（F1） | T6 流程 F1；Gate 4 連結 |
 | C3 | 同意看板＋事件抽屜＋狀態機純邏輯區塊（F2） | Gate 7 上線（T2/T3 綠） |
 | C4 | 時程任務＋決策紀錄（釘 input_hash）（F2/F3） | ADR evidence 可回放對應快照 |
