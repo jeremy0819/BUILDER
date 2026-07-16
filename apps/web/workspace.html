@@ -68,7 +68,13 @@ h1{font-size:21px;margin:0;letter-spacing:-.01em;font-weight:800}
 .card .ct{font-size:10.5px;font-weight:800;letter-spacing:.04em;color:var(--accent);text-transform:uppercase}
 .card .cn{font-size:17px;font-weight:750;margin:2px 0 4px}
 .card .meta{font-family:var(--mono);font-size:10.5px;color:var(--mute);word-break:break-all}
-.card .kpis{display:flex;gap:14px;flex-wrap:wrap;margin:11px 0 4px}
+/* ①決策狀態＝保留空槽（待 Decision Engine · M4；C2 不填、不推論） */
+.dslot{display:flex;align-items:center;gap:8px;margin:11px 0 2px;padding:8px 11px;border-radius:10px;
+  border:1px dashed var(--line);background:color-mix(in srgb,var(--mute) 6%,transparent);color:var(--mute);font-size:11.5px}
+.dslot .dk{font-weight:800;letter-spacing:.03em;color:var(--ink);opacity:.5}
+.dslot .dwait{margin-left:auto;font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:999px;border:1px solid var(--line)}
+.sgrp{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);opacity:.7;font-weight:700;margin:12px 0 2px}
+.card .kpis{display:flex;gap:14px;flex-wrap:wrap;margin:4px 0 4px}
 .card .kpi .k{font-size:10.5px;color:var(--mute)}
 .card .kpi .v{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
 .progress{height:8px;border-radius:999px;background:var(--line);overflow:hidden;margin:9px 0 3px;position:relative}
@@ -236,14 +242,17 @@ function caseCard(pid, rec){
   return `<div class="card">
     <div class="ct">${typ}${wf.project.mode?" · "+wf.project.mode:""}</div>
     <div class="cn">${snap.code_name}</div>
-    <div class="meta">${wf.project.stage} · ${snap.stakeholders_n} 利害關係人 · snap ${shortHash(snap.input_hash)}…@${snap.core_version}</div>
+    <div class="dslot"><span class="dk">決策狀態</span><span>待 Decision Engine 判讀</span><span class="dwait">M4</span></div>
+    <div class="sgrp">Core Output · 逐欄自 result</div>
     <div class="kpis">
       <div class="kpi"><div class="k">共負比</div><div class="v">${pct(snap.shared_cost_ratio)}</div></div>
       <div class="kpi"><div class="k">投報率</div><div class="v">${pct(snap.return_rate)}</div></div>
       <div class="kpi"><div class="k">健檢</div><div class="v">${snap.warnings_n}</div></div>
     </div>
+    <div class="sgrp">Workflow State · 事實</div>
     <div class="progress"><span style="width:${Math.min(100,ar*100)}%"></span><div class="thr" style="left:${thr*100}%"></div></div>
-    <div class="plab"><span>同意 ${snap.agreed}/${snap.total}（計數）</span><span>門檻 ${(thr*100)|0}%</span></div>
+    <div class="plab"><span>${wf.project.stage} · 同意 ${snap.agreed}/${snap.total}（計數）</span><span>門檻 ${(thr*100)|0}%</span></div>
+    <div class="meta" style="margin-top:8px">Snapshot ${shortHash(snap.input_hash)}…@${snap.core_version} · ${snap.stakeholders_n} 利害關係人</div>
     <div class="acts">
       <button class="btn sm" onclick="openCase('${pid}')">開啟</button>
       <button class="btn sm ghost" onclick="exportCase('${pid}')">匯出 wf</button>
@@ -269,7 +278,8 @@ function openCase(pid){
     <button class="btn sm ghost" onclick="renderList()">← 案件列表</button>
     <div class="detail">
       <div style="font-size:19px;font-weight:800;margin-bottom:2px">${snap.code_name}</div>
-      <div class="meta mono" style="color:var(--mute);font-size:11px;margin-bottom:14px">${wf.project.project_id} · snap ${shortHash(snap.input_hash)}…@${snap.core_version}</div>
+      <div class="meta mono" style="color:var(--mute);font-size:11px;margin-bottom:12px">${wf.project.project_id} · snap ${shortHash(snap.input_hash)}…@${snap.core_version}</div>
+      <div class="dslot" style="margin-bottom:14px"><span class="dk">決策狀態</span><span>GO / CAUTION / STOP 由 Decision Engine 產生——本頁不推論</span><span class="dwait">M4</span></div>
       <div class="spine">${spine}</div>
       <div class="tabs">
         <button class="tab on" data-t="fin">財務快照</button>
@@ -285,9 +295,9 @@ function openCase(pid){
       <div class="row"><span>同意（計數）</span><b>${snap.agreed}/${snap.total} · 門檻 ${(snap.threshold*100)|0}%</b></div>
       <div class="row"><span>健檢 warnings</span><b>${snap.warnings_n} 項</b></div>
       <div class="src">數字逐欄來自匯入 result（input_hash ${shortHash(snap.input_hash)}…）· 逐戶分回/找補見開發評估儀表板 · 本頁零計算</div></div>`,
-    board:`<div class="wip">同意看板＋事件抽屜＝ C3（狀態機純邏輯＋Gate 7 headless）。目前已載入 ${snap.stakeholders_n} 位利害關係人。</div>`,
-    task:`<div class="wip">時程任務（S1–S11）＝ C4。</div>`,
-    dec:`<div class="wip">決策紀錄（釘 input_hash 稽核鏈）＝ C4。</div>`,
+    board:`<div class="wip">同意看板＋事件抽屜＝ C3（ConsentEvent 狀態機純邏輯＋Gate 7 headless）。目前已載入 ${snap.stakeholders_n} 位利害關係人。三型分類（策略/恐懼/反對）需 stakeholder_profile schema，延 M4/M5。</div>`,
+    task:`<div class="wip">時程任務（S1–S11 里程碑/事件）＝ C4。</div>`,
+    dec:`<div class="wip">決策<b>日誌</b>＝ C4：只記錄「誰在何時做了什麼」的事實鏈（釘 input_hash 稽核），<b>非</b> GO/CAUTION/STOP 判斷——判斷屬 Decision Engine（M4）。</div>`,
   };
   $("pane").innerHTML=panes.fin;
   cv.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{

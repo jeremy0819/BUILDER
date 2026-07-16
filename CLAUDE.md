@@ -23,6 +23,9 @@
 3. 零真實案件資料進版控（段名/姓名/金額，含檔名與 commit 訊息）
 4. 改公式必跑 `pytest`，不綠不 commit
 5. `simulator.html` V4 封版，不重寫
+6. **Workspace 永不自行推論**：只呈現 Core Output／Workflow State／Decision Engine Output；
+   任何取不到的資訊（EV、GO/CAUTION/STOP、風險窗、三型分類）**不得由 UI 自算**——schema 先行。
+   每個元件先答「這是 DISPLAY 資訊，還是 ADVANCE 決策？」（見 `knowledge/00_FIRST_PRINCIPLES.md` 四題關卡）
 
 ## 路由表
 
