@@ -57,8 +57,9 @@ def migrate_workflow(doc: dict) -> dict:
 
 
 def derive_consent_state(events: list) -> str:
-    """（C3 預留）由 append-only 事件流推導單一 stakeholder 的目前同意狀態。
-    C1 僅放最小骨架供合約引用；完整五態狀態機與不變式測試在 C3 實作。"""
+    """（C3）由 append-only 事件流「重放」推導單一 stakeholder 的目前同意狀態。
+    純狀態推導、非財務公式；web 版 WORKLOGIC.deriveConsentState 為其鏡像，
+    以 test_workflow.py 與 tests/web/test_workspace.mjs 的同一組正典序列鎖住兩者一致。"""
     order = {"untouched": 0, "contacted": 1, "negotiating": 2,
              "agreed_unselected": 3, "agreed_selected": 4, "declined": 1}
     state = "untouched"

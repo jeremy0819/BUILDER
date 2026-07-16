@@ -88,6 +88,19 @@ def test_wf_同意狀態推導_sanity():
     assert derive_consent_state([]) == "untouched"
 
 
+def test_wf_同意狀態推導_與web版一致():
+    """鏡像 tests/web/test_workspace.mjs 的正典序列——鎖住 Python↔JS 狀態機不得分歧。"""
+    from core.redcf.workflow import derive_consent_state as ds
+    def E(kind, ts): return {"stakeholder_id": "W01", "kind": kind, "ts": ts}
+    assert ds([E("contacted", "1")]) == "contacted"
+    assert ds([E("briefed", "1"), E("verbal_ok", "2")]) == "agreed_unselected"
+    assert ds([E("verbal_ok", "1"), E("selected_unit", "2")]) == "agreed_selected"
+    assert ds([E("signed", "1"), E("declined", "2")]) == "declined"          # declined 覆寫
+    assert ds([E("selected_unit", "1"), E("withdrawn", "2")]) == "negotiating"  # withdrawn 覆寫
+    assert ds([E("verbal_ok", "3"), E("contacted", "1"), E("briefed", "2")]) == "agreed_unselected"  # 亂序依 ts
+    assert ds([E("contacted", "1"), E("__bogus__", "2")]) == "contacted"     # 未知 kind 忽略
+
+
 # ── 凍結守衛：wf-1.0 位元組不可變 ──
 def test_wf_凍結hash():
     import tools.check_schema_freeze as f
