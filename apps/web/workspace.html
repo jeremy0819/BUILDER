@@ -112,6 +112,20 @@ h1{font-size:21px;margin:0;letter-spacing:-.01em;font-weight:800}
 .cpill{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;border:1.5px solid}
 .bev{font-size:10.5px;color:var(--mute);margin-left:auto}
 .evk{font-size:11.5px;padding:4px 6px;border-radius:7px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+/* C4 任務／決策 */
+.tadd,.dadd{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.tadd select,.tadd input,.dadd input{font-size:12px;padding:6px 9px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.tadd input,.dadd input{flex:1;min-width:140px}
+.dlist{display:flex;flex-direction:column;gap:9px;margin-top:12px}
+.dcard{border:1px solid var(--line);border-radius:10px;padding:11px 13px;background:var(--panel)}
+.dhd{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px}
+.dhd .mono{font-size:10.5px;color:var(--mute)}
+.drow{display:flex;gap:8px;font-size:12px;color:var(--ink);margin-top:4px} .drow span{color:var(--mute);min-width:34px}
+.dev{font-size:10px;color:var(--mute)} .dcard .dev{margin-top:7px;border-top:1px solid var(--line);padding-top:6px}
+/* C5 時間軸 */
+.tllist{display:flex;flex-direction:column;gap:0;margin-top:2px;border-left:2px solid var(--line);padding-left:2px}
+.tlrow{display:flex;align-items:center;gap:9px;padding:6px 8px;font-size:12.5px}
+.tlic{width:20px;text-align:center} .tlts{font-size:10.5px;color:var(--mute);min-width:72px} .tllb{color:var(--ink)}
 footer{margin-top:30px;border-top:1px solid var(--line);padding-top:13px;font-size:11px;color:var(--mute);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
 </style>
 
@@ -134,7 +148,7 @@ footer{margin-top:30px;border-top:1px solid var(--line);padding-top:13px;font-si
 
   <div class="import" id="drop">
     <h2>＋ 新案件</h2>
-    <p>匯入一份 <b>v2.1 案件 JSON</b>（由儀表板／RE-DCF 精確計算匯出）——選擇檔案或拖放到此。</p>
+    <p>匯入 <b>v2.1 案件 JSON</b>（由儀表板／RE-DCF 計算匯出）建案或重評；或還原 <b>wf 案件包</b>（本區匯出的工作流）——選擇或拖放到此。</p>
     <button class="btn" id="pick">選擇 JSON 檔</button>
     <input type="file" id="file" accept="application/json,.json" style="display:none">
     <div class="err" id="imp-err"></div>
@@ -148,7 +162,7 @@ footer{margin-top:30px;border-top:1px solid var(--line);padding-top:13px;font-si
   <div id="case-view" style="display:none"></div>
 
   <footer>
-    <span>URBAN RENEWAL OS · WORKSPACE（C2 骨架）— 同意看板/任務/決策/多快照為 C3–C5</span>
+    <span>URBAN RENEWAL OS · WORKSPACE（M3-C 閉環）— 匯入→同意看板→任務→決策→時間軸→wf 匯出入</span>
     <span><a href="index.html">OS 主選單</a> · <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">BUILDER</a></span>
   </footer>
 </div>
@@ -246,8 +260,36 @@ const WORKLOGIC = (() => {
     rows.forEach(r => tally[r.state] = (tally[r.state]||0) + 1);
     return {rows, tally, total: rows.length};
   }
+  // ── C4 時程任務（事實層）──
+  const STAGE_TITLES = {S1:"基地權屬調查",S2:"法規容積試算",S3:"坪效量體規劃",S4:"投報財務評估",
+    S5:"說明會與意願整合",S6:"簽約",S7:"事業／權變送審",S8:"審議・公展・核定",
+    S9:"設計與發包",S10:"施工",S11:"銷售・交屋・管委會"};
+  function stageTemplate(){   // S1–S11 標準里程碑骨架（流程事實，非案件資料）
+    return Object.keys(STAGE_TITLES).map(s => ({stage:s, title:STAGE_TITLES[s], status:"todo"}));
+  }
+  function taskTally(tasks){
+    const t = {todo:0, doing:0, done:0, blocked:0};
+    (tasks||[]).forEach(x => { if(t[x.status]!=null) t[x.status]++; });
+    return t;
+  }
+  // ── C4 決策日誌：evidence 釘住當時「作準快照」的指紋（稽核鏈；不複製數字）──
+  function decisionEvidence(wf){
+    const p = wf.project || {}, snaps = p.snapshots || [];
+    const s = snaps.find(x => x.id === p.active_snapshot) || snaps[0];
+    if(!s) return null;
+    return {input_hash: s.input_hash, core_version: s.core_version};
+  }
+  // ── C5 時間軸：把階段沿革＋事件＋決策併成一條時間序（事實重放，零推論）──
+  function caseTimeline(wf){
+    const items = [];
+    (wf.project && wf.project.stage_history || []).forEach(h => items.push({ts:h.ts, type:"stage", label:"階段 "+h.stage}));
+    (wf.consent_events || []).forEach(e => items.push({ts:e.ts, type:"consent", label:e.stakeholder_id+" · "+e.kind}));
+    (wf.decisions || []).forEach(dc => items.push({ts:dc.ts, type:"decision", label:dc.title}));
+    return items.sort((a,b) => String(a.ts||"").localeCompare(String(b.ts||"")));
+  }
   return {importV21ToWorkflow, stakeholdersFromOwners, snapshotRef, projectId, displaySnapshot, 門檻,
-          deriveConsentState, consentBoard, CONSENT_STATES};
+          deriveConsentState, consentBoard, CONSENT_STATES,
+          stageTemplate, taskTally, STAGE_TITLES, decisionEvidence, caseTimeline};
 })();
 /*WORKLOGIC-END*/
 
@@ -261,14 +303,37 @@ function loadStore(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {orde
 function saveStore(s){ localStorage.setItem(KEY, JSON.stringify(s)); }
 
 function addProject(v21){
-  const wf = WORKLOGIC.importV21ToWorkflow(v21);
+  const incoming = WORKLOGIC.importV21ToWorkflow(v21);
   const snap = WORKLOGIC.displaySnapshot(v21);
-  const pid = wf.project.project_id;
+  const pid = incoming.project.project_id;
   const s = loadStore();
-  if(!s.projects[pid]) s.order.unshift(pid);
-  s.projects[pid] = {wf, snap};
+  const existing = s.projects[pid];
+  if(existing){ // 多快照重評：保留既有 workflow（事件/任務/決策/階段），新增或切換作準快照
+    const wf = existing.wf, ns = incoming.project.snapshots[0];
+    wf.project.snapshots = wf.project.snapshots || [];
+    let m = wf.project.snapshots.find(x => x.input_hash === ns.input_hash);
+    if(!m){ ns.id = "snap-" + String(wf.project.snapshots.length + 1).padStart(2,"0"); ns.label = "重評 " + ns.id;
+      wf.project.snapshots.push(ns); m = ns; }
+    wf.project.active_snapshot = m.id;
+    s.projects[pid] = {wf, snap};            // snap＝最新重評的顯示數字（舊數字留原 v2.1，不複製）
+    saveStore(s); return pid;
+  }
+  s.order.unshift(pid);
+  s.projects[pid] = {wf: incoming, snap};
   saveStore(s);
   return pid;
+}
+// wf bundle 還原（可攜性閉環）：只帶 workflow 狀態，財務數字仍留在原 v2.1（SSOT）
+function importWfBundle(wf){
+  if(!wf.project || !wf.project.project_id) throw new Error("非有效 wf-1.0 檔（缺 project）");
+  const p = wf.project, sn = (p.snapshots||[]).find(x => x.id === p.active_snapshot) || (p.snapshots||[])[0] || {};
+  const owners = (wf.stakeholders||[]).filter(s => s.role === "owner");
+  const snap = {code_name:p.code_name||"未命名", case_type:p.case_type||"urban_renewal", stakeholders_n:owners.length,
+    input_hash:sn.input_hash||"", core_version:sn.core_version||"", computed_at:sn.computed_at||"",
+    shared_cost_ratio:null, return_rate:null, warnings_n:0, agreed:0, total:owners.length,
+    threshold:WORKLOGIC.門檻(p.case_type), detached:true};
+  const s = loadStore(); if(!s.projects[p.project_id]) s.order.unshift(p.project_id);
+  s.projects[p.project_id] = {wf, snap}; saveStore(s); return p.project_id;
 }
 function delProject(pid){
   const s = loadStore();
@@ -326,6 +391,7 @@ function openCase(pid){
         <button class="tab" data-t="board">同意看板</button>
         <button class="tab" data-t="task">時程任務</button>
         <button class="tab" data-t="dec">決策紀錄</button>
+        <button class="tab" data-t="time">時間軸</button>
       </div>
       <div class="tabpane" id="pane"></div>
     </div>`;
@@ -334,16 +400,103 @@ function openCase(pid){
       <div class="row"><span>投報率</span><b>${pct(snap.return_rate)}</b></div>
       <div class="row"><span>同意（計數）</span><b>${snap.agreed}/${snap.total} · 門檻 ${(snap.threshold*100)|0}%</b></div>
       <div class="row"><span>健檢 warnings</span><b>${snap.warnings_n} 項</b></div>
-      <div class="src">數字逐欄來自匯入 result（input_hash ${shortHash(snap.input_hash)}…）· 逐戶分回/找補見開發評估儀表板 · 本頁零計算</div></div>`,
-    task:`<div class="wip">時程任務（S1–S11 里程碑/事件）＝ C4。</div>`,
-    dec:`<div class="wip">決策<b>日誌</b>＝ C4：只記錄「誰在何時做了什麼」的事實鏈（釘 input_hash 稽核），<b>非</b> GO/CAUTION/STOP 判斷——判斷屬 Decision Engine（M4）。</div>`,
+      <div class="src">${snap.detached?'⚠️ 此案由 wf bundle 還原，財務數字留在原 v2.1（SSOT 不複製）——重新匯入對應 v2.1 即補回。':`數字逐欄來自匯入 result（input_hash ${shortHash(snap.input_hash)}…）· 逐戶分回/找補見開發評估儀表板 · 本頁零計算`}</div></div>`,
   };
   $("pane").innerHTML=panes.fin;
+  const R={board:renderBoard, task:renderTasks, dec:renderDecisions, time:renderTimeline};
   cv.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
     cv.querySelectorAll(".tab").forEach(x=>x.classList.remove("on")); b.classList.add("on");
-    if(b.dataset.t==="board") renderBoard(pid); else $("pane").innerHTML=panes[b.dataset.t];
+    if(R[b.dataset.t]) R[b.dataset.t](pid); else $("pane").innerHTML=panes[b.dataset.t];
   });
 }
+// ── C4 時程任務（事實層：S1–S11 里程碑；狀態＝事實，不推論）──
+const TASK_ST=[["todo","待辦"],["doing","進行"],["done","完成"],["blocked","卡住"]];
+const TASK_LABEL=Object.fromEntries(TASK_ST); const TASK_COLOR={todo:"var(--mute)",doing:"var(--info)",done:"var(--ok)",blocked:"var(--err)"};
+function renderTasks(pid){
+  const rec=loadStore().projects[pid]; if(!rec) return; const wf=rec.wf;
+  const tasks=wf.tasks||[], tl=WORKLOGIC.taskTally(tasks);
+  const tallyHTML=TASK_ST.map(([k,l])=>`<span class="cstat"><i style="background:${TASK_COLOR[k]}"></i>${l} <b>${tl[k]}</b></span>`).join("");
+  const rowsHTML=tasks.length?tasks.slice().sort((a,b)=>a.stage.localeCompare(b.stage,undefined,{numeric:true})).map(t=>`<div class="brow">
+      <span class="bid mono">${t.stage}</span><span style="flex:1;font-size:12.5px">${t.title}</span>
+      <button class="cpill tglt" data-tid="${t.task_id}" style="color:${TASK_COLOR[t.status]};border-color:${TASK_COLOR[t.status]};cursor:pointer">${TASK_LABEL[t.status]}</button>
+    </div>`).join(""):`<div class="wip">尚無任務——可帶入 S1–S11 里程碑範本，或手動新增。</div>`;
+  $("pane").innerHTML=`<div class="board">
+    <div class="btally">${tallyHTML}<span class="cstat" style="margin-left:auto">共 <b>${tasks.length}</b> 項</span></div>
+    <div class="tadd">
+      <select id="tstage">${Object.keys(WORKLOGIC.STAGE_TITLES).map(s=>`<option value="${s}">${s} ${WORKLOGIC.STAGE_TITLES[s]}</option>`).join("")}</select>
+      <input id="ttitle" placeholder="任務標題（事實，不含真實資料）" maxlength="60">
+      <button class="btn sm" id="taddbtn">新增</button>
+      ${tasks.length?"":'<button class="btn sm ghost" id="tseed">帶入 S1–S11 範本</button>'}
+    </div>
+    <div class="brows" style="margin-top:12px">${rowsHTML}</div>
+    <div class="fin src">狀態＝人工登錄的事實（待辦/進行/完成/卡住），非系統推論。點狀態徽章循環切換。</div>
+  </div>`;
+  $("taddbtn").onclick=()=>{const t=$("ttitle").value.trim(); if(!t)return; addTask(pid,$("tstage").value,t); renderTasks(pid);};
+  const seed=$("tseed"); if(seed) seed.onclick=()=>{seedTasks(pid); renderTasks(pid);};
+  $("pane").querySelectorAll(".tglt").forEach(b=>b.onclick=()=>{cycleTask(pid,b.dataset.tid); renderTasks(pid);});
+}
+function addTask(pid,stage,title){const s=loadStore(),rec=s.projects[pid];if(!rec)return;
+  rec.wf.tasks=rec.wf.tasks||[]; rec.wf.tasks.push({task_id:"tk-"+Date.now().toString(36),stage,title,status:"todo"}); saveStore(s);}
+function seedTasks(pid){const s=loadStore(),rec=s.projects[pid];if(!rec)return;
+  rec.wf.tasks=WORKLOGIC.stageTemplate().map((t,i)=>({task_id:"tk-seed-"+(i+1),...t})); saveStore(s);}
+function cycleTask(pid,tid){const s=loadStore(),rec=s.projects[pid];if(!rec)return;
+  const order=["todo","doing","done","blocked"]; const t=(rec.wf.tasks||[]).find(x=>x.task_id===tid); if(!t)return;
+  t.status=order[(order.indexOf(t.status)+1)%order.length]; saveStore(s);}
+// ── C4 決策日誌（append-only ADR；evidence 釘作準快照指紋，非 GO/CAUTION/STOP）──
+function renderDecisions(pid){
+  const rec=loadStore().projects[pid]; if(!rec) return; const wf=rec.wf;
+  const ds=(wf.decisions||[]).slice().reverse(); const ev=WORKLOGIC.decisionEvidence(wf);
+  const listHTML=ds.length?ds.map(d=>`<div class="dcard">
+      <div class="dhd"><b>${d.title}</b><span class="mono">${(d.ts||"").slice(0,10)}</span></div>
+      ${d.chosen?`<div class="drow"><span>採取</span>${d.chosen}</div>`:""}
+      ${d.rationale?`<div class="drow"><span>理由</span>${d.rationale}</div>`:""}
+      <div class="dev mono">evidence · ${shortHash(d.evidence&&d.evidence.input_hash)}…@${d.evidence&&d.evidence.core_version||"—"}</div>
+    </div>`).join(""):`<div class="wip">尚無決策紀錄。這裡記錄 ADR 式決策日誌，自動釘住作準計算快照指紋供回放稽核——<b>非</b> GO/CAUTION/STOP 判斷（判斷屬 Decision Engine · M4）。</div>`;
+  $("pane").innerHTML=`<div class="board">
+    <div class="dadd">
+      <input id="dttl" placeholder="決策標題（如：採限時簽約窗口）" maxlength="60">
+      <input id="dchosen" placeholder="採取的方案" maxlength="60">
+      <input id="drat" placeholder="理由（可選）" maxlength="120">
+      <button class="btn sm" id="daddbtn">記錄決策</button>
+    </div>
+    <div class="dev mono" style="margin:8px 2px 0">將釘住作準快照：${ev?shortHash(ev.input_hash)+"…@"+ev.core_version:"（無快照）"}</div>
+    <div class="dlist">${listHTML}</div>
+  </div>`;
+  $("daddbtn").onclick=()=>{const t=$("dttl").value.trim(); if(!t)return;
+    addDecision(pid,t,$("dchosen").value.trim(),$("drat").value.trim()); renderDecisions(pid);};
+}
+function addDecision(pid,title,chosen,rationale){const s=loadStore(),rec=s.projects[pid];if(!rec)return;
+  rec.wf.decisions=rec.wf.decisions||[];
+  const ev=WORKLOGIC.decisionEvidence(rec.wf);
+  rec.wf.decisions.push({decision_id:"dc-"+Date.now().toString(36),ts:new Date().toISOString(),
+    title,chosen:chosen||"（未填）",...(rationale?{rationale}:{}),...(ev?{evidence:ev}:{})}); saveStore(s);}
+// ── C5 時間軸＋階段推進＋多快照（案件時間序＝事實重放）──
+const TL_ICON={stage:"🚩",consent:"🤝",decision:"⚖️"};
+function renderTimeline(pid){
+  const rec=loadStore().projects[pid]; if(!rec) return; const wf=rec.wf, p=wf.project;
+  const tl=WORKLOGIC.caseTimeline(wf), snaps=p.snapshots||[];
+  const cur=parseInt((p.stage||"S1").slice(1))||1, canAdv=cur<11;
+  const snapHTML=snaps.map(sn=>`<div class="brow"><span class="bid mono">${sn.id}</span>
+      <span style="flex:1;font-size:11.5px" class="mono">${shortHash(sn.input_hash)}…@${sn.core_version}${sn.id===p.active_snapshot?' <b style="color:var(--accent)">· 作準</b>':''}</span>
+      <span class="bev">${(sn.computed_at||"").slice(0,10)}</span></div>`).join("");
+  const tlHTML=tl.length?tl.slice().reverse().map(it=>`<div class="tlrow"><span class="tlic">${TL_ICON[it.type]||"•"}</span>
+      <span class="tlts mono">${(it.ts||"").slice(0,10)}</span><span class="tllb">${it.label}</span></div>`).join(""):`<div class="wip">尚無時間軸事件——推進階段、記錄同意事件或決策後即出現。</div>`;
+  $("pane").innerHTML=`<div class="board">
+    <div class="btally"><span class="cstat">目前階段 <b>${p.stage} ${WORKLOGIC.STAGE_TITLES[p.stage]||""}</b></span>
+      <button class="btn sm ${canAdv?'':'ghost'}" id="advbtn" ${canAdv?'':'disabled'} style="margin-left:auto">${canAdv?'推進到 S'+(cur+1):'已達 S11'}</button></div>
+    <div class="sgrp" style="margin-top:14px">計算快照（多版重評；只存指紋，不複製數字）</div>
+    <div class="brows">${snapHTML}</div>
+    <div class="sgrp" style="margin-top:14px">案件時間軸（階段／同意／決策，依時序重放）</div>
+    <div class="tllist">${tlHTML}</div>
+    <div class="fin src">時間軸＝三源事實（stage_history／consent_events／decisions）依 ts 合併——零推論。多份 v2.1 重覆匯入同案＝新增快照版本。</div>
+  </div>`;
+  const adv=$("advbtn"); if(adv&&canAdv) adv.onclick=()=>{advanceStage(pid); renderTimeline(pid);};
+}
+function advanceStage(pid){const s=loadStore(),rec=s.projects[pid];if(!rec)return; const p=rec.wf.project;
+  const cur=parseInt((p.stage||"S1").slice(1))||1; if(cur>=11)return;
+  p.stage="S"+(cur+1); p.stage_history=p.stage_history||[]; p.stage_history.push({stage:p.stage,ts:new Date().toISOString()}); saveStore(s);
+  // 同步 detail 頁 spine
+  const now=cur; const sts=document.querySelectorAll(".spine .st"); sts.forEach((el,i)=>el.classList.toggle("now",i===Math.min(now,sts.length-1)));}
 // ── C3 同意看板（事實層：事件重放推導狀態；不推論、不判斷）──
 const CS_LABEL={untouched:"未接觸",contacted:"已接觸",negotiating:"協商中",agreed_unselected:"同意·未選屋",agreed_selected:"同意·已選屋",declined:"反對"};
 const CS_COLOR={untouched:"var(--mute)",contacted:"var(--info)",negotiating:"var(--warn)",agreed_unselected:"var(--ok)",agreed_selected:"var(--ok)",declined:"var(--err)"};
@@ -388,8 +541,9 @@ function handleFile(f){
   $("imp-err").textContent="";
   const rd=new FileReader();
   rd.onload=()=>{ try{
-    const v21=JSON.parse(rd.result);
-    const pid=addProject(v21); renderList();
+    const doc=JSON.parse(rd.result);
+    const pid=(doc && doc.schema_version==="wf-1.0") ? importWfBundle(doc) : addProject(doc);
+    renderList();
     const el=document.querySelector(".cases .card"); if(el){el.style.outline="2px solid var(--accent)";setTimeout(()=>el.style.outline="",1200);}
   }catch(e){ $("imp-err").textContent="匯入失敗："+e.message; } };
   rd.onerror=()=>{ $("imp-err").textContent="讀檔失敗"; };

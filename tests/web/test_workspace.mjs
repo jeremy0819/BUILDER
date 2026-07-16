@@ -77,5 +77,25 @@ ok(board.rows.find(r=>r.stakeholder_id===wf2.stakeholders[0].stakeholder_id).sta
 ok(board.rows.find(r=>r.stakeholder_id===wf2.stakeholders[1].stakeholder_id).state === "declined", "第2戶 declined→declined");
 ok(WL.consentBoard(WL.importV21ToWorkflow(v21)).tally.untouched === wf2.stakeholders.filter(s=>s.role==="owner").length, "無事件時全員 untouched（不繼承匯入計數）");
 
-console.log(`\nWORKSPACE C2+C3 headless：${pass} passed, ${fail} failed`);
+// ── 8. C4 時程任務 ──
+const tmpl = WL.stageTemplate();
+ok(tmpl.length === 11, "stageTemplate＝S1–S11 共 11 項");
+ok(tmpl.every(t => /^S([1-9]|1[01])$/.test(t.stage) && t.status === "todo" && t.title), "範本每項 stage 合法＋todo＋有標題");
+ok(WL.taskTally([{status:"todo"},{status:"done"},{status:"done"},{status:"blocked"}]).done === 2, "taskTally 計數正確（非公式）");
+
+// ── 9. C4 決策 evidence＝釘作準快照（非臆造）──
+const ev = WL.decisionEvidence(wf);
+ok(ev && ev.input_hash === wf.project.snapshots[0].input_hash, "decisionEvidence 釘 active snapshot 的 input_hash");
+ok(WL.decisionEvidence({project:{snapshots:[]}}) === null, "無快照→evidence null（不臆造）");
+
+// ── 10. C5 時間軸：合併階段/事件/決策並依 ts 排序 ──
+const wf3 = WL.importV21ToWorkflow(v21);
+wf3.project.stage_history = [{stage:"S1", ts:"2"}];
+wf3.consent_events = [{event_id:"e", stakeholder_id:"W01", ts:"1", kind:"contacted"}];
+wf3.decisions = [{decision_id:"d", ts:"3", title:"簽約窗口", chosen:"限時"}];
+const tln = WL.caseTimeline(wf3);
+ok(tln.length === 3 && tln[0].ts === "1" && tln[2].ts === "3", "caseTimeline 併三源並依 ts 排序");
+ok(tln.map(x=>x.type).sort().join(",") === "consent,decision,stage", "時間軸涵蓋 stage/consent/decision 三型");
+
+console.log(`\nWORKSPACE C2–C5 headless：${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
