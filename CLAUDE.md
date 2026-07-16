@@ -28,6 +28,7 @@
 
 | 要做的事 | 讀哪份 |
 |---|---|
+| 產品第一性原理／四層決策框架／新頁面關卡 | `knowledge/00_FIRST_PRINCIPLES.md`（決策脊椎；每新增頁面前必過四題關卡） |
 | 派 subagent／選模型／驗收產出 | `governance/MODEL_DISPATCH.md`、`governance/TASK_TEMPLATES.md` |
 | 判斷「該不該／算不算完成／要不要問」 | `governance/JUDGMENT_RUBRICS.md` |
 | 改檔案前查權限（🟢🟡🔴） | `governance/MAINTENANCE.md` |
