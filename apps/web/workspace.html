@@ -380,7 +380,10 @@ function openCase(pid){
   $("list-view").style.display="none";
   const cv=$("case-view"); cv.style.display="";
   cv.innerHTML=`
-    <button class="btn sm ghost" onclick="renderList()">← 案件列表</button>
+    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn sm ghost" onclick="renderList()">← 案件列表</button>
+      <button class="btn sm" onclick="toSandbox('${pid}')">🕹️ 帶入沙盤推演</button>
+    </div>
     <div class="detail">
       <div style="font-size:19px;font-weight:800;margin-bottom:2px">${snap.code_name}</div>
       <div class="meta mono" style="color:var(--mute);font-size:11px;margin-bottom:12px">${wf.project.project_id} · snap ${shortHash(snap.input_hash)}…@${snap.core_version}</div>
@@ -529,6 +532,15 @@ function addConsentEvent(pid,sid,kind,note){
   rec.wf.consent_events.push({event_id:"ev-"+Date.now().toString(36),stakeholder_id:sid,
     ts:new Date().toISOString(),kind,...(note?{note}:{}),by:"local"});
   saveStore(s);
+}
+// ── C6 沙盤橋接：把案件「事實」帶入《整合人》沙盤當背景（只搬狀態，不搬判斷）──
+function toSandbox(pid){
+  const rec=loadStore().projects[pid]; if(!rec) return; const {wf,snap}=rec;
+  const bridge={source:"workspace", project_id:wf.project.project_id, code_name:snap.code_name,
+    case_type:snap.case_type, owners_n:snap.stakeholders_n, agreed:snap.agreed, total:snap.total,
+    stage:wf.project.stage, ts:new Date().toISOString()};
+  localStorage.setItem("uros.bridge.case", JSON.stringify(bridge));
+  location.href="os-simulator.html";
 }
 function removeCase(pid){ if(confirm("刪除此案件？（僅移除本機紀錄，不影響匯入的原始 JSON）")){ delProject(pid); renderList(); } }
 function exportCase(pid){

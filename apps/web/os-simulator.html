@@ -293,6 +293,7 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
 <div class="ovl" id="ovl-plan"><div class="plan-box fadein">
   <h2>PLAN PHASE — 建築規劃</h2>
   <div class="sub">同一塊基地、同一套 Core 公式：你的規模與模式決定共負比，共負比決定這場整合有多難。</div>
+  <div id="bridge-banner" style="display:none"></div>
   <div class="plan-lab">① 開發模式</div>
   <div class="optrow two" id="opt-mode"></div>
   <div class="plan-lab">② 建築規模（獎勵率＝輸入參數；各方案財務為 Core 重算結果）</div>
@@ -822,9 +823,24 @@ function ending(){
   $("ovl-end").classList.add("show");
 }
 
+/* ── C6 沙盤橋接：讀工作區帶入的案件「事實」，預選模式＋顯示背景（不搬判斷）── */
+function applyBridge(){
+  let b=null; try{ b=JSON.parse(localStorage.getItem("uros.bridge.case")||"null"); }catch(e){}
+  const el=$("bridge-banner"); if(!el) return;
+  if(!b){ el.style.display="none"; return; }
+  plan.mode = b.case_type==="danger_building" ? "weilao" : "duegeng";  // 帶入案件類型（事實）
+  syncPlan();
+  el.style.display="block";
+  el.style.cssText="display:block;margin:12px 0 4px;padding:10px 13px;border:1px solid var(--strand);"+
+    "border-radius:9px;background:rgba(120,120,255,.06);font-size:12px;line-height:1.6";
+  el.innerHTML=`🗂️ 以工作區案件 <b>${b.code_name||"案件"}</b> 為背景（地主 ${b.owners_n||"—"} 戶 · 同意 ${b.agreed||0}/${b.total||"—"} · 階段 ${b.stage||"—"}）`+
+    `<br><span style="color:var(--dim);font-size:10.5px">已依案件類型預選「${b.case_type==="danger_building"?"危老重建":"都更・合建"}」。沙盤只帶入案件事實作背景，推演結果不回寫案件（只搬狀態、不搬判斷）。逐戶矩陣依案件戶數＝B 系列。</span>`+
+    `<br><a href="#" id="bridge-clear" style="color:var(--dim);font-size:10.5px">✕ 清除背景，改用預設情境</a>`;
+  const clr=$("bridge-clear"); if(clr) clr.onclick=e=>{e.preventDefault();localStorage.removeItem("uros.bridge.case");plan.mode=null;syncPlan();el.style.display="none";};
+}
 $("btn-start").onclick=()=>{
   $("ovl-title").classList.remove("show");
-  renderPlan(); $("ovl-plan").classList.add("show");
+  renderPlan(); applyBridge(); $("ovl-plan").classList.add("show");
 };
 $("btn-plan-go").onclick=()=>{
   $("ovl-plan").classList.remove("show");
