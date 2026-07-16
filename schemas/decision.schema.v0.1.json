@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urban-renewal-os/decision.schema.v0.1.json",
+  "title": "Decision Engine Output v0.1",
+  "description": "M4 決策引擎輸出契約（DECISION_ENGINE_SPEC §7）。引擎只消費 Core result＋Workflow state，產出即權威；UI 只呈現本 JSON、不得自行推導。存活率/假設皆為可校準預設（modeling assumptions），非定論。",
+  "type": "object",
+  "required": [
+    "decision_engine_version", "input_hash", "verdict", "breakpoint_stakeholder",
+    "completion_probability", "T_remaining_yr", "ev", "exit_signal",
+    "sunk_cost_excluded", "decision_urgency", "assumptions", "modeling_assumption"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "decision_engine_version": { "type": "string" },
+    "input_hash": {
+      "type": "string", "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "指回本決策消費的 Core result 版本（可溯源鐵律）"
+    },
+    "verdict": { "type": "string", "enum": ["GO", "CAUTION", "STOP"] },
+    "breakpoint_stakeholder": {
+      "type": ["string", "null"], "enum": ["地主", "實施者", "我方", null],
+      "description": "EV 為負（或≈0）的一方＝破局引爆點；無則 null"
+    },
+    "completion_probability": { "type": "number", "minimum": 0, "maximum": 1 },
+    "T_remaining_yr": { "type": "number", "minimum": 0 },
+    "ev": {
+      "type": "object",
+      "required": ["地主", "實施者", "我方"],
+      "additionalProperties": false,
+      "properties": {
+        "地主":   { "$ref": "#/$defs/ev_entry" },
+        "實施者": { "$ref": "#/$defs/ev_entry" },
+        "我方":   { "$ref": "#/$defs/ev_entry" }
+      }
+    },
+    "exit_signal": { "type": "boolean" },
+    "sunk_cost_excluded": {
+      "const": true,
+      "description": "沉沒成本防火牆：已投入成本不得進入 exit 決策式（案例B原型教訓）"
+    },
+    "decision_urgency": { "type": "number", "minimum": 0, "maximum": 1 },
+    "assumptions": {
+      "type": "object",
+      "description": "本次判定使用的可校準假設（r/g/status_quo_baseline 等），全數揭露供稽核",
+      "required": ["r", "g", "status_quo_baseline"],
+      "properties": {
+        "r": { "type": "number" },
+        "g": { "type": "number" },
+        "status_quo_baseline": { "type": "string" }
+      }
+    },
+    "modeling_assumption": {
+      "type": "string",
+      "description": "標記本輸出依賴的建模選擇（如 status_quo_baseline），允許之後替換"
+    },
+    "insufficient_fields": {
+      "type": "array", "items": { "type": "string" },
+      "description": "Core result 缺欄清單——缺欄一律標記，不得由引擎補算（§1）"
+    },
+    "notes": { "type": "array", "items": { "type": "string" } }
+  },
+  "$defs": {
+    "ev_entry": {
+      "type": "object",
+      "required": ["nominal", "ev", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "nominal": { "type": ["number", "null"] },
+        "ev": { "type": ["number", "null"] },
+        "status": { "type": "string", "enum": ["ok", "insufficient_data"] }
+      }
+    }
+  }
+}

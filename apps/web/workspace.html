@@ -289,9 +289,14 @@ const WORKLOGIC = (() => {
     (wf.decisions || []).forEach(dc => items.push({ts:dc.ts, type:"decision", label:dc.title}));
     return items.sort((a,b) => String(a.ts||"").localeCompare(String(b.ts||"")));
   }
+  // ── M4：decision JSON 呈現（引擎產出即權威；本層只配對＋逐欄顯示，零推導）──
+  function matchDecision(wf, decision){
+    if(!decision || !decision.decision_engine_version || !decision.input_hash) return false;
+    return ((wf.project && wf.project.snapshots) || []).some(s => s.input_hash === decision.input_hash);
+  }
   return {importV21ToWorkflow, stakeholdersFromOwners, snapshotRef, projectId, displaySnapshot, 門檻,
           deriveConsentState, consentBoard, CONSENT_STATES,
-          stageTemplate, taskTally, STAGE_TITLES, decisionEvidence, caseTimeline};
+          stageTemplate, taskTally, STAGE_TITLES, decisionEvidence, caseTimeline, matchDecision};
 })();
 /*WORKLOGIC-END*/
 
@@ -325,6 +330,13 @@ function addProject(v21){
   saveStore(s);
   return pid;
 }
+// M4：掛 decision JSON——以 input_hash 配對案件快照（可溯源鐵律）；配不上＝拒收不臆造
+function attachDecision(dec){
+  const s=loadStore();
+  const pid=s.order.find(p=>WORKLOGIC.matchDecision(s.projects[p].wf, dec));
+  if(!pid) throw new Error("decision 的 input_hash 對不上任何案件快照（不得掛錯案）");
+  s.projects[pid].decision=dec; saveStore(s); return pid;
+}
 // wf bundle 還原（可攜性閉環）：只帶 workflow 狀態，財務數字仍留在原 v2.1（SSOT）
 function importWfBundle(wf){
   if(!wf.project || !wf.project.project_id) throw new Error("非有效 wf-1.0 檔（缺 project）");
@@ -342,6 +354,17 @@ function delProject(pid){
   delete s.projects[pid]; s.order = s.order.filter(x=>x!==pid); saveStore(s);
 }
 
+// 決策槽：有 decision JSON＝逐欄呈現（引擎權威）；無＝空槽待判讀。本層零推導。
+const V_CLS={GO:"ok",CAUTION:"warn",STOP:"err"};
+function dslotHTML(dec){
+  if(!dec) return `<div class="dslot"><span class="dk">決策狀態</span><span>待 Decision Engine 判讀</span><span class="dwait">M4</span></div>`;
+  const bp=dec.breakpoint_stakeholder?` · 引爆點 ${dec.breakpoint_stakeholder}`:"";
+  const ex=dec.exit_signal?` · <b style="color:var(--err)">EXIT</b>`:"";
+  return `<div class="dslot decided"><span class="dk">決策狀態</span>
+    <b class="dv" style="color:var(--${V_CLS[dec.verdict]})">${dec.verdict}</b>
+    <span>完工機率 ${(dec.completion_probability*100).toFixed(0)}%${bp}${ex} · 急迫 ${dec.decision_urgency}</span>
+    <span class="dwait">DE ${dec.decision_engine_version}</span></div>`;
+}
 function caseCard(pid, rec){
   const {wf, snap} = rec;
   const typ = snap.case_type==="danger_building" ? "危老重建" : "都市更新";
@@ -349,7 +372,7 @@ function caseCard(pid, rec){
   return `<div class="card">
     <div class="ct">${typ}${wf.project.mode?" · "+wf.project.mode:""}</div>
     <div class="cn">${snap.code_name}</div>
-    <div class="dslot"><span class="dk">決策狀態</span><span>待 Decision Engine 判讀</span><span class="dwait">M4</span></div>
+    ${dslotHTML(rec.decision)}
     <div class="sgrp">Core Output · 逐欄自 result</div>
     <div class="kpis">
       <div class="kpi"><div class="k">共負比</div><div class="v">${pct(snap.shared_cost_ratio)}</div></div>
@@ -369,8 +392,14 @@ function caseCard(pid, rec){
 function renderList(){
   const s = loadStore();
   $("case-view").style.display="none"; $("list-view").style.display="";
-  $("cases").innerHTML = s.order.length
-    ? s.order.map(pid => caseCard(pid, s.projects[pid])).join("")
+  // §6：有 decision 的案件依引擎 urgency 排序（引擎輸出鍵，非 UI 自算）；其餘維持匯入序
+  const order = s.order.slice().sort((a,b)=>{
+    const ua=s.projects[a]?.decision?.decision_urgency, ub=s.projects[b]?.decision?.decision_urgency;
+    if(ua!=null&&ub!=null) return ub-ua;
+    if(ua!=null) return -1; if(ub!=null) return 1; return 0;
+  });
+  $("cases").innerHTML = order.length
+    ? order.map(pid => caseCard(pid, s.projects[pid])).join("")
     : `<div class="empty">尚無案件——匯入一份 v2.1 案件 JSON 開始。<br><span style="font-size:11.5px">（可用 schemas/examples/v2/v2_1_案例D_權變示範.json 測試）</span></div>`;
 }
 const PH=["前期評估","整合","事業計畫","審議","權利變換","拆除開工"];
@@ -389,7 +418,7 @@ function openCase(pid){
     <div class="detail">
       <div style="font-size:19px;font-weight:800;margin-bottom:2px">${snap.code_name}</div>
       <div class="meta mono" style="color:var(--mute);font-size:11px;margin-bottom:12px">${wf.project.project_id} · snap ${shortHash(snap.input_hash)}…@${snap.core_version}</div>
-      <div class="dslot" style="margin-bottom:14px"><span class="dk">決策狀態</span><span>GO / CAUTION / STOP 由 Decision Engine 產生——本頁不推論</span><span class="dwait">M4</span></div>
+      ${rec.decision?dslotHTML(rec.decision).replace('class="dslot decided"','class="dslot decided" style="margin-bottom:14px"'):`<div class="dslot" style="margin-bottom:14px"><span class="dk">決策狀態</span><span>GO / CAUTION / STOP 由 Decision Engine 產生——本頁不推論（匯入 decision JSON 即顯示）</span><span class="dwait">M4</span></div>`}
       <div class="spine">${spine}</div>
       <div class="tabs">
         <button class="tab on" data-t="fin">財務快照</button>
@@ -565,7 +594,8 @@ function handleFile(f){
   const rd=new FileReader();
   rd.onload=()=>{ try{
     const doc=JSON.parse(rd.result);
-    const pid=(doc && doc.schema_version==="wf-1.0") ? importWfBundle(doc) : addProject(doc);
+    const pid=(doc && doc.decision_engine_version) ? attachDecision(doc)
+            : (doc && doc.schema_version==="wf-1.0") ? importWfBundle(doc) : addProject(doc);
     renderList();
     const el=document.querySelector(".cases .card"); if(el){el.style.outline="2px solid var(--accent)";setTimeout(()=>el.style.outline="",1200);}
   }catch(e){ $("imp-err").textContent="匯入失敗："+e.message; } };

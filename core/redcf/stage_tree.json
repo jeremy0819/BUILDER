@@ -1,0 +1,18 @@
+{
+  "_note": "完工機率階段樹（DECISION_ENGINE_SPEC §2）。存活率為【示意預設】，須以真實案例本地校準（/local_calibration/，不進版控）後才可用於真實判斷。",
+  "stage_tree": [
+    {"id":"T1","name":"整合達門檻","p_survival":0.65,"duration_yr":2.0,"risk":"holdout（最大過濾器）"},
+    {"id":"T2","name":"報核（事業+權變）","p_survival":0.85,"duration_yr":0.5,"risk":"文件/選配爭議"},
+    {"id":"T3","name":"審議核定","p_survival":0.80,"duration_yr":3.0,"risk":"陳情/訴訟"},
+    {"id":"T4","name":"融資到位","p_survival":0.92,"duration_yr":0.5,"risk":"核貸不足"},
+    {"id":"T5","name":"建照","p_survival":0.95,"duration_yr":0.5,"risk":"圖審"},
+    {"id":"T6","name":"開工","p_survival":0.95,"duration_yr":0.3,"risk":"拆除/騰空"},
+    {"id":"T7","name":"完工","p_survival":0.85,"duration_yr":3.5,"risk":"營造/財務/爛尾（資本額）"},
+    {"id":"T8","name":"交屋結算","p_survival":0.95,"duration_yr":0.5,"risk":"找補/登記"}
+  ],
+  "wf_stage_map": {
+    "_note": "Workflow S1–S11 → 階段樹起算點（可校準的對映假設）",
+    "S1":"T1","S2":"T1","S3":"T1","S4":"T1","S5":"T1","S6":"T2",
+    "S7":"T2","S8":"T3","S9":"T5","S10":"T7","S11":"T8"
+  }
+}

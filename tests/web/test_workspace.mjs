@@ -102,5 +102,12 @@ const tln = WL.caseTimeline(wf3);
 ok(tln.length === 3 && tln[0].ts === "1" && tln[2].ts === "3", "caseTimeline 併三源並依 ts 排序");
 ok(tln.map(x=>x.type).sort().join(",") === "consent,decision,stage", "時間軸涵蓋 stage/consent/decision 三型");
 
+// ── 11. M4：decision JSON 配對（input_hash 可溯源；配不上不掛）──
+const decGood = {decision_engine_version:"0.1.0", input_hash: v21.provenance.input_hash, verdict:"CAUTION"};
+const decBad  = {decision_engine_version:"0.1.0", input_hash: "sha256:"+"0".repeat(64), verdict:"GO"};
+ok(WL.matchDecision(wf, decGood) === true,  "decision input_hash 相符→可掛");
+ok(WL.matchDecision(wf, decBad) === false,  "input_hash 不符→拒收（不得掛錯案）");
+ok(WL.matchDecision(wf, {verdict:"GO"}) === false, "非 decision 檔→拒收");
+
 console.log(`\nWORKSPACE C2–C5 headless：${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

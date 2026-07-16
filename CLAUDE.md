@@ -1,13 +1,15 @@
 # BUILDER（→ Urban-Renewal-OS）— Session 索引
 
-> 本 repo 是 Urban Renewal OS 的目標容器（monorepo）。現況：**M2 關閉（os-v0.2.0-beta 已發布）＋
-> M3 進行中（權利變換/找補）**：core 0.3.0（`rights.py` §56 逐戶分回＋找補，見 `CHANGELOG.md`）、
-> schema **v2.1**（`project_schema_v2_1.json`，owner_allocations；v1.1/v2.0/v2.1 皆凍結，Gate 6 守衛）、
-> Streamlit Tab⑤ owners CSV → 逐戶權變。**入口＝URBAN RENEWAL OS shell（`apps/web/index.html`）**；沙盤《整合人》（原 URBAN STRAND，小島簽名已移除），
-> 儀表板在 `apps/web/dashboard.html`，其他介面皆為 shell 之模組。**分支＝單線 `main`**（2026-07-13
-> 收斂完成：預設分支 main、其餘分支已刪；release 綁 tag。開發、部署、連結一律以 main 為準）。
-> 現金流結構 v1 已落地（`cashflow.py` 均勻分期＝結構示意；S 曲線/IRR＝M4 🔴）。
-> M3 待續：更新前價值係數（🔴 需使用者核准）、三態地主/選屋（見 `docs/releases/ROADMAP_M2-M8.md`）。
+> 本 repo 是 Urban Renewal OS 的目標容器（monorepo）。現況：**M3 收斂＋M4 決策引擎 v0.1 落地**：
+> core 0.3.0（`rights.py` §56、`cashflow.py` 結構 v1、`valuation.py` B 系列係數矩陣——係數在
+> `apps/web/coefficients.json` 單一可換檔，`_note`「非估價值」標示不得移除）；schema 凍結 8 檔
+> （v1.1/v2.0/v2.1/三視圖/wf-1.0/**decision v0.1**，Gate 6 守衛）。**M3-C Workflow OS 閉環完成**
+> （workspace.html：匯入→同意看板→任務→決策日誌→時間軸→wf 匯出入）；**B1–B5 完成**（沙盤三滑桿
+> 12–80 戶、三態＋選屋券、匯入開局、結局權變表）。**M4＝`core/redcf/decision.py`**（憲法＝
+> `docs/architecture/DECISION_ENGINE_SPEC.md`：三方 EV/完工機率/verdict/exit/urgency；引擎只讀
+> result＋workflow state 不反算 Core；三對抗案例回歸在 `tests/test_decision.py`；Workspace 只呈現
+> decision JSON）。**入口＝OS shell（`apps/web/index.html`）**；**分支＝單線 `main`**。
+> M4 待續：S 曲線/IRR、stakeholder_profile；真實校準一律 `/local_calibration/`（gitignored）。
 > 本檔只做路由——保持 ≤150 行。
 
 ## 開工前必讀（依序，共約 10 分鐘）

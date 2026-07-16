@@ -1,0 +1,14 @@
+{
+  "_note": "Decision Engine 可校準參數（DECISION_ENGINE_SPEC §1/§6）。全部為【示意預設・建模假設】，非定論；真實案件以本地校準（/local_calibration/）替換，數字不進版控。",
+  "r": 0.06,
+  "g": 0.03,
+  "role": "營建管理",
+  "threshold_return": 0.10,
+  "status_quo_baseline": "v0*(1+g)^T*df",
+  "urgency_weights": {
+    "_note": "urgency = w1·verdict_severity + w2·time_window + w3·consent_gap + w4·ev_trajectory（§6）",
+    "w1": 0.4, "w2": 0.2, "w3": 0.25, "w4": 0.15
+  },
+  "landowner_ev_zero_band": 0.02,
+  "_landowner_ev_zero_band_note": "地主 EV 視為≈0 的帶寬（|EV| < V0×band）——引爆點判定用，可校準"
+}
