@@ -181,6 +181,7 @@ const WORKLOGIC = (() => {
       if (o.land_share != null) s.land_share = o.land_share;
       if (o.pre_value != null) s.pre_value = o.pre_value;
       if (o.min_unit_eligible != null) s.min_unit_eligible = o.min_unit_eligible;
+      if (o.consent) s.tags = ["consent:" + o.consent];   // 匯入時點的同意事實（schema tags 合法欄）
       return s;
     });
   }
@@ -229,6 +230,7 @@ const WORKLOGIC = (() => {
       return_rate: r.return_rate ?? null,
       warnings_n: (r.warnings || []).length,
       agreed, total: owners.length, threshold: 門檻((v21.project||{}).case_type),
+      allocations: (r.owner_allocations || []).map(a => ({...a})),   // §56 權變表 verbatim（零運算）
     };
   }
   // ── C3 同意狀態機（純邏輯，鏡像 core/redcf/workflow.py::derive_consent_state）──
@@ -536,9 +538,18 @@ function addConsentEvent(pid,sid,kind,note){
 // ── C6 沙盤橋接：把案件「事實」帶入《整合人》沙盤當背景（只搬狀態，不搬判斷）──
 function toSandbox(pid){
   const rec=loadStore().projects[pid]; if(!rec) return; const {wf,snap}=rec;
+  // B4：逐戶事實 verbatim（consent 來自匯入時點 tags；分回/找補來自 snap.allocations §56 權變表）
+  const allocById={}; (snap.allocations||[]).forEach(a=>{allocById[a.owner_id]=a;});
+  const owners=(wf.stakeholders||[]).filter(s=>s.role==="owner").map(s=>{
+    const tag=(s.tags||[]).find(t=>t.startsWith("consent:"));
+    const a=allocById[s.stakeholder_id]||null;
+    return {owner_id:s.stakeholder_id, consent:tag?tag.slice(8):"pending",
+      pre_value:a?a.pre_value:(s.pre_value??null), value_share:a?a.value_share:null, alloc:a};
+  });
   const bridge={source:"workspace", project_id:wf.project.project_id, code_name:snap.code_name,
     case_type:snap.case_type, owners_n:snap.stakeholders_n, agreed:snap.agreed, total:snap.total,
-    stage:wf.project.stage, ts:new Date().toISOString()};
+    stage:wf.project.stage, ts:new Date().toISOString(),
+    owners:(owners.length&&owners.length<=80)?owners:null};
   localStorage.setItem("uros.bridge.case", JSON.stringify(bridge));
   location.href="os-simulator.html";
 }

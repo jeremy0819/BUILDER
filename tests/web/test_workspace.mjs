@@ -22,6 +22,8 @@ ok(wf.project.project_id.startsWith("prj-") && wf.project.project_id.length >= 8
 ok(wf.project.stage === "S1", "新案件 stage=S1");
 ok(wf.stakeholders.length === v21.input.owners.length, "stakeholders 數＝owners 數");
 ok(wf.stakeholders.every(s => s.role === "owner" && s.stakeholder_id), "stakeholder 皆 owner 角色＋有代號");
+ok(wf.stakeholders.filter(s => (s.tags||[]).some(t => t === "consent:agreed")).length
+   === v21.input.owners.filter(o => o.consent === "agreed").length, "B4：匯入時點 consent 事實入 tags");
 ok(wf.project.snapshots.length === 1 && wf.project.snapshots[0].input_hash === v21.provenance.input_hash, "snapshot 保留 input_hash 引用");
 ok(wf.project.active_snapshot === "snap-01", "active_snapshot 指向 snap-01");
 ok(wf.consent_events.length === 0 && wf.tasks.length === 0 && wf.decisions.length === 0, "C2：事件/任務/決策為空（C3–C4）");
@@ -35,6 +37,9 @@ ok(snap.shared_cost_ratio === v21.result.shared_cost_ratio, "共負比＝逐欄�
 ok(snap.return_rate === v21.result.return_rate, "投報率＝逐欄複製 result（未運算）");
 ok(snap.agreed === v21.input.owners.filter(o => o.consent === "agreed").length, "同意數＝計數（非公式）");
 ok(snap.threshold === (v21.project.case_type === "danger_building" ? 1.0 : 0.75), "門檻＝法規常數");
+ok(snap.allocations.length === (v21.result.owner_allocations||[]).length &&
+   (snap.allocations[0]?.return_value === v21.result.owner_allocations?.[0]?.return_value),
+   "B5：權變表 allocations 逐欄 verbatim（零運算）");
 
 // ── 4. 壞輸入不臆造 ──
 let threw = false; try { WL.importV21ToWorkflow({schema_version:"2.0"}); } catch(e){ threw = true; }

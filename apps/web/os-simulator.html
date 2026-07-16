@@ -92,6 +92,13 @@ a{color:var(--strand);text-decoration:none}
 .fxc.good{color:var(--ok);border-color:#1d4536}
 .fxc.bad{color:var(--amber);border-color:var(--amber-dim)}
 .plan-src{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:16px}
+.fabric{display:flex;gap:18px;flex-wrap:wrap;align-items:center;padding:12px 14px;border:1px solid #1d2733;border-radius:10px}
+.fabric label{display:flex;flex-direction:column;gap:5px;font-size:11.5px;color:var(--mute);min-width:150px;flex:1}
+.fabric label b{color:var(--strand);font-family:var(--mono)}
+.fabric input[type=range]{width:100%;accent-color:var(--strand)}
+.fabric .seedbox{display:flex;gap:6px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.fabric input[type=number]{background:#0d141c;border:1px solid #1d2733;border-radius:6px;color:var(--ink);padding:4px 6px;font-family:var(--mono)}
+.sm-seed{padding:4px 9px;font-size:12px}
 .plan-go{margin-top:18px;text-align:center}
 
 /* ── 版心 ── */
@@ -165,7 +172,7 @@ header.cmd{display:flex;justify-content:space-between;align-items:center;gap:14p
 .stage{display:grid;grid-template-columns:1fr 330px;gap:16px;align-items:start}
 @media(max-width:900px){.stage{grid-template-columns:1fr}}
 .hero{padding:18px}
-.grid{display:grid;grid-template-columns:repeat(8,1fr);gap:8px}
+.grid{display:grid;grid-template-columns:repeat(var(--gcols,8),1fr);gap:8px}
 .cell{aspect-ratio:1;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--panel);
   display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;
   font-family:var(--mono);font-size:10px;color:var(--mute);position:relative;transition:transform .1s,border-color .1s}
@@ -283,7 +290,7 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
     這條街有 <b>48 戶</b>。34 戶已同意重建，<b class="hi">剩下 14 戶</b>。
     在按下門鈴之前，你要先做一個建築人的決定：<b class="hi">蓋多大、用什麼模式</b>。
     規劃會決定財務，財務會決定人心——Core 會把每個方案的真話算給你看。
-    <div class="src">AUTHORITATIVE DATA · core v0.2.0 · schema v2.0 · 人物皆為虛構原型</div>
+    <div class="src">AUTHORITATIVE DATA · core v0.3.0 · schema v2.1 · 人物皆為虛構原型</div>
   </div>
   <button class="btn" id="btn-start">▶ 進入建築規劃</button>
   <div style="margin-top:14px"><a href="index.html" style="font-family:var(--mono);font-size:10.5px;color:var(--dim)">← 回 OS 主選單</a></div>
@@ -298,7 +305,16 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
   <div class="optrow two" id="opt-mode"></div>
   <div class="plan-lab">② 建築規模（獎勵率＝輸入參數；各方案財務為 Core 重算結果）</div>
   <div class="optrow three" id="opt-scale"></div>
-  <div class="plan-src">SCEN 資料＝core/redcf recompute（engine 輸入變更 → result），schema v2.0 · law_db builtin-2026-07。
+  <div class="plan-lab">③ 基地文理（B 系列 · 三滑桿＝這條街的長相；係數表＝coefficients.json 核准權重）</div>
+  <div class="fabric" id="fabric">
+    <label>戶數 <b id="fv-n">48</b><input type="range" id="sl-n" min="12" max="80" step="1" value="48"></label>
+    <label>開局同意比 <b id="fv-c">71%</b><input type="range" id="sl-c" min="0" max="90" step="1" value="71"></label>
+    <label>家族密度 <b id="fv-f">40%</b><input type="range" id="sl-f" min="0" max="100" step="5" value="40"></label>
+    <span class="seedbox">seed <input type="number" id="in-seed" value="1412" style="width:74px">
+      <button class="btn ghost sm-seed" id="btn-seed">🎲</button></span>
+  </div>
+  <div class="plan-src" id="fabric-note">預設＝經典局（48 戶・34 同意・固定家族）。動任一滑桿＝程序生成新街區（同 seed 可重現）；每戶更新前價值＝基準單價×路寬×分區×型態×樓層×面積（合成示意，非估價值）。</div>
+  <div class="plan-src">SCEN 資料＝core/redcf recompute（engine 輸入變更 → result），schema v2.1 · law_db builtin-2026-07。
   沙盤效果（信任修正/週數）為遊戲規則，依 Core 共負比對應，非財務計算。</div>
   <div class="plan-go"><button class="btn" id="btn-plan-go" disabled>▶ 定案，開始整合</button></div>
 </div></div>
@@ -326,6 +342,7 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
   <div class="foot">
     <button class="btn" id="cd-listen">傾聽（1 AP）</button>
     <button class="btn" id="cd-offer">客製方案（1 AP · 50萬）</button>
+    <button class="btn" id="cd-ticket">🎫 選屋順位（1 AP · 限量）</button>
     <button class="btn ghost" id="cd-close">結束通話</button>
   </div>
 </div></div>
@@ -392,7 +409,7 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
   <div class="stage">
     <section class="hero card">
       <div class="card-head">
-        <span class="lbl">Street Block · 這條街的 48 戶</span>
+        <span class="lbl" id="street-lbl">Street Block · 這條街的 48 戶</span>
         <span class="card-tag">點未同意戶展開門前對話 · ⌂＝家族</span>
       </div>
       <div class="grid" id="grid"></div>
@@ -436,11 +453,11 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
    SCEN＝Core recompute 預算的 6 方案權威數字（案例D 基地，獎勵率×模式變化）——
    前端只讀；沙盤效果（trustOff/weeks）為遊戲規則表，非財務計算。 */
 const SIMCORE = (() => {
-  const AP_MAX = 4, BUDGET0 = 300, AGREE_AT = 75, BRIEF_CEIL = 60;
-  const COLS = 8, ROWS = 6, N = 48, BOSS = 47;
-  const FAMILY = [[36,39,44],[38,42],[40,43,46]];   // 家族連動（虛構原型）
+  const AP_MAX = 4, BUDGET0 = 300, AGREE_AT = 75, BRIEF_CEIL = 60, TICKETS0 = 3;
+  const COLS = 8, ROWS = 6, N = 48, BOSS = 47;      // 經典局常數（N=48·seed=1412 時完全重現）
+  const FAMILY = [[36,39,44],[38,42],[40,43,46]];   // 經典局家族（其餘參數→程序生成）
 
-  // Core 預算方案（tools：recompute(engine)；computed 2026-07-01 · core 0.2.0）
+  // Core 預算方案（tools：recompute(engine)；computed 2026-07-01 · core 0.2.0；已對照 core 0.3.0 重算一致（0.3.0 僅新增 rights/cashflow，容積/財務公式未變）
   const SCEN = {
     weilao_S:{label:"保守規劃",bonus:0.20,allow:5400.0,remaining:-757.5,saleable:2820.54,total:204425,scr:0.7202,ratio:0.2798,rr:0.3884,warn:["EFFICIENCY_OUT_OF_BAND","VOLUME_EXCEEDED","SHARED_COST_HIGH"]},
     weilao_M:{label:"基準規劃",bonus:0.40,allow:6120.0,remaining:-37.5,saleable:3153.84,total:226089,scr:0.6600,ratio:0.3400,rr:0.5150,warn:["EFFICIENCY_OUT_OF_BAND","VOLUME_EXCEEDED","SHARED_COST_HIGH"]},
@@ -452,14 +469,15 @@ const SIMCORE = (() => {
   // 沙盤規則表（遊戲層）：規模→信任修正；積極方案審議期長→整合窗口縮短；都更程序→再縮短
   const TRUST_OFF = {S:-5, M:0, L:4};
   const weeksOf = cfg => 24 - (cfg.scale==="L"?2:0) - (cfg.mode==="duegeng"?2:0);
-  const targetOf = cfg => cfg.mode==="weilao" ? 48 : 39;   // 危老全體；都更 80%（48×0.8→39戶）
+  const targetOf = (cfg,n) => cfg.mode==="weilao" ? n : Math.ceil(n*0.8);   // 危老全體；都更 80%
 
   function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;
     let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;
     return ((t^t>>>14)>>>0)/4294967296}}
-  function layout(){
-    const ids=[...Array(N)].map((_,i)=>i+1), rng=mulberry32(20260707);
-    for(let i=N-1;i>0;i--){const j=Math.floor(rng()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]];}
+  function layout(n, seed){
+    // 版位洗牌：seed 位移設計成預設 seed(1412) 時＝經典局固定值 20260707
+    const ids=[...Array(n)].map((_,i)=>i+1), rng=mulberry32(20260707+(seed-1412));
+    for(let i=n-1;i>0;i--){const j=Math.floor(rng()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]];}
     return ids;
   }
   const PERSONAS_P=[["頂樓加蓋的房東","擔心分回坪數變小"],["夜市麵店老闆","怕搬遷斷了生意"],
@@ -469,40 +487,94 @@ const SIMCORE = (() => {
     ["獨居的阿嬤","兒女都在國外"],["守著祖厝的伯伯","「這是阿公起的厝。」"]];
 
   function create(cfg){
-    cfg = Object.assign({mode:"weilao",scale:"M"}, cfg||{});
-    const scen = SCEN[cfg.mode+"_"+cfg.scale];
+    // B1 參數化：N（12–80）/consent（開局同意比%）/fam（家族密度%）/seed；
+    // 預設值＝經典局（48 戶·34 同意·固定家族·seed 1412），與 v2 完全重現。
+    cfg = Object.assign({mode:"weilao",scale:"M",N:48,consent:71,fam:40,seed:1412}, cfg||{});
+    const n = Math.round(cfg.N);
+    if(!(n>=12 && n<=80)) throw new Error("戶數需在 12–80");
+    const scen = cfg.scenOverride || SCEN[cfg.mode+"_"+cfg.scale];
     const off = TRUST_OFF[cfg.scale];
-    const rng=mulberry32(1412), pos=layout(), units={};
+    const cols = Math.max(4, Math.ceil(Math.sqrt(n*4/3))), rows = Math.ceil(n/cols);
+    const rng=mulberry32(cfg.seed), pos=layout(n,cfg.seed), units={};
     const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
-    for(let i=1;i<=N;i++){
-      const consent = i<=34?"agreed": i<=44?"pending":"opposed";
-      const boss = (i===BOSS);
-      const base = consent==="agreed"?100 : consent==="pending"?32+Math.floor(rng()*13) : (boss?12:15);
-      const stance = consent==="agreed"?100 : boss?12 : clamp(base+off,5,70);
-      const P = consent==="pending"?PERSONAS_P[(i-35)%PERSONAS_P.length]
-              : consent==="opposed"?PERSONAS_O[(i-45)%PERSONAS_O.length] : ["住戶","已同意"];
-      units[i]={id:i,consent,stance,boss,listens:0,offers:0,touched:false,
-                persona:P[0],trait:P[1],flipWeek:consent==="agreed"?0:null,
-                family:FAMILY.findIndex(f=>f.includes(i))};
+
+    // 戶籍分佈（事實由匯入 owners 決定；否則由滑桿比例決定）
+    let 同意集=null, 反對集=null, boss=null, ownersById=null;
+    if(cfg.owners && cfg.owners.length){          // B4：匯入案件 owners（事實 verbatim）
+      ownersById={};
+      同意集=new Set(); 反對集=new Set();
+      cfg.owners.forEach((o,idx)=>{ const id=idx+1; ownersById[id]=o;
+        if(o.consent==="agreed") 同意集.add(id);
+        else if(o.consent==="opposed"||o.consent==="declined") 反對集.add(id); });
+      // 關鍵戶＝更新前價值最高的反對戶（祖厝原型）；無反對戶則無 BOSS
+      let best=0;
+      for(const id of 反對集){ const pv=(ownersById[id].pre_value||0);
+        if(pv>=best){best=pv;boss=id;} }
+    } else {
+      const agreedN = Math.min(Math.round(n*cfg.consent/100), n-3);
+      const oppN = Math.max(2, Math.round(n*0.083));
+      同意集=new Set(); 反對集=new Set();
+      for(let i=1;i<=agreedN;i++)同意集.add(i);
+      for(let i=n-oppN+1;i<=n;i++)反對集.add(i);
+      boss = n-1;                                  // 經典局＝47
     }
-    const target=targetOf(cfg), weeksMax=weeksOf(cfg);
-    // 里程碑站（拉長的旅程軌）：34 → target 之間的敘事節點
-    const span=target-34, ms=[];
-    if(span>=10) ms.push({n:34+Math.round(span*0.3),ep:2,name:"牆上的裂縫"},
-                          {n:34+Math.round(span*0.7),ep:3,name:"大勢底定"},
+    let pi=0, oi=0;
+    for(let i=1;i<=n;i++){
+      const consent = 同意集.has(i)?"agreed":反對集.has(i)?"opposed":"pending";
+      const isBoss = (i===boss && consent!=="agreed");
+      const base = consent==="agreed"?100 : consent==="pending"?32+Math.floor(rng()*13) : (isBoss?12:15);
+      const stance = consent==="agreed"?100 : isBoss?12 : clamp(base+off,5,70);
+      const P = consent==="pending"?PERSONAS_P[(pi++)%PERSONAS_P.length]
+              : consent==="opposed"?PERSONAS_O[(oi++)%PERSONAS_O.length] : ["住戶","已同意"];
+      units[i]={id:i,consent,stance,boss:isBoss,listens:0,offers:0,touched:false,
+                persona:P[0],trait:P[1],flipWeek:consent==="agreed"?0:null,family:-1,
+                tri:consent==="agreed"?"抽籤":null,ticketed:false,
+                oid:ownersById?ownersById[i].owner_id:null,
+                alloc:ownersById?(ownersById[i].alloc||null):null};
+    }
+    // 家族：經典局＝固定 FAMILY；其餘＝依家族密度程序生成（獨立 rng 流，不擾動信任序列）
+    const agreed0=同意集.size;
+    let families;
+    if(n===48 && cfg.seed===1412 && agreed0===34 && !cfg.owners){
+      families = FAMILY.map(f=>f.slice());
+    } else {
+      families=[]; const frng=mulberry32((cfg.seed^0x5EED)>>>0);
+      const pool=[]; for(let i=1;i<=n;i++) if(units[i].consent!=="agreed"&&!units[i].boss) pool.push(i);
+      for(let i=pool.length-1;i>0;i--){const j=Math.floor(frng()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+      const 目標人數=Math.round(pool.length*cfg.fam/100);
+      let k=0;
+      while(k+1<目標人數){ const size=Math.min(2+(frng()<0.4?1:0), 目標人數-k, pool.length-k);
+        if(size<2)break; families.push(pool.slice(k,k+size)); k+=size; }
+    }
+    families.forEach((f,fi)=>f.forEach(id=>{ if(units[id]) units[id].family=fi; }));
+    // 權值矩陣（B1）：匯入案件用 verbatim value_share；否則由核准係數程序生成
+    if(ownersById){ for(let i=1;i<=n;i++){ const o=ownersById[i];
+        units[i].pre_value=o.pre_value??null; units[i].weight=o.value_share??null; } }
+    else if(cfg.coeff){ const mat=buildOwnerMatrix(n,cfg.seed,null,cfg.coeff);
+      for(let i=1;i<=n;i++){ Object.assign(units[i],
+        {road:mat[i-1].road,zoning:mat[i-1].zoning,building:mat[i-1].building,
+         floor:mat[i-1].floor,area_坪:mat[i-1].area_坪,
+         pre_value:mat[i-1].pre_value,weight:mat[i-1].weight}); } }
+
+    const target=targetOf(cfg,n), weeksMax=weeksOf(cfg);
+    // 里程碑站：agreed0 → target 之間的敘事節點
+    const span=target-agreed0, ms=[];
+    if(span>=10) ms.push({n:agreed0+Math.round(span*0.3),ep:2,name:"牆上的裂縫"},
+                          {n:agreed0+Math.round(span*0.7),ep:3,name:"大勢底定"},
                           {n:target-1,ep:4,name:"最後一哩"});
-    else ms.push({n:34+Math.round(span*0.4),ep:2,name:"牆上的裂縫"},
+    else ms.push({n:agreed0+Math.round(span*0.4),ep:2,name:"牆上的裂縫"},
                  {n:target-1,ep:3,name:"臨門一腳"});
-    return {cfg,scen,target,weeksMax,milestones:ms,epDone:{},
-            week:1,ap:AP_MAX,budget:BUDGET0,units,pos,log:[],over:false,won:false,
+    return {cfg,scen,target,weeksMax,milestones:ms,epDone:{},N:n,agreed0,cols,rows,families,
+            week:1,ap:AP_MAX,budget:BUDGET0,tickets:TICKETS0,units,pos,log:[],over:false,won:false,
             briefedWeek:0,spent:0,acts:0};
   }
   const idAt=(s,k)=>s.pos[k], cellOf=(s,id)=>s.pos.indexOf(id);
   function neighbors(s,id){
-    const k=cellOf(s,id),r=Math.floor(k/COLS),c=k%COLS,out=[];
-    if(r>0)out.push(idAt(s,k-COLS)); if(r<ROWS-1)out.push(idAt(s,k+COLS));
-    if(c>0)out.push(idAt(s,k-1));    if(c<COLS-1)out.push(idAt(s,k+1));
-    return out;
+    const cols=s.cols||COLS, total=s.pos.length;
+    const k=cellOf(s,id),r=Math.floor(k/cols),c=k%cols,out=[];
+    if(r>0)out.push(idAt(s,k-cols)); if(k+cols<total)out.push(idAt(s,k+cols));
+    if(c>0)out.push(idAt(s,k-1));    if(c<cols-1&&k+1<total)out.push(idAt(s,k+1));
+    return out.filter(x=>x!==undefined);
   }
   const code=id=>"W"+String(id).padStart(2,"0");
   function agreedCount(s){return Object.values(s.units).filter(u=>u.consent==="agreed").length}
@@ -513,9 +585,10 @@ const SIMCORE = (() => {
   }
   function _flip(s,u){
     u.consent="agreed";u.stance=100;u.flipWeek=s.week;
+    u.tri = u.ticketed ? "選屋" : "抽籤";          // B3 三態：拿過順位券＝選屋，否則抽籤
     s.log.unshift({w:s.week,t:`✚ ${code(u.id)}（${u.persona}）同意了——又一扇門開了。`});
     if(u.family>=0){ // 家族連動：一人點頭，全家鬆動
-      for(const fid of FAMILY[u.family]) if(fid!==u.id){
+      for(const fid of (s.families[u.family]||[])) if(fid!==u.id){
         const f=s.units[fid];
         if(f.consent!=="agreed"&&!f.boss){f.stance=Math.min(100,f.stance+8);f.touched=true;
           if(f.stance>=AGREE_AT)_flip(s,f);}
@@ -550,6 +623,30 @@ const SIMCORE = (() => {
     const base=u.consent==="pending"?18:11;
     const d=Math.round(base*Math.pow(.5,u.offers-1));
     u.stance=Math.min(100,u.stance+d);_check(s,u);return{ok:true,d};
+  }
+  // B3 選屋順位券：承諾優先選屋（稀缺資源）。+12 信任、標記三態「選屋」；
+  // 每戶限一張；祖厝不吃位子（跟錢一樣免疫）。
+  function ticket(s,id){
+    const u=s.units[id];
+    if(s.over||s.ap<1||s.tickets<1||u.consent==="agreed"||u.ticketed)return{ok:false};
+    if(u.boss){s.log.unshift({w:s.week,t:"✕ 「我要的不是先挑哪一戶。」——順位券對祖厝無效。"});return{ok:false,boss:true};}
+    s.ap--;s.tickets--;s.acts++;u.ticketed=true;u.touched=true;
+    u.stance=Math.min(100,u.stance+12);
+    s.log.unshift({w:s.week,t:`🎫 ${code(u.id)} 收下選屋順位承諾——他開始想像新家的樣子。（+12）`});
+    _check(s,u);return{ok:true,d:12};
+  }
+  // B3/B5 結算：三態守恆 Σ(選屋+抽籤+現金補償)=N；抽籤戶依 seed 決定性抽序
+  function settle(s){
+    const 選屋=[],抽籤=[],現金=[];
+    for(const u of Object.values(s.units)){
+      if(u.consent!=="agreed")現金.push(u.id);
+      else if(u.tri==="選屋")選屋.push(u.id);
+      else 抽籤.push(u.id);
+    }
+    const lrng=mulberry32(((s.cfg.seed||1412)^0x10771)>>>0);
+    const 抽序=抽籤.slice();
+    for(let i=抽序.length-1;i>0;i--){const j=Math.floor(lrng()*(i+1));[抽序[i],抽序[j]]=[抽序[j],抽序[i]];}
+    return {選屋,抽籤,現金,抽序,total:選屋.length+抽籤.length+現金.length};
   }
   function briefing(s){
     if(s.over||s.ap<1||s.budget<20||s.briefedWeek===s.week)return{ok:false};
@@ -607,9 +704,9 @@ const SIMCORE = (() => {
     rows.forEach(x=>x.weight=Math.round(x.pre_value/tot*1e6)/1e6);
     return rows;
   }
-  return{create,listen,offer,briefing,endWeek,agreedCount,neighbors,code,pendingMilestone,
+  return{create,listen,offer,briefing,ticket,settle,endWeek,agreedCount,neighbors,code,pendingMilestone,
          buildOwnerMatrix,
-         SCEN,TRUST_OFF,FAMILY,AP_MAX,BUDGET0,AGREE_AT,BRIEF_CEIL,BOSS,N};
+         SCEN,TRUST_OFF,FAMILY,AP_MAX,BUDGET0,AGREE_AT,BRIEF_CEIL,BOSS,N,TICKETS0};
 })();
 /*SIMCORE-END*/
 
@@ -677,15 +774,15 @@ function renderProcess(){
 }
 function renderJourney(){
   // rail 每次全量重建（不得引用重建前的子節點——舊版曾因取 stale walker 拋錯，rail 卡死）
-  const n=SIMCORE.agreedCount(S), t=S.target, p=Math.min(1,Math.max(0,(n-34)/(t-34)));
-  $("p-num").textContent=n+"/48"; $("p-target").textContent=t;
+  const a0=S.agreed0, n=SIMCORE.agreedCount(S), t=S.target, p=Math.min(1,Math.max(0,(n-a0)/(t-a0||1)));
+  $("p-num").textContent=n+"/"+S.N; $("p-target").textContent=t;
   $("p-pct").textContent=Math.round(p*100)+"%";
-  const goal=S.cfg.mode==="weilao"?"全員 48 戶同意":"80% 門檻（39 戶）送件";
+  const goal=S.cfg.mode==="weilao"?`全員 ${S.N} 戶同意`:`80% 門檻（${t} 戶）送件`;
   $("rail-cap").innerHTML=`目前關卡：<b>整合</b> — 逐戶爭取同意，跨過 ${goal} 才推進到「事業計畫」。`;
   let nodes="";
-  const sts=[{n:34,name:"啟程"},...S.milestones.map(m=>({n:m.n,name:m.name})),{n:t,name:S.cfg.mode==="weilao"?"全員點頭":"送件門檻"}];
+  const sts=[{n:a0,name:"啟程"},...S.milestones.map(m=>({n:m.n,name:m.name})),{n:t,name:S.cfg.mode==="weilao"?"全員點頭":"送件門檻"}];
   for(const st of sts){
-    const x=((st.n-34)/(t-34))*100;
+    const x=((st.n-a0)/(t-a0||1))*100;
     nodes+=`<div class="node ${n>=st.n?'hit':''}" style="left:${x}%"><div class="nl"><span class="nn tnum">${st.n}</span>${st.name}</div></div>`;
   }
   $("rail").innerHTML=`<div class="fill" style="width:${p*100}%"></div>${nodes}<div class="walker" style="left:${p*100}%">⇢</div>`;
@@ -695,14 +792,14 @@ function renderCore(){
   const sc=S.scen;
   $("hud-scen").textContent=`· ${S.cfg.mode==="weilao"?"危老":"都更"} × ${sc.label}`;
   $("corebox").innerHTML=`
-    <div class="card-head"><span class="lbl">RE-DCF Core · 本方案財務</span><span class="chip">v0.2.0 · 只讀</span></div>
+    <div class="card-head"><span class="lbl">RE-DCF Core · 本方案財務</span><span class="chip">v0.3.0 · 只讀</span></div>
     <div class="row"><span>允建容積 / 餘量</span><b class="tnum">${n0(sc.allow)} m² / ${sc.remaining>0?'+':''}${sc.remaining}</b></div>
     <div class="row"><span>總銷</span><b class="tnum">${n0(sc.total)} 萬</b></div>
     <div class="row"><span>共同負擔比</span><b class="tnum">${pct(sc.scr)}</b></div>
     <div class="row"><span>地主分回比</span><b class="tnum">${pct(sc.ratio)}</b></div>
     <div class="row"><span>投報率</span><b class="tnum">${pct(sc.rr)}</b></div>
     ${sc.warn.map(w=>`<div class="warn ${w==="SHARED_COST_HIGH"||w==="VOLUME_EXCEEDED"?"err":"warn"}">${w}${w==="SHARED_COST_HIGH"?` — 共負比 ${pct(sc.scr)} 偏高，地主接受度下降（＝難度來源）`:w==="VOLUME_EXCEEDED"?` — 超容 ${Math.abs(sc.remaining)} m²，需調整設計`:""}</div>`).join("")}
-    <div class="src">recompute(engine) 預算結果 · schema v2.0 · 遊戲層零財務公式</div>`;
+    <div class="src">recompute(engine) 預算結果 · schema v2.1 · 遊戲層零財務公式</div>`;
 }
 /* v3 呈現層記帳：每週支出快照（UI 紀錄，非 SIMCORE 狀態、非財務公式） */
 const FLOW={hist:{}};
@@ -732,6 +829,9 @@ function render(){
   $("btn-week").classList.toggle("urgent",S.ap===0&&!S.over);
   renderJourney(); renderFlow();
   const g=$("grid");g.innerHTML="";
+  g.style.setProperty("--gcols", S.cols||8);
+  $("street-lbl").textContent=`Street Block · 這條街的 ${S.N} 戶`;
+  const tk=$("m-tickets"); if(tk) tk.textContent=S.tickets;
   S.pos.forEach(id=>{
     const u=S.units[id];
     const d=document.createElement("div");
@@ -764,6 +864,8 @@ function openCodec(id){
   type(pool[Math.min(u.listens,pool.length-1)]);
   $("cd-stat").innerHTML=`信任 <b>${u.stance}</b>/100 ${u.boss?"· 對「客製方案」免疫——只能傾聽":""}`;
   $("cd-offer").disabled=!!u.boss;
+  $("cd-ticket").disabled=!!u.boss||u.ticketed||S.tickets<1;
+  $("cd-ticket").textContent=u.ticketed?"🎫 已承諾選屋順位":`🎫 選屋順位（1 AP · 剩 ${S.tickets} 張）`;
   $("ovl-codec").classList.add("show");
 }
 let typing=null;
@@ -783,6 +885,13 @@ $("cd-offer").onclick=()=>{const r=SIMCORE.offer(S,sel);
   if(u.consent==="agreed"){$("ovl-codec").classList.remove("show");render();return;}
   type((u.boss?DOOR_SAY.offerBoss:DOOR_SAY.offerOk)+`　（${r.d>0?"+":""}${r.d}，同招遞減）`);
   $("cd-stat").innerHTML=`信任 <b>${u.stance}</b>/100`;render();};
+$("cd-ticket").onclick=()=>{const r=SIMCORE.ticket(S,sel);
+  if(!r.ok){type(r.boss?"「我要的不是先挑哪一戶。你先聽懂我要什麼。」":"（AP 不足，或順位券用完了。）");return;}
+  const u=S.units[sel];
+  if(u.consent==="agreed"){$("ovl-codec").classList.remove("show");render();return;}
+  type(`「……先選？我可以先挑樓層？」他第一次探頭看了圖。　（信任 +${r.d}）`);
+  $("cd-stat").innerHTML=`信任 <b>${u.stance}</b>/100`;
+  $("cd-ticket").disabled=true;$("cd-ticket").textContent="🎫 已承諾選屋順位";render();};
 $("btn-brief").onclick=()=>{SIMCORE.briefing(S);render();};
 $("btn-week").onclick=()=>{SIMCORE.endWeek(S);render();};
 
@@ -795,7 +904,7 @@ function ending(){
   $("end-quote").textContent=won
     ?(S.cfg.mode==="weilao"
       ?`第 ${wk} 週，最後一扇門開了。${target} 戶第一次同時點頭——整合成立，階段推進：整合 ✓ → 事業計畫。`
-      :`八成的門開了（${n}/${48}）。剩下的人，制度會替你繼續對話——階段推進：整合 ✓ → 事業計畫，未同意戶進入權利變換。`)
+      :`八成的門開了（${n}/${S.N}）。剩下的人，制度會替你繼續對話——階段推進：整合 ✓ → 事業計畫，未同意戶進入權利變換。`)
     :(差一戶
       ?`${n} 戶點了頭。差一戶——在危老 100% 的規則裡，${n} 戶等於零戶。你不是輸給誰，是輸給最後一扇沒開的門。`
       :`時間走完了 ${S.weeksMax} 週，同意停在 ${n}/${target}。還有人沒被聽見——回到規劃桌，換個規模或模式，再來一次。`);
@@ -814,14 +923,29 @@ function ending(){
   const strip=t=>t.replace(/^[✚⌂◆⚡📰🌧]\s*/u,"");
   $("end-story").innerHTML=beats.map(l=>`<div class="beat"><span class="w">W${l.w}</span><span>${strip(l.t)}</span></div>`).join("");
 
-  // 逐戶結局：未同意戶列出（含關鍵戶），已同意收斂為一行
+  // 逐戶結局（B3/B5）：三態結算＋權變表
   const us=Object.values(S.units), holdouts=us.filter(u=>u.consent!=="agreed");
-  let rows=`<div class="hrow"><span class="who">✓ 已同意 ${n} 戶</span><span class="st ok">整合成立</span></div>`;
-  rows+=holdouts.sort((a,b)=>(b.boss?1:0)-(a.boss?1:0)||b.stance-a.stance).map(u=>{
-    const lab=u.boss?"關鍵戶 ▲":(u.consent==="opposed"?"反對":"觀望");
-    return `<div class="hrow"><span class="who">${SIMCORE.code(u.id)} <span class="p">${u.persona}</span></span><span class="st no">${lab} · 信任 ${u.stance}</span></div>`;
-  }).join("");
-  if(!holdouts.length) rows+=`<div class="hrow"><span class="who" style="color:var(--strand)">全街點頭，無人掉隊。</span><span></span></div>`;
+  const stl=SIMCORE.settle(S);
+  let rows=`<div class="hrow"><span class="who">三態結算（Σ＝${stl.total} 戶）</span>`+
+    `<span class="st ok">選屋 ${stl.選屋.length} · 抽籤 ${stl.抽籤.length} · 現金補償 ${stl.現金.length}</span></div>`;
+  const hasAlloc=us.some(u=>u.alloc);   // B4 匯入案件 → B5 權變表（owner_allocations verbatim，只讀）
+  if(hasAlloc){
+    rows+=us.slice().sort((a,b)=>(b.alloc?.return_value||0)-(a.alloc?.return_value||0)).map(u=>{
+      const a=u.alloc||{}, tri=u.consent==="agreed"?(u.tri||"抽籤"):"現金補償";
+      const eq=a.equalization!=null?(a.equalization>=0?`找補 +${n0(a.equalization)}`:`找補 −${n0(-a.equalization)}`):"—";
+      return `<div class="hrow"><span class="who">${u.oid||SIMCORE.code(u.id)} <span class="p">${tri}</span></span>`+
+        `<span class="st ${u.consent==="agreed"?"ok":"no"}">分回 ${a.return_value!=null?n0(a.return_value)+"萬":"—"} · ${eq}</span></div>`;
+    }).join("");
+    rows+=`<div class="hrow"><span class="who p" style="font-size:10px">權變表數字＝匯入 result.owner_allocations 逐欄（§56 Core 權威，本頁只讀）</span><span></span></div>`;
+  } else {
+    rows+=holdouts.sort((a,b)=>(b.boss?1:0)-(a.boss?1:0)||b.stance-a.stance).map(u=>{
+      const lab=u.boss?"關鍵戶 ▲":(u.consent==="opposed"?"反對":"觀望");
+      const w=u.weight!=null?` · 權值 ${(u.weight*100).toFixed(1)}%`:"";
+      return `<div class="hrow"><span class="who">${SIMCORE.code(u.id)} <span class="p">${u.persona}</span></span><span class="st no">${lab} · 信任 ${u.stance}${w}</span></div>`;
+    }).join("");
+    if(!holdouts.length) rows+=`<div class="hrow"><span class="who" style="color:var(--strand)">全街點頭，無人掉隊。</span><span></span></div>`;
+    if(us.some(u=>u.weight!=null)) rows+=`<div class="hrow"><span class="who p" style="font-size:10px">權值＝係數表合成示意（非估價值）；正式權變以估價師報告與 Core 計算為準</span><span></span></div>`;
+  }
   $("end-houses").innerHTML=rows;
 
   // Core 財務結算（唯讀，權威數字）
@@ -845,31 +969,64 @@ function ending(){
   $("ovl-end").classList.add("show");
 }
 
-/* ── C6 沙盤橋接：讀工作區帶入的案件「事實」，預選模式＋顯示背景（不搬判斷）── */
+/* ── C6/B4 沙盤橋接：讀工作區帶入的案件「事實」——模式＋逐戶 owners（不搬判斷）── */
+let BRIDGE_OWNERS=null;
 function applyBridge(){
   let b=null; try{ b=JSON.parse(localStorage.getItem("uros.bridge.case")||"null"); }catch(e){}
   const el=$("bridge-banner"); if(!el) return;
-  if(!b){ el.style.display="none"; return; }
+  if(!b){ el.style.display="none"; BRIDGE_OWNERS=null; return; }
   plan.mode = b.case_type==="danger_building" ? "weilao" : "duegeng";  // 帶入案件類型（事實）
   syncPlan();
+  BRIDGE_OWNERS = (b.owners && b.owners.length) ? b.owners : null;     // B4：逐戶事實 verbatim
+  if(BRIDGE_OWNERS){                                                    // 街區＝案件事實，鎖戶數/同意比滑桿
+    fabric.N=BRIDGE_OWNERS.length;
+    $("sl-n").value=fabric.N; $("sl-n").disabled=true; $("sl-c").disabled=true; syncFabric();
+    $("fabric-note").textContent=`街區＝案件 owners 事實（${BRIDGE_OWNERS.length} 戶，開局同意/價值皆 verbatim）——戶數與同意比滑桿已鎖定。`;
+  } else { $("sl-n").disabled=false; $("sl-c").disabled=false; }
   el.style.display="block";
   el.style.cssText="display:block;margin:12px 0 4px;padding:10px 13px;border:1px solid var(--strand);"+
     "border-radius:9px;background:rgba(120,120,255,.06);font-size:12px;line-height:1.6";
-  el.innerHTML=`🗂️ 以工作區案件 <b>${b.code_name||"案件"}</b> 為背景（地主 ${b.owners_n||"—"} 戶 · 同意 ${b.agreed||0}/${b.total||"—"} · 階段 ${b.stage||"—"}）`+
-    `<br><span style="color:var(--dim);font-size:10.5px">已依案件類型預選「${b.case_type==="danger_building"?"危老重建":"都更・合建"}」。沙盤只帶入案件事實作背景，推演結果不回寫案件（只搬狀態、不搬判斷）。逐戶矩陣依案件戶數＝B 系列。</span>`+
+  el.innerHTML=`🗂️ 以工作區案件 <b>${b.code_name||"案件"}</b> 為背景（地主 ${b.owners_n||"—"} 戶 · 同意 ${b.agreed||0}/${b.total||"—"} · 階段 ${b.stage||"—"}${BRIDGE_OWNERS?" · 逐戶事實已載入":""}）`+
+    `<br><span style="color:var(--dim);font-size:10.5px">已依案件類型預選「${b.case_type==="danger_building"?"危老重建":"都更・合建"}」。沙盤只帶入案件事實作背景，推演結果不回寫案件（只搬狀態、不搬判斷）。</span>`+
     `<br><a href="#" id="bridge-clear" style="color:var(--dim);font-size:10.5px">✕ 清除背景，改用預設情境</a>`;
-  const clr=$("bridge-clear"); if(clr) clr.onclick=e=>{e.preventDefault();localStorage.removeItem("uros.bridge.case");plan.mode=null;syncPlan();el.style.display="none";};
+  const clr=$("bridge-clear"); if(clr) clr.onclick=e=>{e.preventDefault();localStorage.removeItem("uros.bridge.case");
+    plan.mode=null;BRIDGE_OWNERS=null;$("sl-n").disabled=false;$("sl-c").disabled=false;syncPlan();syncFabric();el.style.display="none";};
 }
+/* ── B2 基地文理三滑桿（值域＝coefficients.json scenario_sliders）── */
+let COEFF=null;
+fetch("coefficients.json").then(r=>r.json()).then(c=>{
+  COEFF=c;
+  const ss=c.scenario_sliders||{};
+  if(ss["戶數"]){$("sl-n").min=ss["戶數"].min;$("sl-n").max=ss["戶數"].max;}
+}).catch(()=>{/* file:// 等無法 fetch 時：滑桿仍可用，僅無逐戶權值矩陣 */});
+const fabric={N:48,consent:71,fam:40,seed:1412};
+function syncFabric(){
+  $("fv-n").textContent=fabric.N; $("fv-c").textContent=fabric.consent+"%"; $("fv-f").textContent=fabric.fam+"%";
+  const classic=(fabric.N===48&&fabric.consent===71&&fabric.fam===40&&fabric.seed===1412);
+  $("fabric-note").textContent=classic
+    ?"預設＝經典局（48 戶・34 同意・固定家族）。動任一滑桿＝程序生成新街區（同 seed 可重現）。"
+    :`程序生成：${fabric.N} 戶・開局同意 ${Math.round(fabric.N*fabric.consent/100)} 戶・家族密度 ${fabric.fam}%・seed ${fabric.seed}（同 seed 可重現；每戶價值＝係數表合成示意，非估價值）`;
+}
+$("sl-n").oninput=e=>{fabric.N=+e.target.value;syncFabric();};
+$("sl-c").oninput=e=>{fabric.consent=+e.target.value;syncFabric();};
+$("sl-f").oninput=e=>{fabric.fam=+e.target.value;syncFabric();};
+$("in-seed").onchange=e=>{fabric.seed=(+e.target.value||1412);syncFabric();};
+$("btn-seed").onclick=()=>{fabric.seed=Math.floor(Math.random()*99999);$("in-seed").value=fabric.seed;syncFabric();};
+
 $("btn-start").onclick=()=>{
   $("ovl-title").classList.remove("show");
-  renderPlan(); applyBridge(); $("ovl-plan").classList.add("show");
+  renderPlan(); applyBridge(); syncFabric(); $("ovl-plan").classList.add("show");
 };
 $("btn-plan-go").onclick=()=>{
   $("ovl-plan").classList.remove("show");
-  S=SIMCORE.create({mode:plan.mode,scale:plan.scale});
+  const cfg={mode:plan.mode,scale:plan.scale,
+             N:fabric.N,consent:fabric.consent,fam:fabric.fam,seed:fabric.seed,coeff:COEFF};
+  if(BRIDGE_OWNERS){cfg.owners=BRIDGE_OWNERS;}          // B4：匯入案件＝事實開局
+  S=SIMCORE.create(cfg);
   FLOW.hist={};                       // 新局：清空沙盤資金流紀錄
   renderProcess(); renderCore(); render();
-  chapter("第 1 章","剩下的十四戶","錢能算出共同負擔，算不出人為什麼搖頭。",1900);
+  const 未=S.target-S.agreed0;
+  chapter("第 1 章",S.agreed0===34&&S.N===48?"剩下的十四戶":`剩下的${未}戶`,"錢能算出共同負擔，算不出人為什麼搖頭。",1900);
 };
 /* 預設先建一局（危老×基準）供背景顯示；正式開局在規劃定案後重建 */
 S=SIMCORE.create(); renderProcess(); renderCore(); render();

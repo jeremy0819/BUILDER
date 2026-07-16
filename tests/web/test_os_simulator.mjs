@@ -124,5 +124,90 @@ for (const n of [12, 48, 80]) ok(SIMCORE.buildOwnerMatrix(n, 1, 60, coeff).lengt
 let threw = false; try { SIMCORE.buildOwnerMatrix(11, 1, 60, coeff); } catch (e) { threw = true; }
 ok(threw, "戶數 <12 拋錯");
 
+// ── 12. B1 參數化 create：N∈{24,48} 測試矩陣 ──
+// 12a. 經典局重現（預設參數＝v2 完全一致，上方 1–10 全數即為證）
+s = SIMCORE.create();
+ok(s.N === 48 && s.agreed0 === 34 && s.units[47].boss === true, "預設＝經典局（48/34/BOSS47）");
+ok(JSON.stringify(s.families) === JSON.stringify(SIMCORE.FAMILY), "經典局家族＝固定 FAMILY");
+// 12b. 決定性：同參數→同盤面；異 seed→異盤面
+const mk = c => { const st = SIMCORE.create(c);
+  return JSON.stringify(Object.values(st.units).map(u => [u.consent, u.stance, u.family])) + "|" + st.pos.join(","); };
+ok(mk({N:24, seed:5}) === mk({N:24, seed:5}), "N=24 同 seed 決定性");
+ok(mk({N:24, seed:5}) !== mk({N:24, seed:6}), "N=24 異 seed 異盤面");
+// 12c. 戶籍守恆＋滑桿比例
+for (const [n, cons] of [[24, 71], [48, 50], [12, 71], [80, 60]]) {
+  const st = SIMCORE.create({N:n, consent:cons, seed:9});
+  const a = Object.values(st.units).filter(u => u.consent === "agreed").length;
+  const o = Object.values(st.units).filter(u => u.consent === "opposed").length;
+  ok(Object.keys(st.units).length === n && a === st.agreed0 && a + o < n,
+     `N=${n} consent=${cons}%：戶數守恆＋三籍分佈`);
+  ok(st.target === (n === 48 && cons === 50 ? 48 : n) || st.cfg.mode !== "weilao", `N=${n} 危老 target=N`);
+}
+let threwN = false; try { SIMCORE.create({N:11}); } catch (e) { threwN = true; }
+ok(threwN, "N=11 拋錯（12–80 界限）");
+// 12d. 程序家族：全員非同意非BOSS、規模 2–3、索引一致
+s = SIMCORE.create({N:24, seed:5, fam:60});
+ok(s.families.length > 0, "N=24 fam=60% 有家族生成");
+ok(s.families.every(f => f.length >= 2 && f.length <= 3 &&
+   f.every(id => s.units[id].consent !== "agreed" && !s.units[id].boss)), "家族成員皆非同意非BOSS·規模2–3");
+ok(s.families.every((f, fi) => f.every(id => s.units[id].family === fi)), "family 索引雙向一致");
+// 12e. N=24 可贏帶（貪婪流程）＋掛機必輸
+s = SIMCORE.create({N:24, seed:5, mode:"weilao"});
+for (let w = 0; w < 40 && !s.over; w++) {
+  while (s.ap > 0 && !s.over) {
+    const t = Object.values(s.units).filter(u => u.consent !== "agreed")
+      .sort((a, b) => (b.boss ? 200 : b.stance) - (a.boss ? 200 : a.stance))[0];
+    if (!t) break; SIMCORE.listen(s, t.id);
+  }
+  if (!s.over) SIMCORE.endWeek(s);
+}
+ok(s.won === true, "N=24 貪婪傾聽可贏（可贏帶）");
+s = SIMCORE.create({N:24, seed:5});
+for (let i = 0; i < 30 && !s.over; i++) SIMCORE.endWeek(s);
+ok(s.won === false && SIMCORE.agreedCount(s) === s.agreed0, "N=24 掛機＝零進展、必輸");
+
+// ── 13. B1 權值矩陣掛載（傳 coeff → 每戶有 pre_value/weight）──
+s = SIMCORE.create({N:24, seed:5, coeff});
+const us = Object.values(s.units);
+ok(us.every(u => u.pre_value > 0 && u.weight > 0), "每戶掛 pre_value/weight");
+ok(Math.abs(us.reduce((a, u) => a + u.weight, 0) - 1) < 1e-3, "戶權值總和≈1");
+
+// ── 14. B3 三態＋順位券 ──
+s = SIMCORE.create({N:24, seed:5});
+ok(s.tickets === SIMCORE.TICKETS0, "開局順位券＝TICKETS0");
+const pend = Object.values(s.units).find(u => u.consent === "pending" && !u.boss);
+const stanceB4 = pend.stance;
+ok(SIMCORE.ticket(s, pend.id).ok === true && pend.stance === Math.min(100, stanceB4 + 12), "順位券 +12 信任");
+ok(s.tickets === SIMCORE.TICKETS0 - 1 && pend.ticketed === true, "券數遞減＋標記");
+ok(SIMCORE.ticket(s, pend.id).ok === false, "同戶第二張無效");
+const bossU = Object.values(s.units).find(u => u.boss);
+if (bossU) ok(SIMCORE.ticket(s, bossU.id).ok === false, "祖厝對順位券免疫");
+// 拿券戶翻轉→三態＝選屋
+while (pend.consent !== "agreed" && s.ap > 0) SIMCORE.listen(s, pend.id);
+if (pend.consent !== "agreed") { s.ap = 4; while (pend.consent !== "agreed") SIMCORE.listen(s, pend.id); }
+ok(pend.tri === "選屋", "拿券翻轉＝選屋");
+// 三態守恆
+const stl = SIMCORE.settle(s);
+ok(stl.total === s.N && stl.選屋.length + stl.抽籤.length + stl.現金.length === s.N, "三態守恆 Σ=N");
+ok(stl.選屋.includes(pend.id), "選屋名單含拿券戶");
+ok(JSON.stringify(SIMCORE.settle(s).抽序) === JSON.stringify(stl.抽序), "抽序決定性（同 seed）");
+
+// ── 15. B4 匯入 owners 開局（事實 verbatim）──
+const owners = v21ex();
+function v21ex(){
+  const doc = JSON.parse(readFileSync(join(root, "schemas/examples/v2/v2_1_案例D_權變示範.json"), "utf8"));
+  const alloc = Object.fromEntries((doc.result.owner_allocations||[]).map(a => [a.owner_id, a]));
+  return doc.input.owners.map(o => ({owner_id:o.owner_id, consent:o.consent,
+    pre_value:(alloc[o.owner_id]||{}).pre_value, value_share:(alloc[o.owner_id]||{}).value_share,
+    alloc:alloc[o.owner_id]||null}));
+}
+s = SIMCORE.create({mode:"weilao", scale:"M", owners});
+ok(s.N === owners.length, "B4：N＝owners 數");
+ok(SIMCORE.agreedCount(s) === owners.filter(o => o.consent === "agreed").length, "B4：開局同意數＝owners 事實");
+ok(Object.values(s.units).every(u => u.oid && (u.weight == null || u.weight > 0)), "B4：每戶掛 owner_id＋verbatim value_share");
+const bossImp = Object.values(s.units).find(u => u.boss);
+ok(!bossImp || Object.values(s.units).filter(u => u.consent === "opposed")
+   .every(u => (u.pre_value||0) <= (bossImp.pre_value||0)), "B4：關鍵戶＝最高更新前價值反對戶");
+
 console.log(`\nURBAN STRAND v2 headless：${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
