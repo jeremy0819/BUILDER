@@ -26,7 +26,8 @@ from core.redcf.finance import (
     財務率預設, calc_總銷, calc_共同負擔, calc_分回,
     calc_投報全案, calc_投報敏感度,
 )
-from core.redcf.valuation import calc_更新前價值
+from core.redcf.valuation import (calc_更新前價值,
+    load_coefficients, calc_戶價值, build_owner_matrix)
 from core.redcf.rights import calc_權利變換, calc_找補, build_owner_allocations
 from core.redcf.cashflow import calc_現金流分期
 from core.redcf.workflow import validate_workflow, migrate_workflow, derive_consent_state
@@ -53,8 +54,8 @@ __all__ = [
     # 財務（L6）
     "財務率預設", "calc_總銷", "calc_共同負擔", "calc_分回",
     "calc_投報全案", "calc_投報敏感度",
-    # 估值（L7）
-    "calc_更新前價值",
+    # 估值（L7）＋ B 系列更新前價值係數矩陣
+    "calc_更新前價值", "load_coefficients", "calc_戶價值", "build_owner_matrix",
     # 權利變換／找補（M3）
     "calc_權利變換", "calc_找補", "build_owner_allocations", "calc_現金流分期",
     # 案件管理層（M3-C Workflow OS）

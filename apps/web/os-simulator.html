@@ -586,7 +586,29 @@ const SIMCORE = (() => {
     if(s.week>s.weeksMax&&!s.won){s.over=true;s.won=false;}
     return ev;
   }
+  // ── B1 更新前價值矩陣（鏡像 core/redcf/valuation.build_owner_matrix；同 seed→同結果）──
+  // 決定性 LCG 與 Python 版位元對齊；係數由外部傳入（coefficients.json，不寫死）。
+  function _lcg(seed){ let s=seed>>>0; return ()=>{ s=(Math.imul(s,1664525)+1013904223)>>>0; return s/0x100000000; }; }
+  function _pick(pairs,r){ return pairs[Math.min(pairs.length-1, Math.floor(r*pairs.length))][0]; }
+  function buildOwnerMatrix(n, seed, base, coeff){
+    if(!(n>=12 && n<=80)) throw new Error("戶數 n 需在 12–80（B1 可變戶數矩陣）");
+    const R=Object.fromEntries(coeff.road_width), Z=Object.fromEntries(coeff.zoning),
+          B=Object.fromEntries(coeff.building_type), F=Object.fromEntries(coeff.floor);
+    const b = base!=null ? base : coeff.base_price_萬per坪.default;
+    const rng=_lcg(seed>>>0), rows=[];
+    for(let i=0;i<n;i++){
+      const road=_pick(coeff.road_width,rng()), zoning=_pick(coeff.zoning,rng()),
+            building=_pick(coeff.building_type,rng()), floor=_pick(coeff.floor,rng());
+      const area=Math.round((15+rng()*35)*10)/10;
+      const pv=Math.round(b*R[road]*Z[zoning]*B[building]*F[floor]*area*100)/100;
+      rows.push({owner_id:"W"+String(i+1).padStart(2,"0"),road,zoning,building,floor,area_坪:area,pre_value:pv});
+    }
+    const tot=rows.reduce((a,x)=>a+x.pre_value,0)||1;
+    rows.forEach(x=>x.weight=Math.round(x.pre_value/tot*1e6)/1e6);
+    return rows;
+  }
   return{create,listen,offer,briefing,endWeek,agreedCount,neighbors,code,pendingMilestone,
+         buildOwnerMatrix,
          SCEN,TRUST_OFF,FAMILY,AP_MAX,BUDGET0,AGREE_AT,BRIEF_CEIL,BOSS,N};
 })();
 /*SIMCORE-END*/
