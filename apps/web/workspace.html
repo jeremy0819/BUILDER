@@ -1,0 +1,324 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>URBAN RENEWAL OS · WORKSPACE 案件工作區</title>
+<style>
+/* ————————————————————————————————————————————————
+   WORKSPACE — 案件管理層（M3-C C2：骨架＋案件列表＋匯入建案）
+   本地儲存（localStorage）· 零計算：顯示的財務數字逐欄來自匯入 v2.1 的 result（SSOT）。
+   純轉換邏輯抽在下方 WORKLOGIC 標記區塊（node headless 可測，零 DOM）。
+   真實案件資料只存瀏覽器 localStorage，永不進版控。主題：儀表板雙主題（日用工具）。
+———————————————————————————————————————————————— */
+:root{
+  --accent:#5A3FE0; --accent-2:#8A6BF5; --accent-soft:#eeeafb;
+  --bg:#f5f4f9; --panel:#ffffff; --ink:#171529; --mute:#67637d; --line:#e7e4f0;
+  --err:#d1394b; --warn:#b7791f; --info:#2563eb; --ok:#0f9d6a;
+  --ok-bg:#e6f7f0; --warn-bg:#fbf2e1;
+  --shadow:0 1px 2px rgba(23,21,41,.05),0 12px 30px rgba(23,21,41,.07);
+  --r:16px; --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{
+  --accent:#9a86ff; --accent-2:#b9abff; --accent-soft:#221d3c;
+  --bg:#0d0c15; --panel:#181626; --ink:#edeafb; --mute:#a6a2c0; --line:#2a2740;
+  --err:#f4788a; --warn:#e0aa55; --info:#82a8f8; --ok:#4fd3a4;
+  --ok-bg:#10261e; --warn-bg:#2a2112;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 12px 30px rgba(0,0,0,.4);
+}}
+:root[data-theme="light"]{--accent:#5A3FE0;--accent-2:#8A6BF5;--accent-soft:#eeeafb;--bg:#f5f4f9;--panel:#fff;--ink:#171529;--mute:#67637d;--line:#e7e4f0;--err:#d1394b;--warn:#b7791f;--info:#2563eb;--ok:#0f9d6a;--ok-bg:#e6f7f0;--warn-bg:#fbf2e1;--shadow:0 1px 2px rgba(23,21,41,.05),0 12px 30px rgba(23,21,41,.07)}
+:root[data-theme="dark"]{--accent:#9a86ff;--accent-2:#b9abff;--accent-soft:#221d3c;--bg:#0d0c15;--panel:#181626;--ink:#edeafb;--mute:#a6a2c0;--line:#2a2740;--err:#f4788a;--warn:#e0aa55;--info:#82a8f8;--ok:#4fd3a4;--ok-bg:#10261e;--warn-bg:#2a2112;--shadow:0 1px 2px rgba(0,0,0,.35),0 12px 30px rgba(0,0,0,.4)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:26px 20px 64px}
+.tnum{font-variant-numeric:tabular-nums} .mono{font-family:var(--mono)}
+a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+
+header.top{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
+  padding-bottom:15px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px;flex:none}
+h1{font-size:21px;margin:0;letter-spacing:-.01em;font-weight:800}
+.sub{color:var(--mute);font-size:12.5px;margin-top:2px}
+.navr{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.pill{font-size:11.5px;font-weight:650;padding:5px 11px;border-radius:999px;border:1px solid var(--line);color:var(--mute);background:var(--panel);cursor:pointer;text-decoration:none}
+.pill:hover{border-color:var(--accent);color:var(--accent);text-decoration:none}
+
+.ssot{display:flex;gap:10px;align-items:flex-start;background:var(--accent-soft);
+  border:1px solid color-mix(in srgb,var(--accent) 22%,transparent);border-radius:12px;
+  padding:11px 15px;margin:18px 0 20px;font-size:12.5px}
+.ssot b{color:var(--accent)}
+
+/* 匯入區 */
+.import{background:var(--panel);border:1.5px dashed color-mix(in srgb,var(--accent) 40%,var(--line));border-radius:var(--r);
+  padding:22px;text-align:center;box-shadow:var(--shadow);margin-bottom:22px;transition:border-color .15s,background .15s}
+.import.drag{border-color:var(--accent);background:var(--accent-soft)}
+.import h2{margin:0 0 4px;font-size:16px}
+.import p{margin:0 0 14px;color:var(--mute);font-size:12.5px}
+.btn{cursor:pointer;font-size:13px;font-weight:700;border:1px solid var(--accent);background:var(--accent);color:#fff;
+  padding:9px 20px;border-radius:9px}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn.sm{font-size:11.5px;padding:6px 12px;border-radius:8px}
+.btn.danger{border-color:color-mix(in srgb,var(--err) 45%,transparent);background:transparent;color:var(--err)}
+.err{color:var(--err);font-size:12px;margin-top:10px;min-height:16px}
+
+.slab{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--mute);font-weight:700;margin:0 2px 12px}
+.cases{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 17px;box-shadow:var(--shadow)}
+.card .ct{font-size:10.5px;font-weight:800;letter-spacing:.04em;color:var(--accent);text-transform:uppercase}
+.card .cn{font-size:17px;font-weight:750;margin:2px 0 4px}
+.card .meta{font-family:var(--mono);font-size:10.5px;color:var(--mute);word-break:break-all}
+.card .kpis{display:flex;gap:14px;flex-wrap:wrap;margin:11px 0 4px}
+.card .kpi .k{font-size:10.5px;color:var(--mute)}
+.card .kpi .v{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
+.progress{height:8px;border-radius:999px;background:var(--line);overflow:hidden;margin:9px 0 3px;position:relative}
+.progress>span{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));border-radius:999px}
+.progress .thr{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--ink);opacity:.55}
+.plab{display:flex;justify-content:space-between;font-size:11px;color:var(--mute)}
+.card .acts{display:flex;gap:7px;margin-top:13px;flex-wrap:wrap}
+.empty{background:var(--panel);border:1px dashed var(--line);border-radius:var(--r);padding:34px 20px;text-align:center;color:var(--mute);font-size:13px}
+
+/* 單案骨架頁 */
+.detail{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:22px;margin-top:8px}
+.spine{display:flex;gap:0;align-items:flex-start;overflow-x:auto;padding-bottom:6px;margin-bottom:14px}
+.st{flex:1 1 0;min-width:80px;text-align:center;position:relative;padding-top:15px}
+.st::before{content:"";position:absolute;top:5px;left:calc(-50% + 5px);width:100%;height:2px;background:var(--line)}
+.st:first-child::before{display:none}
+.st .dot{position:absolute;top:0;left:50%;transform:translateX(-50%);width:10px;height:10px;border-radius:50%;background:var(--panel);border:2px solid var(--line)}
+.st.now .dot{background:var(--accent);border-color:var(--accent)}
+.st .sl{font-family:var(--mono);font-size:10px;color:var(--mute)}
+.st.now .sl{color:var(--accent);font-weight:700}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:14px}
+.tab{font-size:12.5px;font-weight:650;padding:8px 13px;border:none;background:none;color:var(--mute);cursor:pointer;border-bottom:2px solid transparent}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.tabpane{min-height:120px;font-size:13px;color:var(--mute)}
+.wip{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:12px 15px;font-size:12.5px;display:inline-block}
+.fin .row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--line);color:var(--mute)}
+.fin .row b{color:var(--ink);font-family:var(--mono)}
+.fin .src{font-family:var(--mono);font-size:10px;color:var(--mute);margin-top:10px}
+footer{margin-top:30px;border-top:1px solid var(--line);padding-top:13px;font-size:11px;color:var(--mute);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="logo">UR<br>OS</div>
+      <div><h1>案件工作區 · WORKSPACE</h1><div class="sub">案件管理層（M3-C）· 本地儲存 · 零計算</div></div>
+    </div>
+    <div class="navr">
+      <a class="pill" href="index.html">⌂ OS 主選單</a>
+      <a class="pill" href="dashboard.html">📊 儀表板</a>
+      <a class="pill" href="os-simulator.html">🕹️ 沙盤</a>
+      <span class="pill" id="tgl">◐ 主題</span>
+    </div>
+  </header>
+
+  <div class="ssot"><span>🔒</span><div>本頁<b>不做任何計算</b>：案件卡顯示的財務數字（共負/投報）逐欄來自匯入 v2.1 檔的
+  <b>result</b>（SSOT）；同意進度為<b>計數</b>。案件存於瀏覽器 <b>localStorage</b>——真實資料僅在本機、不上傳、不進版控。</div></div>
+
+  <div class="import" id="drop">
+    <h2>＋ 新案件</h2>
+    <p>匯入一份 <b>v2.1 案件 JSON</b>（由儀表板／RE-DCF 精確計算匯出）——選擇檔案或拖放到此。</p>
+    <button class="btn" id="pick">選擇 JSON 檔</button>
+    <input type="file" id="file" accept="application/json,.json" style="display:none">
+    <div class="err" id="imp-err"></div>
+  </div>
+
+  <div id="list-view">
+    <div class="slab">案件列表</div>
+    <div class="cases" id="cases"></div>
+  </div>
+
+  <div id="case-view" style="display:none"></div>
+
+  <footer>
+    <span>URBAN RENEWAL OS · WORKSPACE（C2 骨架）— 同意看板/任務/決策/多快照為 C3–C5</span>
+    <span><a href="index.html">OS 主選單</a> · <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">BUILDER</a></span>
+  </footer>
+</div>
+
+<script>
+/*WORKLOGIC-BEGIN*/
+/* WORKLOGIC — 純轉換邏輯（零 DOM、零 localStorage、零財務運算；node headless 可測）。
+   把 v2.1 計算檔轉成 wf-1.0 Project 文件（import-to-create），並抽出唯讀顯示子集。
+   紅線：不對 result 做任何四則運算——只搬欄位、計數、逐欄複製既有值。 */
+const WORKLOGIC = (() => {
+  const 門檻 = ct => ct === "danger_building" ? 1.0 : 0.75;   // 危老 100% / 都更 3/4（法規常數）
+
+  function stakeholdersFromOwners(owners){
+    return (owners || []).map(o => {
+      const s = {stakeholder_id: o.owner_id, role: "owner"};
+      if (o.land_share != null) s.land_share = o.land_share;
+      if (o.pre_value != null) s.pre_value = o.pre_value;
+      if (o.min_unit_eligible != null) s.min_unit_eligible = o.min_unit_eligible;
+      return s;
+    });
+  }
+  function snapshotRef(v21){
+    const p = v21.provenance || {};
+    return {id:"snap-01", label:"匯入版", schema_version: v21.schema_version,
+            input_hash: p.input_hash, core_version: p.core_version,
+            computed_at: p.computed_at, file_ref: "local:import"};
+  }
+  function projectId(v21){
+    const h = (v21.provenance && v21.provenance.input_hash || "").replace(/^sha256:/,"");
+    return "prj-" + (h.slice(0,8) || "unknown");
+  }
+  function importV21ToWorkflow(v21){
+    if(!v21 || v21.schema_version !== "2.1") throw new Error("需要 schema v2.1 的案件 JSON（本檔非 v2.1）");
+    if(!v21.provenance || !v21.provenance.input_hash) throw new Error("缺 provenance.input_hash，無法建立快照引用");
+    const proj = v21.project || {};
+    const snap = snapshotRef(v21);
+    return {
+      schema_version: "wf-1.0",
+      project: {
+        project_id: projectId(v21),
+        code_name: proj.name || proj.id || "未命名案件",
+        case_type: proj.case_type || "urban_renewal",
+        ...(v21.engine && v21.engine.mode ? {mode: v21.engine.mode} : {}),
+        stage: "S1",
+        active_snapshot: snap.id,
+        snapshots: [snap],
+      },
+      stakeholders: stakeholdersFromOwners(v21.input && v21.input.owners),
+      consent_events: [], tasks: [], decisions: [],
+    };
+  }
+  // 唯讀顯示子集：逐欄複製既有 result 值＋計數（零計算）
+  function displaySnapshot(v21){
+    const r = v21.result || {}, owners = (v21.input && v21.input.owners) || [];
+    const agreed = owners.filter(o => o.consent === "agreed").length;
+    return {
+      code_name: (v21.project||{}).name || "未命名",
+      case_type: (v21.project||{}).case_type || "urban_renewal",
+      stakeholders_n: (owners.length) + 0,
+      input_hash: (v21.provenance||{}).input_hash || "",
+      core_version: (v21.provenance||{}).core_version || "",
+      computed_at: (v21.provenance||{}).computed_at || "",
+      shared_cost_ratio: r.shared_cost_ratio ?? null,   // 逐欄複製，不運算
+      return_rate: r.return_rate ?? null,
+      warnings_n: (r.warnings || []).length,
+      agreed, total: owners.length, threshold: 門檻((v21.project||{}).case_type),
+    };
+  }
+  return {importV21ToWorkflow, stakeholdersFromOwners, snapshotRef, projectId, displaySnapshot, 門檻};
+})();
+/*WORKLOGIC-END*/
+
+/* ── DOM / localStorage 層（不進 headless）── */
+const $ = id => document.getElementById(id);
+const KEY = "uros.workflow.v1";
+const pct = x => x==null ? "—" : (x*100).toFixed(1)+"%";
+const shortHash = h => (h||"").replace(/^sha256:/,"").slice(0,10);
+
+function loadStore(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {order:[],projects:{}}; }catch(e){ return {order:[],projects:{}}; } }
+function saveStore(s){ localStorage.setItem(KEY, JSON.stringify(s)); }
+
+function addProject(v21){
+  const wf = WORKLOGIC.importV21ToWorkflow(v21);
+  const snap = WORKLOGIC.displaySnapshot(v21);
+  const pid = wf.project.project_id;
+  const s = loadStore();
+  if(!s.projects[pid]) s.order.unshift(pid);
+  s.projects[pid] = {wf, snap};
+  saveStore(s);
+  return pid;
+}
+function delProject(pid){
+  const s = loadStore();
+  delete s.projects[pid]; s.order = s.order.filter(x=>x!==pid); saveStore(s);
+}
+
+function caseCard(pid, rec){
+  const {wf, snap} = rec;
+  const typ = snap.case_type==="danger_building" ? "危老重建" : "都市更新";
+  const ar = snap.total ? snap.agreed/snap.total : 0, thr = snap.threshold;
+  return `<div class="card">
+    <div class="ct">${typ}${wf.project.mode?" · "+wf.project.mode:""}</div>
+    <div class="cn">${snap.code_name}</div>
+    <div class="meta">${wf.project.stage} · ${snap.stakeholders_n} 利害關係人 · snap ${shortHash(snap.input_hash)}…@${snap.core_version}</div>
+    <div class="kpis">
+      <div class="kpi"><div class="k">共負比</div><div class="v">${pct(snap.shared_cost_ratio)}</div></div>
+      <div class="kpi"><div class="k">投報率</div><div class="v">${pct(snap.return_rate)}</div></div>
+      <div class="kpi"><div class="k">健檢</div><div class="v">${snap.warnings_n}</div></div>
+    </div>
+    <div class="progress"><span style="width:${Math.min(100,ar*100)}%"></span><div class="thr" style="left:${thr*100}%"></div></div>
+    <div class="plab"><span>同意 ${snap.agreed}/${snap.total}（計數）</span><span>門檻 ${(thr*100)|0}%</span></div>
+    <div class="acts">
+      <button class="btn sm" onclick="openCase('${pid}')">開啟</button>
+      <button class="btn sm ghost" onclick="exportCase('${pid}')">匯出 wf</button>
+      <button class="btn sm danger" onclick="removeCase('${pid}')">刪除</button>
+    </div></div>`;
+}
+function renderList(){
+  const s = loadStore();
+  $("case-view").style.display="none"; $("list-view").style.display="";
+  $("cases").innerHTML = s.order.length
+    ? s.order.map(pid => caseCard(pid, s.projects[pid])).join("")
+    : `<div class="empty">尚無案件——匯入一份 v2.1 案件 JSON 開始。<br><span style="font-size:11.5px">（可用 schemas/examples/v2/v2_1_案例D_權變示範.json 測試）</span></div>`;
+}
+const PH=["前期評估","整合","事業計畫","審議","權利變換","拆除開工"];
+function openCase(pid){
+  const s = loadStore(), rec = s.projects[pid]; if(!rec) return;
+  const {wf, snap} = rec;
+  const nowIdx = Math.max(0, (parseInt((wf.project.stage||"S1").slice(1))-1));
+  const spine = PH.map((p,i)=>`<div class="st ${i===Math.min(nowIdx,PH.length-1)?'now':''}"><span class="dot"></span><span class="sl">S${i+1}<br>${p}</span></div>`).join("");
+  $("list-view").style.display="none";
+  const cv=$("case-view"); cv.style.display="";
+  cv.innerHTML=`
+    <button class="btn sm ghost" onclick="renderList()">← 案件列表</button>
+    <div class="detail">
+      <div style="font-size:19px;font-weight:800;margin-bottom:2px">${snap.code_name}</div>
+      <div class="meta mono" style="color:var(--mute);font-size:11px;margin-bottom:14px">${wf.project.project_id} · snap ${shortHash(snap.input_hash)}…@${snap.core_version}</div>
+      <div class="spine">${spine}</div>
+      <div class="tabs">
+        <button class="tab on" data-t="fin">財務快照</button>
+        <button class="tab" data-t="board">同意看板</button>
+        <button class="tab" data-t="task">時程任務</button>
+        <button class="tab" data-t="dec">決策紀錄</button>
+      </div>
+      <div class="tabpane" id="pane"></div>
+    </div>`;
+  const panes={
+    fin:`<div class="fin"><div class="row"><span>共同負擔比</span><b>${pct(snap.shared_cost_ratio)}</b></div>
+      <div class="row"><span>投報率</span><b>${pct(snap.return_rate)}</b></div>
+      <div class="row"><span>同意（計數）</span><b>${snap.agreed}/${snap.total} · 門檻 ${(snap.threshold*100)|0}%</b></div>
+      <div class="row"><span>健檢 warnings</span><b>${snap.warnings_n} 項</b></div>
+      <div class="src">數字逐欄來自匯入 result（input_hash ${shortHash(snap.input_hash)}…）· 逐戶分回/找補見開發評估儀表板 · 本頁零計算</div></div>`,
+    board:`<div class="wip">同意看板＋事件抽屜＝ C3（狀態機純邏輯＋Gate 7 headless）。目前已載入 ${snap.stakeholders_n} 位利害關係人。</div>`,
+    task:`<div class="wip">時程任務（S1–S11）＝ C4。</div>`,
+    dec:`<div class="wip">決策紀錄（釘 input_hash 稽核鏈）＝ C4。</div>`,
+  };
+  $("pane").innerHTML=panes.fin;
+  cv.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
+    cv.querySelectorAll(".tab").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+    $("pane").innerHTML=panes[b.dataset.t];
+  });
+}
+function removeCase(pid){ if(confirm("刪除此案件？（僅移除本機紀錄，不影響匯入的原始 JSON）")){ delProject(pid); renderList(); } }
+function exportCase(pid){
+  const rec=loadStore().projects[pid]; if(!rec) return;
+  const blob=new Blob([JSON.stringify(rec.wf,null,2)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download=rec.wf.project.project_id+"_workflow.json"; a.click(); URL.revokeObjectURL(a.href);
+}
+function handleFile(f){
+  $("imp-err").textContent="";
+  const rd=new FileReader();
+  rd.onload=()=>{ try{
+    const v21=JSON.parse(rd.result);
+    const pid=addProject(v21); renderList();
+    const el=document.querySelector(".cases .card"); if(el){el.style.outline="2px solid var(--accent)";setTimeout(()=>el.style.outline="",1200);}
+  }catch(e){ $("imp-err").textContent="匯入失敗："+e.message; } };
+  rd.onerror=()=>{ $("imp-err").textContent="讀檔失敗"; };
+  rd.readAsText(f);
+}
+$("pick").onclick=()=>$("file").click();
+$("file").onchange=e=>{ if(e.target.files[0]) handleFile(e.target.files[0]); e.target.value=""; };
+const drop=$("drop");
+["dragover","dragenter"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("drag");}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("drag");}));
+drop.addEventListener("drop",e=>{ const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
+$("tgl").onclick=()=>{const root=document.documentElement;const cur=root.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");root.setAttribute("data-theme",cur==="dark"?"light":"dark");};
+renderList();
+</script>
