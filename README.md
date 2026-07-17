@@ -1,17 +1,21 @@
-# Urban-Renewal-OS（暫名 BUILDER）
+# BUILDER — Urban Renewal Decision OS
 
 ![CI](https://github.com/jeremy0819/BUILDER/actions/workflows/ci.yml/badge.svg)
 
-都市更新／危老前期評估的整合系統（Urban Renewal OS）目標容器。
+把一個都更／危老案，走成一條可稽核的決策流程：
 
-**現況**：架構凍結＋兩庫搬入完成；**M1 基礎建設完成**（CI 五道 Gate、Headless 測試、
-版本治理、Release Checklist、部署遷移計畫、LICENSE 分析）。可發 `os-v0.1.0-alpha`。
+**Site Analysis → Product Planning → Negotiation Strategy → Decision Report**
+（基地診斷 → 產品規劃 → 整合推演 → 決策報告；通用語言見 `docs/STANDARD_WORKFLOW.md`）
 
-- `RE-DCF-Tool` → `core/redcf/`＋`schemas/`＋`apps/streamlit/`（唯一計算核心，SSOT）
-- `Urban-Renewal` → `apps/web/`＋`docs/methodology/`（靜態展示與方法論）
+**現況**：M1–M4 完成（工程地基／產品地基／Workflow OS＋B 系列／Decision Engine v0.1）；
+M4.5 試金石（真實案件校準 ×2 ✅）；M5 THE WORKFLOW（決策流程 IA）進行中。
+工作流只呈現引擎輸出——公式只在 `core/redcf`（SSOT），判讀只出自 Decision Engine。
+
+- `core/redcf/`＋`schemas/`＋`apps/streamlit/`（唯一計算核心，SSOT；源自 RE-DCF-Tool）
+- `apps/web/`＋`docs/methodology/`（決策流程外殼與方法論；源自 Urban-Renewal）
 
 啟動：`pip install -r requirements.txt` → `streamlit run apps/streamlit/app.py`（計算工具）；
-靜態站直接開 `apps/web/index.html`。測試：根目錄 `pytest`。
+靜態站直接開 `apps/web/index.html`（15 分鐘上手見 `docs/GETTING_STARTED.md`）。測試：根目錄 `pytest`。
 
 **CI 五道 Gate**（Gate0–Gate4，`.github/workflows/ci.yml`，任一紅即擋 merge；共 6 條指令）：
 Gate0 資料紀律／Gate1 pytest＋min_example／Gate2 Core 零 UI 依賴／

@@ -1,0 +1,113 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>URBAN RENEWAL OS · DECISION REPORT 決策報告</title>
+<style>
+/* ─────────────────────────────────────────────
+   DECISION REPORT（M5 P0 scaffold）— 產品 payoff。
+   鐵律：本頁「組合」三引擎輸出（Core 財務／Decision Engine EV·verdict／Strategy=M6），
+   自己一條都不算：每個數字逐欄來自 localStorage 案件（v2.1 snap）與 decision JSON。
+───────────────────────────────────────────── */
+:root{--accent:#5A3FE0;--accent-2:#8A6BF5;--accent-soft:#eeeafb;--bg:#f5f4f9;--panel:#fff;--ink:#171529;
+  --mute:#67637d;--line:#e7e4f0;--err:#d1394b;--warn:#b7791f;--ok:#0f9d6a;
+  --shadow:0 1px 2px rgba(23,21,41,.05),0 12px 30px rgba(23,21,41,.07);--r:16px;
+  --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root{--accent:#9a86ff;--accent-2:#b9abff;--accent-soft:#221d3c;--bg:#0d0c15;
+  --panel:#181626;--ink:#edeafb;--mute:#a6a2c0;--line:#2a2740;--err:#f4788a;--warn:#e0aa55;--ok:#4fd3a4;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 12px 30px rgba(0,0,0,.4)}}
+:root[data-theme="light"]{--accent:#5A3FE0;--accent-2:#8A6BF5;--accent-soft:#eeeafb;--bg:#f5f4f9;--panel:#fff;--ink:#171529;--mute:#67637d;--line:#e7e4f0;--err:#d1394b;--warn:#b7791f;--ok:#0f9d6a;--shadow:0 1px 2px rgba(23,21,41,.05),0 12px 30px rgba(23,21,41,.07)}
+:root[data-theme="dark"]{--accent:#9a86ff;--accent-2:#b9abff;--accent-soft:#221d3c;--bg:#0d0c15;--panel:#181626;--ink:#edeafb;--mute:#a6a2c0;--line:#2a2740;--err:#f4788a;--warn:#e0aa55;--ok:#4fd3a4;--shadow:0 1px 2px rgba(0,0,0,.35),0 12px 30px rgba(0,0,0,.4)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);line-height:1.55;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:26px 20px 64px}
+a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+header.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--line)}
+h1{font-size:20px;margin:0;font-weight:800} .sub{color:var(--mute);font-size:12px;margin-top:2px}
+.pill{font-size:11.5px;font-weight:650;padding:5px 11px;border-radius:999px;border:1px solid var(--line);color:var(--mute);background:var(--panel);cursor:pointer;text-decoration:none}
+.mono{font-family:var(--mono)}
+.sec{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px 20px;margin-top:16px}
+.sec h2{margin:0 0 4px;font-size:14px} .sec .src{font-family:var(--mono);font-size:10px;color:var(--mute);margin-top:10px}
+.verdict{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.vbig{font-size:34px;font-weight:900;letter-spacing:.02em}
+.vmeta{font-size:12.5px;color:var(--mute)} .vmeta b{color:var(--ink)}
+.rows{margin-top:8px} .row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--line);color:var(--mute)}
+.row b{color:var(--ink);font-family:var(--mono)}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)} th{color:var(--mute);font-weight:650;font-size:11px}
+td.n{font-family:var(--mono)}
+.wip{background:color-mix(in srgb,var(--warn) 12%,transparent);color:var(--warn);border-radius:10px;padding:11px 14px;font-size:12.5px}
+.empty{border:1px dashed var(--line);border-radius:var(--r);padding:30px;text-align:center;color:var(--mute);font-size:13px;margin-top:16px}
+.legend{font-size:11.5px;color:var(--mute);margin-top:8px;line-height:1.6}
+footer{margin-top:28px;border-top:1px solid var(--line);padding-top:12px;font-size:11px;color:var(--mute);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+select{font-size:12.5px;padding:6px 9px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div><h1>Decision Report · 決策報告</h1>
+      <div class="sub">Site → Product → People → <b>Decision</b> ｜ 組合三引擎輸出，本頁零計算</div></div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">
+      <select id="case-sel"></select>
+      <a class="pill" href="index.html">⌂ OS</a><a class="pill" href="workspace.html">🗂️ Workspace</a>
+      <span class="pill" id="tgl">◐ 主題</span>
+    </div>
+  </header>
+  <div id="body"></div>
+  <footer><span>URBAN RENEWAL OS · DECISION REPORT（M5 P0 scaffold）</span>
+    <span>Core＝財務 · Decision Engine＝判讀 · Strategy＝M6 · 本頁只組合</span></footer>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const KEY="uros.workflow.v1";
+const pct=x=>x==null?"—":(x*100).toFixed(1)+"%";
+const sh=h=>(h||"").replace(/^sha256:/,"").slice(0,10);
+const VC={GO:"var(--ok)",CAUTION:"var(--warn)",STOP:"var(--err)"};
+function store(){ try{return JSON.parse(localStorage.getItem(KEY))||{order:[],projects:{}}}catch(e){return{order:[],projects:{}}} }
+function render(pid){
+  const s=store(), rec=s.projects[pid];
+  if(!rec){ $("body").innerHTML=`<div class="empty">尚無案件。到 <a href="workspace.html">Workspace</a> 匯入 v2.1 案件 JSON（STEP 2 產出），再回到本頁。</div>`; return; }
+  try{localStorage.setItem("uros.active_case",pid)}catch(e){}
+  const {snap,wf}=rec, dec=rec.decision;
+  const vHTML = dec
+    ? `<div class="verdict"><span class="vbig" style="color:${VC[dec.verdict]}">${dec.verdict}</span>
+       <div class="vmeta">完工機率 <b>${pct(dec.completion_probability)}</b> · 剩餘 <b>${dec.T_remaining_yr} 年</b>
+       ${dec.breakpoint_stakeholder?` · 破局引爆點 <b style="color:var(--err)">${dec.breakpoint_stakeholder}</b>`:""}
+       ${dec.exit_signal?` · <b style="color:var(--err)">EXIT SIGNAL</b>（沉沒成本已排除）`:""}
+       · 急迫度 <b>${dec.decision_urgency}</b><br>
+       假設：r=${dec.assumptions.r} · g=${dec.assumptions.g} · ${dec.assumptions.status_quo_baseline}（可校準建模假設）</div></div>
+       <div class="legend">GO＝三方 EV 皆正且逾門檻報酬；CAUTION＝我方正但有一方 EV≤0（整合不對稱）；STOP＝我方 EV≤0 或地主 EV 顯著為負。判讀全文＝Decision Engine 輸出（DE ${dec.decision_engine_version}）。</div>`
+    : `<div class="wip">本案尚未判讀——在 Core 端執行 decide() 產出 decision JSON，於 Workspace 匯入即顯示（引擎產出即權威，本頁不代算）。</div>`;
+  const evHTML = dec ? `<table><tr><th>視角</th><th>名目</th><th>期望值 EV</th><th>狀態</th></tr>
+      ${["地主","實施者","我方"].map(k=>{const e=dec.ev[k];
+        return `<tr><td>${k}</td><td class="n">${e.nominal==null?"—":e.nominal.toLocaleString()}</td>
+        <td class="n" style="color:${e.ev!=null&&e.ev<=0?"var(--err)":"var(--ink)"}">${e.ev==null?"—":e.ev.toLocaleString()}</td>
+        <td>${e.status==="ok"?"✓":"⚠ insufficient_data（缺欄不臆造）"}</td></tr>`;}).join("")}</table>` : "";
+  $("body").innerHTML=`
+    <div class="sec"><h2>判讀 · Decision Engine</h2>${vHTML}${evHTML}
+      ${dec?`<div class="src">decision ${dec.decision_engine_version} · input_hash ${sh(dec.input_hash)}…（指回 Core result，可溯源）</div>`:""}</div>
+    <div class="sec"><h2>財務 · RE-DCF Core（逐欄自 result）</h2>
+      <div class="rows">
+        <div class="row"><span>案件</span><b>${snap.code_name} · ${snap.case_type==="danger_building"?"危老重建":"都市更新"}</b></div>
+        <div class="row"><span>共同負擔比</span><b>${pct(snap.shared_cost_ratio)}</b></div>
+        <div class="row"><span>投報率</span><b>${pct(snap.return_rate)}</b></div>
+        <div class="row"><span>同意（計數）</span><b>${snap.agreed}/${snap.total} · 門檻 ${(snap.threshold*100)|0}%</b></div>
+        <div class="row"><span>健檢 warnings</span><b>${snap.warnings_n} 項</b></div>
+        <div class="row"><span>階段（Workflow 事實）</span><b>${wf.project.stage}</b></div>
+      </div>
+      <div class="src">input_hash ${sh(snap.input_hash)}…@core ${snap.core_version} · 逐戶分回/找補見 Product Planning（§56）</div></div>
+    <div class="sec"><h2>行動 · Strategy Engine</h2>
+      <div class="wip">逐型對策（先談誰／優先戶／是否調產品）＝ <b>M6 THE STRATEGIST</b>。
+      需 stakeholder_profile schema 先行；本欄位保留空槽，引擎上線即無縫填入——本頁不代為建議。</div></div>`;
+}
+(function(){
+  const s=store();
+  const sel=$("case-sel");
+  sel.innerHTML=s.order.length?s.order.map(p=>`<option value="${p}">${(s.projects[p].snap||{}).code_name||p}</option>`).join(""):`<option>（無案件）</option>`;
+  let act=null; try{act=localStorage.getItem("uros.active_case")}catch(e){}
+  const pid=(act&&s.projects[act])?act:s.order[0];
+  if(pid) sel.value=pid;
+  sel.onchange=e=>render(e.target.value);
+  render(pid);
+})();
+$("tgl").onclick=()=>{const r=document.documentElement;const c=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");r.setAttribute("data-theme",c==="dark"?"light":"dark");};
+</script>

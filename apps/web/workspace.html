@@ -405,6 +405,7 @@ function renderList(){
 const PH=["前期評估","整合","事業計畫","審議","權利變換","拆除開工"];
 function openCase(pid){
   const s = loadStore(), rec = s.projects[pid]; if(!rec) return;
+  try{localStorage.setItem("uros.active_case",pid)}catch(e){}   // 兩層 IA：多案挑案 → 單案容器
   const {wf, snap} = rec;
   const nowIdx = Math.max(0, (parseInt((wf.project.stage||"S1").slice(1))-1));
   const spine = PH.map((p,i)=>`<div class="st ${i===Math.min(nowIdx,PH.length-1)?'now':''}"><span class="dot"></span><span class="sl">S${i+1}<br>${p}</span></div>`).join("");
@@ -413,7 +414,10 @@ function openCase(pid){
   cv.innerHTML=`
     <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center">
       <button class="btn sm ghost" onclick="renderList()">← 案件列表</button>
-      <button class="btn sm" onclick="toSandbox('${pid}')">🕹️ 帶入沙盤推演</button>
+      <span style="display:flex;gap:7px;flex-wrap:wrap">
+        <button class="btn sm" onclick="toSandbox('${pid}')">🕹️ 帶入沙盤推演</button>
+        <button class="btn sm ghost" onclick="location.href='report.html'">✓ 決策報告</button>
+      </span>
     </div>
     <div class="detail">
       <div style="font-size:19px;font-weight:800;margin-bottom:2px">${snap.code_name}</div>

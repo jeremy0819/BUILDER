@@ -3,15 +3,15 @@
 > Urban Renewal Decision OS 的官方使用流程（M4.5 定版）。
 > 一條鐵則：**數字只有一個來源（RE-DCF Core）**；三步各回答一個問題。
 
-## Step 1 · Dashboard（基地）—「這塊基地值得開發嗎？」
+## STEP 1 · Site Analysis 基地診斷 —「這塊地值不值得開發？」
 開 `dashboard.html`：確認地塊資訊——都市計畫、使用分區、容積/建蔽、法規限制、更新潛力 KPI。
 本頁**零計算**，所有數值來自 Core 匯出。答「值得」→ 下一步。
 
-## Step 2 · Evaluator（產品）—「這個產品配置合理嗎？」
+## STEP 2 · Product Planning 產品規劃 —「最佳產品配置？」
 開 `evaluator.html`：輸入建築產品（規模/獎勵/單價），看坪效、容積查核、共同負擔、投報與敏感度。
 這是**唯一正式計算入口**；滿意後匯出 **v2.1 案件 JSON**（帶 input_hash 指紋）。
 
-## Step 3 · Simulator（整合）—「這個案件整合得起來嗎？」
+## STEP 3 · Negotiation Strategy 整合推演 —「整合機率多少？先談誰？」
 兩條路徑：
 - **直接推演**：開沙盤，用三滑桿（戶數 12–80／同意比／家族密度）自訂街區。
 - **實案推演**：先到 `workspace.html` 匯入 Step 2 的 JSON 建案 → 「帶入沙盤推演」——

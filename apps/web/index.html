@@ -125,23 +125,42 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
     <div class="tagline">一塊地，一群人，一個真源。</div>
   </div>
 
-  <!-- OS 官方流程（M4.5 定版）：基地 → 產品 → 整合。Site → Product → People → Decision -->
+  <!-- M5 THE WORKFLOW：Site → Product → People → Decision（產品語言；工作流零推論，答案皆來自引擎）-->
   <div class="pipe">
     <a class="pstage" href="dashboard.html">
-      <div class="pn">STAGE 01</div><div class="ph">① 基地 · Dashboard</div>
-      <div class="pd">確認地塊資訊：都市計畫、使用分區、法規限制、更新潛力——回答「<b>這塊基地值得開發嗎？</b>」（零計算，數值皆來自 Core）</div>
+      <div class="pn">STEP 1 / 3 <span class="pstat" id="st-site"></span></div><div class="ph">Site Analysis · 基地診斷</div>
+      <div class="pd">地籍、都市計畫、法規限制、更新潛力——問「<b>這塊地值不值得開發？</b>」（Site facts 來自 Core；「值不值得」verdict 由 Decision Engine 產生，本卡只呈現）</div>
     </a>
     <div class="parrow">→</div>
     <a class="pstage mid" href="evaluator.html">
-      <div class="pn">STAGE 02</div><div class="ph">② 產品 · Evaluator</div>
-      <div class="pd">輸入建築產品：坪效、容積查核、共同負擔、財務——回答「<b>這個產品配置合理嗎？</b>」（唯一正式計算入口，公式全在 RE-DCF Core）</div>
+      <div class="pn">STEP 2 / 3 <span class="pstat" id="st-prod"></span></div><div class="ph">Product Planning · 產品規劃</div>
+      <div class="pd">建築產品、坪效、容積查核、共同負擔、財務——問「<b>最佳產品配置？</b>」（唯一正式計算入口，公式全在 RE-DCF Core；匯出 Project JSON 進下一步）</div>
     </a>
     <div class="parrow">→</div>
     <a class="pstage" href="os-simulator.html">
-      <div class="pn">STAGE 03</div><div class="ph">③ 整合 · Simulator</div>
-      <div class="pd">帶著 Core 數字推演人心：地主、家族、競爭、時間——回答「<b>這個案件整合得起來嗎？</b>」（不算財務，只推演決策；結束生成故事結算）</div>
+      <div class="pn">STEP 3 / 3 <span class="pstat" id="st-ppl"></span></div><div class="ph">Negotiation Strategy · 整合推演</div>
+      <div class="pd">地主、家族、時間、競爭——問「<b>整合機率多少？先談誰？</b>」（匯流點：意願地質×三方 EV；逐型對策＝M6。EV/verdict 由 Decision Engine 產生）</div>
+    </a>
+    <div class="parrow">→</div>
+    <a class="pstage" href="report.html" style="border-style:dashed">
+      <div class="pn">✓ <span class="pstat" id="st-rep"></span></div><div class="ph">Decision Report · 決策報告</div>
+      <div class="pd">產品 payoff：組合 Core（財務）＋Decision Engine（EV/verdict/完工機率）＋Strategy（M6）——「<b>開發商下一步該做什麼</b>」。組合呈現，不計算。</div>
     </a>
   </div>
+  <script>
+  /* STEP 狀態＝事實旗標（呈現層；零推論）：1=踩過基地頁、2=Workspace 有案（v2.1 已匯）、3=有案帶過沙盤或掛過 decision */
+  (function(){
+    const g=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+    let store=null; try{store=JSON.parse(g("uros.workflow.v1"))||null}catch(e){}
+    const hasCase=!!(store&&store.order&&store.order.length);
+    const hasDec=hasCase&&store.order.some(p=>store.projects[p]&&store.projects[p].decision);
+    const mark=(id,on)=>{const el=document.getElementById(id); if(el&&on){el.textContent="✓ 完成";el.style.color="var(--ok,#0f9d6a)";}};
+    mark("st-site", g("uros.step.site")==="1");
+    mark("st-prod", hasCase);
+    mark("st-ppl", !!g("uros.step.people")||hasDec);
+    mark("st-rep", hasDec);
+  })();
+  </script>
 
   <div class="sect">② 主線 · 參數推演</div>
   <div class="grid">

@@ -1019,6 +1019,7 @@ $("btn-start").onclick=()=>{
 };
 $("btn-plan-go").onclick=()=>{
   $("ovl-plan").classList.remove("show");
+  try{localStorage.setItem("uros.step.people","1");}catch(e){}   // M5 STEP 3 事實旗標
   const cfg={mode:plan.mode,scale:plan.scale,
              N:fabric.N,consent:fabric.consent,fam:fabric.fam,seed:fabric.seed,coeff:COEFF};
   if(BRIDGE_OWNERS){cfg.owners=BRIDGE_OWNERS;}          // B4：匯入案件＝事實開局
