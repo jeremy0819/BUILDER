@@ -231,6 +231,8 @@ const WORKLOGIC = (() => {
       warnings_n: (r.warnings || []).length,
       agreed, total: owners.length, threshold: 門檻((v21.project||{}).case_type),
       allocations: (r.owner_allocations || []).map(a => ({...a})),   // §56 權變表 verbatim（零運算）
+      site: {...((v21.input||{}).site||{})},                          // M5-P1 Site facts verbatim（零運算）
+      public_ratio: ((v21.input||{}).building||{}).public_ratio ?? null,
     };
   }
   // ── C3 同意狀態機（純邏輯，鏡像 core/redcf/workflow.py::derive_consent_state）──

@@ -151,7 +151,10 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
   <div class="ssot"><span>🔒</span><div>所有數字皆由 <b>RE-DCF Core</b> 計算（Result JSON）；儀表板<b>只讀渲染、不重算</b>（SSOT）。
   v2.0 合約含<b>逐層樓板</b>與<b>可重算驗證</b>：給 Core 這份輸入即可回放出同一組 result。以下為 3 個<b>合成範例</b>，零真實資料。</div></div>
 
-  <div class="slab">案件總覽 · 點卡片切換</div>
+  <!-- M5-P1 Case Workspace（單案容器；純呈現，資料全部 verbatim 自 store）-->
+  <div id="casews"></div>
+
+  <div class="slab">示範案例（合成 Baked Core）· 點卡片切換</div>
   <div class="cases" id="cases"></div>
   <div class="detail" id="detail"></div>
 
@@ -344,19 +347,99 @@ function allocTable(){
 document.getElementById("alloc").innerHTML=allocTable();
 const root=document.documentElement;
 document.getElementById("tgl").onclick=()=>{const cur=root.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");root.setAttribute("data-theme",cur==="dark"?"light":"dark");};
-/* M5 STEP 1 事實旗標＋Case Workspace 語境（呈現層：顯示目前案件，零推論） */
-try{
-  localStorage.setItem("uros.step.site","1");
-  const s=JSON.parse(localStorage.getItem("uros.workflow.v1")||"null");
-  const act=localStorage.getItem("uros.active_case");
-  const rec=s&&s.projects&&(s.projects[act]||s.projects[(s.order||[])[0]]);
-  if(rec&&rec.snap){
-    const b=document.createElement("div");
-    b.style.cssText="margin:10px 0 0;padding:9px 13px;border:1px solid var(--line);border-radius:10px;font-size:12px;color:var(--mute)";
-    b.innerHTML=`🗂️ Case Workspace · 目前案件 <b style="color:var(--ink)">${rec.snap.code_name}</b>`+
-      `（${rec.wf.project.stage} · 同意 ${rec.snap.agreed}/${rec.snap.total}）— `+
-      `<a href="workspace.html">切換案件</a> · <a href="report.html">決策報告 →</a>`;
-    document.querySelector(".wrap header, header")?.after(b);
+/* ── M5-P1 Case Workspace（單案容器）——純呈現：所有欄位 verbatim 自 store；影像僅本機 ── */
+try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實旗標
+(function(){
+  const css=document.createElement("style");
+  css.textContent=`
+  .cw{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px 20px;margin:16px 0 22px}
+  .cw-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+  .cw-name{font-size:18px;font-weight:800} .cw-sub{font-size:11px;color:var(--mute);font-family:var(--mono)}
+  .cw-rail{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .cw-rail a{font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--mute);text-decoration:none}
+  .cw-rail a.on{border-color:var(--accent);color:var(--accent)}
+  .cw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:14px}
+  .cw-card{border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+  .cw-card h4{margin:0 0 6px;font-size:11px;letter-spacing:.07em;color:var(--mute);text-transform:uppercase}
+  .cw-row{display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0;color:var(--mute)}
+  .cw-row b{color:var(--ink);font-family:var(--mono)}
+  .cw-verdict{font-weight:900}
+  .cw-assets{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:14px}
+  .cw-slot{border:1.5px dashed var(--line);border-radius:12px;min-height:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:11px;color:var(--mute);cursor:pointer;position:relative;overflow:hidden;text-align:center;padding:6px}
+  .cw-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .cw-slot .del{position:absolute;top:5px;right:6px;z-index:2;background:var(--panel);border:1px solid var(--line);border-radius:7px;font-size:10px;cursor:pointer;padding:1px 6px}
+  .cw-note{font-family:var(--mono);font-size:10px;color:var(--mute);margin-top:9px}
+  .cw-empty{border:1px dashed var(--line);border-radius:16px;padding:22px;margin:16px 0 22px;font-size:13px;color:var(--mute);text-align:center}`;
+  document.head.appendChild(css);
+
+  const KEY="uros.workflow.v1", host=document.getElementById("casews");
+  const fmt=x=>x==null?"—":(typeof x==="number"?x.toLocaleString():x);
+  const pc=x=>x==null?"—":(x*100).toFixed(1)+"%";
+  const VC={GO:"var(--ok)",CAUTION:"var(--warn)",STOP:"var(--err)"};
+  const SLOTS=[["site_plan","🗺️ 基地圖說"],["cadastral","📐 地籍圖"],["zoning","🏙️ 都市計畫圖"],["street","📷 街景照片"]];
+  function load(){ try{return JSON.parse(localStorage.getItem(KEY))||null}catch(e){return null} }
+  function save(s){ localStorage.setItem(KEY, JSON.stringify(s)); }
+
+  function render(){
+    const s=load(); const act=(()=>{try{return localStorage.getItem("uros.active_case")}catch(e){return null}})();
+    const pid=(s&&s.projects&&(s.projects[act]?act:(s.order||[])[0]))||null;
+    if(!pid){ host.innerHTML=`<div class="cw-empty">尚無作用中案件——到 <a href="workspace.html">Workspace</a> 匯入
+      v2.1 案件 JSON（STEP 2 Product Planning 產出）後，本頁即成為該案的 Case Workspace。下方為示範案例。</div>`; return; }
+    const rec=s.projects[pid], {wf,snap}=rec, dec=rec.decision, st=snap.site||{};
+    const assets=rec.assets||{};
+    host.innerHTML=`<div class="cw">
+      <div class="cw-head">
+        <div><div class="cw-name">🗂️ ${snap.code_name}
+          <span style="font-size:11px;color:var(--accent);font-weight:700">${snap.case_type==="danger_building"?"危老重建":"都市更新"}${wf.project.mode?" · "+wf.project.mode:""}</span></div>
+          <div class="cw-sub">Case Workspace · ${wf.project.project_id} · snap ${(snap.input_hash||"").replace(/^sha256:/,"").slice(0,10)}…@${snap.core_version}</div>
+          <div class="cw-rail">
+            <a class="on" href="#">STEP 1 Site（本頁）</a><a href="evaluator.html">STEP 2 Product →</a>
+            <a href="os-simulator.html">STEP 3 People →</a><a href="report.html">✓ Decision Report</a>
+            <a href="workspace.html">⇄ 切換案件</a></div></div>
+        <div style="text-align:right">
+          ${dec?`<div class="cw-verdict" style="color:${VC[dec.verdict]};font-size:22px">${dec.verdict}</div>
+                 <div style="font-size:10.5px;color:var(--mute)">Decision Engine ${dec.decision_engine_version}${dec.breakpoint_stakeholder?` · 引爆點 ${dec.breakpoint_stakeholder}`:""}</div>`
+               :`<div style="font-size:11px;color:var(--mute);border:1px dashed var(--line);border-radius:9px;padding:6px 10px">決策狀態：待 Decision Engine<br>（Workspace 匯入 decision JSON）</div>`}
+        </div></div>
+      <div class="cw-grid">
+        <div class="cw-card"><h4>案件狀態 · Workflow 事實</h4>
+          <div class="cw-row"><span>階段</span><b>${wf.project.stage}</b></div>
+          <div class="cw-row"><span>同意（計數）</span><b>${snap.agreed}/${snap.total} · 門檻 ${(snap.threshold*100)|0}%</b></div>
+          <div class="cw-row"><span>健檢 warnings</span><b>${snap.warnings_n} 項</b></div>
+          <div class="cw-row"><span>利害關係人</span><b>${snap.stakeholders_n}</b></div></div>
+        <div class="cw-card"><h4>Site Facts ·（input.site 逐欄）</h4>
+          <div class="cw-row"><span>基地面積</span><b>${fmt(st.site_area_sqm)} m²</b></div>
+          <div class="cw-row"><span>容積率</span><b>${st.far!=null?st.far:"—"}</b></div>
+          <div class="cw-row"><span>獎勵率</span><b>${pc(st.bonus_ratio)}</b></div>
+          <div class="cw-row"><span>容積移轉</span><b>${fmt(st.tdr_transfer_sqm)} m²</b></div>
+          <div class="cw-row"><span>公設比</span><b>${pc(snap.public_ratio)}</b></div></div>
+        <div class="cw-card"><h4>即時規劃結果 ·（result 逐欄）</h4>
+          <div class="cw-row"><span>共同負擔比</span><b>${pc(snap.shared_cost_ratio)}</b></div>
+          <div class="cw-row"><span>投報率</span><b>${pc(snap.return_rate)}</b></div>
+          <div class="cw-row"><span>重算/改配置</span><b><a href="evaluator.html">→ Product Planning</a></b></div></div>
+      </div>
+      <div class="cw-assets" id="cw-assets"></div>
+      <div class="cw-note">影像僅存本機瀏覽器（縮圖 ≤800px）·零上傳、零進版控 ·「值不值得」由 Decision Engine 判讀，本頁只呈現。</div>
+    </div>`;
+    const ah=document.getElementById("cw-assets");
+    ah.innerHTML=SLOTS.map(([k,l])=>`<div class="cw-slot" data-k="${k}">
+        ${assets[k]?`<img src="${assets[k]}" alt="${l}"><button class="del" data-k="${k}">✕</button>`:`<span style="font-size:20px">${l.split(" ")[0]}</span><span>${l.split(" ")[1]}<br>點擊附圖（本機）</span>`}
+      </div>`).join("");
+    ah.querySelectorAll(".cw-slot").forEach(slot=>slot.onclick=e=>{
+      if(e.target.classList.contains("del")){ const s2=load(); delete (s2.projects[pid].assets||{})[e.target.dataset.k]; save(s2); render(); return; }
+      const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
+      inp.onchange=()=>{ const f=inp.files[0]; if(!f) return;
+        const img=new Image();
+        img.onload=()=>{ const sc=Math.min(1,800/Math.max(img.width,img.height));
+          const cv=document.createElement("canvas"); cv.width=img.width*sc; cv.height=img.height*sc;
+          cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+          try{ const s2=load(); (s2.projects[pid].assets=s2.projects[pid].assets||{})[slot.dataset.k]=cv.toDataURL("image/jpeg",.72); save(s2); render(); }
+          catch(err){ alert("本機儲存空間不足，無法存入縮圖——請先刪除其他附圖。（影像僅存本機）"); }
+          URL.revokeObjectURL(img.src); };
+        img.src=URL.createObjectURL(f); };
+      inp.click();
+    });
   }
-}catch(e){}
+  render();
+})();
 </script>
