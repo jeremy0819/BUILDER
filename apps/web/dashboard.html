@@ -423,8 +423,9 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
     </div>`;
     const ah=document.getElementById("cw-assets");
     ah.innerHTML=SLOTS.map(([k,l])=>`<div class="cw-slot" data-k="${k}">
-        ${assets[k]?`<img src="${assets[k]}" alt="${l}"><button class="del" data-k="${k}">✕</button>`:`<span style="font-size:20px">${l.split(" ")[0]}</span><span>${l.split(" ")[1]}<br>點擊附圖（本機）</span>`}
+        ${assets[k]?`<img alt="${l}" data-ak="${k}"><button class="del" data-k="${k}">✕</button>`:`<span style="font-size:20px">${l.split(" ")[0]}</span><span>${l.split(" ")[1]}<br>點擊附圖（本機）</span>`}
       </div>`).join("");
+    ah.querySelectorAll("img[data-ak]").forEach(im=>{ im.src=assets[im.dataset.ak]; });   // src 由 JS 指定（dataURL，本機）
     ah.querySelectorAll(".cw-slot").forEach(slot=>slot.onclick=e=>{
       if(e.target.classList.contains("del")){ const s2=load(); delete (s2.projects[pid].assets||{})[e.target.dataset.k]; save(s2); render(); return; }
       const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
