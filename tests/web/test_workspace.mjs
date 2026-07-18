@@ -111,5 +111,24 @@ ok(WL.matchDecision(wf, decGood) === true,  "decision input_hash 相符→可掛
 ok(WL.matchDecision(wf, decBad) === false,  "input_hash 不符→拒收（不得掛錯案）");
 ok(WL.matchDecision(wf, {verdict:"GO"}) === false, "非 decision 檔→拒收");
 
+// ── 12. M5-P2 Developer Board（純組合：事實＋引擎 verbatim，零推論）──
+const wfB = WL.importV21ToWorkflow(v21);
+wfB.consent_events = [
+  {event_id:"b1", stakeholder_id: wfB.stakeholders[0].stakeholder_id, ts:"2026-07-01", kind:"contacted"},
+  {event_id:"b2", stakeholder_id: wfB.stakeholders[0].stakeholder_id, ts:"2026-07-05", kind:"verbal_ok"},
+];
+wfB.tasks = [{task_id:"t1", stage:"S2", title:"a", status:"todo"},
+             {task_id:"t2", stage:"S1", title:"b", status:"doing"},
+             {task_id:"t3", stage:"S3", title:"c", status:"done"}];
+const decB = {decision_engine_version:"0.1.0", verdict:"CAUTION", breakpoint_stakeholder:"地主",
+              exit_signal:false, decision_urgency:0.47, completion_probability:0.3};
+const db = WL.developerBoard(wfB, decB);
+ok(db.total === wfB.stakeholders.length && db.rows.length === db.total, "P2：戶別列＝owner 數");
+const r0 = db.rows.find(r => r.stakeholder_id === wfB.stakeholders[0].stakeholder_id);
+ok(r0.events_n === 2 && r0.last_kind === "verbal_ok" && r0.last_ts === "2026-07-05", "P2：接觸次數＋最後接觸（依 ts）");
+ok(db.risk.verdict === "CAUTION" && db.risk.breakpoint === "地主" && db.risk.p === 0.3, "P2：風險＝decision 逐欄 verbatim");
+ok(WL.developerBoard(wfB, null).risk === null, "P2：無 decision→risk null（不臆造）");
+ok(db.next.length === 2 && db.next[0].stage === "S1" && db.next.every(t => t.status !== "done"), "P2：下一步＝todo/doing 依階段排序（事實）");
+
 console.log(`\nWORKSPACE C2–C5 headless：${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

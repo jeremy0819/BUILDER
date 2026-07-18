@@ -122,6 +122,12 @@ h1{font-size:21px;margin:0;letter-spacing:-.01em;font-weight:800}
 .dhd .mono{font-size:10.5px;color:var(--mute)}
 .drow{display:flex;gap:8px;font-size:12px;color:var(--ink);margin-top:4px} .drow span{color:var(--mute);min-width:34px}
 .dev{font-size:10px;color:var(--mute)} .dcard .dev{margin-top:7px;border-top:1px solid var(--line);padding-top:6px}
+/* M5-P2 工作台 */
+.cw2-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:12px}
+.cw2{border:1px solid var(--line);border-radius:12px;padding:11px 14px}
+.cw2 h4{margin:0 0 6px;font-size:11px;letter-spacing:.07em;color:var(--mute);text-transform:uppercase}
+.cw2 .src{font-family:var(--mono);font-size:10px;color:var(--mute);margin-top:8px}
+.cw-t{display:flex;align-items:center;gap:9px;font-size:12.5px;padding:5px 0;border-bottom:1px dashed var(--line)}
 /* C5 時間軸 */
 .tllist{display:flex;flex-direction:column;gap:0;margin-top:2px;border-left:2px solid var(--line);padding-left:2px}
 .tlrow{display:flex;align-items:center;gap:9px;padding:6px 8px;font-size:12.5px}
@@ -291,6 +297,23 @@ const WORKLOGIC = (() => {
     (wf.decisions || []).forEach(dc => items.push({ts:dc.ts, type:"decision", label:dc.title}));
     return items.sort((a,b) => String(a.ts||"").localeCompare(String(b.ts||"")));
   }
+  // ── M5-P2 Developer Board（整合人工作台）＝純組合：戶別/接觸(事實)＋風險(引擎 verbatim)＋下一步(任務事實)──
+  function developerBoard(wf, decision){
+    const bd = consentBoard(wf);
+    const by = {};
+    (wf.consent_events || []).forEach(e => { (by[e.stakeholder_id] = by[e.stakeholder_id] || []).push(e); });
+    const rows = bd.rows.map(r => {
+      const evs = (by[r.stakeholder_id] || []).slice().sort((a,b) => String(a.ts||"").localeCompare(String(b.ts||"")));
+      const last = evs[evs.length - 1] || null;
+      return {...r, last_kind: last ? last.kind : null, last_ts: last ? last.ts : null};
+    });
+    const risk = decision ? {verdict: decision.verdict, breakpoint: decision.breakpoint_stakeholder,
+      exit_signal: decision.exit_signal, urgency: decision.decision_urgency,
+      p: decision.completion_probability, engine: decision.decision_engine_version} : null;  // 逐欄 verbatim
+    const next = (wf.tasks || []).filter(t => t.status === "todo" || t.status === "doing")
+      .sort((a,b) => a.stage.localeCompare(b.stage, undefined, {numeric:true})).slice(0, 8);
+    return {rows, tally: bd.tally, total: bd.total, risk, next};
+  }
   // ── M4：decision JSON 呈現（引擎產出即權威；本層只配對＋逐欄顯示，零推導）──
   function matchDecision(wf, decision){
     if(!decision || !decision.decision_engine_version || !decision.input_hash) return false;
@@ -298,7 +321,8 @@ const WORKLOGIC = (() => {
   }
   return {importV21ToWorkflow, stakeholdersFromOwners, snapshotRef, projectId, displaySnapshot, 門檻,
           deriveConsentState, consentBoard, CONSENT_STATES,
-          stageTemplate, taskTally, STAGE_TITLES, decisionEvidence, caseTimeline, matchDecision};
+          stageTemplate, taskTally, STAGE_TITLES, decisionEvidence, caseTimeline, matchDecision,
+          developerBoard};
 })();
 /*WORKLOGIC-END*/
 
@@ -427,7 +451,8 @@ function openCase(pid){
       ${rec.decision?dslotHTML(rec.decision).replace('class="dslot decided"','class="dslot decided" style="margin-bottom:14px"'):`<div class="dslot" style="margin-bottom:14px"><span class="dk">決策狀態</span><span>GO / CAUTION / STOP 由 Decision Engine 產生——本頁不推論（匯入 decision JSON 即顯示）</span><span class="dwait">M4</span></div>`}
       <div class="spine">${spine}</div>
       <div class="tabs">
-        <button class="tab on" data-t="fin">財務快照</button>
+        <button class="tab on" data-t="bench">工作台</button>
+        <button class="tab" data-t="fin">財務快照</button>
         <button class="tab" data-t="board">同意看板</button>
         <button class="tab" data-t="task">時程任務</button>
         <button class="tab" data-t="dec">決策紀錄</button>
@@ -442,11 +467,55 @@ function openCase(pid){
       <div class="row"><span>健檢 warnings</span><b>${snap.warnings_n} 項</b></div>
       <div class="src">${snap.detached?'⚠️ 此案由 wf bundle 還原，財務數字留在原 v2.1（SSOT 不複製）——重新匯入對應 v2.1 即補回。':`數字逐欄來自匯入 result（input_hash ${shortHash(snap.input_hash)}…）· 逐戶分回/找補見開發評估儀表板 · 本頁零計算`}</div></div>`,
   };
-  $("pane").innerHTML=panes.fin;
-  const R={board:renderBoard, task:renderTasks, dec:renderDecisions, time:renderTimeline};
+  const R={bench:renderBench, board:renderBoard, task:renderTasks, dec:renderDecisions, time:renderTimeline};
+  renderBench(pid);
   cv.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
     cv.querySelectorAll(".tab").forEach(x=>x.classList.remove("on")); b.classList.add("on");
     if(R[b.dataset.t]) R[b.dataset.t](pid); else $("pane").innerHTML=panes[b.dataset.t];
+  });
+}
+// ── M5-P2 Developer Board（整合人工作台）：整合率＋風險＋下一步＋戶別接觸——全 verbatim ──
+function renderBench(pid){
+  const rec=loadStore().projects[pid]; if(!rec) return;
+  const {wf,snap}=rec, db=WORKLOGIC.developerBoard(wf, rec.decision);
+  const 已=db.tally.agreed_unselected+db.tally.agreed_selected;
+  const riskHTML=db.risk
+    ? `<div class="cw2"><h4>風險 · Decision Engine（verbatim）</h4>
+        <div class="fin"><div class="row"><span>判讀</span><b style="color:${{GO:"var(--ok)",CAUTION:"var(--warn)",STOP:"var(--err)"}[db.risk.verdict]}">${db.risk.verdict}</b></div>
+        ${db.risk.breakpoint?`<div class="row"><span>破局引爆點</span><b style="color:var(--err)">${db.risk.breakpoint}</b></div>`:""}
+        <div class="row"><span>完工機率</span><b>${(db.risk.p*100).toFixed(0)}%</b></div>
+        <div class="row"><span>急迫度</span><b>${db.risk.urgency}</b></div>
+        ${db.risk.exit_signal?`<div class="row"><span>退場訊號</span><b style="color:var(--err)">EXIT</b></div>`:""}
+        <div class="row"><span>健檢 warnings（Core）</span><b>${snap.warnings_n} 項</b></div></div>
+        <div class="src">DE ${db.risk.engine} · 本頁只呈現</div></div>`
+    : `<div class="cw2"><h4>風險</h4><div class="wip">待 Decision Engine 判讀（匯入 decision JSON）。Core 健檢 warnings：${snap.warnings_n} 項。</div></div>`;
+  const nextHTML=db.next.length
+    ? db.next.map(t=>`<div class="cw-t"><span class="bid mono">${t.stage}</span><span style="flex:1">${t.title}</span><span class="cpill" style="color:${t.status==="doing"?"var(--info)":"var(--mute)"};border-color:currentColor">${t.status==="doing"?"進行":"待辦"}</span></div>`).join("")
+    : `<div class="wip">無待辦——到「時程任務」帶入 S1–S11 範本或新增。</div>`;
+  const rowsHTML=db.rows.map(r=>`<div class="brow">
+      <span class="bid mono">${r.stakeholder_id}${r.family_group?` <span class="fam">${r.family_group}</span>`:""}</span>
+      <span class="cpill" style="color:${CS_COLOR[r.state]};border-color:${CS_COLOR[r.state]}">${CS_LABEL[r.state]}</span>
+      <span class="bev">${r.events_n} 次接觸${r.last_kind?` · 最後 ${EV_LABEL[r.last_kind]||r.last_kind} ${(r.last_ts||"").slice(0,10)}`:""}</span>
+      <select class="evk" data-sid="${r.stakeholder_id}">${EV_KINDS.map(([v,l])=>`<option value="${v}">${l}</option>`).join("")}</select>
+      <button class="btn sm" data-sid="${r.stakeholder_id}">記錄</button>
+    </div>`).join("");
+  $("pane").innerHTML=`<div class="board">
+    <div class="btally">
+      <span class="cstat">整合率（重放計數）<b>${已}/${db.total}</b> · 門檻 ${(snap.threshold*100)|0}%</span>
+      <span class="cstat">未接觸 <b>${db.tally.untouched}</b></span><span class="cstat">協商中 <b>${db.tally.negotiating}</b></span>
+      <span class="cstat">反對 <b>${db.tally.declined}</b></span>
+      <span class="cstat" style="margin-left:auto"><a href="report.html">✓ 決策報告</a></span></div>
+    <div class="cw2-grid">
+      ${riskHTML}
+      <div class="cw2"><h4>下一步 · 時程任務（Workflow 事實）</h4>${nextHTML}
+        <div class="src">「先談誰」逐型建議＝M6 Strategy Engine，本頁不代為建議。</div></div>
+    </div>
+    <div class="sgrp" style="margin-top:14px">戶別 · 接觸紀錄（事件重放；記錄即更新）</div>
+    <div class="brows">${rowsHTML}</div>
+  </div>`;
+  $("pane").querySelectorAll(".brow .btn").forEach(btn=>btn.onclick=()=>{
+    const sid=btn.dataset.sid, sel=$("pane").querySelector(`.evk[data-sid="${sid}"]`);
+    addConsentEvent(pid,sid,sel.value); renderBench(pid);
   });
 }
 // ── C4 時程任務（事實層：S1–S11 里程碑；狀態＝事實，不推論）──
