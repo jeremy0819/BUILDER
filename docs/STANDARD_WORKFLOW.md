@@ -1,7 +1,7 @@
 # STANDARD WORKFLOW — Site → Product → People → Decision
 
 > **層級**：最高層級產品文件（Ubiquitous Language 的唯一定義處）
-> **狀態**：v0.9 草案——⚠️ 本文件是產品心智模型，**應由 repo 擁有者親筆定稿**；
+> **狀態**：v1.0 草案——⚠️ 本文件是產品心智模型，**應由 repo 擁有者親筆定稿**；
 > 本草案由 M5 憲法（`docs/architecture/M5_WORKFLOW_SPEC.md` §1–§3）忠實展開，待擁有者修訂後升 v1.0。
 > 之後每一個新功能、每一份文件、每一次對外介紹，都從這條語言長出來。
 
@@ -35,4 +35,4 @@ Workspace（多案）＝案件組合：挑案/匯入/開案
 
 ## 版本沿革
 
-- v0.9（2026-07）：M5 P0 初稿（依 M5_WORKFLOW_SPEC 展開；待擁有者親筆定稿）。
+- v1.0（2026-07）：M5 P0 初稿（依 M5_WORKFLOW_SPEC 展開；待擁有者親筆定稿）。
