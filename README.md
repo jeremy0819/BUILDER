@@ -8,7 +8,7 @@
 （基地診斷 → 產品規劃 → 整合推演 → 決策報告；通用語言見 `docs/STANDARD_WORKFLOW.md`）
 
 **現況**：M1–M4 完成（工程地基／產品地基／Workflow OS＋B 系列／Decision Engine v0.1）；
-M4.5 試金石（真實案件校準 ×2 ✅）；M5 THE WORKFLOW（決策流程 IA）進行中。
+M4.5 試金石（財務/係數與真實案比對 ×2 ✅；stage_tree 存活率未校準——verdict＝方向性判斷，非投資結論）；M5 THE WORKFLOW（決策流程 IA）進行中。
 工作流只呈現引擎輸出——公式只在 `core/redcf`（SSOT），判讀只出自 Decision Engine。
 
 - `core/redcf/`＋`schemas/`＋`apps/streamlit/`（唯一計算核心，SSOT；源自 RE-DCF-Tool）

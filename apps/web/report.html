@@ -37,6 +37,9 @@ td.n{font-family:var(--mono)}
 .wip{background:color-mix(in srgb,var(--warn) 12%,transparent);color:var(--warn);border-radius:10px;padding:11px 14px;font-size:12.5px}
 .empty{border:1px dashed var(--line);border-radius:var(--r);padding:30px;text-align:center;color:var(--mute);font-size:13px;margin-top:16px}
 .legend{font-size:11.5px;color:var(--mute);margin-top:8px;line-height:1.6}
+.vguard{margin-top:10px;padding:10px 13px;border:1.5px solid var(--warn);border-radius:10px;
+  background:color-mix(in srgb,var(--warn) 10%,transparent);color:var(--ink);font-size:12.5px;line-height:1.6}
+.vguard b{color:var(--warn)}
 footer{margin-top:28px;border-top:1px solid var(--line);padding-top:12px;font-size:11px;color:var(--mute);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
 select{font-size:12.5px;padding:6px 9px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
 </style>
@@ -73,8 +76,10 @@ function render(pid){
        <div class="vmeta">完工機率 <b>${pct(dec.completion_probability)}</b> · 剩餘 <b>${dec.T_remaining_yr} 年</b>
        ${dec.breakpoint_stakeholder?` · 破局引爆點 <b style="color:var(--err)">${dec.breakpoint_stakeholder}</b>`:""}
        ${dec.exit_signal?` · <b style="color:var(--err)">EXIT SIGNAL</b>（沉沒成本已排除）`:""}
-       · 急迫度 <b>${dec.decision_urgency}</b><br>
-       假設：r=${dec.assumptions.r} · g=${dec.assumptions.g} · ${dec.assumptions.status_quo_baseline}（可校準建模假設）</div></div>
+       · 急迫度 <b>${dec.decision_urgency}</b></div></div>
+       <div class="vguard">⚠ <b>方向性判斷 · 非投資結論</b> — 完工機率所依 stage_tree 存活率為<b>未校準示意預設</b>；
+       財務/係數（Core）已與真實案比對，<b>存活率尚未</b>——兩者校準狀態不同，不得混讀。
+       假設全揭露：r=${dec.assumptions.r} · g=${dec.assumptions.g} · ${dec.assumptions.status_quo_baseline}。</div>
        <div class="legend">GO＝三方 EV 皆正且逾門檻報酬；CAUTION＝我方正但有一方 EV≤0（整合不對稱）；STOP＝我方 EV≤0 或地主 EV 顯著為負。判讀全文＝Decision Engine 輸出（DE ${dec.decision_engine_version}）。</div>`
     : `<div class="wip">本案尚未判讀——在 Core 端執行 decide() 產出 decision JSON，於 Workspace 匯入即顯示（引擎產出即權威，本頁不代算）。</div>`;
   const evHTML = dec ? `<table><tr><th>視角</th><th>名目</th><th>期望值 EV</th><th>狀態</th></tr>

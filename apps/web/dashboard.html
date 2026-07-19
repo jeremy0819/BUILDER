@@ -398,7 +398,8 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
             <a href="workspace.html">⇄ 切換案件</a></div></div>
         <div style="text-align:right">
           ${dec?`<div class="cw-verdict" style="color:${VC[dec.verdict]};font-size:22px">${dec.verdict}</div>
-                 <div style="font-size:10.5px;color:var(--mute)">Decision Engine ${dec.decision_engine_version}${dec.breakpoint_stakeholder?` · 引爆點 ${dec.breakpoint_stakeholder}`:""}</div>`
+                 <div style="font-size:10.5px;color:var(--mute)">Decision Engine ${dec.decision_engine_version}${dec.breakpoint_stakeholder?` · 引爆點 ${dec.breakpoint_stakeholder}`:""}<br>
+                 <b style="color:var(--warn)">⚠ 方向性判斷（存活率未校準）· 非投資結論</b></div>`
                :`<div style="font-size:11px;color:var(--mute);border:1px dashed var(--line);border-radius:9px;padding:6px 10px">決策狀態：待 Decision Engine<br>（Workspace 匯入 decision JSON）</div>`}
         </div></div>
       <div class="cw-grid">
@@ -428,6 +429,22 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
     ah.querySelectorAll("img[data-ak]").forEach(im=>{ im.src=assets[im.dataset.ak]; });   // src 由 JS 指定（dataURL，本機）
     ah.querySelectorAll(".cw-slot").forEach(slot=>slot.onclick=e=>{
       if(e.target.classList.contains("del")){ const s2=load(); delete (s2.projects[pid].assets||{})[e.target.dataset.k]; save(s2); render(); return; }
+      if(assets[slot.dataset.k]){   // 已有圖：點開放大（P1 spec §1.1），換圖走 lightbox 內按鈕
+        const ov=document.createElement("div");
+        ov.style.cssText="position:fixed;inset:0;background:rgba(10,8,20,.86);z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;cursor:zoom-out";
+        const big=document.createElement("img"); big.src=assets[slot.dataset.k];
+        big.style.cssText="max-width:92vw;max-height:80vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5)";
+        const bar=document.createElement("div"); bar.style.cssText="display:flex;gap:10px";
+        bar.innerHTML=`<button class="cwlb" data-a="swap">⇄ 換圖</button><button class="cwlb" data-a="close">✕ 關閉</button>`;
+        bar.querySelectorAll("button").forEach(b=>b.style.cssText="font-size:13px;padding:8px 16px;border-radius:9px;border:1px solid #888;background:#fff;cursor:pointer");
+        ov.append(big,bar); document.body.appendChild(ov);
+        ov.onclick=ev=>{ const a=ev.target.dataset&&ev.target.dataset.a;
+          if(a==="swap"){ ov.remove(); pick(); }
+          else if(a==="close"||ev.target===ov){ ov.remove(); } };
+        return;
+      }
+      pick();
+      function pick(){
       const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
       inp.onchange=()=>{ const f=inp.files[0]; if(!f) return;
         const img=new Image();
@@ -439,6 +456,7 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
           URL.revokeObjectURL(img.src); };
         img.src=URL.createObjectURL(f); };
       inp.click();
+      }
     });
   }
   render();

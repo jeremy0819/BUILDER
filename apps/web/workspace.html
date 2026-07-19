@@ -388,7 +388,8 @@ function dslotHTML(dec){
   const ex=dec.exit_signal?` · <b style="color:var(--err)">EXIT</b>`:"";
   return `<div class="dslot decided"><span class="dk">決策狀態</span>
     <b class="dv" style="color:var(--${V_CLS[dec.verdict]})">${dec.verdict}</b>
-    <span>完工機率 ${(dec.completion_probability*100).toFixed(0)}%${bp}${ex} · 急迫 ${dec.decision_urgency}</span>
+    <span>完工機率 ${(dec.completion_probability*100).toFixed(0)}%${bp}${ex} · 急迫 ${dec.decision_urgency}
+      · <b style="color:var(--warn)">⚠ 方向性判斷（存活率未校準）· 非投資結論</b></span>
     <span class="dwait">DE ${dec.decision_engine_version}</span></div>`;
 }
 function caseCard(pid, rec){
@@ -487,7 +488,7 @@ function renderBench(pid){
         <div class="row"><span>急迫度</span><b>${db.risk.urgency}</b></div>
         ${db.risk.exit_signal?`<div class="row"><span>退場訊號</span><b style="color:var(--err)">EXIT</b></div>`:""}
         <div class="row"><span>健檢 warnings（Core）</span><b>${snap.warnings_n} 項</b></div></div>
-        <div class="src">DE ${db.risk.engine} · 本頁只呈現</div></div>`
+        <div class="src">DE ${db.risk.engine} · 本頁只呈現 · <b style="color:var(--warn)">⚠ 方向性判斷（stage_tree 存活率未校準）· 非投資結論</b></div></div>`
     : `<div class="cw2"><h4>風險</h4><div class="wip">待 Decision Engine 判讀（匯入 decision JSON）。Core 健檢 warnings：${snap.warnings_n} 項。</div></div>`;
   const nextHTML=db.next.length
     ? db.next.map(t=>`<div class="cw-t"><span class="bid mono">${t.stage}</span><span style="flex:1">${t.title}</span><span class="cpill" style="color:${t.status==="doing"?"var(--info)":"var(--mute)"};border-color:currentColor">${t.status==="doing"?"進行":"待辦"}</span></div>`).join("")
