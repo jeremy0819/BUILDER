@@ -33,6 +33,7 @@ from core.redcf.cashflow import calc_現金流分期
 from core.redcf.workflow import validate_workflow, migrate_workflow, derive_consent_state
 from core.redcf.decision import (decide, validate_decision, calc_完工機率,
     load_stage_tree, load_decision_config)
+from core.redcf.allocation import calc_選配映射, validate_household_outcome
 from core.redcf.contract import (
     SCHEMA_VERSION, build_result_json, build_project_json,
 )
@@ -64,6 +65,8 @@ __all__ = [
     "validate_workflow", "migrate_workflow", "derive_consent_state",
     # 決策引擎（M4 推論層）
     "decide", "validate_decision", "calc_完工機率", "load_stage_tree", "load_decision_config",
+    # 傳動軸（M5.5 選配映射層）
+    "calc_選配映射", "validate_household_outcome",
     # 合約
     "SCHEMA_VERSION", "CORE_VERSION", "build_result_json", "build_project_json",
     # M2 Core Interface（四動詞 + 可重算/遷移）

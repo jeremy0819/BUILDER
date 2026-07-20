@@ -209,5 +209,31 @@ const bossImp = Object.values(s.units).find(u => u.boss);
 ok(!bossImp || Object.values(s.units).filter(u => u.consent === "opposed")
    .every(u => (u.pre_value||0) <= (bossImp.pre_value||0)), "B4：關鍵戶＝最高更新前價值反對戶");
 
+// ── 16. M5.5 傳動軸：C2 七條方向斷言（領域真理；幅度可調、方向不可違反）──
+const wcfg = JSON.parse(readFileSync(join(root, "apps/web/willingness_config.json"), "utf8"));
+const WD = (h) => SIMCORE.willingnessDelta(h, wcfg);
+const H = (chg, alloc=true, park=true) => ({delta:{interior_ping_change_pct:chg, can_be_allocated:alloc},
+                                            after:{parking_satisfied:park}});
+ok(WD(H(-0.2)) < WD(H(-0.1)) && WD(H(-0.1)) < 0, "D1：室內實坪↓→意願↓（越縮越痛）");
+// D2：公設比↑→全體實坪↓→全體意願↓（以兩組 outcome 模擬 33% vs 38%）
+const 全體33 = [H(-0.05), H(-0.02), H(0.01)], 全體38 = [H(-0.12), H(-0.09), H(-0.06)];
+ok(全體38.reduce((a,h)=>a+WD(h),0) < 全體33.reduce((a,h)=>a+WD(h),0), "D2：公設比↑→全體意願↓");
+ok(WD(H(0, false)) <= wcfg.no_unit_penalty, "D3：配不到單元→重挫");
+ok(WD(H(0, true, false)) < WD(H(0, true, true)), "D4：車位未達→意願↓");
+ok(WD(H(0.08)) > 0, "D5：餅變大（實坪↑）→意願↑");
+ok(WD(H(-0.08)) < WD(H(0.08)), "D6：共負↑→分回↓（實坪↓）→意願↓");
+ok(SIMCORE.willingnessBase(2000, 1000, wcfg) < 0 && SIMCORE.willingnessBase(1000, 1000, wcfg) === 0,
+   "D7：蛋黃區（V0 高於中位）基準線低於蛋白區");
+// 幅度歸 config：同方向、不同 config 幅度可變
+ok(SIMCORE.willingnessDelta(H(-0.1), {...wcfg, interior_loss_scale:120}) < WD(H(-0.1)), "幅度由 config 調（方向不變）");
+
+// ── 17. A1.4 意願來源標示：沙盤＝simulated（Workspace＝recorded 在 Gate 7 驗）──
+ok(SIMCORE.create().willingness_source === "simulated", "沙盤 willingness_source=simulated");
+
+// ── 18. C4 數字溯源（聚焦版）：意願函數只消費 household_outcome，不推導坪數/財務 ──
+const wdSrc = SIMCORE.willingnessDelta.toString() + SIMCORE.willingnessBase.toString();
+ok(!/每坪均價|公設比|均價|registered_ping\s*[*\/]|return_value|total_sales|scr\b/.test(wdSrc),
+   "C4：意願函數零坪數/財務推導（只讀 outcome 欄位）");
+
 console.log(`\nURBAN STRAND v2 headless：${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

@@ -265,6 +265,7 @@ const WORKLOGIC = (() => {
       stakeholder_id: s.stakeholder_id, family_group: s.family_group || null,
       state: deriveConsentState(byId[s.stakeholder_id] || []),
       events_n: (byId[s.stakeholder_id] || []).length,
+      willingness_source: "recorded",   // A1.4：實戰意願＝事件記錄的事實，非模擬值
     }));
     const tally = {}; CONSENT_STATES.forEach(k => tally[k] = 0);
     rows.forEach(r => tally[r.state] = (tally[r.state]||0) + 1);

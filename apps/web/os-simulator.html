@@ -565,6 +565,7 @@ const SIMCORE = (() => {
     else ms.push({n:agreed0+Math.round(span*0.4),ep:2,name:"牆上的裂縫"},
                  {n:target-1,ep:3,name:"臨門一腳"});
     return {cfg,scen,target,weeksMax,milestones:ms,epDone:{},N:n,agreed0,cols,rows,families,
+            willingness_source:"simulated",   // A1.4：沙盤意願＝模擬值；Workspace 的才是 recorded（事實）
             week:1,ap:AP_MAX,budget:BUDGET0,tickets:TICKETS0,units,pos,log:[],over:false,won:false,
             briefedWeek:0,spent:0,acts:0};
   }
@@ -683,6 +684,28 @@ const SIMCORE = (() => {
     if(s.week>s.weeksMax&&!s.won){s.over=true;s.won=false;}
     return ev;
   }
+  // ── M5.5 傳動軸・意願函數（DUAL_TRACK A1.5）────────────────────────
+  // 分工鐵則：方向（正負號）＝領域真理，寫死於此並由 D1–D7 測試看守；
+  // 幅度＝willingness_config.json（遊戲設計可調，不改程式）。
+  // 只消費 household_outcome（Core 選配映射層輸出）——不得在此推導任何坪數/財務。
+  const WILLING_DEFAULT = {interior_loss_scale:60, no_unit_penalty:-25, parking_penalty:-8,
+                           subsidy_gain:6, v0_anchor_scale:30};
+  function willingnessDelta(h, cfg){
+    cfg = cfg || WILLING_DEFAULT;
+    let d = 0;
+    if(h && h.delta && h.delta.interior_ping_change_pct != null)
+      d += h.delta.interior_ping_change_pct * cfg.interior_loss_scale;          // D1/D2/D5/D6：實坪增減→意願同向
+    if(h && h.delta && h.delta.can_be_allocated === false)
+      d += cfg.no_unit_penalty;                                                  // D3：配不到房＝重挫
+    if(h && h.after && h.after.parking_satisfied === false)
+      d += cfg.parking_penalty;                                                  // D4：車位未滿足
+    return d;
+  }
+  function willingnessBase(pre_value, 中位值, cfg){
+    cfg = cfg || WILLING_DEFAULT;                                                // D7：蛋黃區基準線低
+    if(!中位值 || pre_value == null) return 0;
+    return -Math.max(0, pre_value / 中位值 - 1) * cfg.v0_anchor_scale;
+  }
   // ── B1 更新前價值矩陣（鏡像 core/redcf/valuation.build_owner_matrix；同 seed→同結果）──
   // 決定性 LCG 與 Python 版位元對齊；係數由外部傳入（coefficients.json，不寫死）。
   function _lcg(seed){ let s=seed>>>0; return ()=>{ s=(Math.imul(s,1664525)+1013904223)>>>0; return s/0x100000000; }; }
@@ -705,7 +728,7 @@ const SIMCORE = (() => {
     return rows;
   }
   return{create,listen,offer,briefing,ticket,settle,endWeek,agreedCount,neighbors,code,pendingMilestone,
-         buildOwnerMatrix,
+         buildOwnerMatrix,willingnessDelta,willingnessBase,WILLING_DEFAULT,
          SCEN,TRUST_OFF,FAMILY,AP_MAX,BUDGET0,AGREE_AT,BRIEF_CEIL,BOSS,N,TICKETS0};
 })();
 /*SIMCORE-END*/

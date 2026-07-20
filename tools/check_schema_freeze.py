@@ -33,6 +33,8 @@ FROZEN = {
         "1328690f7783b273fee6b3ebaff6fbd7c678e87deb22eb7fc0e2dda7cd5f8324",  # wf-1.0（M3-C）
     "schemas/decision.schema.v0.1.json":
         "7a30ab80a9d6dfb9f22a60557ddd645a0ccc2ac73204bf15841a13fab393fdde",  # decision v0.1（M4）
+    "schemas/household_outcome.schema.v0.1.json":
+        "1866452b508c7d9f4bd5b53c044b22ead2d690f7ac8beac25fde98fe50ad0e8d",  # household_outcome v0.1（M5.5 傳動軸）
 }
 
 

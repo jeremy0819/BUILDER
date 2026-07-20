@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urban-renewal-os/household_outcome.schema.v0.1.json",
+  "title": "Household Outcome v0.1（M5.5 傳動軸）",
+  "description": "逐戶「規劃→分回→居住現實」映射（DUAL_TRACK A1.3）。由 Core 選配映射層產出；沙盤/工作台只消費，不得自行推導坪數。金額單位＝萬元、面積＝坪。",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["household_id", "before", "after", "delta", "ownership_complexity", "input_hash"],
+    "additionalProperties": false,
+    "properties": {
+      "household_id": { "type": "string" },
+      "before": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "registered_ping": { "type": ["number", "null"], "minimum": 0 },
+          "common_area_ratio": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+          "interior_ping": { "type": ["number", "null"], "minimum": 0 },
+          "floor": { "type": ["integer", "null"] },
+          "unit_type": { "type": ["string", "null"] }
+        }
+      },
+      "after": {
+        "type": "object",
+        "required": ["value_share", "allocated_value", "registered_ping",
+                     "common_area_ratio", "interior_ping", "eligible_units", "parking_satisfied"],
+        "additionalProperties": false,
+        "properties": {
+          "value_share": { "type": "number", "minimum": 0, "maximum": 1 },
+          "allocated_value": { "type": "number", "minimum": 0 },
+          "registered_ping": { "type": "number", "minimum": 0 },
+          "common_area_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+          "interior_ping": { "type": "number", "minimum": 0 },
+          "eligible_units": { "type": "array", "items": { "type": "string" } },
+          "parking_satisfied": { "type": "boolean" }
+        }
+      },
+      "delta": {
+        "type": "object",
+        "required": ["can_be_allocated"],
+        "additionalProperties": false,
+        "properties": {
+          "interior_ping_change_pct": { "type": ["number", "null"] },
+          "can_be_allocated": { "type": "boolean" }
+        }
+      },
+      "ownership_complexity": {
+        "type": "string",
+        "enum": ["clean", "inherited_unregistered", "joint_ownership", "mortgaged", "illegal_structure"],
+        "description": "產權複雜度（A2）：clean 以外＝「願意但簽不了」，需額外行動解鎖"
+      },
+      "input_hash": {
+        "type": "string", "pattern": "^sha256:[0-9a-f]{64}$",
+        "description": "溯源至 Core result（權變分回值的來源）"
+      }
+    }
+  }
+}

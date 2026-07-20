@@ -1,0 +1,13 @@
+{
+  "_note": "意願函數幅度 config（DUAL_TRACK A1.5 分工鐵則）：方向（正負號）＝領域真理，寫死在 SIMCORE.willingnessDelta 與 D1–D7 測試，不可改；幅度（本檔數值）＝遊戲設計可調，改值不需改程式。任何調整不得使 D1–D7 斷言失效。",
+  "interior_loss_scale": 60,
+  "_interior_loss_scale_note": "D1/D2：室內實坪變化率 × 此係數（−27% → −16.2 信任）",
+  "no_unit_penalty": -25,
+  "_no_unit_penalty_note": "D3:配不到合適單元＝重挫",
+  "parking_penalty": -8,
+  "_parking_penalty_note": "D4：未達一戶一位",
+  "subsidy_gain": 6,
+  "_subsidy_gain_note": "安置補貼意願面（成本面經共負回流＝D6，雙向張力）",
+  "v0_anchor_scale": 30,
+  "_v0_anchor_scale_note": "D7：更新前價值高於中位的比例 × 此係數＝基準線抑制（蛋黃區 holdout 數學根源）"
+}

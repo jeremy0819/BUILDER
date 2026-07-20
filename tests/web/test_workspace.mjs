@@ -124,6 +124,7 @@ const decB = {decision_engine_version:"0.1.0", verdict:"CAUTION", breakpoint_sta
               exit_signal:false, decision_urgency:0.47, completion_probability:0.3};
 const db = WL.developerBoard(wfB, decB);
 ok(db.total === wfB.stakeholders.length && db.rows.length === db.total, "P2：戶別列＝owner 數");
+ok(db.rows.every(r => r.willingness_source === "recorded"), "A1.4：實戰意願標 recorded（非模擬）");
 const r0 = db.rows.find(r => r.stakeholder_id === wfB.stakeholders[0].stakeholder_id);
 ok(r0.events_n === 2 && r0.last_kind === "verbal_ok" && r0.last_ts === "2026-07-05", "P2：接觸次數＋最後接觸（依 ts）");
 ok(db.risk.verdict === "CAUTION" && db.risk.breakpoint === "地主" && db.risk.p === 0.3, "P2：風險＝decision 逐欄 verbatim");
