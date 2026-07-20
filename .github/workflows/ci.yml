@@ -73,3 +73,7 @@ jobs:
       # ── Gate 8：圖檔白名單（真實圖資零進版控——文字掃描抓不到影像的補洞）──
       - name: "Gate 8 — Image whitelist"
         run: python tools/check_image_whitelist.py
+
+      # ── Gate 9：core-bundle.js 與 core/redcf 同步（Pyodide 端＝同一份 SSOT，防第二真源）──
+      - name: "Gate 9 — Core bundle in sync"
+        run: python tools/check_core_bundle.py

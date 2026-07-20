@@ -349,11 +349,11 @@ function addProject(v21){
     if(!m){ ns.id = "snap-" + String(wf.project.snapshots.length + 1).padStart(2,"0"); ns.label = "重評 " + ns.id;
       wf.project.snapshots.push(ns); m = ns; }
     wf.project.active_snapshot = m.id;
-    s.projects[pid] = {wf, snap};            // snap＝最新重評的顯示數字（舊數字留原 v2.1，不複製）
+    s.projects[pid] = {wf, snap, engine: v21.engine || existing.engine || null};   // 重評：更新 engine
     saveStore(s); return pid;
   }
   s.order.unshift(pid);
-  s.projects[pid] = {wf: incoming, snap};
+  s.projects[pid] = {wf: incoming, snap, engine: v21.engine || null};   // M5.5：留 engine 供即時運算（Pyodide）重算
   saveStore(s);
   return pid;
 }

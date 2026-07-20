@@ -42,10 +42,24 @@ from core.redcf._version import CORE_VERSION
 from core.redcf.api import calculate, validate, serialize, deserialize
 from core.redcf.recompute import recompute, verify, input_hash
 from core.redcf.migrations import migrate
-from core.redcf.templates import (
-    範本參數, 範本案件類型, 範本獎勵拆解, 範本樓層表, 範本模式,
-)
-from core.redcf.io import 解析上傳, 產生報告
+
+# ── 延遲匯入：templates / io 依賴 pandas（Excel/DataFrame 範本）。──────────────
+# 計算主線（capacity…rights/decision/allocation）為純 stdlib，才能在 Pyodide（瀏覽器內
+# Python，M5.5 B 軌）零 pandas 載入。範本/I-O 僅 Streamlit 端用，改 PEP 562 lazy——
+# `from core.redcf import 範本參數` 仍可用，但只在真正取用時才拉 pandas。
+_LAZY = {
+    "範本參數": "templates", "範本案件類型": "templates", "範本獎勵拆解": "templates",
+    "範本樓層表": "templates", "範本模式": "templates",
+    "解析上傳": "io", "產生報告": "io",
+}
+
+
+def __getattr__(name):   # PEP 562
+    mod = _LAZY.get(name)
+    if mod is None:
+        raise AttributeError(f"module 'core.redcf' has no attribute {name!r}")
+    import importlib
+    return getattr(importlib.import_module(f"core.redcf.{mod}"), name)
 
 __all__ = [
     # 常數
