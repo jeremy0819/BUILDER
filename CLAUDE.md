@@ -28,6 +28,8 @@
 6. **Workspace 永不自行推論**：只呈現 Core Output／Workflow State／Decision Engine Output；
    任何取不到的資訊（EV、GO/CAUTION/STOP、風險窗、三型分類）**不得由 UI 自算**——schema 先行。
    每個元件先答「這是 DISPLAY 資訊，還是 ADVANCE 決策？」（見 `knowledge/00_FIRST_PRINCIPLES.md` 四題關卡）
+   **語意釐清**：「UI 零推論」限制的是**權威**（UI 不得自行發明邏輯），不是**頻率**——
+   即時/高頻呼叫 Core 完全合規；「批次計算才合規」是誤讀（DUAL_TRACK/M5.5 B 軌裁定）。
 
 ## 路由表
 

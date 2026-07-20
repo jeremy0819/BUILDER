@@ -10,6 +10,9 @@
 **現況**：M1–M4 完成（工程地基／產品地基／Workflow OS＋B 系列／Decision Engine v0.1）；
 M4.5 試金石（財務/係數與真實案比對 ×2 ✅；stage_tree 存活率未校準——verdict＝方向性判斷，非投資結論）；M5 THE WORKFLOW（決策流程 IA）進行中。
 工作流只呈現引擎輸出——公式只在 `core/redcf`（SSOT），判讀只出自 Decision Engine。
+品質治理：**CI 八道 Gate**（資料紀律／pytest／安裝性／Core 隔離／範本迴歸／連結／沙盤與
+Workspace headless／schema 凍結／圖檔白名單），任一紅即擋 merge；release 現況 **os-v0.3.0**。
+授權：未定（Proprietary 拍板中——正式聲明前保留所有權利）。
 
 - `core/redcf/`＋`schemas/`＋`apps/streamlit/`（唯一計算核心，SSOT；源自 RE-DCF-Tool）
 - `apps/web/`＋`docs/methodology/`（決策流程外殼與方法論；源自 Urban-Renewal）
