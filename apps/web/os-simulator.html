@@ -236,6 +236,8 @@ header.cmd{display:flex;justify-content:space-between;align-items:center;gap:14p
 .codec .role{font-family:var(--mono);font-size:10.5px;color:var(--strand);letter-spacing:.15em;margin:2px 0 10px}
 .codec .say{font-family:var(--serif);font-size:14px;color:var(--ink);min-height:66px;line-height:1.8}
 .codec .stat{font-family:var(--mono);font-size:10.5px;color:var(--mute);margin-top:8px}
+.codec .cd-why{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:6px;padding-top:6px;border-top:1px solid #1c2530;line-height:1.7}
+.codec .cd-why b{color:var(--ink)}
 .codec .stat b{color:var(--amber)}
 .codec .foot{display:flex;gap:9px;padding:0 18px 18px}
 .codec .foot .btn{flex:1;font-size:11px;padding:10px 6px}
@@ -555,6 +557,14 @@ const SIMCORE = (() => {
         {road:mat[i-1].road,zoning:mat[i-1].zoning,building:mat[i-1].building,
          floor:mat[i-1].floor,area_坪:mat[i-1].area_坪,
          pre_value:mat[i-1].pre_value,weight:mat[i-1].weight}); } }
+    // 傳動軸→遊戲（D7）：更新前價值高的戶（蛋黃區）開局信任天生較低——holdout 的數學根源。
+    // 依 willingness_config 幅度、方向由領域真理鎖住；只調未同意非關鍵戶的開局值。
+    const _pv=Object.values(units).map(u=>u.pre_value).filter(v=>v!=null).sort((a,b)=>a-b);
+    if(_pv.length){ const 中位=_pv[Math.floor(_pv.length/2)];
+      for(const u of Object.values(units)) if(u.pre_value!=null && u.consent!=="agreed" && !u.boss){
+        u.v0base=Math.round(willingnessBase(u.pre_value, 中位, WILLING_DEFAULT));   // ≤0
+        u.stance=clamp(u.stance+u.v0base, 5, 70);
+      } }
 
     const target=targetOf(cfg,n), weeksMax=weeksOf(cfg);
     // 里程碑站：agreed0 → target 之間的敘事節點
@@ -885,7 +895,15 @@ function openCodec(id){
   $("cd-role").textContent=(u.boss?"KEY HOLDOUT ▲":u.consent.toUpperCase())+" · "+u.trait+(u.family>=0?" · ⌂家族":"");
   const pool=u.boss?DOOR_SAY.boss:DOOR_SAY[u.consent]||DOOR_SAY.pending;
   type(pool[Math.min(u.listens,pool.length-1)]);
-  $("cd-stat").innerHTML=`信任 <b>${u.stance}</b>/100 ${u.boss?"· 對「客製方案」免疫——只能傾聽":""}`;
+  // 逐戶歸因（傳動軸）：他為什麼是這個態度——把「更新前價值→權值→開局信任」攤開，數字說故事
+  let 歸因="";
+  if(u.pre_value!=null){
+    const w=u.weight!=null?` · 權值 ${(u.weight*100).toFixed(1)}%`:"";
+    const 蛋黃=u.v0base<0?` · <b style="color:var(--amber)">蛋黃區：現況好，開局信任 ${u.v0base}</b>`:"";
+    歸因=`<div class="cd-why">更新前價值 <b>${Math.round(u.pre_value).toLocaleString()}</b> 萬${w}${蛋黃}`+
+      (u.alloc&&u.alloc.return_value!=null?` → 分回 <b>${Math.round(u.alloc.return_value).toLocaleString()}</b> 萬`:"")+`</div>`;
+  }
+  $("cd-stat").innerHTML=`信任 <b>${u.stance}</b>/100 ${u.boss?"· 對「客製方案」免疫——只能傾聽":""}`+歸因;
   $("cd-offer").disabled=!!u.boss;
   $("cd-ticket").disabled=!!u.boss||u.ticketed||S.tickets<1;
   $("cd-ticket").textContent=u.ticketed?"🎫 已承諾選屋順位":`🎫 選屋順位（1 AP · 剩 ${S.tickets} 張）`;

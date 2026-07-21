@@ -230,6 +230,22 @@ ok(SIMCORE.willingnessDelta(H(-0.1), {...wcfg, interior_loss_scale:120}) < WD(H(
 // ── 17. A1.4 意願來源標示：沙盤＝simulated（Workspace＝recorded 在 Gate 7 驗）──
 ok(SIMCORE.create().willingness_source === "simulated", "沙盤 willingness_source=simulated");
 
+// 17b. WILLING_DEFAULT 與 willingness_config.json 幅度一致（防嵌入值漂移）
+for (const k of ["interior_loss_scale", "no_unit_penalty", "parking_penalty", "subsidy_gain", "v0_anchor_scale"])
+  ok(SIMCORE.WILLING_DEFAULT[k] === wcfg[k], `WILLING_DEFAULT.${k} 與 config 一致（${k}）`);
+
+// 17c. 傳動軸→遊戲 D7：匯入案件中，更新前價值高的未同意戶開局信任較低（蛋黃區 holdout）
+const owners17 = Array.from({length: 24}, (_, i) => ({
+  owner_id: "W" + String(i + 1).padStart(2, "0"),
+  consent: i < 10 ? "agreed" : "pending",
+  pre_value: 800 + i * 120, value_share: 1 / 24
+}));
+s = SIMCORE.create({ N: 24, owners: owners17, seed: 5 });
+const 低值戶 = Object.values(s.units).find(u => u.consent === "pending" && !u.boss && Math.round(u.pre_value) <= 1200);
+const 高值戶 = Object.values(s.units).filter(u => u.consent === "pending" && !u.boss).sort((a, b) => b.pre_value - a.pre_value)[0];
+ok(高值戶.v0base < 0 && 高值戶.v0base <= (低值戶 ? 低值戶.v0base : 0), "D7 在遊戲：高更新前價值戶開局信任被壓低（蛋黃區）");
+ok(高值戶.stance <= 70 && 高值戶.stance >= 5, "v0base 調整後開局信任仍在合理帶");
+
 // ── 18. C4 數字溯源（聚焦版）：意願函數只消費 household_outcome，不推導坪數/財務 ──
 const wdSrc = SIMCORE.willingnessDelta.toString() + SIMCORE.willingnessBase.toString();
 ok(!/每坪均價|公設比|均價|registered_ping\s*[*\/]|return_value|total_sales|scr\b/.test(wdSrc),
