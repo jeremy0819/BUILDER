@@ -247,7 +247,7 @@ function compareTable(){
   const body=rows.map(([lab,f])=>`<tr><td style="padding:6px 10px;color:var(--mute);font-size:12px;border-bottom:1px solid var(--line)">${lab}</td>`+
     CASES.map(c=>`<td class="tnum" style="text-align:right;padding:6px 10px;font-size:12.5px;border-bottom:1px solid var(--line)">${f(c)}</td>`).join("")+"</tr>").join("");
   return `<table style="width:100%;border-collapse:collapse;min-width:520px">${head}${body}</table>
-  <div style="font-size:11px;color:var(--mute);margin-top:9px">跨案數字皆出自同一 core_version（0.2.0），可直接比較；不同 core_version 之 result 不可混比（ARCHITECTURE §4）。</div>`;
+  <div style="font-size:11px;color:var(--mute);margin-top:9px">示範數字為 2026-07-01 以 core 0.2.0 預算（可比較）；現行 core 0.3.0 僅新增權變/現金流，容積・坪效・財務公式未變，故示範仍一致。你自己的案件請走上方 <b>傳動軸駕駛艙</b>（即時真 Core）。</div>`;
 }
 let active="C";
 function render(){
