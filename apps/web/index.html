@@ -115,7 +115,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
       <span class="chip hot">core 0.3.0</span>
       <span class="chip">schema v2.1</span>
       <span class="chip">os-v0.2.0-beta 已發布</span>
-      <span class="chip">M3 Workflow · 設計中</span>
+      <span class="chip hot">B1.5 · 零步駕駛艙</span>
     </span>
   </header>
 
@@ -125,73 +125,51 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
     <div class="tagline">一塊地，一群人，一個真源。</div>
   </div>
 
-  <!-- M5 THE WORKFLOW：Site → Product → People → Decision（產品語言；工作流零推論，答案皆來自引擎）-->
+  <!-- B1.5 介面收斂：前門只呈現三個主要表面——駕駛艙 / 沙盤 / 決策報告。其餘工具收進「延伸資源」。 -->
+  <p style="text-align:center;color:var(--mute);font-size:13px;margin:2px 0 20px">
+    三個表面，一條動線：<b style="color:var(--strand)">駕駛艙</b> 拖滑桿看數字 →
+    <b style="color:var(--strand)">沙盤</b> 推演人心 → <b style="color:var(--strand)">決策報告</b> 定去留。
+    <span style="color:var(--dim)">打開駕駛艙即有合成示範案，免匯入、直接玩。</span></p>
   <div class="pipe">
-    <a class="pstage" href="dashboard.html">
-      <div class="pn">STEP 1 / 3 <span class="pstat" id="st-site"></span></div><div class="ph">Site Analysis · 基地診斷</div>
-      <div class="pd">地籍、都市計畫、法規限制、更新潛力——問「<b>這塊地值不值得開發？</b>」（Site facts 來自 Core；「值不值得」verdict 由 Decision Engine 產生，本卡只呈現）</div>
-    </a>
-    <div class="parrow">→</div>
-    <a class="pstage mid" href="evaluator.html">
-      <div class="pn">STEP 2 / 3 <span class="pstat" id="st-prod"></span></div><div class="ph">Product Planning · 產品規劃</div>
-      <div class="pd">建築產品、坪效、容積查核、共同負擔、財務——問「<b>最佳產品配置？</b>」（唯一正式計算入口，公式全在 RE-DCF Core；匯出 Project JSON 進下一步）</div>
+    <a class="pstage mid" href="dashboard.html">
+      <div class="pn">表面 1 / 3 · 開這裡 <span class="pstat" id="st-site"></span></div><div class="ph">🚗 駕駛艙 · 基地×產品</div>
+      <div class="pd">Site facts＋即時產品試算（傳動軸滑桿→瀏覽器內 Core 重算）＋案件切換。問「<b>這塊地、這個產品值不值得？</b>」（Site/財務數字來自 Core；verdict 由 Decision Engine 產生，本頁只呈現）</div>
     </a>
     <div class="parrow">→</div>
     <a class="pstage" href="os-simulator.html">
-      <div class="pn">STEP 3 / 3 <span class="pstat" id="st-ppl"></span></div><div class="ph">Negotiation Strategy · 整合推演</div>
+      <div class="pn">表面 2 / 3 <span class="pstat" id="st-ppl"></span></div><div class="ph">🕹️ 沙盤 · 整合推演</div>
       <div class="pd">地主、家族、時間、競爭——問「<b>整合機率多少？先談誰？</b>」（匯流點：意願地質×三方 EV；逐型對策＝M6。EV/verdict 由 Decision Engine 產生）</div>
     </a>
     <div class="parrow">→</div>
     <a class="pstage" href="report.html" style="border-style:dashed">
-      <div class="pn">✓ <span class="pstat" id="st-rep"></span></div><div class="ph">Decision Report · 決策報告</div>
-      <div class="pd">產品 payoff：組合 Core（財務）＋Decision Engine（EV/verdict/完工機率）＋Strategy（M6）——「<b>開發商下一步該做什麼</b>」。組合呈現，不計算。</div>
+      <div class="pn">表面 3 / 3 <span class="pstat" id="st-rep"></span></div><div class="ph">📑 決策報告 · 去留</div>
+      <div class="pd">組合 Core（財務）＋Decision Engine（EV/verdict/完工機率）＋Strategy（M6）——「<b>開發商下一步該做什麼</b>」。組合呈現，不計算。</div>
     </a>
   </div>
   <script>
-  /* STEP 狀態＝事實旗標（呈現層；零推論）：1=踩過基地頁、2=Workspace 有案（v2.1 已匯）、3=有案帶過沙盤或掛過 decision */
+  /* 表面狀態＝事實旗標（呈現層；零推論）。駕駛艙一律「就緒」（B1.5 零步啟動有示範案）；沙盤/報告依實際進度亮。 */
   (function(){
     const g=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
     let store=null; try{store=JSON.parse(g("uros.workflow.v1"))||null}catch(e){}
-    const hasCase=!!(store&&store.order&&store.order.length);
-    const hasDec=hasCase&&store.order.some(p=>store.projects[p]&&store.projects[p].decision);
-    const mark=(id,on)=>{const el=document.getElementById(id); if(el&&on){el.textContent="✓ 完成";el.style.color="var(--ok,#0f9d6a)";}};
-    mark("st-site", g("uros.step.site")==="1");
-    mark("st-prod", hasCase);
-    mark("st-ppl", !!g("uros.step.people")||hasDec);
-    mark("st-rep", hasDec);
+    /* 排除示範案：demo 帶 baked decision，不得讓下游表面誤亮「完成」 */
+    const hasDec=!!(store&&store.order&&store.order.some(p=>store.projects[p]&&store.projects[p].decision&&!store.projects[p].demo));
+    const mark=(id,txt,col)=>{const el=document.getElementById(id); if(el){el.textContent=txt;el.style.color=col;}};
+    mark("st-site","● 就緒","var(--strand)");
+    if(!!g("uros.step.people")||hasDec) mark("st-ppl","✓ 完成","var(--ok,#0f9d6a)");
+    if(hasDec) mark("st-rep","✓ 完成","var(--ok,#0f9d6a)");
   })();
   </script>
-
-  <div class="sect">② 主線 · 參數推演</div>
-  <div class="grid">
-    <a class="mod main" href="os-simulator.html">
-      <div class="mt">🕹️ 整合人 THE INTEGRATOR · 整合戰術沙盤 <span class="tag">CORE-POWERED</span><span class="tag">v3</span></div>
-      <div class="md">開發模式 × 建築規模決定共負比，共負比決定人心——在 Core 權威數字之上，用傾聽把住戶帶過門檻。
-      危老 100%／都更 80% 兩條路線；遊戲結束生成故事結算報告。</div>
-      <span class="cta-in">▶ 進入沙盤</span>
-    </a>
-  </div>
-
-  <div class="sect">① 資料輸入 · Project Data</div>
-  <div class="grid">
-    <a class="mod" href="dashboard.html">
-      <div class="mt">📊 開發評估儀表板 <span class="tag">CORE-POWERED</span></div>
-      <div class="md">三案例可重算驗證、逐層樓板、provenance 溯源、跨案比較、逐戶權變（§56）與現金流結構（schema v2.1）。</div>
-    </a>
-    <a class="mod" href="evaluator.html">
-      <div class="mt">🧮 坪效×投報試算</div>
-      <div class="md">教學試算（示意）＋「對接 Core」JSON 匯入——匯出的 result 可餵給儀表板與沙盤。權威數字一律以 result 為準。</div>
-    </a>
-    <a class="mod" href="workspace.html">
-      <div class="mt">🗂️ 案件工作區 WORKSPACE <span class="tag">M3-C · C2</span></div>
-      <div class="md">案件管理層：匯入 v2.1 案件 JSON 建案、多案列表、階段/同意進度（計數）。本地儲存、零計算。同意看板/任務/決策為 C3–C5。</div>
-    </a>
-  </div>
 
   <!-- 延伸資源：收合，避免主畫面混亂 -->
   <details class="more">
     <summary>延伸資源 · 計算工具 / 方法論 / 程式庫</summary>
     <div class="more-grid">
+      <a href="workspace.html">
+        <div class="rt">🗂️ 案件工作區 WORKSPACE <span class="x">多案管理</span></div>
+        <div class="rd">匯入 v2.1 案件 JSON 建案、多案列表、同意看板/任務/決策日誌/時間軸、wf 匯出入。駕駛艙的「＋匯入／管理案件」即到這裡。</div></a>
+      <a href="evaluator.html">
+        <div class="rt">🧮 坪效×投報試算 <span class="x">教學·示意</span></div>
+        <div class="rd">教學試算（非權威）＋「對接 Core」JSON 匯入。即時真 Core 請用駕駛艙傳動軸；精確計算用下方 Streamlit。</div></a>
       <a href="https://builder-9sczgrez3a3qsbmkebd6ey.streamlit.app/" target="_blank" rel="noopener">
         <div class="rt">⚙️ RE-DCF 精確計算 <span class="x">↗ STREAMLIT</span></div>
         <div class="rd">正式容積查核（§162 逐層）・坪效・投報；地主清冊 CSV → §56 逐戶權變；匯出案件 JSON。</div></a>
