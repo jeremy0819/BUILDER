@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urban-renewal-os/stakeholder_profile.schema.v0.1.json",
+  "title": "Stakeholder Profile v0.1（M6 THE STRATEGIST 輸入分型）",
+  "description": "逐戶利害關係人分型（M6_STRATEGIST_SPEC §3）＝Strategy Engine 的輸入契約。雙軸：意願軸 willingness_type × 可簽性軸 signability（正交）。分類紀律（同 M5.5 willingness_source）：權威＝整合人 recorded；引擎僅產 suggested，缺訊號→unknown 不猜測；Sandbox 劇本＝simulated。真實地主分類資料不入 repo（僅本機；合成案例才進 tests/）。",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["household_id", "classification_source"],
+    "additionalProperties": false,
+    "properties": {
+      "household_id": { "type": "string", "description": "匿名代號（對映 workflow stakeholder_id / household_outcome household_id）" },
+      "willingness_type": {
+        "type": "string",
+        "enum": ["strategic", "fearful", "opposed", "unknown"],
+        "description": "意願軸：策略型（要條件）／恐懼型（要擔保・加碼反效果）／反對型（走法定程序）／unknown（訊號不足，不猜測）"
+      },
+      "signability": {
+        "type": "string",
+        "enum": ["signable", "blocked"],
+        "description": "可簽性軸（事實，與意願軸正交）：blocked＝願意但簽不了＝行政工作量，不計入說服工作量"
+      },
+      "blocking_reason": {
+        "type": ["string", "null"],
+        "enum": ["inherited_unregistered", "joint_ownership", "mortgaged", "illegal_structure", null],
+        "description": "blocked 的產權原因（signable 時為 null）；值域＝ownership_complexity 非 clean 子集"
+      },
+      "is_key_household": { "type": "boolean", "description": "關鍵戶（影響網絡樞紐；反向雪崩偵測輸入）" },
+      "influence_targets": {
+        "type": "array", "items": { "type": "string" },
+        "description": "此戶意見會外溢影響的其他 household_id（供 §7 反向雪崩偵測）"
+      },
+      "classification_source": {
+        "type": "string",
+        "enum": ["recorded", "suggested", "simulated"],
+        "description": "recorded＝整合人親自接觸後記錄（權威）；suggested＝引擎依訊號推測（僅參考，UI 須標示）；simulated＝Sandbox 劇本指派"
+      },
+      "classified_by": { "type": "string", "enum": ["integrator", "engine"] },
+      "classified_at": { "type": "string" },
+      "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
+      "signals_observed": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": [
+            "questioned_capital_adequacy", "repeated_same_question", "fears_nondelivery", "more_doubtful_after_sweetener",
+            "raised_at_critical_moment", "demands_specific_terms", "comparing_competitors", "softens_with_terms",
+            "refuses_to_discuss_terms", "emotional_attachment", "no_urgency_long_horizon", "status_quo_favorable"
+          ]
+        },
+        "description": "整合人觀察到的行為訊號（§4）；引擎據此映射 suggested 型別（方向鎖於程式＋回歸）。more_doubtful_after_sweetener＝恐懼型最強訊號。"
+      },
+      "input_hash": {
+        "type": "string", "pattern": "^sha256:[0-9a-f]{64}$",
+        "description": "溯源至 Core result / decision（可選）"
+      }
+    }
+  }
+}

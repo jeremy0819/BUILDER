@@ -1,0 +1,107 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urban-renewal-os/strategy.schema.v0.1.json",
+  "title": "Strategy Engine Output v0.1（M6 THE STRATEGIST）",
+  "description": "M6 Strategy Engine 輸出契約（M6_STRATEGIST_SPEC §8）。引擎只消費 Decision Engine decision＋Workflow state＋stakeholder_profile，產出『先談誰／怎麼談／什麼絕不能做』；不反算 Core、不重算 EV/verdict（breakpoint 由 M4 給）。每條建議可解釋（reason＋signals_used）。方向＝領域真理鎖在 strategy.py＋回歸；幅度/文案＝strategy_config.json。方向性建議、非投資結論。",
+  "type": "object",
+  "required": [
+    "strategy_engine_version", "input_hash", "persuasion_queue", "administrative_queue",
+    "cascade_risk", "workload_split", "assumptions", "provenance_note"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "strategy_engine_version": { "type": "string" },
+    "input_hash": {
+      "type": "string", "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "指回本策略消費的 decision（其 input_hash 再指回 Core result）"
+    },
+    "case_id": { "type": "string" },
+    "persuasion_queue": {
+      "type": "array",
+      "description": "說服佇列（signable 戶，依 priority_score 排序）——先談誰",
+      "items": {
+        "type": "object",
+        "required": ["household_id", "rank", "queue", "recommended_action", "reason",
+                     "signals_used", "forbidden_actions", "willingness_type",
+                     "classification_source", "priority_score"],
+        "additionalProperties": false,
+        "properties": {
+          "household_id": { "type": "string" },
+          "rank": { "type": "integer", "minimum": 1 },
+          "queue": { "type": "string", "const": "persuasion" },
+          "willingness_type": { "type": "string", "enum": ["strategic", "fearful", "opposed", "unknown"] },
+          "classification_source": { "type": "string", "enum": ["recorded", "suggested", "simulated"] },
+          "recommended_action": {
+            "type": "string",
+            "enum": ["institutional_guarantee", "time_limited_offer", "statutory_process", "clarify_and_record"]
+          },
+          "forbidden_actions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["increase_allocation", "verbal_guarantee_only", "authority_endorsement_as_substitute",
+                       "reveal_urgency", "continue_sweetening"]
+            },
+            "description": "引擎主動禁止的動作（§5.2）；恐懼型必含 increase_allocation（加碼反效果）"
+          },
+          "reason": { "type": "string" },
+          "signals_used": { "type": "array", "items": { "type": "string" } },
+          "priority_score": { "type": "number" }
+        }
+      }
+    },
+    "administrative_queue": {
+      "type": "array",
+      "description": "產權清理佇列（blocked 戶）——行政工作量，與說服工作量分流（§2/§5.4）",
+      "items": {
+        "type": "object",
+        "required": ["household_id", "signability", "blocking_reason", "action"],
+        "additionalProperties": false,
+        "properties": {
+          "household_id": { "type": "string" },
+          "signability": { "type": "string", "const": "blocked" },
+          "blocking_reason": {
+            "type": "string",
+            "enum": ["inherited_unregistered", "joint_ownership", "mortgaged", "illegal_structure"]
+          },
+          "action": {
+            "type": "string",
+            "enum": ["assist_inheritance_registration", "co_owner_agreement",
+                     "mortgage_clearance", "illegal_structure_rights_assessment"]
+          }
+        }
+      }
+    },
+    "cascade_risk": { "type": "string", "enum": ["low", "medium", "high"] },
+    "cascade_countermeasures": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["do_not_sweeten", "surface_silent_supporters", "publish_hard_information",
+                 "address_doubts_publicly_for_middle"]
+      },
+      "description": "反向雪崩對策（§7）；cascade_risk=high 時必含 surface_silent_supporters"
+    },
+    "workload_split": {
+      "type": "object",
+      "required": ["persuasion_count", "administrative_count"],
+      "additionalProperties": false,
+      "properties": {
+        "persuasion_count": { "type": "integer", "minimum": 0 },
+        "administrative_count": { "type": "integer", "minimum": 0 }
+      },
+      "description": "說服 vs 行政工作量分流計數（§2 關鍵推論：混算會誤判整合難度）"
+    },
+    "assumptions": {
+      "type": "object",
+      "description": "本次排序使用的可校準權重（幅度歸 config；方向鎖在程式）",
+      "required": ["weights"],
+      "properties": {
+        "weights": { "type": "object" },
+        "convertibility_score": { "type": "object" }
+      }
+    },
+    "provenance_note": { "type": "string" },
+    "notes": { "type": "array", "items": { "type": "string" } }
+  }
+}

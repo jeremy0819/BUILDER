@@ -59,6 +59,7 @@ select{font-size:12.5px;padding:6px 9px;border-radius:8px;border:1px solid var(-
     <span>Core＝財務 · Decision Engine＝判讀 · Strategy＝M6 · 本頁只組合</span></footer>
 </div>
 
+<script src="core-runtime.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const KEY="uros.workflow.v1";
@@ -100,10 +101,113 @@ function render(pid){
         <div class="row"><span>階段（Workflow 事實）</span><b>${wf.project.stage}</b></div>
       </div>
       <div class="src">input_hash ${sh(snap.input_hash)}…@core ${snap.core_version} · 逐戶分回/找補見 Product Planning（§56）</div></div>
-    <div class="sec"><h2>行動 · Strategy Engine</h2>
-      <div class="wip">逐型對策（先談誰／優先戶／是否調產品）＝ <b>M6 THE STRATEGIST</b>。
-      需 stakeholder_profile schema 先行；本欄位保留空槽，引擎上線即無縫填入——本頁不代為建議。</div></div>`;
+    <div class="sec" id="strategy-sec"><h2>行動 · Strategy Engine <span class="src" id="strat-stat" style="margin-left:6px"></span></h2>
+      <div class="legend">承 <b>People 階段</b>名冊 → 交棒至行動：整合人分型（選項）→ Core Strategy Engine 產出逐型對策。本頁零推論，判讀全文＝引擎輸出。</div>
+      <div id="strategy-slot"><div class="wip">載入策略引擎…</div></div></div>`;
+  initStrategy(pid, rec);
 }
+/* ── M6 THE STRATEGIST：分型輸入（選項）→ Core strategize（Pyodide, Web Worker）→ 逐欄呈現。
+   鐵律：JS 只收整合人「選了什麼」與渲染引擎回傳的 JSON；型別判定/優先序/禁止動作/雪崩一律由 Core
+   strategize 產出，本頁一條邏輯都不算（UI 零推論）。整合人選了型別＝recorded（權威）。 */
+const WT=[["","未分型"],["strategic","策略型"],["fearful","恐懼型"],["opposed","反對型"],["unknown","無法判斷"]];
+const SG=[["signable","可簽"],["blocked","簽不了(產權)"]];
+const BR=[["inherited_unregistered","繼承未辦"],["joint_ownership","共有"],["mortgaged","抵押"],["illegal_structure","增建"]];
+const WT_ZH={strategic:"策略型",fearful:"恐懼型",opposed:"反對型",unknown:"未判"};
+const ACT_ZH={institutional_guarantee:"制度性擔保",time_limited_offer:"限時條件談判",statutory_process:"走法定程序",clarify_and_record:"先接觸釐清"};
+const FBD_ZH={increase_allocation:"加碼／提高分配",verbal_guarantee_only:"僅口頭保證",authority_endorsement_as_substitute:"以權威背書代擔保",reveal_urgency:"顯露急迫",continue_sweetening:"持續加碼說服"};
+const ADM_ZH={assist_inheritance_registration:"協助繼承登記",co_owner_agreement:"共有人協議",mortgage_clearance:"抵押塗銷",illegal_structure_rights_assessment:"增建權益認定"};
+const BR_ZH={inherited_unregistered:"繼承未辦",joint_ownership:"共有",mortgaged:"抵押",illegal_structure:"增建"};
+const CM_ZH={do_not_sweeten:"不加碼",surface_silent_supporters:"促沉默支持者表態",publish_hard_information:"投放硬資訊（第三方估價）",address_doubts_publicly_for_middle:"對中間派逐條公開回應"};
+const CR_ZH={low:["var(--ok)","低"],medium:["var(--warn)","中"],high:["var(--err)","高"]};
+let STRAT_RT=null;
+const profKey=pid=>"uros.profiles."+pid;
+function loadProfiles(pid){try{return JSON.parse(localStorage.getItem(profKey(pid)))||{}}catch(e){return{}}}
+function saveProfiles(pid,m){try{localStorage.setItem(profKey(pid),JSON.stringify(m))}catch(e){}}
+
+function initStrategy(pid, rec){
+  const slot=$("strategy-slot"), stat=$("strat-stat");
+  if(!rec){ if(slot) slot.innerHTML=""; return; }
+  const owners=((rec.wf&&rec.wf.stakeholders)||[]).filter(s=>s.role==="owner");
+  if(!owners.length){ slot.innerHTML=`<div class="wip">本案無 owner 名冊，無法分型——到 Workspace 補 stakeholders。</div>`; return; }
+  const saved=loadProfiles(pid);
+  slot.innerHTML=`
+    <div id="prof-panel" style="max-height:230px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px">
+      <table><tr><th>戶</th><th>意願型別</th><th>可簽性</th><th>產權原因</th><th>關鍵戶</th></tr>
+      ${owners.map(s=>{const v=saved[s.stakeholder_id]||{};return `<tr data-id="${s.stakeholder_id}">
+        <td>${s.stakeholder_id}</td>
+        <td><select class="p-wt">${WT.map(o=>`<option value="${o[0]}" ${(v.willingness_type||"")===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select></td>
+        <td><select class="p-sg">${SG.map(o=>`<option value="${o[0]}" ${(v.signability||"signable")===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select></td>
+        <td><select class="p-br">${[["","—"]].concat(BR).map(o=>`<option value="${o[0]}" ${(v.blocking_reason||"")===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select></td>
+        <td style="text-align:center"><input type="checkbox" class="p-key" ${v.is_key_household?"checked":""}></td></tr>`;}).join("")}
+      </table>
+    </div>
+    <div class="legend">你選型別＝<b>recorded（權威）</b>；空白＝未分型（不列入，不猜測）。可簽性 blocked＝行政工作量，自動分流。</div>
+    <div id="strat-out" style="margin-top:12px"></div>`;
+  $("prof-panel").addEventListener("change", ()=>computeStrategy(pid, rec));
+  if(STRAT_RT && STRAT_RT.ready){ computeStrategy(pid, rec); return; }
+  if(!window.createCoreRuntime){ stat.textContent=""; $("strat-out").innerHTML=`<div class="wip">core-runtime 未載入。</div>`; return; }
+  if(!STRAT_RT){
+    stat.textContent="載入計算核心…";
+    STRAT_RT=window.createCoreRuntime({
+      onReady:m=>{ stat.textContent=`就緒 · core ${m.core_version}`; computeStrategy(pid, rec); },
+      onError:m=>{ stat.textContent="計算核心離線"; const o=$("strat-out"); if(o) o.innerHTML=`<div class="wip">⚠ 計算核心無法載入（${(m&&m.msg)||"部署後即時生效"}）——分型已可記錄，上線即算。</div>`; }
+    });
+  }
+}
+
+function collectProfiles(pid){
+  const store2={}, out=[];
+  [...document.querySelectorAll("#prof-panel tr[data-id]")].forEach(r=>{
+    const id=r.getAttribute("data-id");
+    const wt=r.querySelector(".p-wt").value, sg=r.querySelector(".p-sg").value,
+          br=r.querySelector(".p-br").value, key=r.querySelector(".p-key").checked;
+    const v={signability:sg}; if(wt) v.willingness_type=wt; if(sg==="blocked"&&br) v.blocking_reason=br; if(key) v.is_key_household=true;
+    store2[id]=v;
+    if(wt || sg==="blocked" || key){                    // 未分型且可簽且非關鍵＝不列入（不猜）
+      const p={household_id:id, classification_source: wt?"recorded":"suggested", signability:sg};
+      if(wt) p.willingness_type=wt; if(sg==="blocked"&&br) p.blocking_reason=br; if(key) p.is_key_household=true;
+      out.push(p);
+    }
+  });
+  saveProfiles(pid, store2);
+  return out;
+}
+
+function computeStrategy(pid, rec){
+  if(!STRAT_RT || !STRAT_RT.ready) return;
+  const snap=rec.snap, dec=rec.decision, hash=(dec&&dec.input_hash)||snap.input_hash;
+  const workflow={stakeholders:(rec.wf.stakeholders||[]), input_hash:hash,
+                  consent:{agreed:snap.agreed, total:snap.total, threshold:snap.threshold}};
+  const decision={input_hash:hash, verdict:(dec&&dec.verdict)||"CAUTION", breakpoint_stakeholder:(dec&&dec.breakpoint_stakeholder)||null};
+  STRAT_RT.strategize(decision, workflow, collectProfiles(pid)).then(r=>{
+    try{const s=store(); if(s.projects[pid]){ s.projects[pid].strategy=r.strategy; localStorage.setItem(KEY,JSON.stringify(s)); }}catch(e){}
+    renderStrategy(r.strategy);
+  }).catch(e=>{ const o=$("strat-out"); if(o) o.innerHTML=`<div class="wip">策略計算失敗：${e.message}</div>`; });
+}
+
+function renderStrategy(s){
+  const out=$("strat-out"); if(!out) return; if(!s){ out.innerHTML=""; return; }
+  const cr=CR_ZH[s.cascade_risk]||CR_ZH.low;
+  const pq=(s.persuasion_queue||[]).map(x=>`<tr>
+    <td>#${x.rank}</td><td>${x.household_id}</td>
+    <td>${WT_ZH[x.willingness_type]||x.willingness_type}<br><span class="src">${x.classification_source==="recorded"?"已記錄":x.classification_source==="simulated"?"劇本":"訊號推測"}</span></td>
+    <td><b>${ACT_ZH[x.recommended_action]||x.recommended_action}</b></td>
+    <td style="color:var(--err)">${(x.forbidden_actions||[]).map(f=>"✋"+(FBD_ZH[f]||f)).join("<br>")||"—"}</td>
+    <td class="src">${x.reason||""}</td></tr>`).join("");
+  const aq=(s.administrative_queue||[]).map(a=>`<tr><td>${a.household_id}</td><td>${BR_ZH[a.blocking_reason]||a.blocking_reason}</td><td><b>${ADM_ZH[a.action]||a.action}</b></td></tr>`).join("");
+  out.innerHTML=`
+    <div class="verdict" style="gap:18px">
+      <div>反向雪崩風險 <b style="color:${cr[0]};font-size:18px">${cr[1]}</b></div>
+      <div class="vmeta">工作量分流：說服 <b>${s.workload_split.persuasion_count}</b> · 產權清理 <b>${s.workload_split.administrative_count}</b>（§2：兩者不得混算）</div>
+    </div>
+    ${(s.cascade_countermeasures&&s.cascade_countermeasures.length)?`<div class="legend">雪崩對策：${s.cascade_countermeasures.map(c=>CM_ZH[c]||c).join("・")}</div>`:""}
+    <h2 style="font-size:13px;margin-top:12px">先談誰 · persuasion_queue（說服）</h2>
+    ${pq?`<table><tr><th>序</th><th>戶</th><th>型別（來源）</th><th>建議動作</th><th>絕不能做</th><th>理由</th></tr>${pq}</table>`:`<div class="wip">尚無分型戶——上方選項記錄後即排序。</div>`}
+    ${aq?`<h2 style="font-size:13px;margin-top:12px">產權清理 · administrative_queue（行政，與說服分流）</h2><table><tr><th>戶</th><th>產權原因</th><th>行政動作</th></tr>${aq}</table>`:""}
+    <div class="vguard">⚠ <b>方向性建議 · 非投資結論</b> — 對策庫源自 3 個實案＋理論，樣本小；willingness suggested 僅訊號推測，權威＝整合人 recorded。引擎只建議下一步、不預測結果。</div>
+    <div class="src">strategy ${s.strategy_engine_version} · input_hash ${sh(s.input_hash)}… · UI 零推論（判讀全文＝Strategy Engine 輸出）</div>`;
+}
+
 (function(){
   const s=store();
   const sel=$("case-sel");

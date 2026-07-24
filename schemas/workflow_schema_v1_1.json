@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://urban-renewal-os/schemas/workflow_schema_v1_1.json",
+  "title": "Urban Renewal OS — Workflow doc (schema wf-1.1)",
+  "description": "M3-C 案件管理層合約（獨立版本軸，與計算合約 project_schema_v2_1 分檔分版）。wf-1.1＝wf-1.0 的向下相容 minor 升版（純新增選填欄位）：stakeholder 補『可簽性軸』事實欄（ownership_complexity/signability/blocking_reason），為 M6 THE STRATEGIST 雙軸模型的第二軸來源（M5.5-A 軌 Data Contract 收尾）。財務數字不存於此——只以 snapshot 引用（input_hash@core_version）指向 v2.1 計算檔（SSOT）。真實 PII 永不進版控：僅匿名代號。",
+  "type": "object",
+  "required": ["schema_version", "project"],
+  "properties": {
+    "schema_version": {"const": "wf-1.1"},
+    "project": {"$ref": "#/$defs/project"},
+    "stakeholders": {"type": "array", "items": {"$ref": "#/$defs/stakeholder"}},
+    "consent_events": {"type": "array", "items": {"$ref": "#/$defs/consent_event"}},
+    "tasks": {"type": "array", "items": {"$ref": "#/$defs/task"}},
+    "decisions": {"type": "array", "items": {"$ref": "#/$defs/decision_record"}}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "project": {
+      "type": "object",
+      "required": ["project_id", "code_name", "case_type", "stage"],
+      "properties": {
+        "project_id": {"type": "string", "pattern": "^prj-[0-9a-z-]+$", "description": "穩定不變的案件識別碼"},
+        "code_name": {"type": "string", "description": "代號（禁真實段名/姓名）"},
+        "case_type": {"type": "string", "enum": ["urban_renewal", "danger_building"]},
+        "mode": {"type": "string", "enum": ["全案管理", "合建", "買賣"]},
+        "stage": {"type": "string", "pattern": "^S([1-9]|1[01])$", "description": "S1–S11 當前階段"},
+        "stage_history": {"type": "array", "items": {
+          "type": "object", "required": ["stage", "ts"],
+          "properties": {"stage": {"type": "string"}, "ts": {"type": "string"}}}},
+        "active_snapshot": {"type": "string", "description": "作準的計算快照 id"},
+        "snapshots": {"type": "array", "items": {"$ref": "#/$defs/snapshot_ref"}}
+      }
+    },
+    "snapshot_ref": {
+      "type": "object",
+      "required": ["id", "schema_version", "input_hash", "core_version"],
+      "description": "計算快照引用——只存溯源指紋，不複製 result 數字（SSOT）。",
+      "properties": {
+        "id": {"type": "string"},
+        "label": {"type": "string"},
+        "schema_version": {"type": "string"},
+        "input_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "core_version": {"type": "string"},
+        "computed_at": {"type": "string"},
+        "file_ref": {"type": "string", "description": "本地檔引用（不入公庫的資料以 local: 前綴）"}
+      }
+    },
+    "stakeholder": {
+      "type": "object",
+      "required": ["stakeholder_id", "role"],
+      "properties": {
+        "stakeholder_id": {"type": "string", "description": "匿名代號（W01…／R01 顧問／B01 銀行）"},
+        "role": {"type": "string", "enum": ["owner", "consultant", "architect", "bank", "gov"]},
+        "land_share": {"type": "number", "minimum": 0, "maximum": 1},
+        "pre_value": {"type": "number", "minimum": 0, "description": "更新前權利價值（萬元）；與計算合約 owners[] 同義"},
+        "min_unit_eligible": {"type": "boolean"},
+        "family_group": {"type": "string", "description": "家族聚落代號（供看板/沙盤連動）"},
+        "tags": {"type": "array", "items": {"type": "string"}},
+        "ownership_complexity": {
+          "type": "string",
+          "enum": ["clean", "inherited_unregistered", "joint_ownership", "mortgaged", "illegal_structure"],
+          "description": "產權複雜度（M5.5-A 軌事實；與 household_outcome.ownership_complexity 同一列舉）。clean 以外＝『願意但簽不了』，是可簽性 blocked 的來源；屬行政工作量而非說服工作量。"
+        },
+        "signability": {
+          "type": "string",
+          "enum": ["signable", "blocked"],
+          "description": "可簽性軸（M6 §2 雙軸模型之事實軸，與意願軸正交）：blocked＝產權瑕疵導致目前簽不了，須分流至產權清理佇列，不計入說服工作量。可由 ownership_complexity 經 workflow.derive_signability 導出（方向為領域真理）。"
+        },
+        "blocking_reason": {
+          "type": ["string", "null"],
+          "enum": ["inherited_unregistered", "joint_ownership", "mortgaged", "illegal_structure", null],
+          "description": "blocked 的產權原因（signable 或未知時為 null）；值域＝ownership_complexity 之非 clean 子集。"
+        }
+      }
+    },
+    "consent_event": {
+      "type": "object",
+      "required": ["event_id", "stakeholder_id", "ts", "kind"],
+      "description": "同意追蹤 append-only 事件；目前狀態由事件流重放推導，不獨立儲存。",
+      "properties": {
+        "event_id": {"type": "string"},
+        "stakeholder_id": {"type": "string"},
+        "ts": {"type": "string"},
+        "kind": {"type": "string", "enum": [
+          "contacted", "visited", "briefed", "verbal_ok", "signed",
+          "selected_unit", "withdrawn", "declined"]},
+        "note": {"type": "string"},
+        "by": {"type": "string"}
+      }
+    },
+    "task": {
+      "type": "object",
+      "required": ["task_id", "title", "stage", "status"],
+      "properties": {
+        "task_id": {"type": "string"},
+        "title": {"type": "string"},
+        "stage": {"type": "string", "pattern": "^S([1-9]|1[01])$"},
+        "status": {"type": "string", "enum": ["todo", "doing", "done", "blocked"]},
+        "due": {"type": "string"},
+        "owner_role": {"type": "string"},
+        "links": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "decision_record": {
+      "type": "object",
+      "required": ["decision_id", "ts", "title", "chosen"],
+      "description": "ADR 式決策；evidence 釘住當時依據的計算快照（可回放稽核）。",
+      "properties": {
+        "decision_id": {"type": "string"},
+        "ts": {"type": "string"},
+        "stage": {"type": "string"},
+        "title": {"type": "string"},
+        "context": {"type": "string"},
+        "options": {"type": "array", "items": {"type": "string"}},
+        "chosen": {"type": "string"},
+        "rationale": {"type": "string"},
+        "consequences": {"type": "string"},
+        "evidence": {
+          "type": "object",
+          "properties": {
+            "input_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+            "core_version": {"type": "string"},
+            "result_fields_cited": {"type": "array", "items": {"type": "string"}}
+          }
+        }
+      }
+    }
+  }
+}

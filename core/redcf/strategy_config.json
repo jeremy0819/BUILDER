@@ -1,0 +1,25 @@
+{
+  "_note": "M6 Strategy Engine 可校準參數【示意預設・方向性】：priority 權重、convertibility 幅度、話術文案。方向與型別集合＝領域真理，鎖在 strategy.py＋tests/test_strategy.py（含 convertibility 排序不變式）；本檔只調幅度/文案，不決定方向。對策庫源自 3 個實案＋賽局/行為經濟理論，樣本小→方向性建議、非保證。真實話術本地校準（/local_calibration/），不進版控。",
+  "priority_weights": {
+    "_note": "priority_score = w1·leverage + w2·key_household + w3·convertibility + w4·threshold_gap + w5·cascade_risk − w6·blocked_penalty（§6）",
+    "w1_leverage": 0.30,
+    "w2_key_household": 0.20,
+    "w3_convertibility": 0.20,
+    "w4_threshold_gap": 0.15,
+    "w5_cascade_risk": 0.15,
+    "w6_blocked_penalty": 1.0
+  },
+  "convertibility_score": {
+    "_note": "可轉化性幅度（幅度歸此；排序 fearful>strategic>opposed 為領域真理，由回歸鎖住）",
+    "fearful": 1.0,
+    "strategic": 0.6,
+    "opposed": 0.1,
+    "unknown": 0.3
+  },
+  "narratives": {
+    "strategic": "以限時條件與第三方估價破解 holdout；讓等待變貴（客觀陳述、非恐嚇）。要的是條件不是擔保。",
+    "fearful": "用『制度的信用』取代『公司的信用』：續建機制／連帶保證書／履約保證／增資到位後證明。加碼會被解讀為『你還有空間』、加深懷疑。",
+    "opposed": "停止投入說服成本，轉門檻策略（需要 80% 非 100%），走法定程序（權變、多數決）；確認不參與者補償路徑。",
+    "unknown": "訊號不足：先接觸釐清，由整合人記錄（recorded）；引擎不猜測。"
+  }
+}

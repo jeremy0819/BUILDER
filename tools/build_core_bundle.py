@@ -32,7 +32,8 @@ def 蒐集() -> dict:
         files[rel] = p.read_text(encoding="utf-8")
     files.setdefault("core/__init__.py", "")   # 命名空間套件保險
     # 2) core 執行期資料檔
-    for rel in ["core/redcf/stage_tree.json", "core/redcf/decision_config.json"]:
+    for rel in ["core/redcf/stage_tree.json", "core/redcf/decision_config.json",
+                "core/redcf/strategy_config.json"]:
         files[rel] = (根 / rel).read_text(encoding="utf-8")
     # 3) valuation 讀的係數檔（置於 apps/web）
     files["apps/web/coefficients.json"] = (根 / "apps/web/coefficients.json").read_text(encoding="utf-8")
