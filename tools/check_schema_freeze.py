@@ -37,6 +37,10 @@ FROZEN = {
         "7a30ab80a9d6dfb9f22a60557ddd645a0ccc2ac73204bf15841a13fab393fdde",  # decision v0.1（M4）
     "schemas/household_outcome.schema.v0.1.json":
         "1866452b508c7d9f4bd5b53c044b22ead2d690f7ac8beac25fde98fe50ad0e8d",  # household_outcome v0.1（M5.5 傳動軸）
+    "schemas/stakeholder_profile.schema.v0.1.json":
+        "d68e5ec52d0cb865cc690073aeada1fd9b319004fb5fe3e0f86d4c694f6f0e2b",  # stakeholder_profile v0.1（M6 分型輸入）
+    "schemas/strategy.schema.v0.1.json":
+        "8821db932a83fd4ac6d457f6ae1a8f19b691a1f071084a883769895c1c9b0bd1",  # strategy v0.1（M6 THE STRATEGIST 輸出）
 }
 
 

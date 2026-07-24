@@ -18,6 +18,8 @@
 > **凍結 hash 基準**（唯一來源＝`tools/check_schema_freeze.py` `FROZEN` 表）：v1.1 `e37e10db…`、
 > v2.0 `f1c466a3…`、三視圖見腳本；Workflow 軸 wf-1.0 `1328690f…`、**wf-1.1 `39e7e88e…`**（M5.5-A：stakeholder
 > 可簽性軸 ownership_complexity/signability/blocking_reason，純新增選填＝minor，遷移器 `wf-1.0→wf-1.1`）。
+> M6 THE STRATEGIST 新增契約：`stakeholder_profile.schema.v0.1` `d68e5ec5…`（分型輸入）、
+> `strategy.schema.v0.1` `8821db93…`（策略引擎輸出）——皆**新增檔**、不動既有凍結檔。
 > 要改凍結檔＝走版本升級流程（新 `schema_version`＋遷移器＋更新 FROZEN），不得直接改檔。
 
 ## 2. 三層關係（誰依賴誰）
