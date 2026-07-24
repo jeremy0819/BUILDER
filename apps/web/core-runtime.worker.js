@@ -49,6 +49,21 @@ self.onmessage = (e) => {
     } catch (err) {
       post("result", { id: m.id, error: String((err && err.message) || err) });
     }
+  } else if (m.type === "strategize") {
+    // M6 THE STRATEGIST：同一份 core/redcf.strategize（建議層）；Worker 只搬運與呼叫，不含邏輯。
+    if (!ready) { post("result", { id: m.id, error: "core-not-ready" }); return; }
+    try {
+      pyodide.globals.set("_dec_json", JSON.stringify(m.decision || {}));
+      pyodide.globals.set("_wf_json", JSON.stringify(m.workflow || {}));
+      pyodide.globals.set("_prof_json", JSON.stringify(m.profiles || []));
+      const out = pyodide.runPython(
+        "json.dumps({'strategy': _redcf.strategize(json.loads(_dec_json), " +
+        "json.loads(_wf_json), json.loads(_prof_json))})"
+      );
+      post("result", Object.assign({ id: m.id }, JSON.parse(out)));
+    } catch (err) {
+      post("result", { id: m.id, error: String((err && err.message) || err) });
+    }
   }
 };
 

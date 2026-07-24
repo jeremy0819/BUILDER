@@ -35,6 +35,14 @@
           w.postMessage({ type: "recompute", id: id, engine: engine });
         });
       },
+      // M6：strategize(decision, workflow, profiles) → Promise<{strategy}>；同一份 Core，UI 零推論。
+      strategize: function (decision, workflow, profiles) {
+        return new Promise(function (resolve, reject) {
+          if (dead || !w) return reject(new Error("core-runtime 不可用"));
+          var id = ++seq; pending[id] = { resolve: resolve, reject: reject };
+          w.postMessage({ type: "strategize", id: id, decision: decision, workflow: workflow, profiles: profiles });
+        });
+      },
       terminate: function () { if (w) w.terminate(); dead = true; }
     };
   }
