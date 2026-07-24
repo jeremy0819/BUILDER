@@ -30,7 +30,8 @@ from core.redcf.valuation import (calc_更新前價值,
     load_coefficients, calc_戶價值, build_owner_matrix)
 from core.redcf.rights import calc_權利變換, calc_找補, build_owner_allocations
 from core.redcf.cashflow import calc_現金流分期
-from core.redcf.workflow import validate_workflow, migrate_workflow, derive_consent_state
+from core.redcf.workflow import (validate_workflow, migrate_workflow,
+    derive_consent_state, derive_signability)
 from core.redcf.decision import (decide, validate_decision, calc_完工機率,
     load_stage_tree, load_decision_config)
 from core.redcf.allocation import calc_選配映射, validate_household_outcome

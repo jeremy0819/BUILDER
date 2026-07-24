@@ -16,7 +16,9 @@
 | **OS Release** | git tag `os-vX.Y.Z`（聚合版本，**新增機制**） | os-v0.1.0-alpha、os-v0.2.0-beta **已發布**；os-v0.3.0＝M3 收斂時 | 每次正式 release 打 tag，對應一組凍結的上述三者 |
 
 > **凍結 hash 基準**（唯一來源＝`tools/check_schema_freeze.py` `FROZEN` 表）：v1.1 `e37e10db…`、
-> v2.0 `f1c466a3…`、三視圖見腳本。要改凍結檔＝走版本升級流程（新 `schema_version`＋遷移器＋更新 FROZEN），不得直接改檔。
+> v2.0 `f1c466a3…`、三視圖見腳本；Workflow 軸 wf-1.0 `1328690f…`、**wf-1.1 `39e7e88e…`**（M5.5-A：stakeholder
+> 可簽性軸 ownership_complexity/signability/blocking_reason，純新增選填＝minor，遷移器 `wf-1.0→wf-1.1`）。
+> 要改凍結檔＝走版本升級流程（新 `schema_version`＋遷移器＋更新 FROZEN），不得直接改檔。
 
 ## 2. 三層關係（誰依賴誰）
 

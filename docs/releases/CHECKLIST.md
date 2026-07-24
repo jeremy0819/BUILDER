@@ -26,6 +26,7 @@
       - v1.1 `schemas/project_schema.json` = `e37e10dbe19f5bbf51234a12fa8e60af34d4c854ac05566aa3e87f7d35bd4a96`
       - v2.0 `schemas/project_schema_v2.json` = `f1c466a3162655634baf19973dcb061a8e64643d08302a1dc3f6cdd0df38e6b1`
       - v2 三視圖 `schemas/v2/{input,output,metadata}.schema.json`（見腳本 FROZEN 表）
+      - wf-1.1 `schemas/workflow_schema_v1_1.json` = `39e7e88e9278abdc72fca86415517a1f626b02ca419eddb8e28bf1eae9ba890f`（M5.5-A 可簽性軸；wf-1.0 續凍）
       要改凍結檔＝走版本升級流程（新版本＋遷移器＋更新 FROZEN 基準），不得直接改檔。
 - [ ] **Version Updated**：依 `governance/VERSION_POLICY.md` 確認 CORE_VERSION / schema_version /
       APP_VERSION 該動的已動、不該動的沒動；本次 release 對應版本已填入下方發布紀錄。

@@ -31,6 +31,8 @@ FROZEN = {
         "6bb6694a88f911cb9bf184e381784e821dfb97c053e400bc81c89cb25768348d",
     "schemas/workflow_schema.json":
         "1328690f7783b273fee6b3ebaff6fbd7c678e87deb22eb7fc0e2dda7cd5f8324",  # wf-1.0（M3-C）
+    "schemas/workflow_schema_v1_1.json":
+        "39e7e88e9278abdc72fca86415517a1f626b02ca419eddb8e28bf1eae9ba890f",  # wf-1.1（M5.5-A：stakeholder 可簽性軸）
     "schemas/decision.schema.v0.1.json":
         "7a30ab80a9d6dfb9f22a60557ddd645a0ccc2ac73204bf15841a13fab393fdde",  # decision v0.1（M4）
     "schemas/household_outcome.schema.v0.1.json":

@@ -199,7 +199,7 @@ priority_score =
 
 ---
 
-## 7. 反向雪崩偵測（中正段那一課，寫進引擎）
+## 7. 反向雪崩偵測（案例A 內爆型那一課，寫進引擎）
 
 ```
 觸發條件：
@@ -241,7 +241,7 @@ priority_score =
 ## 9. 對抗性案例回歸（CI Gate）
 
 ```
-Case A · 內爆型（中正段原型）
+Case A · 內爆型（案例A・蛋黃區內爆原型）
   輸入：全案管理低資本、地主質疑資本額、蛋黃區、關鍵戶發難
   斷言：
     ✓ 該戶分類 suggested = fearful（訊號：questioned_capital_adequacy）
@@ -249,14 +249,14 @@ Case A · 內爆型（中正段原型）
     ✓ forbidden_actions 含 increase_allocation ★必須主動禁止加碼
     ✓ cascade_risk = high，且輸出 surface_silent_supporters
 
-Case B · 背信型（桃園原型）
+Case B · 背信型（案例B・合建背信原型）
   輸入：合建、分配比例未定、地價翻倍、前期關係專屬投資高
   斷言：
     ✓ 標出 hold-up 曝險
     ✓ 建議含「分配比例封閉化」「估價基準日鎖定」「配合義務綁違約金」
     ✓ 不得建議「加碼換簽約」
 
-Case C · 攔胡型（蘆洲原型）
+Case C · 攔胡型（案例C・外部攔胡原型）
   輸入：簽約前競爭報價「1坪換1坪＋車位」、8%→33% 公設
   斷言：
     ✓ 建議「以室內實坪／房地總價值對比」，非權狀坪對打
