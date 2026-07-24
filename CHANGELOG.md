@@ -3,13 +3,14 @@
 > 記錄 CORE_VERSION 的每次變動（VERSION_POLICY：公式、費率、law_db、合約結構變動才 bump）。
 > UI 版本（app.py v4.x）與 OS release tag（os-vX.Y.Z）另有軸線，不在此表。
 
-## Unreleased — OS 層里程碑（M4→M5.5＋B1.5；**未 bump CORE_VERSION**）
+## 0.4.0 — 2026-07-24（M4–M5.5＋B1.5：決策引擎／選配映射／B 系列並版）
 
-> 本節記 OS/引擎/前端層的推進。核心容積(§162)/坪效/共負(L6)/投報/估值公式**未變**，
-> 故 `CORE_VERSION` 維持 0.3.0；決策引擎另走獨立軸 `ENGINE_VERSION`。
-> ⚠️ **待確認的版本政策**：M4 起 `core/redcf` 新增 `decision.py`、`allocation.py`、
-> `valuation.py` B 系列係數函式（係數在 `apps/web/coefficients.json` 可換檔）。
-> 這些是「新增能力、未改既有黃金公式」，依 VERSION_POLICY 是否值得 bump 至 0.4.0——**待使用者裁定**。
+> **版本裁定（使用者核准）**：0.3.0 後 `core/redcf` 新增了計算能力——`decision.py`（三方 EV）、
+> `allocation.py`（選配映射）、`valuation.py` B 系列係數函式。依 VERSION_POLICY「新增計算公式即 bump」，
+> `CORE_VERSION` 由 0.3.0 → **0.4.0**（minor：純新增、未改既有黃金公式，故容積/坪效/共負/投報/估值
+> 既有期望值零變動）。決策引擎另有獨立軸 `ENGINE_VERSION 0.1.0`。
+> ⚠️ 既有凍結範例（`schemas/examples/`）的 provenance 仍記 `0.3.0`——那是**當時**算出的歷史快照，
+> 依可溯源原則**不回填**；recompute 驗證已排除 `core_version` 比對（`recompute.py`），故不影響黃金測試。
 
 - **M4 Decision Engine v0.1**（`core/redcf/decision.py`，`ENGINE_VERSION 0.1.0`）：
   三方 EV／完工機率（`stage_tree.json`）／verdict（GO/CAUTION/STOP，帶 `breakpoint_stakeholder`）／
