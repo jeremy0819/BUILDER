@@ -563,6 +563,41 @@ $('clearImp').addEventListener('click',()=>{ CORE=null;$('coreOut').innerHTML=''
 $('prefillBtn').addEventListener('click',prefillFromCore);
 
 document.querySelectorAll('input').forEach(el=>el.addEventListener('input',()=>{ $('pathNote').textContent=''; render();}));
+
+/* ── ① Site → ② Product 交棒：承接作用中案件的基地事實，預填本頁參數 ──
+   讓「① 填的基地條件」直接帶進產品規劃，不必重打（同業回饋：階段之間沒有銜接）。
+   只搬既有欄位、不發明數字；使用者仍可自由改（本頁＝教學試算，權威計算在 Core）。 */
+(function inheritSite(){
+  var rec=null, name="";
+  try{
+    var s=JSON.parse(localStorage.getItem("uros.workflow.v1")||"null");
+    var act=localStorage.getItem("uros.active_case");
+    var pid=(s&&s.projects&&act&&s.projects[act])?act:(s&&s.order&&s.order[0]);
+    if(s&&pid&&s.projects[pid]){ rec=s.projects[pid]; name=(rec.snap&&rec.snap.code_name)||pid; }
+  }catch(e){}
+  var bar=document.createElement("div");
+  bar.style.cssText="max-width:1100px;margin:10px auto 0;padding:9px 14px;border-radius:10px;font-size:12.5px;line-height:1.6";
+  var host=document.querySelector(".wrap")||document.body;
+  if(!rec||!rec.snap||!rec.snap.site){
+    bar.style.cssText+=";border:1px dashed #cfcbe0;color:#67637d";
+    bar.innerHTML='📄 目前為<b>教學預設值</b>（未接案件）。到 <a href="dashboard.html">① Site 基地</a> 選一個案件，本頁就會自動帶入該案基地條件。';
+    host.insertBefore(bar,host.firstChild); return;
+  }
+  var st=rec.snap.site||{}, set=function(id,v){ var el=document.getElementById(id); if(el&&v!=null&&isFinite(v)) el.value=v; };
+  set("siteA", st.site_area_sqm);
+  if(st.far!=null) set("far", Math.round(st.far*100));              // Core 存倍數(2.4)，本頁欄位用 %(240)
+  if(st.bonus_ratio!=null) set("bonus", Math.round(st.bonus_ratio*100));
+  if(st.site_area_sqm && st.far && st.tdr_transfer_sqm!=null){       // 容移率(%) = 容移面積 / 法定容積
+    var fa=st.site_area_sqm*st.far; if(fa>0) set("tdr", Math.round(st.tdr_transfer_sqm/fa*100));
+  }
+  if(rec.snap.public_ratio!=null) set("common", Math.round(rec.snap.public_ratio*100));
+  bar.style.cssText+=";border:1px solid #b9abff;background:rgba(154,134,255,.10)";
+  bar.innerHTML='🔗 已<b>承接自 ① 基地</b>：<b>'+name+'</b> — 基地面積／容積率／獎勵率／容移／公設比已帶入下方欄位，'
+    +'可直接調整量體看結果。<span style="color:#67637d">（本頁為教學試算；正式數字以 <a href="dashboard.html">儀表板傳動軸</a> 的 Core 計算為準）</span>';
+  host.insertBefore(bar,host.firstChild);
+  render();
+})();
+
 render();
 </script>
 </body>
