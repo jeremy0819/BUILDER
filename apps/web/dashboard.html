@@ -201,6 +201,7 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
 </div>
 
 <script src="demo-case.js"></script>
+<script src="demo-cases.js"></script>
 <script src="core-runtime.js"></script>
 <script src="stepnav.js"></script>
 <script src="version.js"></script>
@@ -399,6 +400,11 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
   .cw-slot .del{position:absolute;top:5px;right:6px;z-index:2;background:var(--panel);border:1px solid var(--line);border-radius:7px;font-size:10px;cursor:pointer;padding:1px 6px}
   .cw-note{font-family:var(--mono);font-size:10px;color:var(--mute);margin-top:9px}
   .cw-empty{border:1px dashed var(--line);border-radius:16px;padding:22px;margin:16px 0 22px;font-size:13px;color:var(--mute);text-align:center}
+.cw-roster{margin-top:12px;border:1px solid var(--line);border-radius:11px;padding:8px 12px}
+  .cw-roster>summary{cursor:pointer;font-size:12px;font-weight:650;color:var(--mute);user-select:none}
+  .cw-roster>summary:hover{color:var(--ink)}
+  .cw-roster th{text-align:left;color:var(--mute);font-weight:600;border-bottom:1px solid var(--line);padding:4px 6px}
+  .cw-roster td{padding:3px 6px;border-bottom:1px solid var(--line)}
   .cw-drive{margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:color-mix(in srgb,var(--accent) 4%,transparent)}
   .cw-drive h4{margin:0 0 8px;font-size:11px;letter-spacing:.06em;color:var(--mute);text-transform:uppercase;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
   .drv-stat{font-family:var(--mono);font-size:10px;color:var(--accent);text-transform:none;letter-spacing:0}
@@ -474,6 +480,7 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
           <div class="cw-row"><span>投報率</span><b>${pc(snap.return_rate)}</b></div>
           <div class="cw-row"><span>重算/改配置</span><b><a href="evaluator.html">→ Product Planning</a></b></div></div>
       </div>
+      ${rosterPanel(rec)}
       ${rec.engine?`<div class="cw-drive" id="cw-drive">
         <h4>傳動軸即時預覽 · <b>STEP 2 Product 的財務即時試算</b>（拖滑桿看結果；正式規劃在 ② Product 頁）<span class="drv-stat" id="drv-stat">載入計算核心…</span></h4>
         <div class="drv-body" id="drv-body" style="display:none">
@@ -586,16 +593,55 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
   }
   window._mountDrivetrain=mountDrivetrain;   // 測試掛鉤
 
-  // ── B1.5-1 零步啟動：store 為空時預載合成示範案（案例D），令空狀態＝可運作狀態 ──
-  // 只在「完全沒有案件」時植入；一旦使用者匯入自己的案件即不再覆蓋。零真實資料（demo-case.js 全合成）。
+  /* 產權清冊面板（謄本欄位結構）——領域回饋：基地與產權從謄本確認、建名冊，
+     取得資訊後才談評估與規劃，所以名冊放在工作區「一開始」就看得到。
+     純呈現：逐欄 verbatim 自案件 roster／stakeholders，UI 不推導任何權利或坪數。 */
+  const OC_ZH={clean:"—",inherited_unregistered:"繼承未辦",joint_ownership:"公同共有",
+               mortgaged:"抵押權",illegal_structure:"未保存增建"};
+  function rosterPanel(rec){
+    const rows=(rec&&rec.roster)||null;
+    const sts=((rec&&rec.wf&&rec.wf.stakeholders)||[]).filter(s=>s.role==="owner");
+    if(!rows && !sts.length) return "";
+    const blocked=sts.filter(s=>s.signability==="blocked").length;
+    const body = rows
+      ? rows.slice(0,80).map(r=>`<tr><td>${r["土地編號"]}</td><td>${r["地段"]} ${r["地號"]}</td>
+          <td class="tnum">${r["土地面積_㎡"]}</td><td>${r["土地所有權人"]}</td>
+          <td class="tnum">${r["權利範圍分子"]}/${r["權利範圍分母"]}</td>
+          <td class="tnum">${r["土地持分面積_㎡"]}</td>
+          <td>${r["同意與否"]}</td><td>${r["限制登記"]==="無"?"—":r["限制登記"]}</td></tr>`).join("")
+      : sts.slice(0,80).map(s=>`<tr><td>—</td><td>—</td><td class="tnum">—</td><td>${s.stakeholder_id}</td>
+          <td class="tnum">—</td><td class="tnum">—</td>
+          <td>${s.min_unit_eligible?"符合最小單元":"—"}</td>
+          <td>${OC_ZH[s.ownership_complexity]||"—"}</td></tr>`).join("");
+    return `<details class="cw-roster"><summary>產權清冊（謄本欄位）· ${sts.length||rows.length} 筆
+        ${blocked?`<b style="color:var(--err)">· ${blocked} 筆產權待清理</b>`:""}</summary>
+      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px">
+        <tr><th>編號</th><th>地段地號</th><th>土地面積㎡</th><th>所有權人</th><th>權利範圍</th>
+            <th>持分面積㎡</th><th>同意</th><th>限制登記</th></tr>${body}</table></div>
+      <div class="src" style="margin-top:6px">合成清冊（欄位結構比照審議版謄本；所有名稱與數值皆生成，零真實資料）。
+        限制登記＝可簽性事實來源：非「無」者屬<b>行政工作量</b>，與說服工作量分流（M6 雙軸）。</div></details>`;
+  }
+
+  // ── B1.5-1 零步啟動：store 為空時預載合成示範案，令空狀態＝可運作狀態 ──
+  // 四案 A/B/C/D 全部植入工作區（A/B/C 來自 demo-cases.js＝合成產權清冊，謄本欄位結構；
+  // D 為既有權變示範）。領域回饋：產權名冊是「一開始就該有的輸入」，故開頁即備妥。
+  // 只在「完全沒有案件」時植入；一旦使用者匯入自己的案件即不再覆蓋。零真實資料（全合成）。
   function seedDemoIfEmpty(){
     try{
       const s=load();
       if(s&&s.projects&&Object.keys(s.projects).length) return;   // 已有案件，尊重使用者資料
-      if(!self.DEMO_CASE) return;                                 // demo-case.js 未載入則維持原空狀態
-      const d=self.DEMO_CASE;
-      save({order:[d.pid], projects:{[d.pid]:{wf:d.wf, snap:d.snap, engine:d.engine, decision:d.decision, demo:true}}});
-      localStorage.setItem("uros.active_case", d.pid);
+      const list=[].concat(self.DEMO_CASES||[], self.DEMO_CASE?[self.DEMO_CASE]:[]);
+      if(!list.length) return;                                    // 示範資料未載入則維持原空狀態
+      const order=[], projects={};
+      list.forEach(d=>{
+        if(!d||!d.pid||projects[d.pid]) return;
+        order.push(d.pid);
+        projects[d.pid]={wf:d.wf, snap:d.snap, engine:d.engine, decision:d.decision,
+                         roster:d.roster||null, demo:true};
+      });
+      if(!order.length) return;
+      save({order, projects});
+      localStorage.setItem("uros.active_case", order[0]);
     }catch(e){}
   }
   seedDemoIfEmpty();
