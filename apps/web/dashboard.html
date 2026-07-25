@@ -47,6 +47,20 @@ h1{font-size:23px;margin:0;letter-spacing:-.02em;font-weight:800}
 
 .slab{font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--mute);font-weight:700;margin:28px 2px 13px}
 
+/* 示範案例庫：單一收摺面板（初始登入版面收斂；次要分析再收一層） */
+.pack{margin:22px 0 8px;border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden}
+.pack>summary{cursor:pointer;padding:13px 18px;font-size:13px;list-style:none;display:flex;flex-wrap:wrap;
+  align-items:baseline;gap:9px;user-select:none}
+.pack>summary::-webkit-details-marker{display:none}
+.pack>summary::before{content:"▸";color:var(--accent);font-weight:800;margin-right:2px}
+.pack[open]>summary::before{content:"▾"}
+.pack>summary:hover{background:var(--accent-soft)}
+.pack .pack-hint{font-size:11px;color:var(--mute);font-weight:500}
+.pack .pack-body{padding:0 16px 16px}
+.pack .sub{margin-top:12px;border:1px solid var(--line);border-radius:11px;overflow:hidden}
+.pack .sub>summary{cursor:pointer;padding:9px 14px;font-size:12.5px;font-weight:650;color:var(--mute);user-select:none}
+.pack .sub>summary:hover{background:var(--accent-soft);color:var(--ink)}
+.pack .sub[open]>summary{color:var(--ink);border-bottom:1px solid var(--line)}
 .cases{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 @media(max-width:760px){.cases{grid-template-columns:1fr}}
 .case{cursor:pointer;background:var(--panel);border:1.5px solid var(--line);border-radius:var(--r);padding:17px;
@@ -149,23 +163,28 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
   </header>
 
   <div class="ssot"><span>🔒</span><div>所有數字皆由 <b>RE-DCF Core</b> 計算（Result JSON）；儀表板<b>只讀渲染、不重算</b>（SSOT）。
-  v2.0 合約含<b>逐層樓板</b>與<b>可重算驗證</b>：給 Core 這份輸入即可回放出同一組 result。以下為 3 個<b>合成範例</b>，零真實資料。</div></div>
+  v2.0 合約含<b>逐層樓板</b>與<b>可重算驗證</b>：給 Core 這份輸入即可回放出同一組 result。
+  主畫面＝上方<b>作用中案件</b>（Case Workspace）；3 個<b>合成示範案</b>已整合收摺於下方「示範案例庫」，零真實資料。</div></div>
 
   <!-- M5-P1 Case Workspace（單案容器；純呈現，資料全部 verbatim 自 store）-->
   <div id="casews"></div>
 
-  <div class="slab">示範案例（合成 Baked Core）· 點卡片切換</div>
-  <div class="cases" id="cases"></div>
-  <div class="detail" id="detail"></div>
-
-  <div class="slab">三案對照（開發評估）</div>
-  <div class="detail" style="padding:16px 20px;overflow-x:auto" id="compare"></div>
-
-  <div class="slab">M3 · 權利變換 逐戶分回（§56，schema v2.1 範例）</div>
-  <div class="detail" style="padding:16px 20px;overflow-x:auto" id="alloc"></div>
-
-  <div class="slab">M3 · 現金流結構（共同負擔 A–G 科目 → 分期出資，示意分期）</div>
-  <div class="detail" style="padding:16px 20px;overflow-x:auto" id="cashflow"></div>
+  <!-- 示範案例庫：3 個合成 Baked Core 案整合於單一面板（單一切換器驅動全部視圖）；
+       次要分析預設收摺，避免初始登入版面雜亂。純呈現，數字 verbatim 自 Core result。 -->
+  <details class="pack" id="demo-pack">
+    <summary><b>示範案例庫</b> · 合成 Baked Core 3 案（A 都更全案管理／C 防災都更／D 危老合建）
+      <span class="pack-hint">展開後點卡片切換；上方 Case Workspace 為作用中單案容器</span></summary>
+    <div class="pack-body">
+      <div class="cases" id="cases"></div>
+      <div class="detail" id="detail"></div>
+      <details class="sub"><summary>三案對照（開發評估）</summary>
+        <div class="detail" style="padding:16px 20px;overflow-x:auto" id="compare"></div></details>
+      <details class="sub"><summary>M3 · 權利變換 逐戶分回（§56，schema v2.1 範例 · 案例D）</summary>
+        <div class="detail" style="padding:16px 20px;overflow-x:auto" id="alloc"></div></details>
+      <details class="sub"><summary>M3 · 現金流結構（共同負擔 A–G 科目 → 分期出資，示意分期）</summary>
+        <div class="detail" style="padding:16px 20px;overflow-x:auto" id="cashflow"></div></details>
+    </div>
+  </details>
 
   <div class="slab">OS 模組（完整主選單見 <a href="index.html">URBAN STRAND OS</a>）</div>
   <div class="nav">
