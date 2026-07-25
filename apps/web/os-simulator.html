@@ -293,7 +293,7 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
     這條街有 <b>48 戶</b>。34 戶已同意重建，<b class="hi">剩下 14 戶</b>。
     在按下門鈴之前，你要先做一個建築人的決定：<b class="hi">蓋多大、用什麼模式</b>。
     規劃會決定財務，財務會決定人心——Core 會把每個方案的真話算給你看。
-    <div class="src">AUTHORITATIVE DATA · core v0.3.0 · schema v2.1 · 人物皆為虛構原型</div>
+    <div class="src">AUTHORITATIVE DATA · 快照 core 0.3.0（本局財務為當時算好的快照）· schema v2.1 · 人物皆為虛構原型</div>
   </div>
   <button class="btn" id="btn-start">▶ 開始整合</button>
   <div style="margin-top:14px"><a href="index.html" style="font-family:var(--mono);font-size:10.5px;color:var(--dim)">← 回 OS 主選單</a></div>
@@ -460,7 +460,7 @@ const SIMCORE = (() => {
   const COLS = 8, ROWS = 6, N = 48, BOSS = 47;      // 經典局常數（N=48·seed=1412 時完全重現）
   const FAMILY = [[36,39,44],[38,42],[40,43,46]];   // 經典局家族（其餘參數→程序生成）
 
-  // Core 預算方案（tools：recompute(engine)；computed 2026-07-01 · core 0.2.0；已對照 core 0.3.0 重算一致（0.3.0 僅新增 rights/cashflow，容積/財務公式未變）
+  // Core 預算方案＝快照（tools：recompute(engine)；computed 2026-07-01 · core 0.2.0；已對照 core 0.3.0 重算一致（0.3.0 僅新增 rights/cashflow，容積/財務公式未變）
   const SCEN = {
     weilao_S:{label:"保守規劃",bonus:0.20,allow:5400.0,remaining:-757.5,saleable:2820.54,total:204425,scr:0.7202,ratio:0.2798,rr:0.3884,warn:["EFFICIENCY_OUT_OF_BAND","VOLUME_EXCEEDED","SHARED_COST_HIGH"]},
     weilao_M:{label:"基準規劃",bonus:0.40,allow:6120.0,remaining:-37.5,saleable:3153.84,total:226089,scr:0.6600,ratio:0.3400,rr:0.5150,warn:["EFFICIENCY_OUT_OF_BAND","VOLUME_EXCEEDED","SHARED_COST_HIGH"]},
@@ -826,7 +826,7 @@ function renderCore(){
   const sc=S.scen;
   $("hud-scen").textContent=`· ${S.cfg.mode==="weilao"?"危老":"都更"} × ${sc.label}`;
   $("corebox").innerHTML=`
-    <div class="card-head"><span class="lbl">RE-DCF Core · 本方案財務</span><span class="chip">v0.3.0 · 只讀</span></div>
+    <div class="card-head"><span class="lbl">RE-DCF Core · 本方案財務</span><span class="chip">快照 core 0.3.0 · 只讀</span></div>
     <div class="row"><span>允建容積 / 餘量</span><b class="tnum">${n0(sc.allow)} m² / ${sc.remaining>0?'+':''}${sc.remaining}</b></div>
     <div class="row"><span>總銷</span><b class="tnum">${n0(sc.total)} 萬</b></div>
     <div class="row"><span>共同負擔比</span><b class="tnum">${pct(sc.scr)}</b></div>
