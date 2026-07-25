@@ -295,7 +295,7 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
     規劃會決定財務，財務會決定人心——Core 會把每個方案的真話算給你看。
     <div class="src">AUTHORITATIVE DATA · core v0.3.0 · schema v2.1 · 人物皆為虛構原型</div>
   </div>
-  <button class="btn" id="btn-start">▶ 進入建築規劃</button>
+  <button class="btn" id="btn-start">▶ 開始整合</button>
   <div style="margin-top:14px"><a href="index.html" style="font-family:var(--mono);font-size:10.5px;color:var(--dim)">← 回 OS 主選單</a></div>
 </div></div>
 
@@ -1055,11 +1055,28 @@ $("sl-f").oninput=e=>{fabric.fam=+e.target.value;syncFabric();};
 $("in-seed").onchange=e=>{fabric.seed=(+e.target.value||1412);syncFabric();};
 $("btn-seed").onclick=()=>{fabric.seed=Math.floor(Math.random()*99999);$("in-seed").value=fabric.seed;syncFabric();};
 
-$("btn-start").onclick=()=>{
+/* ① Site ②Product → ③ People 交棒：規劃已在前兩步完成時，不要再叫使用者規劃一次。
+   有帶入案件（bridge）＝建築規劃視為已定案，直接進入「地主意願」本體；
+   想改規劃仍可由遊戲內「調整建築規劃」重開 PLAN PHASE（保留能力，只是不再擋路）。 */
+function hasBridgeCase(){
+  try{ return !!JSON.parse(localStorage.getItem("uros.bridge.case")||"null"); }catch(e){ return false; }
+}
+function openPlanPhase(){
   $("ovl-title").classList.remove("show");
   renderPlan(); applyBridge(); syncFabric(); $("ovl-plan").classList.add("show");
+}
+$("btn-start").onclick=()=>{
+  if(hasBridgeCase()){                       // 承接①②：跳過重複的建築規劃，直接開局
+    $("ovl-title").classList.remove("show");
+    renderPlan(); applyBridge(); syncFabric();
+    if(!plan.scale) plan.scale="M";          // 規模沿用 Core 預設（SIMCORE.create 同一預設）
+    startPlay(true);
+    return;
+  }
+  openPlanPhase();                           // 沒帶案件（單機教學）：維持原本先規劃流程
 };
-$("btn-plan-go").onclick=()=>{
+$("btn-plan-go").onclick=()=>startPlay(false);
+function startPlay(inherited){
   $("ovl-plan").classList.remove("show");
   try{localStorage.setItem("uros.step.people","1");}catch(e){}   // M5 STEP 3 事實旗標
   const cfg={mode:plan.mode,scale:plan.scale,
@@ -1069,8 +1086,13 @@ $("btn-plan-go").onclick=()=>{
   FLOW.hist={};                       // 新局：清空沙盤資金流紀錄
   renderProcess(); renderCore(); render();
   const 未=S.target-S.agreed0;
-  chapter("第 1 章",S.agreed0===34&&S.N===48?"剩下的十四戶":`剩下的${未}戶`,"錢能算出共同負擔，算不出人為什麼搖頭。",1900);
-};
+  if(inherited){
+    chapter("第 1 章", S.agreed0===34&&S.N===48?"剩下的十四戶":`剩下的${未}戶`,
+            "建築規劃已在 ①基地 ②產品 定案——這一步只談人。",1900);
+  } else {
+    chapter("第 1 章",S.agreed0===34&&S.N===48?"剩下的十四戶":`剩下的${未}戶`,"錢能算出共同負擔，算不出人為什麼搖頭。",1900);
+  }
+}
 /* 預設先建一局（危老×基準）供背景顯示；正式開局在規劃定案後重建 */
 S=SIMCORE.create(); renderProcess(); renderCore(); render();
 </script>
