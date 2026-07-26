@@ -169,20 +169,16 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
   <!-- M5-P1 Case Workspace（單案容器；純呈現，資料全部 verbatim 自 store）-->
   <div id="casews"></div>
 
-  <!-- 示範案例庫：3 個合成 Baked Core 案整合於單一面板（單一切換器驅動全部視圖）；
-       次要分析預設收摺，避免初始登入版面雜亂。純呈現，數字 verbatim 自 Core result。 -->
+  <!-- 示範案例庫已併入上方 Case Workspace（容積坪效／現金流／逐戶權變／產權清冊皆掛在作用中案件）。
+       保留三案對照做為跨案比較，其餘不再重複一份。 -->
   <details class="pack" id="demo-pack">
-    <summary><b>示範案例庫</b> · 合成 Baked Core 3 案（A 都更全案管理／C 防災都更／D 危老合建）
-      <span class="pack-hint">展開後點卡片切換；上方 Case Workspace 為作用中單案容器</span></summary>
+    <summary><b>三案對照</b> · 跨案比較（合成 Baked Core）
+      <span class="pack-hint">單案內容請看上方工作區</span></summary>
     <div class="pack-body">
       <div class="cases" id="cases"></div>
       <div class="detail" id="detail"></div>
-      <details class="sub"><summary>三案對照（開發評估）</summary>
-        <div class="detail" style="padding:16px 20px;overflow-x:auto" id="compare"></div></details>
-      <details class="sub"><summary>M3 · 權利變換 逐戶分回（§56，schema v2.1 範例 · 案例D）</summary>
-        <div class="detail" style="padding:16px 20px;overflow-x:auto" id="alloc"></div></details>
-      <details class="sub"><summary>M3 · 現金流結構（共同負擔 A–G 科目 → 分期出資，示意分期）</summary>
-        <div class="detail" style="padding:16px 20px;overflow-x:auto" id="cashflow"></div></details>
+      <div class="detail" style="padding:16px 20px;overflow-x:auto" id="compare"></div>
+      <div style="display:none" id="alloc"></div><div style="display:none" id="cashflow"></div>
     </div>
   </details>
 
@@ -405,6 +401,11 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
   .cw-slot .del{position:absolute;top:5px;right:6px;z-index:2;background:var(--panel);border:1px solid var(--line);border-radius:7px;font-size:10px;cursor:pointer;padding:1px 6px}
   .cw-note{font-family:var(--mono);font-size:10px;color:var(--mute);margin-top:9px}
   .cw-empty{border:1px dashed var(--line);border-radius:16px;padding:22px;margin:16px 0 22px;font-size:13px;color:var(--mute);text-align:center}
+.cw-roster select.rs{font-size:11px;padding:2px 4px;border:1px solid var(--line);border-radius:5px;
+    background:var(--panel);color:var(--ink);max-width:110px}
+.cw-roster .btn-sm{font-size:11.5px;padding:5px 12px;border-radius:8px;border:1px solid var(--line);
+    background:var(--panel);color:var(--ink);cursor:pointer}
+.cw-roster .btn-sm:hover{border-color:var(--accent);color:var(--accent)}
 .cw-roster{margin-top:12px;border:1px solid var(--line);border-radius:11px;padding:8px 12px}
   .cw-roster>summary{cursor:pointer;font-size:12px;font-weight:650;color:var(--mute);user-select:none}
   .cw-roster>summary:hover{color:var(--ink)}
@@ -442,6 +443,11 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
   const SLOTS=[["site_plan","🗺️ 基地圖說"],["cadastral","📐 地籍圖"],["zoning","🏙️ 都市計畫圖"],["street","📷 街景照片"]];
   function load(){ try{return JSON.parse(localStorage.getItem(KEY))||null}catch(e){return null} }
   function save(s){ localStorage.setItem(KEY, JSON.stringify(s)); }
+  function activePid(){
+    const s=load(); if(!s||!s.projects) return null;
+    let act=null; try{act=localStorage.getItem("uros.active_case")}catch(e){}
+    return (s.projects[act]?act:(s.order||[])[0])||null;
+  }
 
   function render(){
     const s=load(); const act=(()=>{try{return localStorage.getItem("uros.active_case")}catch(e){return null}})();
@@ -486,6 +492,8 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
           <div class="cw-row"><span>投報率</span><b>${pc(snap.return_rate)}</b></div>
           <div class="cw-row"><span>重算/改配置</span><b><a href="evaluator.html">→ Product Planning</a></b></div></div>
       </div>
+      ${planPanel(rec)}
+      ${cashPanel(rec)}
       ${rosterPanel(rec)}
       ${rec.engine?`<div class="cw-drive" id="cw-drive">
         <h4>傳動軸即時預覽 · <b>STEP 2 Product 的財務即時試算</b>（拖滑桿看結果；正式規劃在 ② Product 頁）<span class="drv-stat" id="drv-stat">載入計算核心…</span></h4>
@@ -599,6 +607,65 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
   }
   window._mountDrivetrain=mountDrivetrain;   // 測試掛鉤
 
+  /* 容積・坪效面板（原「示範案例庫」的互動儀表板內容，改掛在作用中案件上）。
+     逐欄 verbatim 自 Core result（rec.view）；UI 零計算。 */
+  function bar(pct, color){
+    return `<div style="height:7px;background:var(--line);border-radius:4px;overflow:hidden;margin-top:3px">
+      <div style="height:100%;width:${Math.max(0,Math.min(100,pct))}%;background:${color||"var(--accent)"}"></div></div>`;
+  }
+  function planPanel(rec){
+    const v=rec&&rec.view; if(!v) return "";
+    const 用=v.used_floor_area, 允=v.allow_floor_area, 餘=v.remaining_floor_area;
+    const 超=餘!=null&&餘<0, 使用率=允?(用/允*100):0;
+    const effOK=v.efficiency_ratio!=null&&v.efficiency_ratio>=1.58&&v.efficiency_ratio<=1.68;
+    return `<details class="cw-roster" open><summary>容積與坪效（Core 逐欄）</summary>
+      <div class="cw-grid" style="margin-top:10px">
+        <div class="cw-card"><h4>容積查核</h4>
+          <div class="cw-row"><span>法定容積</span><b>${fmt(v.baseline_far)} ㎡</b></div>
+          <div class="cw-row"><span>允建容積（含獎勵/容移）</span><b>${fmt(允)} ㎡</b></div>
+          <div class="cw-row"><span>使用容積</span><b>${fmt(用)} ㎡</b></div>
+          <div class="cw-row"><span>餘裕</span><b style="color:${超?"var(--err)":"var(--ok)"}">${fmt(餘)} ㎡${超?"（超限）":""}</b></div>
+          ${bar(使用率, 超?"var(--err)":"var(--accent)")}
+          <div class="src" style="margin-top:5px">使用率 ${使用率.toFixed(1)}%</div></div>
+        <div class="cw-card"><h4>坪效</h4>
+          <div class="cw-row"><span>銷售坪</span><b>${fmt(v.saleable_area)} 坪</b></div>
+          <div class="cw-row"><span>銷坪比</span><b style="color:${effOK?"var(--ok)":"var(--warn)"}">${v.efficiency_ratio!=null?v.efficiency_ratio.toFixed(3):"—"}</b></div>
+          <div class="src">正常帶 1.58–1.68${effOK?"（在帶內）":"（不在帶內，Core 已示警）"}</div>
+          <div class="cw-row" style="margin-top:6px"><span>更新前總值</span><b>${fmt(v.pre_renewal_value)} 萬</b></div>
+          <div class="cw-row"><span>價值倍數</span><b>${v.value_multiple!=null?v.value_multiple.toFixed(2)+"×":"—"}</b></div></div>
+        <div class="cw-card"><h4>財務</h4>
+          <div class="cw-row"><span>總銷</span><b>${fmt(v.total_sales)} 萬</b></div>
+          <div class="cw-row"><span>共同負擔</span><b>${fmt(v.shared_cost)} 萬</b></div>
+          <div class="cw-row"><span>共負比</span><b>${pc(v.shared_cost_ratio)}</b></div>
+          ${bar((v.shared_cost_ratio||0)*100, (v.shared_cost_ratio||0)>0.6?"var(--err)":"var(--accent)")}
+          <div class="cw-row" style="margin-top:6px"><span>地主分回</span><b>${pc(v.owner_return_ratio)}</b></div>
+          <div class="cw-row"><span>投報率</span><b>${pc(v.return_rate)}</b></div></div>
+      </div>
+      ${(v.warnings&&v.warnings.length)?`<div class="src" style="margin-top:8px;color:var(--warn)">⚠ Core 健檢：${v.warnings.join("、")}</div>`:""}
+      <div class="src">數字逐欄自 Core result（SSOT）；本面板零計算。</div></details>`;
+  }
+
+  /* 現金流面板（共同負擔 A–G 科目 → 分期出資；Core 結構性分期，示意分期已標記）*/
+  function cashPanel(rec){
+    const c=rec&&rec.cashflow; if(!c||!c.期別出資) return "";
+    const mx=Math.max.apply(null,c.累積||[1])||1;
+    const bars=(c.期別出資||[]).map((x,i)=>{
+      const h=Math.max(3,(c.累積[i]/mx)*54);
+      return `<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px">
+        <div style="width:70%;height:${h}px;background:var(--accent);border-radius:3px 3px 0 0"></div>
+        <span style="font-size:9px;color:var(--mute)">${i+1}</span></div>`;}).join("");
+    const items=Object.entries(c.科目||{}).map(([k,v])=>
+      `<div class="cw-row"><span>${k}</span><b>${fmt(v)} 萬</b></div>`).join("");
+    return `<details class="cw-roster"><summary>現金流結構（共同負擔 A–G → 分期出資）</summary>
+      <div class="cw-grid" style="margin-top:10px">
+        <div class="cw-card"><h4>科目</h4>${items}</div>
+        <div class="cw-card"><h4>累積出資曲線（${c.期數} 期）</h4>
+          <div style="display:flex;gap:3px;align-items:flex-end;height:62px;margin-top:6px">${bars}</div>
+          <div class="cw-row" style="margin-top:8px"><span>峰值資金需求</span><b>${fmt(c.峰值資金)} 萬</b></div></div>
+      </div>
+      <div class="src">${c.structural?"分期為<b>均勻結構示意</b>（實務 S 曲線待校準）":"依權重分期"}；金額守恆至分。</div></details>`;
+  }
+
   /* 產權清冊面板（謄本欄位結構）——領域回饋：基地與產權從謄本確認、建名冊，
      取得資訊後才談評估與規劃，所以名冊放在工作區「一開始」就看得到。
      純呈現：逐欄 verbatim 自案件 roster／stakeholders，UI 不推導任何權利或坪數。 */
@@ -609,31 +676,99 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
     const sts=((rec&&rec.wf&&rec.wf.stakeholders)||[]).filter(s=>s.role==="owner");
     if(!rows && !sts.length) return "";
     const blocked=sts.filter(s=>s.signability==="blocked").length;
+    const 同意opts=["同意","未表態","不同意"], 限制opts=["無","繼承未辦","公同共有","抵押權","未保存增建"];
     const body = rows
-      ? rows.slice(0,80).map(r=>`<tr><td>${r["土地編號"]}</td><td>${r["地段"]} ${r["地號"]}</td>
+      ? rows.map((r,i)=>`<tr><td>${r["土地編號"]}</td><td>${r["地段"]} ${r["地號"]}</td>
           <td class="tnum">${r["土地面積_㎡"]}</td><td>${r["土地所有權人"]}</td>
           <td class="tnum">${r["權利範圍分子"]}/${r["權利範圍分母"]}</td>
           <td class="tnum">${r["土地持分面積_㎡"]}</td>
-          <td>${r["同意與否"]}</td><td>${r["限制登記"]==="無"?"—":r["限制登記"]}</td></tr>`).join("")
+          <td><select class="rs" onchange="editRoster(${i},'同意與否',this.value)">${
+            同意opts.map(o=>`<option${r["同意與否"]===o?" selected":""}>${o}</option>`).join("")}</select></td>
+          <td><select class="rs" onchange="editRoster(${i},'限制登記',this.value)">${
+            限制opts.map(o=>`<option${r["限制登記"]===o?" selected":""}>${o}</option>`).join("")}</select></td></tr>`).join("")
       : sts.slice(0,80).map(s=>`<tr><td>—</td><td>—</td><td class="tnum">—</td><td>${s.stakeholder_id}</td>
           <td class="tnum">—</td><td class="tnum">—</td>
           <td>${s.min_unit_eligible?"符合最小單元":"—"}</td>
           <td>${OC_ZH[s.ownership_complexity]||"—"}</td></tr>`).join("");
-    return `<details class="cw-roster"><summary>產權清冊（謄本欄位）· ${sts.length||rows.length} 筆
-        ${blocked?`<b style="color:var(--err)">· ${blocked} 筆產權待清理</b>`:""}</summary>
-      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px">
+    return `<details class="cw-roster" open><summary>產權清冊（謄本欄位）· ${sts.length||rows.length} 筆
+        ${blocked?`<b style="color:var(--err)">· ${blocked} 筆產權待清理</b>`:""}
+        <span class="src">可直接登打：改「同意」與「限制登記」即時存檔</span></summary>
+      <div style="overflow-x:auto;max-height:340px"><table style="width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px">
         <tr><th>編號</th><th>地段地號</th><th>土地面積㎡</th><th>所有權人</th><th>權利範圍</th>
             <th>持分面積㎡</th><th>同意</th><th>限制登記</th></tr>${body}</table></div>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-sm" onclick="addRosterRow()">＋ 新增一筆</button>
+        <button class="btn-sm" onclick="exportRoster()">⤓ 匯出清冊 CSV</button></div>
       <div class="src" style="margin-top:6px">合成清冊（欄位結構比照審議版謄本；所有名稱與數值皆生成，零真實資料）。
-        限制登記＝可簽性事實來源：非「無」者屬<b>行政工作量</b>，與說服工作量分流（M6 雙軸）。</div></details>`;
+        限制登記＝可簽性事實來源：非「無」者屬<b>行政工作量</b>，與說服工作量分流（M6 雙軸）。
+        <b>改動只存在你的瀏覽器</b>，不上傳。</div></details>`;
   }
+
+  /* 清冊登打：改「同意/限制登記」即時寫回案件（含 wf stakeholders 的可簽性事實）。
+     UI 只搬值，不推導——可簽性由 限制登記→ownership_complexity 的既有對照表決定（與 Core 同一套）。 */
+  const OC_MAP={"無":"clean","繼承未辦":"inherited_unregistered","公同共有":"joint_ownership",
+                "抵押權":"mortgaged","未保存增建":"illegal_structure","未保存登記增建":"illegal_structure"};
+  function editRoster(idx, field, val){
+    try{
+      const s=load(), pid=activePid(), rec=s.projects[pid]; if(!rec) return;
+      if(rec.roster&&rec.roster[idx]) rec.roster[idx][field]=val;
+      const oid=rec.roster&&rec.roster[idx]?rec.roster[idx]["土地所有權人"]:null;
+      if(oid&&rec.wf&&rec.wf.stakeholders){
+        const st=rec.wf.stakeholders.find(x=>x.stakeholder_id===oid);
+        if(st){
+          if(field==="限制登記"){
+            const oc=OC_MAP[val]||"clean";
+            st.ownership_complexity=oc;
+            if(oc==="clean"){ st.signability="signable"; delete st.blocking_reason; }
+            else { st.signability="blocked"; st.blocking_reason=oc; }
+          }
+        }
+      }
+      if(field==="同意與否"&&rec.snap&&rec.roster){
+        rec.snap.agreed=rec.roster.filter(r=>r["同意與否"]==="同意").length;
+        rec.snap.total=rec.roster.length;
+      }
+      rec.dirty=true;                       // 標記已由使用者編輯（與原始示範資料區分）
+      save(s); render();
+    }catch(e){ console.error(e); }
+  }
+  function addRosterRow(){
+    try{
+      const s=load(), pid=activePid(), rec=s.projects[pid]; if(!rec) return;
+      rec.roster=rec.roster||[];
+      const n=rec.roster.length+1, id="W"+String(n).padStart(2,"0");
+      rec.roster.push({"土地編號":"L"+String(n).padStart(3,"0"),"使用分區":"","地段":"（待填）",
+        "地號":"","土地面積_㎡":0,"公告現值_元每㎡":0,"地上建物建號":"","登記次序":1,
+        "土地所有權人":id,"權利範圍分子":0,"權利範圍分母":10000,"持分比例":0,
+        "土地持分面積_㎡":0,"同意與否":"未表態","限制登記":"無","權利種類":"所有權"});
+      rec.wf=rec.wf||{stakeholders:[]}; rec.wf.stakeholders=rec.wf.stakeholders||[];
+      rec.wf.stakeholders.push({stakeholder_id:id,role:"owner",land_share:0,pre_value:0,
+        min_unit_eligible:false,ownership_complexity:"clean",signability:"signable"});
+      if(rec.snap){ rec.snap.total=rec.roster.length; rec.snap.stakeholders_n=rec.wf.stakeholders.length; }
+      rec.dirty=true; save(s); render();
+    }catch(e){ alert("新增失敗："+e.message); }
+  }
+  function exportRoster(){
+    try{
+      const s=load(), rec=s.projects[activePid()]; const rows=(rec&&rec.roster)||[];
+      if(!rows.length) return alert("本案無清冊可匯出");
+      const cols=Object.keys(rows[0]);
+      const csv=[cols.join(",")].concat(rows.map(r=>cols.map(c=>{
+        const v=r[c]==null?"":String(r[c]); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;
+      }).join(","))).join("\n");
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"}));
+      a.download=((rec.snap&&rec.snap.code_name)||"case")+"_產權清冊.csv"; a.click();
+    }catch(e){ alert("匯出失敗："+e.message); }
+  }
+  self.editRoster=editRoster; self.addRosterRow=addRosterRow; self.exportRoster=exportRoster;
 
   // ── B1.5-1 零步啟動：store 為空時預載合成示範案，令空狀態＝可運作狀態 ──
   // 四案 A/B/C/D 全部植入工作區（A/B/C 來自 demo-cases.js＝合成產權清冊，謄本欄位結構；
   // D 為既有權變示範）。領域回饋：產權名冊是「一開始就該有的輸入」，故開頁即備妥。
   // 只在「完全沒有案件」時植入；一旦使用者匯入自己的案件即不再覆蓋。零真實資料（全合成）。
   // 示範案版本：改動示範案集合時 +1；回訪者的舊示範資料會被升級（不動使用者自己的案件）
-  const DEMO_SEED_V="2";
+  const DEMO_SEED_V="3";
   function demoRecords(){
     const list=[].concat(self.DEMO_CASES||[], self.DEMO_CASE?[self.DEMO_CASE]:[]);
     const out=[];
@@ -641,8 +776,10 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
     return out;
   }
   function asRecord(d){
+    const ex=(self.DEMO_VIEWS||{})[d.pid]||{};      // 既有示範案（案例D）的視圖補算
     return {wf:d.wf, snap:d.snap, engine:d.engine, decision:d.decision,
-            roster:d.roster||null, demo:true};
+            roster:d.roster||null, view:d.view||ex.view||null,
+            cashflow:d.cashflow||ex.cashflow||null, demo:true};
   }
   /* 補齊示範案（B1.5 零步啟動的修正版）。
      病灶：原本只在「完全沒有案件」時植入 → 早期開過頁的人 localStorage 已有案例D，
