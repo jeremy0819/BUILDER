@@ -77,3 +77,7 @@ jobs:
       # ── Gate 9：core-bundle.js 與 core/redcf 同步（Pyodide 端＝同一份 SSOT，防第二真源）──
       - name: "Gate 9 — Core bundle in sync"
         run: python tools/check_core_bundle.py
+
+      # ── Gate 10：前端版本徽章與 Core／tag 同步（防呈現層版本漂移：首頁 0.4.0 vs 某頁 0.3.0）──
+      - name: "Gate 10 — Web version consistency"
+        run: python tools/check_web_version.py
