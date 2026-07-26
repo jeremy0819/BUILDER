@@ -2,54 +2,138 @@
 
 ![CI](https://github.com/jeremy0819/BUILDER/actions/workflows/ci.yml/badge.svg)
 
-把一個都更／危老案，走成一條可稽核的決策流程：
+> 都市更新真正在交易的，不是土地，是**能不能履行的合作關係**。
+> BUILDER 幫你判斷一個案子值不值得做，以及**下一步該先找誰談**。
 
-**Site Analysis → Product Planning → Negotiation Strategy → Decision Report**
-（基地診斷 → 產品規劃 → 整合推演 → 決策報告；通用語言見 `docs/STANDARD_WORKFLOW.md`）
+**線上試用**：https://jeremy0819.github.io/BUILDER/ ｜ 打開就有四個合成示範案，免安裝、免匯入。
 
-**現況**：M1–M4 完成（工程地基／產品地基／Workflow OS＋B 系列／Decision Engine v0.1）；
-M4.5 試金石（財務/係數與真實案比對 ×2 ✅；stage_tree 存活率未校準——verdict＝方向性判斷，非投資結論）；
-**M5 THE WORKFLOW**（決策流程 IA）P0 三段動線／P1 Case Workspace／P2 Developer Board 已落地；
-**M5.5 傳動軸駕駛艙**：B1 Pyodide 瀏覽器內跑同一份 Core／B2 同框即時評估／B3 依賴高亮，
-＋**B1.5 零步啟動與介面收斂**（預載合成示範案＝開頁即可玩、前門收斂為「駕駛艙／沙盤／決策報告」三個表面）。
-下一站＝**M6 THE STRATEGIST**（逐型對策）。
-工作流只呈現引擎輸出——公式只在 `core/redcf`（SSOT），判讀只出自 Decision Engine。
-品質治理：**CI 十道 Gate（Gate 0–9）**（資料紀律／pytest／安裝性／Core 隔離／範本迴歸／連結／沙盤與
-Workspace headless／schema 凍結／圖檔白名單／core-bundle 同步），任一紅即擋 merge；release 現況 **os-v0.3.0**。
-授權：**Proprietary（保留一切權利）**——見 `LICENSE`。公開供閱覽，未經書面同意不得使用/重製/散布。
+---
 
-- `core/redcf/`＋`schemas/`＋`apps/streamlit/`（唯一計算核心，SSOT；源自 RE-DCF-Tool）
-- `apps/web/`＋`docs/methodology/`（決策流程外殼與方法論；源自 Urban-Renewal）
+## What is BUILDER?
 
-啟動：`pip install -r requirements.txt` → `streamlit run apps/streamlit/app.py`（計算工具）；
-靜態站直接開 `apps/web/index.html`（15 分鐘上手見 `docs/GETTING_STARTED.md`）。測試：根目錄 `pytest`。
+一套判斷**都市更新／危老案該不該做、該怎麼推**的決策系統。
 
-**CI 十道 Gate（Gate 0–9）**（`.github/workflows/ci.yml`，任一紅即擋 merge）：Gate0 資料紀律／
-Gate1 pytest＋安裝性＋min_example／Gate2 Core 零 UI 依賴／Gate3 Excel 範本迴歸／
-Gate4 靜態站連結／Gate5 沙盤 headless／Gate6 schema 凍結／Gate7 Workspace headless／
-Gate8 圖檔白名單／Gate9 core-bundle 同步。本地一次跑完：
+市面上的工具算得出「這案子賺多少」。BUILDER 多回答兩個問題：
 
-```bash
-bash check_no_real_names.sh && python -m pytest -q && python min_example.py \
-  && python tools/check_core_isolation.py && python tools/check_template.py \
-  && python tools/check_web_links.py && node tests/web/test_os_simulator.mjs \
-  && python tools/check_schema_freeze.py && node tests/web/test_workspace.mjs \
-  && python tools/check_image_whitelist.py && python tools/check_core_bundle.py
+| 問題 | 誰在回答 |
+|---|---|
+| 這案子**行不行**？ | 決策引擎：三方期望值、完工機率、GO/CAUTION/STOP、誰會先翻桌 |
+| 那我**先做什麼**？ | 策略引擎：先談誰、怎麼談、**什麼絕對不能說** |
+
+它不是試算表。**名目報酬幾乎恆正，但期望值 = 名目 × 完工機率 × 折現**——
+從整合起算，走到完工的機率約僅三成。BUILDER 把這件事算給你看。
+
+**一個具體例子**：某戶反覆質疑你的財力。系統會判定他是「恐懼型」，建議**上制度性擔保**，
+並**主動禁止你加碼**——因為對這型人加錢，只會被解讀成「你果然還有空間」，把他推得更遠。
+這條規則寫在程式裡、有回歸測試守著，不是文件上的建議。
+
+---
+
+## Who is it for?
+
+| 你是 | BUILDER 幫你 |
+|---|---|
+| **開發商／建商評估人員** | 早期篩案：這案子的期望值撐不撐得住，破局風險在哪一方 |
+| **都更整合人** | 名冊分型 → 談判順序：先鞏固誰、誰該走法定程序、誰其實是「願意但簽不了」 |
+| **建築師／都更顧問** | 規劃決策的財務後果：改公設比、改坪型，地主接受度怎麼變 |
+| **機構投資者** | 可稽核的決策軌跡：每個數字都能溯源到同一個計算核心 |
+
+**不適合**：找純試算表的人（那用 Excel 就好）；期待它給投資保證的人（見下方誠實限制）。
+
+---
+
+## Workflow
+
+四步動線，每一步的產出交棒給下一步：
+
+```
+① Site 基地      ② Product 產品     ③ People 人心      ④ Decision 決策
+   基地事實    →     規劃滑桿      →     地主意願     →    逐型對策
+   謄本建名冊       容積/坪效/財務      整合推演          先談誰・什麼不能說
 ```
 
-待辦（使用者操作）：Pages／Streamlit Cloud 部署切換、舊庫封存、補推 os-v0.3.0 tag（LICENSE 已拍板 Proprietary）
-（見 `docs/architecture/DEPLOYMENT_MIGRATION.md`、`docs/releases/`）。
+- **① 基地**：從謄本建立產權清冊（誰、持分多少、有無繼承未辦／抵押）。
+  領域實務是「先確認產權，才談規劃」，所以名冊是第一個輸入。
+- **② 產品**：承接①的基地條件，調整量體看財務即時變化。
+- **③ 人心**：承接①②的規劃，推演地主同意的形成過程。**規劃改了，人心反應跟著改。**
+- **④ 決策**：拿到 GO/CAUTION/STOP ＋ 一張逐戶行動清單。
 
-## 從哪裡開始
+---
 
-| 你是 | 讀 |
+## 15-minute Demo
+
+不需安裝，開瀏覽器就能走完：
+
+1. **開 [線上站](https://jeremy0819.github.io/BUILDER/)** →「駕駛艙」。四個合成示範案已預載（A 蛋黃區／B 合建／C 危老／D 權變示範）。
+2. **① 基地**：用左上切換案件。展開「產權清冊」——這是謄本欄位。
+   試著把某戶的「限制登記」改成**繼承未辦**，它會自動變成「簽不了」，落入**產權清理**佇列。
+   > 這是 BUILDER 的核心洞察：**「願意但簽不了」是行政工作，不是說服工作。**
+   > 混在一起算，會嚴重誤判整合難度——也解釋了「明明都談好了，同意率就是上不去」。
+3. **② 產品**：基地條件已自動帶入。拖動滑桿，看共負比與投報率即時重算（在你瀏覽器裡跑同一份計算核心）。
+4. **③ 人心**：直接進入整合推演——規劃已在①②定案，不會再問你一次。財務數字是**這個案子的**，不是罐頭範例。
+5. **④ 決策報告**：對每戶選「意願型別」與「可簽性」→ 得到**先談誰**清單，每條都帶理由、依據訊號、**禁止動作**。
+
+**判斷成功**：某戶選「恐懼型」→ 他跳到第一位，建議「制度性擔保」，禁止事項寫著**加碼**。
+
+### ⚠️ 誠實限制（請先讀）
+
+- 判讀是**方向性判斷，不是投資結論**。完工機率所依的階段存活率**尚未用真實成敗案校準**。
+- 對策庫源自 3 個真實破局案 ＋ 賽局／行為經濟理論，**樣本小**。
+- 引擎的分型只是「建議」，**權威永遠是親自見過那個人的整合人**。
+- 本庫**零真實案件資料**，所有示範案與清冊皆為程式合成。
+
+---
+
+## Architecture
+
+五層，每層只消費上一層的輸出，不跨層發明：
+
+```
+Core（計算・唯一真源）→ Workflow（案件狀態）→ Decision Engine（判讀）
+                                              → Strategy Engine（建議）→ Presentation（畫面）
+```
+
+三條紅線讓它可信：
+
+1. **公式只有一份**：所有財務數字出自 `core/redcf`，畫面一個數字都不自己算。
+2. **畫面零推論**：GO/CAUTION/STOP、期望值、行動清單一律由引擎產出。
+3. **零真實資料進版控**：段名／姓名／金額有自動檢查擋著（CI Gate 0）。
+
+細節見 [`ARCHITECTURE.md`](ARCHITECTURE.md)。
+
+---
+
+## Roadmap
+
+| 里程碑 | 內容 | 狀態 |
+|---|---|---|
+| M1–M3 | 計算地基／產品地基／案件管理 | ✅ |
+| M4 | 決策引擎（三方期望值、破局引爆點） | ✅ |
+| M4.5 | 財務與係數對真實案校準 | ✅（存活率未校準） |
+| M5 / M5.5 | 四步動線／傳動軸即時運算 | ✅ |
+| **M6** | **策略引擎：逐型對策** | ✅ 引擎完成，待同業複測 |
+| M7 | 風險窗監控（節點→期限→72hr） | 未開始 |
+
+**現在最需要的不是新功能，是真實回饋**——知識來源只有 3 個案例，
+下一批養分只能來自「讓更多實務者用、然後告訴你哪裡不對」。
+
+完整路線見 [`docs/architecture/ROADMAP.md`](docs/architecture/ROADMAP.md)。
+
+---
+
+## Developer Docs
+
+| 想做的事 | 讀哪份 |
 |---|---|
-| AI session | `CLAUDE.md`（索引）→ `governance/MODEL_DISPATCH.md` |
-| 想懂架構 | `ARCHITECTURE.md`（六大裁決＋資料流）、`docs/architecture/FREEZE_REVIEW-2026-07.md`（複審＋評分） |
-| 要執行搬遷 | `docs/architecture/MIGRATION_PLAN.md` |
-| 想看路線圖 | `docs/architecture/ROADMAP.md`（P0–P3） |
-| 版本規則／發布 | `governance/VERSION_POLICY.md`、`docs/releases/CHECKLIST.md` |
-| 部署／授權 | `docs/architecture/DEPLOYMENT_MIGRATION.md`、`docs/releases/LICENSE_ANALYSIS.md` |
+| 本機跑起來、跑測試、CI 十一道 Gate | [`docs/DEVELOPING.md`](docs/DEVELOPING.md) |
+| 架構裁決與資料流 | [`ARCHITECTURE.md`](ARCHITECTURE.md) |
+| 產品第一性原理 | [`knowledge/00_FIRST_PRINCIPLES.md`](knowledge/00_FIRST_PRINCIPLES.md) |
+| 決策引擎規格 | [`docs/architecture/DECISION_ENGINE_SPEC.md`](docs/architecture/DECISION_ENGINE_SPEC.md) |
+| 策略引擎規格（M6） | [`docs/architecture/M6_STRATEGIST_SPEC.md`](docs/architecture/M6_STRATEGIST_SPEC.md) |
+| 版本規則／發布流程 | [`governance/VERSION_POLICY.md`](governance/VERSION_POLICY.md)、[`docs/releases/CHECKLIST.md`](docs/releases/CHECKLIST.md) |
+| AI session 接手 | [`CLAUDE.md`](CLAUDE.md) |
 
-授權：**Proprietary**（`LICENSE`；拍板依據 `docs/releases/LICENSE_ANALYSIS.md`）。
-本庫零真實案件資料；範例皆為合成案例。
+---
+
+**授權：Proprietary（保留一切權利）** — 見 [`LICENSE`](LICENSE)。
+公開供閱覽，未經書面同意不得使用／重製／散布。

@@ -749,6 +749,7 @@ const $=id=>document.getElementById(id);
 const pct=x=>(x*100).toFixed(1)+"%";
 const n0=x=>x==null?"—":Math.round(x).toLocaleString();
 let S=null, sel=null, plan={mode:null,scale:null};
+let CASE_SCEN=null;   // 承接案件的 Core 實算財務（非預算快照）——供 UI 標示來源
 
 const DOOR_SAY={
   pending:["「我不是反對……我是怕。你們的數字，我看不懂。」",
@@ -826,7 +827,10 @@ function renderCore(){
   const sc=S.scen;
   $("hud-scen").textContent=`· ${S.cfg.mode==="weilao"?"危老":"都更"} × ${sc.label}`;
   $("corebox").innerHTML=`
-    <div class="card-head"><span class="lbl">RE-DCF Core · 本方案財務</span><span class="chip">快照 core 0.3.0 · 只讀</span></div>
+    <div class="card-head"><span class="lbl">RE-DCF Core · 本方案財務</span><span class="chip">${
+      sc._fromCase?`本案實算 · ${sc._case}`:"快照 core 0.3.0"} · 只讀</span></div>
+    ${sc._fromCase?`<div class="row" style="border:0;padding-top:0"><span style="font-size:10.5px;color:var(--dim)">
+      承接 ①基地×②產品 的規劃：基地面積・容積率・獎勵・公設比改變，這裡與下方人心反應一起變。</span></div>`:""}
     <div class="row"><span>允建容積 / 餘量</span><b class="tnum">${n0(sc.allow)} m² / ${sc.remaining>0?'+':''}${sc.remaining}</b></div>
     <div class="row"><span>總銷</span><b class="tnum">${n0(sc.total)} 萬</b></div>
     <div class="row"><span>共同負擔比</span><b class="tnum">${pct(sc.scr)}</b></div>
@@ -1059,7 +1063,39 @@ $("btn-seed").onclick=()=>{fabric.seed=Math.floor(Math.random()*99999);$("in-see
    有帶入案件（bridge）＝建築規劃視為已定案，直接進入「地主意願」本體；
    想改規劃仍可由遊戲內「調整建築規劃」重開 PLAN PHASE（保留能力，只是不再擋路）。 */
 function hasBridgeCase(){
-  try{ return !!JSON.parse(localStorage.getItem("uros.bridge.case")||"null"); }catch(e){ return false; }
+  try{
+    if(JSON.parse(localStorage.getItem("uros.bridge.case")||"null")) return true;
+    return !!activeCaseRec();                       // 工作區有作用中案件也算「已承接」
+  }catch(e){ return false; }
+}
+
+/* ── 承接①②的真實案件：直接讀工作區作用中案件（不必先設 bridge）── */
+function activeCaseRec(){
+  try{
+    const s=JSON.parse(localStorage.getItem("uros.workflow.v1")||"null");
+    if(!s||!s.projects) return null;
+    let act=null; try{act=localStorage.getItem("uros.active_case")}catch(e){}
+    const pid=(s.projects[act]?act:(s.order||[])[0]); if(!pid) return null;
+    return Object.assign({pid}, s.projects[pid]);
+  }catch(e){ return null; }
+}
+
+/* 由案件的 Core 實算結果組出 scenOverride——沙盤財務改吃「這個案子的真實數字」，
+   不再是六組預算快照。基地面積×容積率×獎勵×公設比的變化，於此真正傳到人心層。
+   逐欄 verbatim 自 Core result（rec.view），本頁零計算（SSOT）。 */
+function scenFromCase(rec){
+  const v=rec&&rec.view; if(!v) return null;
+  if(v.total_sales==null||v.shared_cost_ratio==null) return null;
+  const site=(rec.snap&&rec.snap.site)||{};
+  return {
+    label:"本案（Core 實算）",
+    bonus: site.bonus_ratio!=null?site.bonus_ratio:0,
+    allow: v.allow_floor_area, remaining: v.remaining_floor_area,
+    saleable: v.saleable_area, total: v.total_sales,
+    scr: v.shared_cost_ratio, ratio: v.owner_return_ratio, rr: v.return_rate,
+    warn: (v.warnings||[]).slice(0,4),
+    _fromCase:true, _case:(rec.snap&&rec.snap.code_name)||rec.pid
+  };
 }
 function openPlanPhase(){
   $("ovl-title").classList.remove("show");
@@ -1082,6 +1118,10 @@ function startPlay(inherited){
   const cfg={mode:plan.mode,scale:plan.scale,
              N:fabric.N,consent:fabric.consent,fam:fabric.fam,seed:fabric.seed,coeff:COEFF};
   if(BRIDGE_OWNERS){cfg.owners=BRIDGE_OWNERS;}          // B4：匯入案件＝事實開局
+  // 傳動軸貫通：有作用中案件時，財務改吃該案 Core 實算結果（非六組預算快照）。
+  // 這讓「①基地面積×容積率×獎勵×公設比」的規劃決策，真正傳到③人心層。
+  const _rec=activeCaseRec(), _scen=scenFromCase(_rec);
+  if(_scen){ cfg.scenOverride=_scen; CASE_SCEN=_scen; }
   S=SIMCORE.create(cfg);
   FLOW.hist={};                       // 新局：清空沙盤資金流紀錄
   renderProcess(); renderCore(); render();
