@@ -186,16 +186,21 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
     </div>
   </details>
 
-  <div class="slab">OS 模組（完整主選單見 <a href="index.html">URBAN STRAND OS</a>）</div>
-  <div class="nav">
-    <a href="os-simulator.html"><div class="t">🕹️ 整合人（整合戰術沙盤）<span class="ext">NEW</span></div><div class="d">建立在 Core 權威數字上的整合談判</div></a>
-    <a href="simulator.html"><div class="t">🎮 整合策略沙盤（V4 經典版）</div><div class="d">賽局理論模擬地主整合談判</div></a>
-    <a href="evaluator.html"><div class="t">🧮 坪效×投報試算</div><div class="d">教學試算＋對接 Core JSON 匯入</div></a>
-    <a href="guide.html"><div class="t">📖 都更 11 關指南</div><div class="d">S1–S11 流程與名詞小幫手</div></a>
-    <a href="https://builder-9sczgrez3a3qsbmkebd6ey.streamlit.app/" target="_blank" rel="noopener"><div class="t">⚙️ RE-DCF 精確計算 <span class="ext">↗ Streamlit</span></div><div class="d">正式容積查核·坪效·投報計算工具</div></a>
-    <a href="whitepaper.html"><div class="t">📈 整合開發總論</div><div class="d">開發評估方法論白皮書</div></a>
-    <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener"><div class="t">📦 程式庫 <span class="ext">↗ GitHub</span></div><div class="d">Urban Renewal OS monorepo</div></a>
-  </div>
+  <!-- 舊模組收摺：主動線＝上方四步；這些是延伸工具/讀物，不該與主流程爭版面 -->
+  <details class="pack" id="tools-pack">
+    <summary><b>延伸工具與讀物</b> · 沙盤經典版／試算／指南／總論
+      <span class="pack-hint">主動線是上方四步，這些收在這裡備查</span></summary>
+    <div class="pack-body">
+      <div class="nav">
+        <a href="simulator.html"><div class="t">🎮 整合策略沙盤（V4 經典版）</div><div class="d">賽局理論模擬地主整合談判</div></a>
+        <a href="guide.html"><div class="t">📖 都更 11 關指南</div><div class="d">S1–S11 流程與名詞小幫手</div></a>
+        <a href="whitepaper.html"><div class="t">📈 整合開發總論</div><div class="d">開發評估方法論白皮書</div></a>
+        <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener"><div class="t">📦 程式庫 <span class="ext">↗ GitHub</span></div><div class="d">Urban Renewal OS monorepo</div></a>
+      </div>
+      <div class="src" style="margin-top:8px">「坪效×投報試算」已併入 <b>② Product 產品</b>（承接①基地條件）；
+        「RE-DCF 精確計算」的權威計算已由瀏覽器內 Core（傳動軸即時運算）取代，不再需要外部 Streamlit。</div>
+    </div>
+  </details>
 
   <footer><span>數字來源：core/redcf Result JSON（schema v2.0／v2.1 合成範例）</span><span>Urban Renewal OS · <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">BUILDER</a></span></footer>
 </div>
@@ -456,7 +461,8 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
           <div class="cw-switch">
             <span>作用中案件</span><select id="cw-switch">${caseOpts}</select>
             ${rec.demo?`<span class="cw-demo-tag">合成示範</span>`:""}
-            <a href="workspace.html">＋ 匯入／管理案件 →</a></div></div>
+            <a href="workspace.html">＋ 匯入／管理案件 →</a>
+            <a href="#" onclick="reloadDemoCases();return false" title="重新載入 A/B/C/D 四個合成示範案（不會刪除你自己匯入的案件）">↻ 重載示範案</a></div></div>
         <div style="text-align:right">
           ${dec?`<div class="cw-verdict" style="color:${VC[dec.verdict]};font-size:22px">${dec.verdict}</div>
                  <div style="font-size:10.5px;color:var(--mute)">Decision Engine ${dec.decision_engine_version}${dec.breakpoint_stakeholder?` · 引爆點 ${dec.breakpoint_stakeholder}`:""}<br>
@@ -626,24 +632,70 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
   // 四案 A/B/C/D 全部植入工作區（A/B/C 來自 demo-cases.js＝合成產權清冊，謄本欄位結構；
   // D 為既有權變示範）。領域回饋：產權名冊是「一開始就該有的輸入」，故開頁即備妥。
   // 只在「完全沒有案件」時植入；一旦使用者匯入自己的案件即不再覆蓋。零真實資料（全合成）。
+  // 示範案版本：改動示範案集合時 +1；回訪者的舊示範資料會被升級（不動使用者自己的案件）
+  const DEMO_SEED_V="2";
+  function demoRecords(){
+    const list=[].concat(self.DEMO_CASES||[], self.DEMO_CASE?[self.DEMO_CASE]:[]);
+    const out=[];
+    list.forEach(d=>{ if(d&&d.pid&&!out.some(x=>x.pid===d.pid)) out.push(d); });
+    return out;
+  }
+  function asRecord(d){
+    return {wf:d.wf, snap:d.snap, engine:d.engine, decision:d.decision,
+            roster:d.roster||null, demo:true};
+  }
+  /* 補齊示範案（B1.5 零步啟動的修正版）。
+     病灶：原本只在「完全沒有案件」時植入 → 早期開過頁的人 localStorage 已有案例D，
+     新增的 A/B/C 永遠不會出現（同業複測看不到案例的真因）。
+     修正：以 DEMO_SEED_V 判斷示範集合是否更新；
+       · 全新使用者 → 植入全部示範案
+       · 只有示範案（沒自己的案件）→ 版本落後即整批升級
+       · 有自己的案件 → **只補上缺少的示範案，絕不覆蓋或刪除使用者資料** */
   function seedDemoIfEmpty(){
     try{
-      const s=load();
-      if(s&&s.projects&&Object.keys(s.projects).length) return;   // 已有案件，尊重使用者資料
-      const list=[].concat(self.DEMO_CASES||[], self.DEMO_CASE?[self.DEMO_CASE]:[]);
-      if(!list.length) return;                                    // 示範資料未載入則維持原空狀態
-      const order=[], projects={};
-      list.forEach(d=>{
-        if(!d||!d.pid||projects[d.pid]) return;
-        order.push(d.pid);
-        projects[d.pid]={wf:d.wf, snap:d.snap, engine:d.engine, decision:d.decision,
-                         roster:d.roster||null, demo:true};
-      });
-      if(!order.length) return;
-      save({order, projects});
-      localStorage.setItem("uros.active_case", order[0]);
+      const recs=demoRecords();
+      if(!recs.length) return;
+      const s=load()||{order:[],projects:{}};
+      const has=s.projects&&Object.keys(s.projects).length;
+      const seedV=localStorage.getItem("uros.demo_seed_v");
+      if(!has){                                        // 全新：整批植入
+        const order=[],projects={};
+        recs.forEach(d=>{order.push(d.pid);projects[d.pid]=asRecord(d);});
+        save({order,projects});
+        localStorage.setItem("uros.active_case",order[0]);
+        localStorage.setItem("uros.demo_seed_v",DEMO_SEED_V);
+        return;
+      }
+      if(seedV===DEMO_SEED_V) return;                  // 已是最新示範集合
+      const 全為示範=Object.keys(s.projects).every(k=>s.projects[k]&&s.projects[k].demo);
+      let 變動=false;
+      if(全為示範){                                     // 只有示範案 → 整批換新（無使用者資料可失）
+        const order=[],projects={};
+        recs.forEach(d=>{order.push(d.pid);projects[d.pid]=asRecord(d);});
+        s.order=order; s.projects=projects; 變動=true;
+        localStorage.setItem("uros.active_case",order[0]);
+      } else {                                          // 有使用者案件 → 只補缺，不動既有
+        recs.forEach(d=>{
+          if(!s.projects[d.pid]){ s.projects[d.pid]=asRecord(d); s.order.push(d.pid); 變動=true; }
+        });
+      }
+      if(變動) save(s);
+      localStorage.setItem("uros.demo_seed_v",DEMO_SEED_V);
     }catch(e){}
   }
+  // 手動重載示範案（顧問端救援：清掉示範資料重新植入，使用者自有案件保留）
+  function reloadDemoCases(){
+    try{
+      const s=load()||{order:[],projects:{}};
+      Object.keys(s.projects||{}).forEach(k=>{ if(s.projects[k]&&s.projects[k].demo){
+        delete s.projects[k]; s.order=(s.order||[]).filter(x=>x!==k); } });
+      save(s);
+      localStorage.removeItem("uros.demo_seed_v");
+      seedDemoIfEmpty();
+      location.reload();
+    }catch(e){ alert("重載失敗："+e.message); }
+  }
+  self.reloadDemoCases=reloadDemoCases;
   seedDemoIfEmpty();
   render();
 })();
