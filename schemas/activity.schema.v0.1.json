@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urban-renewal-os/activity.schema.v0.1.json",
+  "title": "Case OS Activity / Session / History v0.1（M7 Memory 層）",
+  "description": "M7_CASE_OS_SPEC §3–§5 的合約。Memory 層只記錄【事實與意圖】——誰在何時改了什麼、哪段工作叫什麼、哪個快照作準；**永不記錄推論結果**（EV／verdict／IRR／坪數／對策一律即時向 Core／Decision／Strategy 索取）。Activity 為 append-only；Session 僅是事件流上的命名區間（非第二真源）；History 以完整 input set＋input_hash 保證可重現。真實案件資料不入版控。",
+  "type": "object",
+  "required": ["schema_version", "case_id", "activity"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": "activity-0.1" },
+    "case_id": { "type": "string" },
+    "activity": {
+      "type": "array",
+      "description": "append-only 事件流：既有事件不得修改或刪除（§3）",
+      "items": { "$ref": "#/$defs/event" }
+    },
+    "sessions": {
+      "type": "array",
+      "description": "工作區間：Activity 上的命名起訖標記，不重複儲存事件本身（§4）",
+      "items": { "$ref": "#/$defs/session" }
+    },
+    "history": {
+      "type": "array",
+      "description": "版本鏈：每筆為一個可重現的輸入快照（§5）",
+      "items": { "$ref": "#/$defs/history_entry" }
+    }
+  },
+  "$defs": {
+    "event": {
+      "type": "object",
+      "required": ["event_id", "ts", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "event_id": { "type": "string", "description": "單調遞增識別碼（如 ev-000123）" },
+        "ts": { "type": "string", "description": "ISO 8601 時戳" },
+        "kind": {
+          "type": "string",
+          "enum": ["edit", "consent", "stage", "snapshot", "scenario", "roster", "note", "create"],
+          "description": "事件種類；全部屬『事實』，不含推論"
+        },
+        "target": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": { "type": "string", "enum": ["case", "site", "product", "stakeholder", "scenario"] },
+            "id": { "type": "string" }
+          }
+        },
+        "field": { "type": "string", "description": "被改動的輸入欄位名稱" },
+        "before": { "description": "改動前的【輸入值】——不得放推論結果" },
+        "after": { "description": "改動後的【輸入值】——不得放推論結果" },
+        "intent": { "type": "string", "description": "使用者當下的理由（如：地主要求增加坪數）" },
+        "by": { "type": "string", "description": "操作者代號；禁真實姓名" },
+        "session_id": { "type": "string" },
+        "input_hash": {
+          "type": "string", "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "事件發生後的輸入指紋（可選，snapshot 類事件必附）"
+        }
+      }
+    },
+    "session": {
+      "type": "object",
+      "required": ["session_id", "started_at", "first_event"],
+      "additionalProperties": false,
+      "description": "Session ＝ Activity 上的一段命名區間。**不得複製事件內容**（避免第二真源）；UI 狀態（頁面/捲動/展開）不得放入本結構。",
+      "properties": {
+        "session_id": { "type": "string" },
+        "name": { "type": "string" },
+        "started_at": { "type": "string" },
+        "ended_at": { "type": ["string", "null"] },
+        "first_event": { "type": "string" },
+        "last_event": { "type": ["string", "null"] }
+      }
+    },
+    "history_entry": {
+      "type": "object",
+      "required": ["snapshot_id", "ts", "input_hash", "engine"],
+      "additionalProperties": false,
+      "description": "版本鏈節點：攜帶【完整 input set】而非 diff——diff 會在基準變動時失效且無法重現（§5/§7）。",
+      "properties": {
+        "snapshot_id": { "type": "string" },
+        "label": { "type": "string" },
+        "ts": { "type": "string" },
+        "input_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "core_version": { "type": "string" },
+        "engine": { "type": "object", "description": "完整輸入（params/floors/owners…），可直接餵回 Core 重算" },
+        "authoritative": { "type": "boolean", "description": "是否為作準版本；同一案任一時刻至多一個為 true" },
+        "event_id": { "type": "string", "description": "產生本快照的事件" }
+      }
+    }
+  }
+}

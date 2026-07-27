@@ -584,7 +584,10 @@ document.querySelectorAll('input').forEach(el=>el.addEventListener('input',()=>{
     host.insertBefore(bar,host.firstChild); return;
   }
   var st=rec.snap.site||{}, set=function(id,v){ var el=document.getElementById(id); if(el&&v!=null&&isFinite(v)) el.value=v; };
-  set("siteA", st.site_area_sqm);
+  // 本頁公式無「人行廣場」欄，Core 則會先扣除再算容積。故餵入**已扣除的有效基地面積**，
+  // 讓兩邊算式完全等價（否則有退縮的案子，兩頁允建容積會差一截）。
+  var plaza=st.plaza_area_sqm||0, 有效基地=(st.site_area_sqm||0)-plaza;
+  set("siteA", 有效基地);
   if(st.far!=null) set("far", Math.round(st.far*100));              // Core 存倍數(2.4)，本頁欄位用 %(240)
   if(st.bonus_ratio!=null) set("bonus", Math.round(st.bonus_ratio*100));
   if(st.site_area_sqm && st.far && st.tdr_transfer_sqm!=null){       // 容移率(%) = 容移面積 / 法定容積
@@ -592,8 +595,12 @@ document.querySelectorAll('input').forEach(el=>el.addEventListener('input',()=>{
   }
   if(rec.snap.public_ratio!=null) set("common", Math.round(rec.snap.public_ratio*100));
   bar.style.cssText+=";border:1px solid #b9abff;background:rgba(154,134,255,.10)";
-  bar.innerHTML='🔗 已<b>承接自 ① 基地</b>：<b>'+name+'</b> — 基地面積／容積率／獎勵率／容移／公設比已帶入下方欄位，'
-    +'可直接調整量體看結果。<span style="color:#67637d">（本頁為教學試算；正式數字以 <a href="dashboard.html">儀表板傳動軸</a> 的 Core 計算為準）</span>';
+  var av=(rec.view&&rec.view.allow_floor_area);
+  bar.innerHTML='🔗 已<b>承接自 ① 基地</b>：<b>'+name+'</b>'
+    +(av!=null?' — <b>允建容積 '+av.toLocaleString()+' ㎡</b>（Core 權威值，與其他頁同一個數字）':'')
+    +(plaza>0?'<br><span style="color:#67637d">基地 '+st.site_area_sqm+'㎡ 已扣除人行廣場 '+plaza+'㎡ → 有效 '+有效基地+'㎡</span>':'')
+    +'<br><span style="color:#67637d">下方為<b>教學試算</b>，可自由調整看敏感度；'
+    +'案件的正式數字一律以 Core 為準（見 <a href="dashboard.html">儀表板</a>）。</span>';
   host.insertBefore(bar,host.firstChild);
   render();
 })();

@@ -39,6 +39,8 @@ FROZEN = {
         "1866452b508c7d9f4bd5b53c044b22ead2d690f7ac8beac25fde98fe50ad0e8d",  # household_outcome v0.1（M5.5 傳動軸）
     "schemas/stakeholder_profile.schema.v0.1.json":
         "d68e5ec52d0cb865cc690073aeada1fd9b319004fb5fe3e0f86d4c694f6f0e2b",  # stakeholder_profile v0.1（M6 分型輸入）
+    "schemas/activity.schema.v0.1.json":
+        "04f487db779564ed7359c4e289a5ecb78b22fbc1e3a53ed2cd6fe1a5b73163fa",  # activity v0.1（M7.1 Memory：Activity/Session/History）
     "schemas/strategy.schema.v0.1.json":
         "8821db932a83fd4ac6d457f6ae1a8f19b691a1f071084a883769895c1c9b0bd1",  # strategy v0.1（M6 THE STRATEGIST 輸出）
 }
