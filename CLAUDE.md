@@ -40,6 +40,7 @@
 | 判斷「該不該／算不算完成／要不要問」 | `governance/JUDGMENT_RUBRICS.md` |
 | 改檔案前查權限（🟢🟡🔴） | `governance/MAINTENANCE.md` |
 | 執行兩庫搬遷（P0） | `docs/architecture/MIGRATION_PLAN.md`（逐步驗收，照做） |
+| M7 Case OS（記憶層／Timeline／Attribution） | `docs/architecture/M7_CASE_OS_SPEC.md`（憲章：Local-first、只記事實不記推論） |
 | 動 schema／查版本規則 | `docs/architecture/SCHEMA_STRATEGY.md` |
 | 查實體定義／要不要建模 | `docs/architecture/DOMAIN_MODEL.md` |
 | 排優先序／判斷某功能該不該現在做 | `docs/architecture/ROADMAP.md`（P0–P3） |
