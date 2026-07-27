@@ -168,6 +168,7 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
 
   <!-- M5-P1 Case Workspace（單案容器；純呈現，資料全部 verbatim 自 store）-->
   <div id="casews"></div>
+  <div id="newcase" style="display:none"></div>
 
   <!-- 示範案例庫已併入上方 Case Workspace（容積坪效／現金流／逐戶權變／產權清冊皆掛在作用中案件）。
        保留三案對照做為跨案比較，其餘不再重複一份。 -->
@@ -401,6 +402,19 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
   .cw-slot .del{position:absolute;top:5px;right:6px;z-index:2;background:var(--panel);border:1px solid var(--line);border-radius:7px;font-size:10px;cursor:pointer;padding:1px 6px}
   .cw-note{font-family:var(--mono);font-size:10px;color:var(--mute);margin-top:9px}
   .cw-empty{border:1px dashed var(--line);border-radius:16px;padding:22px;margin:16px 0 22px;font-size:13px;color:var(--mute);text-align:center}
+.nc-card{background:var(--panel);border:1px solid var(--accent);border-radius:14px;padding:16px 18px;margin:14px 0}
+.nc-card h4{margin:0 0 10px;font-size:13px}
+.nc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.nc-grid label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mute)}
+.nc-grid input,.nc-grid select{padding:6px 9px;border:1px solid var(--line);border-radius:8px;
+  background:var(--panel);color:var(--ink);font-size:13px}
+.nc-preview{margin-top:12px;padding:11px 14px;border-radius:10px;font-size:12.5px;
+  background:color-mix(in srgb,var(--accent) 8%,transparent);border:1px solid var(--line)}
+.nc-out{display:flex;justify-content:space-between;padding:3px 0;font-size:12.5px}
+.nc-out b{font-family:var(--mono)}
+.nc-card .btn-sm{font-size:12.5px;padding:7px 16px;border-radius:8px;border:1px solid var(--line);
+  background:var(--panel);color:var(--ink);cursor:pointer}
+.nc-card .btn-sm:hover{border-color:var(--accent);color:var(--accent)}
 .cw-roster select.rs{font-size:11px;padding:2px 4px;border:1px solid var(--line);border-radius:5px;
     background:var(--panel);color:var(--ink);max-width:110px}
 .cw-roster .btn-sm{font-size:11.5px;padding:5px 12px;border-radius:8px;border:1px solid var(--line);
@@ -468,6 +482,7 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
             <span>作用中案件</span><select id="cw-switch">${caseOpts}</select>
             ${rec.demo?`<span class="cw-demo-tag">合成示範</span>`:""}
             <a href="workspace.html">＋ 匯入／管理案件 →</a>
+            <a href="#" onclick="openNewCase();return false" title="直接輸入基地與產品參數建立新案件"><b>＋ 新增案件</b></a>
             <a href="#" onclick="reloadDemoCases();return false" title="重新載入 A/B/C/D 四個合成示範案（不會刪除你自己匯入的案件）">↻ 重載示範案</a></div></div>
         <div style="text-align:right">
           ${dec?`<div class="cw-verdict" style="color:${VC[dec.verdict]};font-size:22px">${dec.verdict}</div>
@@ -820,6 +835,118 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
       localStorage.setItem("uros.demo_seed_v",DEMO_SEED_V);
     }catch(e){}
   }
+  /* ── 新增案件（手動輸入）──────────────────────────────────────────
+     同業回饋：進來沒有地方輸入自己的案子（只能匯入 JSON 或用示範案）。
+     設計原則：欄位少、看得懂、**輸入當下就顯示 Core 算出的允建容積**——
+     那個數字就是之後每一頁看到的同一個數字（同專案同數字），因為它由 Core 算、存進案件。
+     UI 零計算：允建容積等一切數字都來自 Core recompute，本表單只組輸入。 */
+  const NC_FIELDS=[
+    {k:"案件名稱", l:"案件代號", type:"text", v:"新案件", hint:"禁真實段名/姓名"},
+    {k:"基地面積", l:"基地面積", u:"㎡", v:1000, step:0.01},
+    {k:"人行廣場", l:"人行廣場（退縮）", u:"㎡", v:0, step:0.01, hint:"會從基地面積扣除再算容積"},
+    {k:"容積率",   l:"容積率", u:"%", v:300, step:1, scale:100, hint:"如 300 代表 300%"},
+    {k:"獎勵率",   l:"容積獎勵", u:"%", v:30, step:1, scale:100},
+    {k:"容積移轉", l:"容積移轉", u:"㎡", v:0, step:1},
+    {k:"公設比",   l:"公設比", u:"%", v:33, step:0.5, scale:100},
+    {k:"戶數",     l:"戶數（權變戶）", v:30, step:1},
+    {k:"住宅單價", l:"住宅單價", u:"萬/坪", v:70, step:1},
+    {k:"營造單價", l:"營造單價", u:"萬/坪", v:20, step:0.5},
+  ];
+  function openNewCase(){
+    const box=document.getElementById("newcase"); if(!box) return;
+    box.style.display="block";
+    box.innerHTML=`<div class="nc-card">
+      <h4>＋ 新增案件 <span class="src" id="nc-stat"></span></h4>
+      <div class="nc-grid">
+        <label>案件類型<select id="nc-type"><option value="urban_renewal">都市更新</option><option value="danger_building">危老重建</option></select></label>
+        <label>實施模式<select id="nc-mode"><option>全案管理</option><option>合建</option></select></label>
+        ${NC_FIELDS.map(f=>`<label>${f.l}${f.u?` <span class="src">${f.u}</span>`:""}
+          <input id="nc-${f.k}" type="${f.type||"number"}" value="${f.v}" ${f.step?`step="${f.step}"`:""}>
+          ${f.hint?`<span class="src">${f.hint}</span>`:""}</label>`).join("")}
+      </div>
+      <div class="nc-preview" id="nc-preview">輸入後即以 Core 試算…</div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        <button class="btn-sm" onclick="submitNewCase()"><b>建立案件</b></button>
+        <button class="btn-sm" onclick="document.getElementById('newcase').style.display='none'">取消</button>
+      </div>
+      <div class="src" style="margin-top:6px">建立後可在「產權清冊」逐筆登打地主；財務與判讀一律由 Core／Decision Engine 產出。</div>
+    </div>`;
+    box.querySelectorAll("input,select").forEach(el=>el.addEventListener("input",ncPreview));
+    ncPreview();
+  }
+  function ncEngine(){
+    const g=k=>{const el=document.getElementById("nc-"+k); return el?el.value:null;};
+    const num=k=>{const f=NC_FIELDS.find(x=>x.k===k), v=parseFloat(g(k));
+      return isFinite(v)?(f&&f.scale?v/f.scale:v):0;};
+    const 基地=num("基地面積"), far=num("容積率"), 獎=num("獎勵率"), 廣=num("人行廣場"), 移=num("容積移轉");
+    const 戶=Math.max(1,Math.round(num("戶數")));
+    const 地上=Math.max(3,Math.ceil(戶/4)), 標準樓板=Math.max(120,(基地-廣)*0.55);
+    const floors=[];
+    floors.push({啟用:true,樓層:"B1F",樓板:標準樓板*1.4,計容積:0,梯廳:0,安全梯:0,陽台:0});
+    floors.push({啟用:true,樓層:"1F",樓板:標準樓板*1.2,計容積:0,梯廳:0,安全梯:標準樓板*0.1,陽台:0});
+    for(let i=2;i<=地上;i++) floors.push({啟用:true,樓層:i+"F",樓板:標準樓板,計容積:0,
+      梯廳:標準樓板*0.05,安全梯:標準樓板*0.08,陽台:標準樓板*0.1});
+    return {params:{案件名稱:g("案件名稱")||"新案件",基地面積:基地,人行廣場:廣,容積率:far,
+        獎勵率:獎,容積移轉:移,公設比:num("公設比"),梯廳免計基準:5,陽台免計基準:10,
+        面積表計入容積:(基地-廣)*far*(1+獎)+移,
+        住宅單價:num("住宅單價"),店舖坪數:0,店舖單價:0,車位數:Math.round(戶*0.8),車位單價:230,
+        營造單價:num("營造單價"),戶數:戶,權變戶數:戶,土融土地成本:0,地價:0,
+        既有建物面積:0,建物單價:0,屋齡:40},
+      floors, case_type:document.getElementById("nc-type").value==="danger_building"?"危老":"都更",
+      mode:document.getElementById("nc-mode").value, owners:[]};
+  }
+  function ncPreview(){
+    const pv=document.getElementById("nc-preview"); if(!pv) return;
+    if(!RT||!RT.ready){ pv.textContent="計算核心載入中…（就緒後自動試算）"; return; }
+    const eng=ncEngine();
+    RT.recompute(eng).then(r=>{
+      const R=r.result||{};
+      pv.innerHTML=`<b>Core 試算</b>（這就是建立後每一頁看到的同一組數字）
+        <div class="nc-out"><span>允建容積</span><b>${fmt(R.allow_floor_area)} ㎡</b></div>
+        <div class="nc-out"><span>銷售坪 / 坪效</span><b>${fmt(R.saleable_area)} 坪 · ${R.efficiency_ratio!=null?R.efficiency_ratio.toFixed(3):"—"}</b></div>
+        <div class="nc-out"><span>共同負擔比</span><b>${pc(R.shared_cost_ratio)}</b></div>
+        <div class="nc-out"><span>投報率</span><b>${pc(R.return_rate)}</b></div>
+        <div class="src">input_hash ${(r.input_hash||"").replace(/^sha256:/,"").slice(0,10)}…（可溯源）</div>`;
+    }).catch(e=>{ pv.textContent="試算失敗："+e.message; });
+  }
+  function submitNewCase(){
+    if(!RT||!RT.ready) return alert("計算核心尚未就緒，請稍候再建立（數字必須由 Core 產出）。");
+    const eng=ncEngine(), name=eng.params.案件名稱;
+    RT.recompute(eng).then(r=>{
+      const R=r.result||{}, ih=r.input_hash;
+      const pid="prj-"+(ih||"").replace(/^sha256:/,"").slice(0,8);
+      const s=load()||{order:[],projects:{}};
+      if(s.projects[pid]) { localStorage.setItem("uros.active_case",pid); render(); return; }
+      const view={}; ["baseline_far","allow_floor_area","used_floor_area","remaining_floor_area",
+        "saleable_area","efficiency_ratio","total_sales","shared_cost","shared_cost_ratio",
+        "owner_return_value","owner_return_ratio","return_rate","pre_renewal_value","value_multiple"]
+        .forEach(k=>view[k]=R[k]);
+      view.warnings=(R.warnings||[]).map(w=>typeof w==="string"?w:(w.message||w.msg||w.code||""));
+      s.projects[pid]={
+        wf:{schema_version:"wf-1.1",project:{project_id:pid,code_name:name,
+              case_type:document.getElementById("nc-type").value,
+              mode:eng.mode,stage:"S1",active_snapshot:"snap-01",
+              snapshots:[{id:"snap-01",label:"建案版",schema_version:"2.1",input_hash:ih,
+                          core_version:R.core_version||"",computed_at:R.computed_at||""}]},
+            stakeholders:[],consent_events:[],tasks:[],decisions:[]},
+        snap:{code_name:name,case_type:document.getElementById("nc-type").value,
+              stakeholders_n:0,input_hash:ih,core_version:R.core_version||"",
+              computed_at:R.computed_at||"",shared_cost_ratio:R.shared_cost_ratio,
+              return_rate:R.return_rate,warnings_n:(R.warnings||[]).length,
+              agreed:0,total:eng.params.戶數,threshold:eng.case_type==="危老"?1:0.8,
+              allocations:[],site:{site_area_sqm:eng.params.基地面積,
+                plaza_area_sqm:eng.params.人行廣場,far:eng.params.容積率,
+                bonus_ratio:eng.params.獎勵率,tdr_transfer_sqm:eng.params.容積移轉},
+              public_ratio:eng.params.公設比},
+        engine:eng, decision:null, roster:[], view, cashflow:null, demo:false, dirty:true};
+      s.order=s.order||[]; s.order.unshift(pid);
+      save(s); localStorage.setItem("uros.active_case",pid);
+      document.getElementById("newcase").style.display="none";
+      render();
+    }).catch(e=>alert("建立失敗："+e.message));
+  }
+  self.openNewCase=openNewCase; self.submitNewCase=submitNewCase; self.ncPreview=ncPreview;
+
   // 手動重載示範案（顧問端救援：清掉示範資料重新植入，使用者自有案件保留）
   function reloadDemoCases(){
     try{
