@@ -20,6 +20,7 @@
 > 可簽性軸 ownership_complexity/signability/blocking_reason，純新增選填＝minor，遷移器 `wf-1.0→wf-1.1`）。
 > M6 THE STRATEGIST 新增契約：`stakeholder_profile.schema.v0.1` `d68e5ec5…`（分型輸入）、
 > `strategy.schema.v0.1` `8821db93…`（策略引擎輸出）——皆**新增檔**、不動既有凍結檔。
+> M7 Case OS 新增契約：`activity.schema.v0.1` `04f487db…`（Memory：Activity/Session/History，新增檔）。
 > 要改凍結檔＝走版本升級流程（新 `schema_version`＋遷移器＋更新 FROZEN），不得直接改檔。
 
 ## 2. 三層關係（誰依賴誰）

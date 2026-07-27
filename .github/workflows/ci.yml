@@ -81,3 +81,7 @@ jobs:
       # ── Gate 10：前端版本徽章與 Core／tag 同步（防呈現層版本漂移：首頁 0.4.0 vs 某頁 0.3.0）──
       - name: "Gate 10 — Web version consistency"
         run: python tools/check_web_version.py
+
+      # ── Gate 11：M7 Memory 層紀律（append-only／不記推論／Session 非第二真源／遷移不刪舊資料）──
+      - name: "Gate 11 — Case OS store headless (node)"
+        run: node tests/web/test_case_store.mjs
