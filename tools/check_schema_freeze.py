@@ -41,6 +41,10 @@ FROZEN = {
         "d68e5ec52d0cb865cc690073aeada1fd9b319004fb5fe3e0f86d4c694f6f0e2b",  # stakeholder_profile v0.1（M6 分型輸入）
     "schemas/activity.schema.v0.1.json":
         "04f487db779564ed7359c4e289a5ecb78b22fbc1e3a53ed2cd6fe1a5b73163fa",  # activity v0.1（M7.1 Memory：Activity/Session/History）
+    "schemas/stakeholder_profile.schema.v0.2.json":
+        "05d1b82a1d7ee9fe985e68150b2046a9a9254ca7acdb3175e8539a379f048583",  # 分型輸入 v0.2（M6：+錨定型）
+    "schemas/strategy.schema.v0.2.json":
+        "016eda3f8e95af8913b82d467b098a1d008c128a245b2d2e0b9f09c8db9fd5b3",  # 策略輸出 v0.2（M6：+錨定型對策）
     "schemas/strategy.schema.v0.1.json":
         "8821db932a83fd4ac6d457f6ae1a8f19b691a1f071084a883769895c1c9b0bd1",  # strategy v0.1（M6 THE STRATEGIST 輸出）
 }

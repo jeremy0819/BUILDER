@@ -30,6 +30,7 @@ from core.redcf.valuation import (calc_更新前價值,
     load_coefficients, calc_戶價值, build_owner_matrix)
 from core.redcf.rights import calc_權利變換, calc_找補, build_owner_allocations
 from core.redcf.cashflow import calc_現金流分期
+from core.redcf.dualtrack import calc_雙軌口徑, calc_三種報酬率
 from core.redcf.workflow import (validate_workflow, migrate_workflow,
     derive_consent_state, derive_signability)
 from core.redcf.decision import (decide, validate_decision, calc_完工機率,
@@ -78,6 +79,8 @@ __all__ = [
     "calc_更新前價值", "load_coefficients", "calc_戶價值", "build_owner_matrix",
     # 權利變換／找補（M3）
     "calc_權利變換", "calc_找補", "build_owner_allocations", "calc_現金流分期",
+    # 雙軌財務口徑（私約軌 vs 公法軌；來源＝在途真實案錨定）
+    "calc_雙軌口徑", "calc_三種報酬率",
     # 案件管理層（M3-C Workflow OS）
     "validate_workflow", "migrate_workflow", "derive_consent_state",
     # 決策引擎（M4 推論層）

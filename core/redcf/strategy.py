@@ -25,12 +25,12 @@ import pathlib
 _此處 = pathlib.Path(__file__).resolve().parent
 _根 = _此處.parents[1]
 STRATEGY_CONFIG_PATH = _此處 / "strategy_config.json"
-STRATEGY_SCHEMA_PATH = _根 / "schemas" / "strategy.schema.v0.1.json"
-PROFILE_SCHEMA_PATH = _根 / "schemas" / "stakeholder_profile.schema.v0.1.json"
-STRATEGY_ENGINE_VERSION = "0.1.0"
+STRATEGY_SCHEMA_PATH = _根 / "schemas" / "strategy.schema.v0.2.json"
+PROFILE_SCHEMA_PATH = _根 / "schemas" / "stakeholder_profile.schema.v0.2.json"
+STRATEGY_ENGINE_VERSION = "0.2.0"
 
 # ── 領域真理（鎖在程式＋回歸；不進 config）────────────────────────────────
-WILLINGNESS_TYPES = ("strategic", "fearful", "opposed", "unknown")
+WILLINGNESS_TYPES = ("strategic", "fearful", "anchored", "opposed", "unknown")
 
 # 訊號 → 型別桶（§4 三型判定訊號表）
 _SIGNAL_BUCKET = {
@@ -44,6 +44,11 @@ _SIGNAL_BUCKET = {
     "demands_specific_terms": "strategic",
     "comparing_competitors": "strategic",
     "softens_with_terms": "strategic",
+    # 錨定型：錨在室內實坪/原樓層，攻擊選配公正性——給錢或給擔保都答非所問
+    "questions_unit_selection_fairness": "anchored",
+    "anchored_on_interior_ping": "anchored",
+    "anchored_on_original_floor": "anchored",
+    "demands_traceable_allocation": "anchored",
     # 反對型：拒談條件、情感因素、無急迫、status quo 好
     "refuses_to_discuss_terms": "opposed",
     "emotional_attachment": "opposed",
@@ -57,6 +62,7 @@ _SIGNAL_WEIGHT = {"more_doubtful_after_sweetener": 2}
 _ACTION_BY_TYPE = {
     "strategic": "time_limited_offer",
     "fearful": "institutional_guarantee",
+    "anchored": "address_the_anchor",      # 回應他真正錨定的：同坪室內、原樓層、可追溯分回
     "opposed": "statutory_process",
     "unknown": "clarify_and_record",
 }
@@ -64,6 +70,8 @@ _ACTION_BY_TYPE = {
 _FORBIDDEN_BY_TYPE = {
     "fearful": ("increase_allocation", "verbal_guarantee_only", "authority_endorsement_as_substitute"),
     "strategic": ("reveal_urgency",),
+    # 錨定型：他錨的是「同坪室內/原樓層」這個具體物件，用一般補償（給錢/給擔保）回應＝答非所問
+    "anchored": ("generic_compensation", "increase_allocation"),
     "opposed": ("continue_sweetening",),
     "unknown": (),
 }
@@ -75,7 +83,7 @@ _ADMIN_ACTION = {
     "illegal_structure": "illegal_structure_rights_assessment",
 }
 # 可轉化性領域排序（§6）：恐懼型 > 策略型 > 反對型（幅度在 config；此順序為真理）
-_CONVERTIBILITY_RANK = ("fearful", "strategic", "opposed")
+_CONVERTIBILITY_RANK = ("fearful", "anchored", "strategic", "opposed")
 _CASCADE_SCALAR = {"low": 0.0, "medium": 0.5, "high": 1.0}
 
 
@@ -88,7 +96,7 @@ def load_strategy_config(path=None) -> dict:
 
 def suggest_willingness_type(signals) -> str:
     """由行為訊號映射 suggested 型別（§4）；缺訊號或平手→unknown（不猜測）。方向為領域真理。"""
-    score = {"fearful": 0, "strategic": 0, "opposed": 0}
+    score = {"fearful": 0, "strategic": 0, "anchored": 0, "opposed": 0}
     for s in (signals or []):
         b = _SIGNAL_BUCKET.get(s)
         if b:
@@ -260,7 +268,8 @@ def strategize(decision: dict, workflow: dict, profiles: list = None,
 
 def _reason(wt: str, src: str, is_key: bool, leverage: float, cascade: str, cfg: dict) -> str:
     src_zh = {"recorded": "已記錄", "suggested": "訊號推測", "simulated": "劇本"}.get(src, src)
-    type_zh = {"strategic": "策略型", "fearful": "恐懼型", "opposed": "反對型", "unknown": "未分類"}[wt]
+    type_zh = {"strategic": "策略型", "fearful": "恐懼型", "anchored": "錨定型",
+               "opposed": "反對型", "unknown": "未分類"}[wt]
     bits = [f"{type_zh}（{src_zh}）"]
     if is_key:
         bits.append("關鍵戶")
