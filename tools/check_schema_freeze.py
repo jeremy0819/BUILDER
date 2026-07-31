@@ -41,6 +41,8 @@ FROZEN = {
         "d68e5ec52d0cb865cc690073aeada1fd9b319004fb5fe3e0f86d4c694f6f0e2b",  # stakeholder_profile v0.1（M6 分型輸入）
     "schemas/activity.schema.v0.1.json":
         "04f487db779564ed7359c4e289a5ecb78b22fbc1e3a53ed2cd6fe1a5b73163fa",  # activity v0.1（M7.1 Memory：Activity/Session/History）
+    "schemas/milestone.schema.v0.1.json":
+        "ab3edbab1bdfae6e0b0c4454fb40393d8f38a127b7983e25c84079d8eb692858",  # milestone v0.1（M7.2 Watchtower：statute 必附法源）
     "schemas/stakeholder_profile.schema.v0.2.json":
         "05d1b82a1d7ee9fe985e68150b2046a9a9254ca7acdb3175e8539a379f048583",  # 分型輸入 v0.2（M6：+錨定型）
     "schemas/strategy.schema.v0.2.json":

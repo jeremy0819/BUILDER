@@ -30,6 +30,7 @@
       - stakeholder_profile v0.1 `schemas/stakeholder_profile.schema.v0.1.json` = `d68e5ec52d0cb865cc690073aeada1fd9b319004fb5fe3e0f86d4c694f6f0e2b`（M6 分型輸入）
       - strategy v0.1 `schemas/strategy.schema.v0.1.json` = `8821db932a83fd4ac6d457f6ae1a8f19b691a1f071084a883769895c1c9b0bd1`（M6 策略輸出）
       - activity v0.1 `schemas/activity.schema.v0.1.json` = `04f487db779564ed7359c4e289a5ecb78b22fbc1e3a53ed2cd6fe1a5b73163fa`（M7.1 Memory 層）
+      - milestone v0.1 `schemas/milestone.schema.v0.1.json` = `ab3edbab1bdfae6e0b0c4454fb40393d8f38a127b7983e25c84079d8eb692858`（M7.2 Watchtower）
       要改凍結檔＝走版本升級流程（新版本＋遷移器＋更新 FROZEN 基準），不得直接改檔。
 - [ ] **Version Updated**：依 `governance/VERSION_POLICY.md` 確認 CORE_VERSION / schema_version /
       APP_VERSION 該動的已動、不該動的沒動；本次 release 對應版本已填入下方發布紀錄。
