@@ -188,10 +188,39 @@ def test_優先序_關鍵高權值恐懼戶_勝過低權值反對戶():
     assert _pq(d, "H-hi")["priority_score"] > _pq(d, "H-lo")["priority_score"]
 
 
-def test_convertibility_排序為領域真理():
-    """幅度歸 config，但排序 fearful > strategic > opposed 為方向真理，回歸鎖住。"""
+# ── 錨定型（v0.2，由在途真實案 案例E 公聽會陳情人分型錨定）──
+
+def test_錨定型_訊號映射():
+    assert suggest_willingness_type(["questions_unit_selection_fairness"]) == "anchored"
+    assert suggest_willingness_type(["anchored_on_interior_ping", "anchored_on_original_floor"]) == "anchored"
+    assert suggest_willingness_type(["demands_traceable_allocation"]) == "anchored"
+
+
+def test_錨定型_對策是回應錨點_而非給錢或給擔保():
+    """領域真理：他錨的是『同坪室內/原樓層』這個具體物件。
+    給錢（加碼）或給擔保（制度性擔保）都是答非所問——這是本型與策略型/恐懼型的分野。"""
+    st = [{"stakeholder_id": "H-a", "land_share": 0.05}]
+    p = [{"household_id": "H-a", "classification_source": "suggested",
+          "signals_observed": ["questions_unit_selection_fairness", "anchored_on_interior_ping"]}]
+    it = _pq(strategize(_dec(), _wf(st), p), "H-a")
+    assert it["willingness_type"] == "anchored"
+    assert it["recommended_action"] == "address_the_anchor"
+    assert it["recommended_action"] != "institutional_guarantee"      # 不是恐懼型
+    assert it["recommended_action"] != "time_limited_offer"           # 不是策略型
+    assert "generic_compensation" in it["forbidden_actions"]          # ★ 一般補償＝答非所問
+    assert "increase_allocation" in it["forbidden_actions"]           # ★ 加碼同樣無效
+
+
+def test_四型互斥_各有不同對策():
+    """四型的建議動作必須兩兩不同——否則分型沒有意義。"""
+    acts = {k: _ACTION_BY_TYPE[k] for k in ("strategic", "fearful", "anchored", "opposed")}
+    assert len(set(acts.values())) == 4, acts
+
+
+def test_convertibility_四型排序為領域真理():
+    """錨定型可轉化性高於策略型：他要的是具體物件，回應到即可成交。"""
     cs = load_strategy_config()["convertibility_score"]
-    assert cs["fearful"] > cs["strategic"] > cs["opposed"]
+    assert cs["fearful"] > cs["anchored"] > cs["strategic"] > cs["opposed"]
 
 
 def test_config標示紅線():
@@ -219,6 +248,6 @@ def test_profile_壞訊號列舉被擋():
 
 def test_strategy_schema_凍結hash():
     import tools.check_schema_freeze as f
-    for rel in ("schemas/strategy.schema.v0.1.json", "schemas/stakeholder_profile.schema.v0.1.json"):
+    for rel in ("schemas/strategy.schema.v0.2.json", "schemas/stakeholder_profile.schema.v0.2.json"):
         實際 = hashlib.sha256((根 / rel).read_bytes()).hexdigest()
         assert 實際 == f.FROZEN[rel], f"{rel} 凍結 hash 不符"

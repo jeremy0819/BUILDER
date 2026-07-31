@@ -1,14 +1,34 @@
 {
-  "_note": "完工機率階段樹（DECISION_ENGINE_SPEC §2）。存活率為【示意預設】，須以真實案例本地校準（/local_calibration/，不進版控）後才可用於真實判斷。",
+  "_note": "完工機率階段樹（DECISION_ENGINE_SPEC §2）。【部分校準】：duration_yr 之 T4–T7 已由一件在途真實案（案例E，防災都更2.0＋權變，本機 /local_calibration/）之官方時程錨定；p_survival 仍為【示意預設】，尚未經真實成敗案校準——單一在途案 n=1 無法產生頻率。故 verdict 仍為方向性判斷、非投資結論。",
+  "calibration": {
+    "_note": "誠實邊界：明列哪些欄位已錨定、哪些仍是假設。任何宣稱不得超出本表。",
+    "anchor_case": "案例E（合成標籤；真實對照留 /local_calibration/，不進版控）",
+    "anchor_state": "已送審議、尚未核定（在途）",
+    "calibrated": [
+      "duration_yr T4–T6（核定→開工 13 月）",
+      "duration_yr T7（施工 35 月）",
+      "核定→交屋合計 48 月（＝13＋35，官方預估）"
+    ],
+    "not_calibrated": [
+      "p_survival 全部階段（需多案成敗頻率，非單一在途案可得）",
+      "duration_yr T1–T3（本案 T1 已通過但未留完整耗時；T3 審議進行中，尚未定案）",
+      "duration_yr T8（交屋結算落在 48 月之後，本案未達）"
+    ],
+    "conditional_note": "本案僅能支持【條件存活率】敘述（如：已過 T1 整合最大過濾器者，後續存活率區間），不得宣稱最終完工機率。",
+    "observed": {
+      "consent_ratio_at_review": 0.877,
+      "_observed_note": "送審議時之同意比率（人數口徑）——證明 T1 可被通過，但 n=1 不足以估計 T1 存活率"
+    }
+  },
   "stage_tree": [
-    {"id":"T1","name":"整合達門檻","p_survival":0.65,"duration_yr":2.0,"risk":"holdout（最大過濾器）"},
-    {"id":"T2","name":"報核（事業+權變）","p_survival":0.85,"duration_yr":0.5,"risk":"文件/選配爭議"},
-    {"id":"T3","name":"審議核定","p_survival":0.80,"duration_yr":3.0,"risk":"陳情/訴訟"},
-    {"id":"T4","name":"融資到位","p_survival":0.92,"duration_yr":0.5,"risk":"核貸不足"},
-    {"id":"T5","name":"建照","p_survival":0.95,"duration_yr":0.5,"risk":"圖審"},
-    {"id":"T6","name":"開工","p_survival":0.95,"duration_yr":0.3,"risk":"拆除/騰空"},
-    {"id":"T7","name":"完工","p_survival":0.85,"duration_yr":3.5,"risk":"營造/財務/爛尾（資本額）"},
-    {"id":"T8","name":"交屋結算","p_survival":0.95,"duration_yr":0.5,"risk":"找補/登記"}
+    {"id":"T1","name":"整合達門檻","p_survival":0.65,"duration_yr":2.0,"risk":"holdout（最大過濾器）","duration_source":"assumed"},
+    {"id":"T2","name":"報核（事業+權變）","p_survival":0.85,"duration_yr":0.5,"risk":"文件/選配爭議","duration_source":"assumed"},
+    {"id":"T3","name":"審議核定","p_survival":0.80,"duration_yr":3.0,"risk":"陳情/訴訟","duration_source":"assumed"},
+    {"id":"T4","name":"融資到位","p_survival":0.92,"duration_yr":0.40,"risk":"核貸不足","duration_source":"anchored:案例E"},
+    {"id":"T5","name":"建照","p_survival":0.95,"duration_yr":0.40,"risk":"圖審","duration_source":"anchored:案例E"},
+    {"id":"T6","name":"開工","p_survival":0.95,"duration_yr":0.28,"risk":"拆除/騰空","duration_source":"anchored:案例E"},
+    {"id":"T7","name":"完工","p_survival":0.85,"duration_yr":2.92,"risk":"營造/財務/爛尾（資本額）","duration_source":"anchored:案例E（施工 35 月）"},
+    {"id":"T8","name":"交屋結算","p_survival":0.95,"duration_yr":0.5,"risk":"找補/登記","duration_source":"assumed"}
   ],
   "wf_stage_map": {
     "_note": "Workflow S1–S11 → 階段樹起算點（可校準的對映假設）",
