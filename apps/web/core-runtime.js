@@ -35,6 +35,14 @@
           w.postMessage({ type: "recompute", id: id, engine: engine });
         });
       },
+      // M7.2：today(milestones[, todayISO]) → Promise<{today}>；逾期/風險窗判準由 Core 決定，UI 只呈現。
+      today: function (milestones, todayISO) {
+        return new Promise(function (resolve, reject) {
+          if (dead || !w) return reject(new Error("core-runtime 不可用"));
+          var id = ++seq; pending[id] = { resolve: resolve, reject: reject };
+          w.postMessage({ type: "today", id: id, milestones: milestones, today: todayISO || "" });
+        });
+      },
       // M6：strategize(decision, workflow, profiles) → Promise<{strategy}>；同一份 Core，UI 零推論。
       strategize: function (decision, workflow, profiles) {
         return new Promise(function (resolve, reject) {

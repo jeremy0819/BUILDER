@@ -159,3 +159,58 @@ def test_輸出不含推論欄位():
 def test_today_預設為系統今日():
     t = build_today(_ms())
     assert t["as_of"] == dt.date.today().isoformat()
+
+
+# ── 6. 法定期限庫（M7.2）──
+
+def test_法定期限庫_每筆必附法源():
+    from core.redcf import load_statutory_deadlines
+    dl = load_statutory_deadlines()
+    assert dl["deadlines"], "期限庫不得為空"
+    for d in dl["deadlines"]:
+        assert d.get("legal_basis"), f"{d.get('key')} 缺法源"
+        assert d.get("quote"), f"{d.get('key')} 缺條文原文"
+        assert d.get("verification"), f"{d.get('key')} 缺查核狀態"
+
+
+def test_法定期限庫_保留法規會修正之標示():
+    from core.redcf import load_statutory_deadlines
+    dl = load_statutory_deadlines()
+    assert "法規會修正" in dl["_source_disclaimer"]
+    assert dl.get("_not_included"), "須明列『不收哪些、為什麼』"
+
+
+def test_缺法源的期限庫被拒載(tmp_path):
+    """★ 防止經驗值混入法規：缺 legal_basis 直接拒載。"""
+    import json
+    from core.redcf.timeline import load_statutory_deadlines
+    bad = tmp_path / "bad.json"
+    bad.write_text(json.dumps({"_source_disclaimer": "法規會修正",
+                               "deadlines": [{"key": "x", "title": "t", "days": 30,
+                                              "verification": "pending_review"}]},
+                              ensure_ascii=False), encoding="utf-8")
+    with pytest.raises(ValueError, match="法源"):
+        load_statutory_deadlines(bad)
+
+
+def test_由法定期限生成里程碑_自動帶法源與到期日():
+    from core.redcf import statutory_milestone
+    m = statutory_milestone("rv_value_objection", "2026-06-15")
+    assert m["source"] == "statute"
+    assert "§53" in m["legal_basis"]
+    assert m["due"] == "2026-08-14"          # 核定日 + 60 日
+    ok, errs = validate_milestones([m])
+    assert ok, errs
+
+
+def test_未複核的法定期限_里程碑須標示待複核():
+    """verification != verified 時，note 必須讓使用者看到『待複核』。"""
+    from core.redcf import statutory_milestone
+    m = statutory_milestone("public_display", "2026-06-01")
+    assert "待複核" in m["note"]
+
+
+def test_未知期限key報錯():
+    from core.redcf import statutory_milestone
+    with pytest.raises(ValueError, match="無此項"):
+        statutory_milestone("不存在的期限", "2026-06-01")

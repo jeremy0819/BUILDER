@@ -34,6 +34,7 @@ import pathlib
 _此處 = pathlib.Path(__file__).resolve().parent
 _根 = _此處.parents[1]
 MILESTONE_SCHEMA_PATH = _根 / "schemas" / "milestone.schema.v0.1.json"
+STATUTORY_PATH = _此處 / "statutory_deadlines.json"
 TIMELINE_VERSION = "0.1.0"
 
 # 風險窗預設（heuristic，非法律）——可被 config/真實案例推翻
@@ -60,6 +61,50 @@ def _d(x):
         return _dt.date.fromisoformat(s[:10])
     except Exception:
         return None
+
+
+def load_statutory_deadlines(path=None) -> dict:
+    """載入法定期限庫。每筆必附 legal_basis；缺標示或缺法源即拒載（防止經驗值混入法規）。"""
+    data = json.loads((pathlib.Path(path) if path else STATUTORY_PATH).read_text(encoding="utf-8"))
+    if not data.get("_source_disclaimer"):
+        raise ValueError("statutory_deadlines.json 缺 _source_disclaimer（法規會修正之標示不得移除）")
+    for d in data.get("deadlines", []):
+        if not d.get("legal_basis"):
+            raise ValueError(f"法定期限缺法源引註：{d.get('key')}——本檔只收明確載於法條者")
+        if not d.get("verification"):
+            raise ValueError(f"法定期限缺 verification 查核狀態：{d.get('key')}")
+    return data
+
+
+def statutory_milestone(key: str, anchor_date, deadlines: dict = None,
+                        milestone_id: str = None, risk_window_hr: int = None) -> dict:
+    """由法定期限庫產生一筆 milestone（source=statute，自動帶入 legal_basis 與到期日）。
+
+    anchor_date＝起算日（如：核定發布實施日、通知日）。到期日＝起算日 ＋ days。
+    """
+    dl = deadlines or load_statutory_deadlines()
+    item = next((d for d in dl["deadlines"] if d["key"] == key), None)
+    if item is None:
+        raise ValueError(f"法定期限庫無此項：{key}")
+    start = _d(anchor_date)
+    if start is None:
+        raise ValueError(f"起算日無法解析：{anchor_date!r}")
+    due = start + _dt.timedelta(days=int(item["days"]))
+    ms = {
+        "milestone_id": milestone_id or f"ms-{key}",
+        "title": item["title"], "due": due.isoformat(),
+        "source": "statute", "legal_basis": item["legal_basis"],
+        "status": "open",
+    }
+    if item.get("stage"):
+        ms["stage"] = item["stage"]
+    if risk_window_hr:
+        ms["risk_window_hr"] = int(risk_window_hr)
+    note = [f"起算：{item.get('anchor','')}（{start.isoformat()}）＋{item['days']}日"]
+    if item.get("verification") != "verified":
+        note.append("⚠ 法源引註待複核（verification=%s）" % item.get("verification"))
+    ms["note"] = "；".join(note)
+    return ms
 
 
 def validate_milestones(docs: list) -> tuple:

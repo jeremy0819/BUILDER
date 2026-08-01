@@ -507,6 +507,7 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
           <div class="cw-row"><span>投報率</span><b>${pc(snap.return_rate)}</b></div>
           <div class="cw-row"><span>重算/改配置</span><b><a href="evaluator.html">→ Product Planning</a></b></div></div>
       </div>
+      <div id="today-panel"></div>
       ${planPanel(rec)}
       ${cashPanel(rec)}
       ${rosterPanel(rec)}
@@ -524,6 +525,7 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
       <div class="cw-assets" id="cw-assets"></div>
       <div class="cw-note">影像僅存本機瀏覽器（縮圖 ≤800px）·零上傳、零進版控 ·「值不值得」由 Decision Engine 判讀，本頁只呈現。</div>
     </div>`;
+    try{ renderToday(pid); }catch(e){}
     if(rec.engine) mountDrivetrain(rec.engine);
     const sw=document.getElementById("cw-switch");
     if(sw) sw.onchange=()=>{ try{localStorage.setItem("uros.active_case",sw.value);}catch(e){} render(); };
@@ -600,7 +602,7 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
     RT=window.createCoreRuntime({
       onProgress:m=>{ stat.textContent=(m.msg||"載入中…")+(m.pct?` ${m.pct}%`:""); },
       onError:m=>showFail(m&&m.msg),
-      onReady:m=>{ RTVER=`core ${m.core_version} · Pyodide ${m.pyodide}`; stat.textContent=`就緒 · ${RTVER}`; body.style.display="block"; run(); }
+      onReady:m=>{ RTVER=`core ${m.core_version} · Pyodide ${m.pyodide}`; stat.textContent=`就緒 · ${RTVER}`; body.style.display="block"; run(); try{ renderToday(activePid()); }catch(e){} }
     });
     const run=window.coreDebounce(function(){
       const eng=JSON.parse(JSON.stringify(engine)); eng.params=eng.params||{};
@@ -621,6 +623,113 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
     DRV_IN.forEach(c=>$$("di-"+c.k).oninput=run);
   }
   window._mountDrivetrain=mountDrivetrain;   // 測試掛鉤
+
+  /* ── M7.2 Watchtower：「今天要做什麼」（工作區首屏）──────────────────
+     整合人每天打開最想看的東西。逾期/風險窗/快到期的**判準由 Core 決定**
+     （core/redcf/timeline.build_today），本頁只呈現回傳結果——UI 零推論。
+     里程碑可在下方登打；source 標示 statute/plan/heuristic，法定期限另附法源。 */
+  const URG = {
+    overdue:     {zh:"逾期",   c:"var(--err)",  icon:"🔴"},
+    risk_window: {zh:"風險窗", c:"var(--warn)", icon:"🟠"},
+    due_soon:    {zh:"快到期", c:"var(--accent)", icon:"🟡"},
+  };
+  const SRC_ZH = {statute:"法定期限", plan:"自訂計畫", heuristic:"經驗啟發"};
+  function msKey(pid){ return "uros.milestones." + pid; }
+  function loadMs(pid){ try{return JSON.parse(localStorage.getItem(msKey(pid)))||[]}catch(e){return []} }
+  function saveMs(pid, arr){ try{localStorage.setItem(msKey(pid), JSON.stringify(arr))}catch(e){} }
+
+  function renderToday(pid){
+    const box = document.getElementById("today-panel"); if(!box) return;
+    const ms = loadMs(pid);
+    const shell = (inner) => `<details class="cw-roster today-box" open>
+      <summary>今天要做什麼 <span class="src">· Watchtower（期限與風險窗）</span></summary>
+      ${inner}
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-sm" onclick="addMilestone()">＋ 新增期限</button>
+        <button class="btn-sm" onclick="toggleMsEdit()">✎ 編輯期限清單</button></div>
+      <div id="ms-edit" style="display:none"></div>
+      <div class="src" style="margin-top:6px">判準（逾期／風險窗／快到期）由 Core 決定，本頁只呈現。
+        風險窗為<b>經驗啟發</b>、非法律規定，允許被真實案例推翻。</div></details>`;
+    if(!ms.length){
+      box.innerHTML = shell(`<div class="wip" style="margin-top:8px">尚未設定任何期限。
+        新增後這裡會顯示「逾期／風險窗／快到期」——這是每天打開最該先看的一段。</div>`);
+      return;
+    }
+    if(!RT || !RT.ready){
+      box.innerHTML = shell(`<div class="wip" style="margin-top:8px">計算核心載入中…（就緒後顯示）</div>`);
+      return;
+    }
+    RT.today(ms).then(r=>{
+      const t = r.today || {}, act = t.action_required || [];
+      const rows = act.map(x=>{
+        const u = URG[x.urgency] || {zh:x.urgency, c:"var(--mute)", icon:"·"};
+        const when = x.urgency==="overdue" ? `逾期 <b>${x.overdue_days}</b> 天`
+                                           : `剩 <b>${x.days_remaining}</b> 天`;
+        const src = x.source==="statute"
+          ? `<span style="color:var(--err)">法定期限</span>${x.legal_basis?` · ${x.legal_basis}`:""}`
+          : (SRC_ZH[x.source]||x.source);
+        return `<tr><td style="color:${u.c}">${u.icon} ${u.zh}</td><td>${x.title}</td>
+          <td class="tnum">${x.due}</td><td>${when}</td><td class="src">${src}</td></tr>`;
+      }).join("");
+      const c = t.counts || {};
+      box.innerHTML = shell(`
+        <div class="verdict" style="gap:16px;margin-top:8px">
+          ${c.overdue?`<div><b style="color:var(--err);font-size:20px">${c.overdue}</b> <span class="vmeta">逾期</span></div>`:""}
+          ${c.risk_window?`<div><b style="color:var(--warn);font-size:20px">${c.risk_window}</b> <span class="vmeta">風險窗</span></div>`:""}
+          ${c.due_soon?`<div><b style="color:var(--accent);font-size:20px">${c.due_soon}</b> <span class="vmeta">快到期</span></div>`:""}
+          ${t.statute_pending?`<div class="vmeta">其中 <b style="color:var(--err)">${t.statute_pending}</b> 項為法定期限</div>`:""}
+          ${!act.length?`<div class="vmeta">✓ 目前沒有到期或逾期項目</div>`:""}
+        </div>
+        ${act.length?`<table style="margin-top:8px"><tr><th>狀態</th><th>項目</th><th>到期日</th><th>剩餘</th><th>出處</th></tr>${rows}</table>`:""}`);
+    }).catch(e=>{ box.innerHTML = shell(`<div class="wip">期限判讀失敗：${e.message}</div>`); });
+  }
+
+  const MS_SRC = [["plan","自訂計畫"],["statute","法定期限（需附法源）"],["heuristic","經驗啟發"]];
+  function toggleMsEdit(){
+    const el=document.getElementById("ms-edit"); if(!el) return;
+    if(el.style.display==="block"){ el.style.display="none"; return; }
+    const pid=activePid(), ms=loadMs(pid);
+    el.style.display="block";
+    el.innerHTML=`<div style="overflow-x:auto;max-height:280px;margin-top:8px">
+      <table style="width:100%;border-collapse:collapse;font-size:11.5px">
+      <tr><th>項目</th><th>到期日</th><th>出處</th><th>法源</th><th>風險窗(hr)</th><th>狀態</th><th></th></tr>
+      ${ms.map((m,i)=>`<tr>
+        <td><input class="rs" style="width:150px" value="${m.title||""}" onchange="editMs(${i},'title',this.value)"></td>
+        <td><input class="rs" type="date" value="${(m.due||"").slice(0,10)}" onchange="editMs(${i},'due',this.value)"></td>
+        <td><select class="rs" onchange="editMs(${i},'source',this.value)">${
+          MS_SRC.map(o=>`<option value="${o[0]}"${m.source===o[0]?" selected":""}>${o[1]}</option>`).join("")}</select></td>
+        <td><input class="rs" style="width:130px" placeholder="如 都更條例 §32" value="${m.legal_basis||""}" onchange="editMs(${i},'legal_basis',this.value)"></td>
+        <td><input class="rs" type="number" style="width:60px" value="${m.risk_window_hr||""}" onchange="editMs(${i},'risk_window_hr',this.value)"></td>
+        <td><select class="rs" onchange="editMs(${i},'status',this.value)">${
+          [["open","進行中"],["done","已完成"],["waived","不辦"]].map(o=>`<option value="${o[0]}"${(m.status||"open")===o[0]?" selected":""}>${o[1]}</option>`).join("")}</select></td>
+        <td><a href="#" onclick="delMs(${i});return false" style="color:var(--err)">✕</a></td></tr>`).join("")}
+      </table></div>
+      <div class="src" style="margin-top:6px">⚠ 選「法定期限」但未填法源者，Core 驗證會擋下——
+        禁止把經驗值當成法規。</div>`;
+  }
+  function editMs(i, field, val){
+    const pid=activePid(), ms=loadMs(pid); if(!ms[i]) return;
+    if(field==="risk_window_hr"){ const n=parseInt(val,10); if(isFinite(n)&&n>0) ms[i][field]=n; else delete ms[i][field]; }
+    else if(val==="") delete ms[i][field];
+    else ms[i][field]=val;
+    saveMs(pid, ms); renderToday(pid);
+  }
+  function addMilestone(){
+    const pid=activePid(), ms=loadMs(pid);
+    const d=new Date(Date.now()+14*86400000).toISOString().slice(0,10);
+    ms.push({milestone_id:"ms-"+Date.now().toString(36), title:"（新期限）", due:d,
+             source:"plan", status:"open"});
+    saveMs(pid, ms); renderToday(pid);
+    const el=document.getElementById("ms-edit"); if(el&&el.style.display!=="block") toggleMsEdit();
+    else if(el) { el.style.display="none"; toggleMsEdit(); }
+  }
+  function delMs(i){
+    const pid=activePid(), ms=loadMs(pid); ms.splice(i,1); saveMs(pid, ms);
+    renderToday(pid); const el=document.getElementById("ms-edit");
+    if(el){ el.style.display="none"; toggleMsEdit(); }
+  }
+  self.addMilestone=addMilestone; self.toggleMsEdit=toggleMsEdit;
+  self.editMs=editMs; self.delMs=delMs;
 
   /* 容積・坪效面板（原「示範案例庫」的互動儀表板內容，改掛在作用中案件上）。
      逐欄 verbatim 自 Core result（rec.view）；UI 零計算。 */

@@ -49,6 +49,20 @@ self.onmessage = (e) => {
     } catch (err) {
       post("result", { id: m.id, error: String((err && err.message) || err) });
     }
+  } else if (m.type === "today") {
+    // M7.2 Watchtower：「今天要做什麼」——同一份 core/redcf.build_today（逾期/風險窗判準只有一套）
+    if (!ready) { post("result", { id: m.id, error: "core-not-ready" }); return; }
+    try {
+      pyodide.globals.set("_ms_json", JSON.stringify(m.milestones || []));
+      pyodide.globals.set("_today_str", m.today || "");
+      const out = pyodide.runPython(
+        "json.dumps(_redcf.build_today(json.loads(_ms_json), " +
+        "today=(_today_str or None)))"
+      );
+      post("result", { id: m.id, today: JSON.parse(out) });
+    } catch (err) {
+      post("result", { id: m.id, error: String((err && err.message) || err) });
+    }
   } else if (m.type === "strategize") {
     // M6 THE STRATEGIST：同一份 core/redcf.strategize（建議層）；Worker 只搬運與呼叫，不含邏輯。
     if (!ready) { post("result", { id: m.id, error: "core-not-ready" }); return; }

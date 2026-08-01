@@ -1,0 +1,80 @@
+{
+  "_note": "都市更新法定期限庫（M7.2 Watchtower）。每一筆都必須附 legal_basis 法源；本檔僅收【明確載於法條的期限】，經驗值一律不得放入本檔（放 milestones 時標 heuristic）。**verification 欄為查核狀態：pending_review 表示待使用者以法規原文複核**——在複核完成前，UI 應標示為未複核。",
+  "_source_disclaimer": "條文引用自全國法規資料庫（law.moj.gov.tw）都市更新條例（pcode D0070008）之檢索結果。法規會修正，且地方自治條例另有規定——實務套用前務必以最新公告條文為準。本檔不構成法律意見。",
+  "_verified_at": "2026-08",
+  "_law_version_note": "都市更新條例最近一次相關修正：第57、61、65條於 110.05.28 修正公布。使用前請確認是否有更新。",
+
+  "deadlines": [
+    {
+      "key": "public_display",
+      "title": "事業計畫公開展覽",
+      "days": 30,
+      "legal_basis": "都市更新條例 §32 第1項",
+      "quote": "都市更新事業計畫擬訂或變更後，送各級主管機關審議前，應於各該直轄市、縣（市）政府或鄉（鎮、市）公所公開展覽三十日，並舉辦公聽會。",
+      "stage": "S8",
+      "anchor": "送審議前",
+      "verification": "pending_review"
+    },
+    {
+      "key": "public_display_shortened",
+      "title": "事業計畫公開展覽（全體同意時得縮短）",
+      "days": 15,
+      "legal_basis": "都市更新條例 §32 第1項但書",
+      "quote": "實施者已取得更新單元內全體私有土地及私有合法建築物所有權人同意者，公開展覽期間得縮短為十五日。",
+      "stage": "S8",
+      "anchor": "送審議前",
+      "condition": "已取得更新單元內全體私有土地及私有合法建築物所有權人同意",
+      "verification": "pending_review"
+    },
+    {
+      "key": "rv_value_objection",
+      "title": "權利變換權利價值異議期限（地主提出）",
+      "days": 60,
+      "months": 2,
+      "legal_basis": "都市更新條例 §53 第1項",
+      "quote": "權利變換計畫書核定發布實施後二個月內，土地所有權人對其權利價值有異議時，應以書面敘明理由，向各級主管機關提出。",
+      "stage": "S9",
+      "anchor": "權利變換計畫核定發布實施後",
+      "verification": "pending_review"
+    },
+    {
+      "key": "rv_objection_review",
+      "title": "主管機關審議核復期限（異議受理後）",
+      "days": 90,
+      "months": 3,
+      "legal_basis": "都市更新條例 §53 第1項",
+      "quote": "各級主管機關應於受理異議後三個月內審議核復。",
+      "stage": "S9",
+      "anchor": "受理異議後",
+      "extension": {
+        "days": 90, "months": 3,
+        "note": "因情形特殊、經認有委託專業團體或機構協助作技術性諮商之必要者，得延長審議核復期限三個月。",
+        "legal_basis": "都市更新條例 §53 第1項但書"
+      },
+      "verification": "pending_review"
+    },
+    {
+      "key": "demolition_notice",
+      "title": "應拆除或遷移之土地改良物──限期自行拆遷",
+      "days": 30,
+      "legal_basis": "都市更新條例 §57 第1項",
+      "quote": "由實施者依主管機關公告之權利變換計畫通知其所有權人、管理人或使用人，限期三十日內自行拆除或遷移；屆期不拆除或遷移者，依下列順序辦理……",
+      "stage": "S10",
+      "anchor": "權利變換計畫公告後通知之日",
+      "note": "代為拆除前，應就期日、方式、安置等事項本於真誠磋商精神協調並訂期限（§57 第2項）。",
+      "verification": "pending_review"
+    }
+  ],
+
+  "_not_included": {
+    "_note": "以下項目常被誤當成法定期限，但本檔【不收】，理由如後。要用請在 milestones 標 plan 或 heuristic。",
+    "items": [
+      { "item": "聽證", "why": "§33 有聽證規定，但期限與召開時點依個案與地方規定，非單一固定日數——待你提供實務依據再收錄。" },
+      { "item": "審議會審查時程", "why": "審議期程多由地方自治條例／審議會作業要點規定，非中央母法固定日數；且各縣市不同。" },
+      { "item": "72 小時風險窗", "why": "經驗啟發（heuristic），非法律規定。" },
+      { "item": "施工/交屋時程", "why": "契約與工程排程，非法定期限。" }
+    ]
+  },
+
+  "_usage": "由 milestones 引用：source=statute 並填入本檔的 legal_basis 與 days，即可由 timeline 計算到期日與逾期。"
+}

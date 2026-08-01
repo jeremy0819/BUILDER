@@ -32,7 +32,7 @@ from core.redcf.rights import calc_權利變換, calc_找補, build_owner_alloca
 from core.redcf.cashflow import calc_現金流分期
 from core.redcf.dualtrack import calc_雙軌口徑, calc_三種報酬率
 from core.redcf.timeline import (build_timeline, build_today, classify_milestone,
-    validate_milestones)
+    validate_milestones, load_statutory_deadlines, statutory_milestone)
 from core.redcf.workflow import (validate_workflow, migrate_workflow,
     derive_consent_state, derive_signability)
 from core.redcf.decision import (decide, validate_decision, calc_完工機率,
@@ -85,6 +85,7 @@ __all__ = [
     "calc_雙軌口徑", "calc_三種報酬率",
     # Watchtower（M7.2 時間脈絡：過去＋今天＋未來）
     "build_timeline", "build_today", "classify_milestone", "validate_milestones",
+    "load_statutory_deadlines", "statutory_milestone",
     # 案件管理層（M3-C Workflow OS）
     "validate_workflow", "migrate_workflow", "derive_consent_state",
     # 決策引擎（M4 推論層）
