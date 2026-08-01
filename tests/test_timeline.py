@@ -214,3 +214,62 @@ def test_未知期限key報錯():
     from core.redcf import statutory_milestone
     with pytest.raises(ValueError, match="無此項"):
         statutory_milestone("不存在的期限", "2026-06-01")
+
+
+# ── 7. M7.1 接 UI：Workspace 三個接點寫出的事件，必須能被 Core 收下 ──
+# 對應 apps/web/dashboard.html 的 ACTLOGIC（改清冊／拉滑桿／建案件）。
+# 這裡從 **Core 這一側**把合約釘住：事件形狀 → schema 合法 → build_timeline 收得下。
+
+def _ui_events():
+    """dashboard.html ACTLOGIC 三個 builder 的輸出（含 case-store 補上的 ts/event_id）。"""
+    return [
+        {"event_id": "ev-000001", "ts": "2026-08-01T09:00:00", "kind": "create",
+         "target": {"type": "case", "id": "prj-abc12345"}, "field": "建案輸入",
+         "after": {"案件名稱": "案例E", "基地面積": 1632.04, "容積率": 3.0, "戶數": 42},
+         "input_hash": "sha256:" + "ab" * 32},
+        {"event_id": "ev-000002", "ts": "2026-08-01T10:12:00", "kind": "roster",
+         "target": {"type": "stakeholder", "id": "W12"}, "field": "限制登記",
+         "before": "無", "after": "繼承未辦", "intent": "謄本補件後確認為繼承未辦"},
+        {"event_id": "ev-000003", "ts": "2026-08-01T11:30:00", "kind": "edit",
+         "target": {"type": "product", "id": "drivetrain"}, "field": "住宅單價",
+         "before": 92, "after": 96, "intent": "地主要求增加坪數"},
+    ]
+
+
+def test_UI事件_通過activity_schema():
+    """★ 三個接點寫出的事件必須是合約內的（schema additionalProperties:false）。"""
+    import json
+    import pathlib
+    import jsonschema
+    root = pathlib.Path(__file__).resolve().parents[1]
+    schema = json.loads((root / "schemas" / "activity.schema.v0.1.json").read_text(encoding="utf-8"))
+    doc = {"schema_version": "activity-0.1", "case_id": "prj-abc12345", "activity": _ui_events()}
+    jsonschema.Draft7Validator(schema).validate(doc)
+
+
+def test_UI事件_進得了timeline過去半邊():
+    tl = build_timeline(_ui_events(), [], _ms(), today=TODAY)
+    past = tl["past"]
+    assert len(past) == 3
+    assert [p["what"] for p in past] == ["建案輸入", "限制登記", "住宅單價"]   # 依時戳排序
+    assert past[1]["before"] == "無" and past[1]["after"] == "繼承未辦"
+    assert past[2]["intent"] == "地主要求增加坪數"
+    assert past[0]["event_id"] == "ev-000001"
+
+
+def test_UI事件_與快照鏈合併後仍依時戳排序():
+    """案件版本鏈（wf.project.snapshots）與 Activity 是同一條時間軸，不是兩份資料。"""
+    hist = [{"snapshot_id": "snap-01", "ts": "2026-08-01T09:30:00", "label": "建案版",
+             "input_hash": "sha256:" + "cd" * 32, "authoritative": True}]
+    past = build_timeline(_ui_events(), hist, [], today=TODAY)["past"]
+    assert [p["kind"] for p in past] == ["activity", "snapshot", "activity", "activity"]
+    assert past[1]["authoritative"] is True
+
+
+def test_UI事件_過去半邊不外洩推論():
+    """★ M7 鐵律在 UI 接點上的回歸：歷程只會有輸入與意圖。"""
+    import json
+    blob = json.dumps(build_timeline(_ui_events(), [], [], today=TODAY), ensure_ascii=False).lower()
+    for banned in ("verdict", "return_rate", "shared_cost_ratio", "allow_floor_area",
+                   "efficiency_ratio", "投報率", "共同負擔比", "允建容積"):
+        assert banned not in blob, f"案件歷程不應出現推論欄位：{banned}"
