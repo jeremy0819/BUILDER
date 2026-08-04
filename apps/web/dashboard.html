@@ -204,6 +204,7 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
 
 <script src="demo-case.js"></script>
 <script src="demo-cases.js"></script>
+<script src="case-store.js"></script>
 <script src="core-runtime.js"></script>
 <script src="stepnav.js"></script>
 <script src="version.js"></script>
@@ -447,7 +448,19 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
     letter-spacing:.03em;list-style:none;padding:4px 0} .drv-adv summary::-webkit-details-marker{display:none}
   .drv-adv summary::before{content:"▸ ";font-size:10px} .drv-adv[open] summary::before{content:"▾ "}
   .drv-src{font-family:var(--mono);font-size:10px;color:var(--mute);margin-top:10px}
-  .drv-fail{font-size:12px;color:var(--warn);line-height:1.6}`;
+  .drv-fail{font-size:12px;color:var(--warn);line-height:1.6}
+  .hist-intent{display:flex;flex-direction:column;gap:3px;margin:8px 0 4px;font-size:12px;color:var(--mute)}
+  .hist-intent input{padding:5px 9px;border:1px solid var(--line);border-radius:8px;
+    background:var(--panel);color:var(--ink);font-size:12.5px;max-width:420px}
+  .hist-intent input:focus{outline:none;border-color:var(--accent)}
+  .hist-t{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px}
+  .hist-t td.hi-ts{font-family:var(--mono);color:var(--mute);white-space:nowrap}
+  .hist-t td.hi-v{font-family:var(--mono)}
+  .hist-t td.hi-i{color:var(--accent)}
+  .hist-kind{font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;white-space:nowrap;
+    border:1px solid var(--line);color:var(--mute)}
+  .hist-warn{font-size:11.5px;color:var(--warn);background:color-mix(in srgb,var(--warn) 10%,transparent);
+    border-radius:8px;padding:6px 10px;margin-top:8px;line-height:1.55}`;
   document.head.appendChild(css);
 
   const KEY="uros.workflow.v1", host=document.getElementById("casews");
@@ -461,6 +474,108 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
     const s=load(); if(!s||!s.projects) return null;
     let act=null; try{act=localStorage.getItem("uros.active_case")}catch(e){}
     return (s.projects[act]?act:(s.order||[])[0])||null;
+  }
+  const esc=x=>String(x==null?"":x).replace(/[&<>"']/g,c=>
+    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+  /* ── M7.1 接 UI：讓編輯自動留下紀錄（Activity）─────────────────────
+     憲章＝docs/architecture/M7_CASE_OS_SPEC.md §3。
+
+     鐵律：**只記事實與意圖，不記推論**。本區只送出「使用者改了哪個輸入、
+     從什麼變成什麼、為什麼」；EV／verdict／投報率／坪效一律不寫——那些永遠
+     即時向 Core／Decision／Strategy 索取（case-store.js 的 assertNoInference 會擋）。
+
+     寫入為 fire-and-forget：紀錄失敗**絕不中斷**使用者的編輯，但也**絕不靜默**——
+     失敗原因會顯示在「案件歷程」面板上。
+
+     ⚠ 目前 Activity 存 IndexedDB，案件本體仍存 localStorage（尚未整體搬遷）。
+       Activity 在 localStorage 沒有對應資料，故不會產生兩份真源；
+       案件本體的 store 搬遷是另一步（M7.1 §2.2 migrateFromLocalStorage），
+       在 dashboard 改為從 IndexedDB 讀寫之前，不得先跑遷移（會造成雙真源）。 */
+/*ACTLOGIC-BEGIN*/
+  /* 事件「長什麼樣」的唯一定義。抽成純函式是為了能在 node 無 DOM 驗證紀律：
+     kind／target.type 必須落在 activity.schema.v0.1 的 enum 內，
+     且**任何一個 builder 都不得吐出推論欄位**（Gate 12 逐一斷言）。 */
+  const ACTLOGIC = {
+    // activity.schema.v0.1 $defs.event 的 enum（改 schema 才能改這裡）
+    KINDS: ["edit","consent","stage","snapshot","scenario","roster","note","create"],
+    TARGETS: ["case","site","product","stakeholder","scenario"],
+    /* 推論欄位黑名單（與 case-store.js 的 INFERENCE_KEYS 同源；此處為前端側的鏡像斷言用）*/
+    INFERENCE: ["ev","verdict","irr","return_rate","shared_cost_ratio","completion_probability",
+                "decision_urgency","breakpoint_stakeholder","persuasion_queue","cascade_risk",
+                "saleable_area","efficiency_ratio","allow_floor_area","owner_return_ratio"],
+    /* 改清冊：地主的「同意與否／限制登記」——皆為**事實**（誰說了什麼、產權有什麼負擔），
+       非推論。可簽性（signability）由既有對照表推導後存回案件，但**不寫進 Activity**。 */
+    rosterEvent(ownerId, field, before, after){
+      return {kind:"roster", target:{type:"stakeholder", id:String(ownerId)},
+              field:String(field), before:before===undefined?null:before, after:after};
+    },
+    rosterAddEvent(ownerId, beforeN, afterN){
+      return {kind:"roster", target:{type:"stakeholder", id:String(ownerId)},
+              field:"清冊筆數", before:beforeN, after:afterN};
+    },
+    /* 拉滑桿：只送**輸入**（容積率／單價／公設比…）。
+       右欄的投報率、坪效是 Core 算的結果，永遠不進 Memory。 */
+    productEvent(field, before, after, targetId){
+      return {kind:"edit", target:{type:"product", id:targetId||"drivetrain"},
+              field:String(field), before:before, after:after};
+    },
+    /* 建案件：記整組建案輸入。三個月後看歷程要能回答「這案子當初用什麼條件開的」。
+       input_hash 讓這組輸入可被重現比對——格式不合就不附（寧缺勿假）。 */
+    createEvent(pid, params, inputHash){
+      const p=params||{}, ev={kind:"create", target:{type:"case", id:String(pid)},
+        field:"建案輸入", after:{}};
+      ["案件名稱","基地面積","人行廣場","容積率","獎勵率","容積移轉","公設比",
+       "戶數","住宅單價","營造單價"].forEach(k=>{ if(p[k]!==undefined) ev.after[k]=p[k]; });
+      if(/^sha256:[0-9a-f]{64}$/.test(inputHash||"")) ev.input_hash=inputHash;
+      return ev;
+    },
+    /* 值的顯示：物件（如建案時的整組輸入）攤成「欄 值 · 欄 值」，不顯示 [object Object]。*/
+    vstr(v){
+      if(v===undefined||v===null) return "—";
+      if(typeof v==="object") return Object.keys(v).map(k=>k+" "+v[k]).join(" · ");
+      return String(v);
+    },
+    /* 匯出：整形成 activity.schema.v0.1 文件（剝掉 IndexedDB 內部欄位 case_id/key）*/
+    toDocument(caseId, rows){
+      return {schema_version:"activity-0.1", case_id:String(caseId),
+        activity:(rows||[]).map(r=>{
+          const o={event_id:"ev-"+String(r.key||"").padStart(6,"0"), ts:r.ts, kind:r.kind};
+          ["target","field","before","after","intent","by","session_id","input_hash"]
+            .forEach(k=>{ if(r[k]!==undefined) o[k]=r[k]; });
+          return o; })};
+    }
+  };
+/*ACTLOGIC-END*/
+  const vstr = ACTLOGIC.vstr;
+  const CS = self.CaseStore || null;
+  let ACT_ERR = "";                     // 最近一次寫入失敗原因（誠實顯示，不吞）
+  const IK = "uros.intent";
+  function curIntent(){ try{return localStorage.getItem(IK)||""}catch(e){return ""} }
+  function setIntent(v){ try{localStorage.setItem(IK, v||"")}catch(e){} }
+  /* 記一筆事實。ev 需符合 activity.schema.v0.1 的 event：
+     kind ∈ edit/consent/stage/snapshot/scenario/roster/note/create；
+     target.type ∈ case/site/product/stakeholder/scenario。 */
+  function logAct(pid, ev){
+    if(!CS || !pid || !ev) return;
+    const it = curIntent();
+    if(it && !ev.intent) ev.intent = it;          // 意圖由使用者當下填寫，非系統臆測
+    CS.append(pid, ev).then(()=>{ ACT_ERR=""; try{renderHistory(pid)}catch(e){} })
+      .catch(e=>{ ACT_ERR=e.message||String(e); console.warn("Activity 未寫入：", ACT_ERR);
+                  try{renderHistory(pid)}catch(e2){} });
+  }
+  /* 滑桿去抖：拖動會連續觸發，逐次寫入會把歷程洗成雜訊。
+     同一欄位 1.5 秒內的連續改動合併成一筆——**保留最初的 before**（仍是真實值），
+     若最後回到原值則整筆取消（沒有淨改動＝沒有事實可記）。 */
+  const _pendEdit = {};
+  function logEditDebounced(pid, field, before, after, targetId){
+    const p=_pendEdit[field];
+    if(p){ clearTimeout(p.t); before=p.before; }
+    _pendEdit[field]={before:before, t:setTimeout(function(){
+      delete _pendEdit[field];
+      if(before===after) return;
+      logAct(pid, ACTLOGIC.productEvent(field, before, after, targetId));
+    }, 1500)};
   }
 
   function render(){
@@ -507,6 +622,8 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
           <div class="cw-row"><span>投報率</span><b>${pc(snap.return_rate)}</b></div>
           <div class="cw-row"><span>重算/改配置</span><b><a href="evaluator.html">→ Product Planning</a></b></div></div>
       </div>
+      <div id="today-panel"></div>
+      <div id="history-panel"></div>
       ${planPanel(rec)}
       ${cashPanel(rec)}
       ${rosterPanel(rec)}
@@ -524,7 +641,12 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
       <div class="cw-assets" id="cw-assets"></div>
       <div class="cw-note">影像僅存本機瀏覽器（縮圖 ≤800px）·零上傳、零進版控 ·「值不值得」由 Decision Engine 判讀，本頁只呈現。</div>
     </div>`;
-    if(rec.engine) mountDrivetrain(rec.engine);
+    ensureRuntime();                      // 沒有傳動軸的案件也要有 Core（今天要做什麼／案件歷程）
+    try{ renderToday(pid); }catch(e){}
+    try{ renderHistory(pid); }catch(e){}
+    // 傳動軸掛載失敗不得拖垮整頁（案件切換器、附圖槽在其後綁定）；但也不吞——留在 console
+    if(rec.engine){ try{ mountDrivetrain(rec.engine); }catch(e){ console.error("傳動軸掛載失敗", e); } }
+    else RTCB={};
     const sw=document.getElementById("cw-switch");
     if(sw) sw.onchange=()=>{ try{localStorage.setItem("uros.active_case",sw.value);}catch(e){} render(); };
     const ah=document.getElementById("cw-assets");
@@ -580,6 +702,30 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
     {k:"return_rate",l:"投報率",f:v=>(v*100).toFixed(1)+"%",src:"投報全案：利潤 / 成本"},
   ];
   let RT=null, RTVER="";   // RTVER＝Pyodide 實際載入的 core 版本（持久顯示，讓使用者看得到跑的是哪版、有無吃到舊快取）
+  /* 計算核心的生命週期與「這一次掛載的 DOM」分離。
+     病灶：原本每次 render()（改一筆清冊就會發生）都 terminate 再 createCoreRuntime，
+     等於**每編輯一次就把 Pyodide 整個重新下載初始化**（數秒起跳），
+     期間所有靠 Core 的面板（今天要做什麼／案件歷程）都會退回「載入中」。
+     修正：Worker 活著就沿用，只換回呼與控制項；回呼經 RTCB 轉發，避免舊閉包寫到已被
+     innerHTML 換掉的 DOM。RTREADY/RTFAIL 保留最後狀態，重繪時原樣重播。 */
+  let RTCB={}, RTREADY=null, RTFAIL=null;
+  /* 建立計算核心（若尚未建立）。與傳動軸解耦：沒有 engine 的案件（例如從 Workspace
+     匯入 v2.1 但未帶 engine）也看得到「今天要做什麼」與「案件歷程」——
+     那兩個面板的判準／排序同樣在 Core，沒有 Worker 就無從呈現。 */
+  function ensureRuntime(){
+    if(RT && !RT.failed) return RT;
+    if(!window.createCoreRuntime) return null;
+    RTREADY=null; RTFAIL=null;
+    RT=window.createCoreRuntime({
+      onProgress:m=>{ RTCB.onProgress&&RTCB.onProgress(m); },
+      onError:m=>{ RTFAIL=m; RTCB.onError&&RTCB.onError(m);
+                   try{ renderHistory(activePid()); }catch(e){} },
+      onReady:m=>{ RTREADY=m; RTCB.onReady
+                   ? RTCB.onReady(m)
+                   : (()=>{ try{renderToday(activePid()); renderHistory(activePid());}catch(e){} })(); }
+    });
+    return RT;
+  }
   function mountDrivetrain(engine){
     const $$=id=>document.getElementById(id);
     const stat=$$("drv-stat"), body=$$("drv-body"), fail=$$("drv-fail");
@@ -596,12 +742,17 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
     function showFail(msg){ stat.textContent=""; fail.style.display="block";
       fail.innerHTML=`⚠ 計算核心無法載入（${msg||"可能離線或無法連線 Pyodide CDN"}）——`+
         `改用 <a href="https://builder-9sczgrez3a3qsbmkebd6ey.streamlit.app/" target="_blank" rel="noopener">RE-DCF Streamlit 版</a> 精確計算。`; }
-    if(RT) RT.terminate();
-    RT=window.createCoreRuntime({
+    // 本次掛載的回呼（DOM 綁定只活在這一輪 render）
+    RTCB={
       onProgress:m=>{ stat.textContent=(m.msg||"載入中…")+(m.pct?` ${m.pct}%`:""); },
       onError:m=>showFail(m&&m.msg),
-      onReady:m=>{ RTVER=`core ${m.core_version} · Pyodide ${m.pyodide}`; stat.textContent=`就緒 · ${RTVER}`; body.style.display="block"; run(); }
-    });
+      onReady:m=>{ RTVER=`core ${m.core_version} · Pyodide ${m.pyodide}`;
+        stat.textContent=`就緒 · ${RTVER}`; body.style.display="block"; run();
+        // Core 就緒後，兩個仰賴它的面板都要補畫（少一個就會永遠停在「載入中」）
+        try{ renderToday(activePid()); }catch(e){}
+        try{ renderHistory(activePid()); }catch(e){} }
+    };
+    ensureRuntime();
     const run=window.coreDebounce(function(){
       const eng=JSON.parse(JSON.stringify(engine)); eng.params=eng.params||{};
       DRV_IN.forEach(c=>{ const v=parseFloat($$("di-"+c.k).value); eng.params[c.k]=v; $$("dv-"+c.k).textContent=fmtIn(c,v); });
@@ -618,9 +769,267 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
         stat.textContent=`✓ 即時（${Math.round(performance.now()-t0)}ms）· ${RTVER} · hash ${(r.input_hash||"").replace(/^sha256:/,"").slice(0,8)}…`;
       }).catch(e=>showFail(e.message));
     },250);
-    DRV_IN.forEach(c=>$$("di-"+c.k).oninput=run);
+    /* M7.1：拉滑桿＝一次「改了哪個輸入」的事實，自動留下紀錄。
+       只送輸入值（容積率/單價…），不送結果（投報率/坪效由 Core 即時算，永不寫入 Memory）。
+       oninput 負責重算（高頻），change 後去抖 1.5 秒才落一筆——避免把歷程洗成雜訊。
+       傳動軸是**試算**（不寫回案件），故 target.id 標 drivetrain，面板顯示為「試算」。 */
+    const _lastV={};
+    DRV_IN.forEach(c=>{
+      const el=$$("di-"+c.k);
+      _lastV[c.k]=p0[c.k]!=null?p0[c.k]:c.min;
+      el.oninput=run;
+      el.addEventListener("change", function(){
+        const v=parseFloat(el.value); if(!isFinite(v)) return;
+        const b=_lastV[c.k]; _lastV[c.k]=v;
+        logEditDebounced(activePid(), c.k, b, v, "drivetrain");
+      });
+    });
+    /* 狀態重播必須放在最後：onReady 會呼叫 run()／renderHistory()，
+       而 run 是本函式尾端才初始化的 const——提前重播會踩 TDZ 而中斷整個掛載
+       （滑桿監聽、案件切換器、附圖槽都會一起失效）。 */
+    if(RTREADY) RTCB.onReady(RTREADY);    // 已就緒：原樣重播，不重載 Pyodide
+    else if(RTFAIL) RTCB.onError(RTFAIL);
   }
   window._mountDrivetrain=mountDrivetrain;   // 測試掛鉤
+
+  /* ── M7.2 Watchtower：「今天要做什麼」（工作區首屏）──────────────────
+     整合人每天打開最想看的東西。逾期/風險窗/快到期的**判準由 Core 決定**
+     （core/redcf/timeline.build_today），本頁只呈現回傳結果——UI 零推論。
+     里程碑可在下方登打；source 標示 statute/plan/heuristic，法定期限另附法源。 */
+  const URG = {
+    overdue:     {zh:"逾期",   c:"var(--err)",  icon:"🔴"},
+    risk_window: {zh:"風險窗", c:"var(--warn)", icon:"🟠"},
+    due_soon:    {zh:"快到期", c:"var(--accent)", icon:"🟡"},
+  };
+  const SRC_ZH = {statute:"法定期限", plan:"自訂計畫", heuristic:"經驗啟發"};
+  function msKey(pid){ return "uros.milestones." + pid; }
+  function loadMs(pid){ try{return JSON.parse(localStorage.getItem(msKey(pid)))||[]}catch(e){return []} }
+  function saveMs(pid, arr){ try{localStorage.setItem(msKey(pid), JSON.stringify(arr))}catch(e){} }
+
+  function renderToday(pid){
+    const box = document.getElementById("today-panel"); if(!box) return;
+    const ms = loadMs(pid);
+    const shell = (inner) => `<details class="cw-roster today-box" open>
+      <summary>今天要做什麼 <span class="src">· Watchtower（期限與風險窗）</span></summary>
+      ${inner}
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-sm" onclick="addMilestone()">＋ 新增期限</button>
+        <button class="btn-sm" onclick="toggleMsEdit()">✎ 編輯期限清單</button></div>
+      <div id="ms-edit" style="display:none"></div>
+      <div class="src" style="margin-top:6px">判準（逾期／風險窗／快到期）由 Core 決定，本頁只呈現。
+        風險窗為<b>經驗啟發</b>、非法律規定，允許被真實案例推翻。</div></details>`;
+    if(!ms.length){
+      box.innerHTML = shell(`<div class="wip" style="margin-top:8px">尚未設定任何期限。
+        新增後這裡會顯示「逾期／風險窗／快到期」——這是每天打開最該先看的一段。</div>`);
+      return;
+    }
+    if(!RT || !RT.ready){
+      box.innerHTML = shell(`<div class="wip" style="margin-top:8px">計算核心載入中…（就緒後顯示）</div>`);
+      return;
+    }
+    RT.today(ms).then(r=>{
+      const t = r.today || {}, act = t.action_required || [];
+      const rows = act.map(x=>{
+        const u = URG[x.urgency] || {zh:x.urgency, c:"var(--mute)", icon:"·"};
+        const when = x.urgency==="overdue" ? `逾期 <b>${x.overdue_days}</b> 天`
+                                           : `剩 <b>${x.days_remaining}</b> 天`;
+        const src = x.source==="statute"
+          ? `<span style="color:var(--err)">法定期限</span>${x.legal_basis?` · ${x.legal_basis}`:""}`
+          : (SRC_ZH[x.source]||x.source);
+        return `<tr><td style="color:${u.c}">${u.icon} ${u.zh}</td><td>${x.title}</td>
+          <td class="tnum">${x.due}</td><td>${when}</td><td class="src">${src}</td></tr>`;
+      }).join("");
+      const c = t.counts || {};
+      box.innerHTML = shell(`
+        <div class="verdict" style="gap:16px;margin-top:8px">
+          ${c.overdue?`<div><b style="color:var(--err);font-size:20px">${c.overdue}</b> <span class="vmeta">逾期</span></div>`:""}
+          ${c.risk_window?`<div><b style="color:var(--warn);font-size:20px">${c.risk_window}</b> <span class="vmeta">風險窗</span></div>`:""}
+          ${c.due_soon?`<div><b style="color:var(--accent);font-size:20px">${c.due_soon}</b> <span class="vmeta">快到期</span></div>`:""}
+          ${t.statute_pending?`<div class="vmeta">其中 <b style="color:var(--err)">${t.statute_pending}</b> 項為法定期限</div>`:""}
+          ${!act.length?`<div class="vmeta">✓ 目前沒有到期或逾期項目</div>`:""}
+        </div>
+        ${act.length?`<table style="margin-top:8px"><tr><th>狀態</th><th>項目</th><th>到期日</th><th>剩餘</th><th>出處</th></tr>${rows}</table>`:""}`);
+    }).catch(e=>{ box.innerHTML = shell(`<div class="wip">期限判讀失敗：${e.message}</div>`); });
+  }
+
+  const MS_SRC = [["plan","自訂計畫"],["statute","法定期限（需附法源）"],["heuristic","經驗啟發"]];
+  function toggleMsEdit(){
+    const el=document.getElementById("ms-edit"); if(!el) return;
+    if(el.style.display==="block"){ el.style.display="none"; return; }
+    const pid=activePid(), ms=loadMs(pid);
+    el.style.display="block";
+    el.innerHTML=`<div style="overflow-x:auto;max-height:280px;margin-top:8px">
+      <table style="width:100%;border-collapse:collapse;font-size:11.5px">
+      <tr><th>項目</th><th>到期日</th><th>出處</th><th>法源</th><th>風險窗(hr)</th><th>狀態</th><th></th></tr>
+      ${ms.map((m,i)=>`<tr>
+        <td><input class="rs" style="width:150px" value="${m.title||""}" onchange="editMs(${i},'title',this.value)"></td>
+        <td><input class="rs" type="date" value="${(m.due||"").slice(0,10)}" onchange="editMs(${i},'due',this.value)"></td>
+        <td><select class="rs" onchange="editMs(${i},'source',this.value)">${
+          MS_SRC.map(o=>`<option value="${o[0]}"${m.source===o[0]?" selected":""}>${o[1]}</option>`).join("")}</select></td>
+        <td><input class="rs" style="width:130px" placeholder="如 都更條例 §32" value="${m.legal_basis||""}" onchange="editMs(${i},'legal_basis',this.value)"></td>
+        <td><input class="rs" type="number" style="width:60px" value="${m.risk_window_hr||""}" onchange="editMs(${i},'risk_window_hr',this.value)"></td>
+        <td><select class="rs" onchange="editMs(${i},'status',this.value)">${
+          [["open","進行中"],["done","已完成"],["waived","不辦"]].map(o=>`<option value="${o[0]}"${(m.status||"open")===o[0]?" selected":""}>${o[1]}</option>`).join("")}</select></td>
+        <td><a href="#" onclick="delMs(${i});return false" style="color:var(--err)">✕</a></td></tr>`).join("")}
+      </table></div>
+      <div class="src" style="margin-top:6px">⚠ 選「法定期限」但未填法源者，Core 驗證會擋下——
+        禁止把經驗值當成法規。</div>`;
+  }
+  function editMs(i, field, val){
+    const pid=activePid(), ms=loadMs(pid); if(!ms[i]) return;
+    if(field==="risk_window_hr"){ const n=parseInt(val,10); if(isFinite(n)&&n>0) ms[i][field]=n; else delete ms[i][field]; }
+    else if(val==="") delete ms[i][field];
+    else ms[i][field]=val;
+    saveMs(pid, ms); renderToday(pid);
+  }
+  function addMilestone(){
+    const pid=activePid(), ms=loadMs(pid);
+    const d=new Date(Date.now()+14*86400000).toISOString().slice(0,10);
+    ms.push({milestone_id:"ms-"+Date.now().toString(36), title:"（新期限）", due:d,
+             source:"plan", status:"open"});
+    saveMs(pid, ms); renderToday(pid);
+    const el=document.getElementById("ms-edit"); if(el&&el.style.display!=="block") toggleMsEdit();
+    else if(el) { el.style.display="none"; toggleMsEdit(); }
+  }
+  function delMs(i){
+    const pid=activePid(), ms=loadMs(pid); ms.splice(i,1); saveMs(pid, ms);
+    renderToday(pid); const el=document.getElementById("ms-edit");
+    if(el){ el.style.display="none"; toggleMsEdit(); }
+  }
+  self.addMilestone=addMilestone; self.toggleMsEdit=toggleMsEdit;
+  self.editMs=editMs; self.delMs=delMs;
+
+  /* ── M7.1 接 UI：「案件歷程」＝ Timeline 的**過去半邊** ────────────────
+     與上方「今天要做什麼」（未來半邊）成對：
+       過去（Activity＋History）  →  今天  →  未來（期限／風險窗）
+     合併與排序規則在 Core（core/redcf.build_timeline）——同一案的歷程順序只有一套，
+     不由前端各自發明。本面板只呈現 Core 回傳的 past 陣列。
+
+     這一段是 BUILDER 的**可解釋性來源**：不是「系統怎麼算的」，
+     而是「這個案子為什麼變成現在這樣」——誰、何時、把哪個輸入從什麼改成什麼、為什麼。 */
+  const HK = {edit:"改參數", roster:"改清冊", create:"建案件", consent:"同意",
+              stage:"階段", snapshot:"版本", scenario:"情境", note:"備註"};
+  let HIST_OPEN=false;                  // details 展開狀態（UI 狀態，不進 Memory 層）
+  let HIST_BACKUP_DAYS=null;            // 距上次備份天數（null＝未查、false＝查詢中）
+  function snapChain(rec){
+    const p=(rec&&rec.wf&&rec.wf.project)||{}, act=p.active_snapshot||null;
+    return (p.snapshots||[]).map(s=>({snapshot_id:s.id, ts:s.computed_at||"",
+      label:s.label||s.id, input_hash:s.input_hash||null, authoritative:s.id===act}));
+  }
+  function histShell(inner, n){
+    const days = (typeof HIST_BACKUP_DAYS==="number") ? HIST_BACKUP_DAYS : null;
+    const nag = (days!==null && days>7)
+      ? `<div class="hist-warn">⚠ 已 ${days===Infinity?"從未":Math.round(days)+" 天未"}備份。
+           資料只存在這台電腦的瀏覽器——換電腦、清快取、換瀏覽器都會消失。請按「完整備份」存成檔案。</div>` : "";
+    return `<details class="cw-roster" id="hist-box"${HIST_OPEN?" open":""}>
+      <summary>案件歷程 <span class="src">· Timeline 過去半邊（誰在何時把哪個輸入改成什麼、為什麼）</span>${n?` · ${n} 筆`:""}</summary>
+      <label class="hist-intent">現在在做什麼？（選填）
+        <input id="hist-intent" placeholder="如：地主要求增加坪數／審議委員要求降低棟距" value="${esc(curIntent())}">
+        <span class="src">填了之後，接下來每一次編輯都會附上這句話。這是<b>意圖</b>（你的理由），不是推論——
+          系統不會替你猜為什麼。</span></label>
+      ${ACT_ERR?`<div class="hist-warn">⚠ 最近一次紀錄未寫入：${esc(ACT_ERR)}（編輯本身已生效）</div>`:""}
+      ${nag}
+      ${inner}
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-sm" onclick="exportHistory()">⤓ 匯出本案歷程 JSON</button>
+        <button class="btn-sm" onclick="backupAll()"><b>⤓ 完整備份（全部案件＋歷程）</b></button></div>
+      <div class="src" style="margin-top:6px">紀錄為 <b>append-only</b>：寫進去就不能改、不能刪——
+        能被事後修改的歷程不是證據。只記事實與意圖，<b>不記推論</b>（EV／GO-STOP／投報率一律不寫入，
+        永遠即時向 Core 索取）。歷程只存在你的瀏覽器，零上傳。</div></details>`;
+  }
+  function renderHistory(pid){
+    const box=document.getElementById("history-panel"); if(!box) return;
+    const bind=()=>{
+      const d=document.getElementById("hist-box");
+      if(d) d.ontoggle=()=>{ HIST_OPEN=d.open; };
+      const i=document.getElementById("hist-intent");
+      if(i){ i.oninput=()=>setIntent(i.value); }
+    };
+    if(!CS){ box.innerHTML=histShell(`<div class="wip" style="margin-top:8px">
+      此瀏覽器不支援 IndexedDB（或處於無痕模式），無法保存案件歷程。編輯仍然有效，只是不會留下紀錄。</div>`);
+      bind(); return; }
+    const s=load(), rec=s&&s.projects&&s.projects[pid];
+    if(HIST_BACKUP_DAYS===null){    // 只查一次；回來後重繪帶出備份提醒
+      HIST_BACKUP_DAYS=false;
+      CS.daysSinceBackup().then(d=>{ HIST_BACKUP_DAYS=d; try{renderHistory(activePid())}catch(e){} })
+        .catch(()=>{ HIST_BACKUP_DAYS=null; });
+    }
+    CS.listActivity(pid).then(rows=>{
+      const acts=(rows||[]).map(r=>({ts:r.ts, kind:r.kind, field:r.field, before:r.before,
+        after:r.after, intent:r.intent, event_id:"ev-"+String(r.key||"").padStart(6,"0"),
+        _tid:(r.target&&r.target.id)||"", _ttype:(r.target&&r.target.type)||""}));
+      if(!acts.length && !snapChain(rec).length){
+        box.innerHTML=histShell(`<div class="wip" style="margin-top:8px">還沒有任何紀錄。
+          改一筆產權清冊、拉一下傳動軸滑桿、或新增一個案件，這裡就會自動長出歷程——
+          你不需要記得手動存檔。</div>`);
+        bind(); return;
+      }
+      if(!RT || !RT.ready || RT.failed){   // 排序由 Core 決定，核心未就緒時不自行排（UI 零推論）
+        const why=(RT&&RT.failed)||RTFAIL
+          ? `計算核心無法載入（可能離線或無法連線 Pyodide CDN）。
+             <b>紀錄本身完整保存在你的瀏覽器</b>，可直接「匯出本案歷程 JSON」取得全部內容；
+             恢復連線後這裡就會依時序列出。`
+          : "計算核心載入中…（歷程的合併與排序由 Core 決定，就緒後顯示）";
+        box.innerHTML=histShell(`<div class="wip" style="margin-top:8px">已記錄 ${acts.length} 筆。${why}</div>`,
+          acts.length);
+        bind(); return;
+      }
+      RT.timeline(acts, snapChain(rec), loadMs(pid)).then(r=>{
+        const past=((r.timeline||{}).past)||[];
+        const shown=past.slice(-80).reverse();      // 新的在上；只顯示最近 80 筆
+        const byId={}; acts.forEach(a=>{ byId[a.event_id]=a; });
+        const tr=shown.map(p=>{
+          const a=byId[p.event_id]||{};
+          const kind=p.kind==="snapshot"?"版本":(HK[a.kind]||a.kind||"—");
+          const 何時=String(p.ts||"").replace("T"," ").slice(0,16)||"—";
+          const 標的=a._tid==="drivetrain" ? "試算" : a._tid;
+          const 誰=p.kind==="snapshot"
+            ? `${esc(p.what)}${p.authoritative?" <b style='color:var(--ok)'>· 作準</b>":""}`
+            : `${esc(p.what)}${標的?` <span class="src">· ${esc(標的)}</span>`:""}`;
+          // 注意：經 Core（Python）往返後，「沒有這個鍵」會變成 null，不是 undefined。
+          const 值=p.kind==="snapshot"
+            ? `<span class="src">${esc(String(p.input_hash||"").replace(/^sha256:/,"").slice(0,10))}…</span>`
+            : (p.before==null&&p.after==null ? "—"
+               : a.kind==="create" ? `<b>${esc(vstr(p.after))}</b>`      // 建案沒有 before
+               : `${esc(vstr(p.before))} → <b>${esc(vstr(p.after))}</b>`);
+          return `<tr><td class="hi-ts">${何時}</td><td><span class="hist-kind">${kind}</span></td>
+            <td>${誰}</td><td class="hi-v">${值}</td><td class="hi-i">${esc(p.intent||"")}</td></tr>`;
+        }).join("");
+        box.innerHTML=histShell(`<table class="hist-t">
+          <tr><th>時間</th><th>種類</th><th>改了什麼</th><th>從 → 到</th><th>意圖（你填的理由）</th></tr>
+          ${tr}</table>
+          ${past.length>80?`<div class="src" style="margin-top:5px">共 ${past.length} 筆，僅顯示最近 80 筆（匯出 JSON 可取得全部）。</div>`:""}`,
+          past.length);
+        bind();
+      }).catch(e=>{ box.innerHTML=histShell(`<div class="wip">歷程排序失敗：${esc(e.message)}</div>`, acts.length); bind(); });
+    }).catch(e=>{ box.innerHTML=histShell(`<div class="wip">讀取歷程失敗：${esc(e.message)}</div>`); bind(); });
+  }
+  /* 匯出：整形成 activity.schema.v0.1 文件（見 ACTLOGIC.toDocument）*/
+  function exportHistory(){
+    const pid=activePid(); if(!CS||!pid) return alert("儲存層不可用");
+    CS.listActivity(pid).then(rows=>{
+      dlFile(JSON.stringify(ACTLOGIC.toDocument(pid, rows),null,2),
+             pid+"_歷程.json", "application/json");
+    }).catch(e=>alert("匯出失敗："+e.message));
+  }
+  /* M7.1 §2.3 備份三條之(3)：一鍵完整備份（全部案件＋Activity＋meta）。
+     Local-first 的代價是「資料只在這台機器」——備份必須是一個按鈕，不是一份說明。 */
+  function backupAll(){
+    if(!CS) return alert("儲存層不可用");
+    CS.exportAll().then(bak=>{
+      bak.legacy_localStorage=(()=>{ try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null} })();
+      dlFile(JSON.stringify(bak,null,2),
+        "uros_備份_"+new Date().toISOString().slice(0,10)+".json", "application/json");
+      return CS.markBackedUp();
+    }).then(()=>{ HIST_BACKUP_DAYS=null; try{renderHistory(activePid())}catch(e){} })
+      .catch(e=>alert("備份失敗："+e.message));
+  }
+  function dlFile(text, name, mime){
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob(["﻿"+text],{type:(mime||"text/plain")+";charset=utf-8"}));
+    a.download=name; a.click();
+  }
+  self.exportHistory=exportHistory; self.backupAll=backupAll;
 
   /* 容積・坪效面板（原「示範案例庫」的互動儀表板內容，改掛在作用中案件上）。
      逐欄 verbatim 自 Core result（rec.view）；UI 零計算。 */
@@ -726,6 +1135,8 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
   function editRoster(idx, field, val){
     try{
       const s=load(), pid=activePid(), rec=s.projects[pid]; if(!rec) return;
+      // M7.1：先取舊值再覆寫——沒有 before 的紀錄無法回答「為什麼變成現在這樣」
+      const before=rec.roster&&rec.roster[idx]?rec.roster[idx][field]:undefined;
       if(rec.roster&&rec.roster[idx]) rec.roster[idx][field]=val;
       const oid=rec.roster&&rec.roster[idx]?rec.roster[idx]["土地所有權人"]:null;
       if(oid&&rec.wf&&rec.wf.stakeholders){
@@ -744,7 +1155,10 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
         rec.snap.total=rec.roster.length;
       }
       rec.dirty=true;                       // 標記已由使用者編輯（與原始示範資料區分）
-      save(s); render();
+      save(s);
+      if(before!==val)                      // 只記真正的改動（同意→同意不是事實變化）
+        logAct(pid, ACTLOGIC.rosterEvent(oid||("列"+(idx+1)), field, before, val));
+      render();
     }catch(e){ console.error(e); }
   }
   function addRosterRow(){
@@ -760,7 +1174,9 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
       rec.wf.stakeholders.push({stakeholder_id:id,role:"owner",land_share:0,pre_value:0,
         min_unit_eligible:false,ownership_complexity:"clean",signability:"signable"});
       if(rec.snap){ rec.snap.total=rec.roster.length; rec.snap.stakeholders_n=rec.wf.stakeholders.length; }
-      rec.dirty=true; save(s); render();
+      rec.dirty=true; save(s);
+      logAct(pid, ACTLOGIC.rosterAddEvent(id, n-1, n));
+      render();
     }catch(e){ alert("新增失敗："+e.message); }
   }
   function exportRoster(){
@@ -942,6 +1358,8 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
       s.order=s.order||[]; s.order.unshift(pid);
       save(s); localStorage.setItem("uros.active_case",pid);
       document.getElementById("newcase").style.display="none";
+      // M7.1：建案件是歷程的第一筆事實（見 ACTLOGIC.createEvent）
+      logAct(pid, ACTLOGIC.createEvent(pid, eng.params, ih));
       render();
     }).catch(e=>alert("建立失敗："+e.message));
   }

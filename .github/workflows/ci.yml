@@ -85,3 +85,8 @@ jobs:
       # ── Gate 11：M7 Memory 層紀律（append-only／不記推論／Session 非第二真源／遷移不刪舊資料）──
       - name: "Gate 11 — Case OS store headless (node)"
         run: node tests/web/test_case_store.mjs
+
+      # ── Gate 12：M7.1 接 UI 的產生端紀律（改清冊/拉滑桿/建案件寫出的事件不得含推論、須合約內）──
+      #    Gate 11 擋「欄位名叫 verdict」，Gate 12 擋「有人把投報率塞進 after」——兩層一起才守得住。
+      - name: "Gate 12 — Activity wiring headless (node)"
+        run: node tests/web/test_activity_wiring.mjs

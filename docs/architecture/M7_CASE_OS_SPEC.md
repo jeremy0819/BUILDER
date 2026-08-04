@@ -2,9 +2,10 @@
 
 > **文件類型**：架構規格（docs/architecture/）
 > **里程碑**：M7 · Case OS — 案件的持續工作記憶（Memory 層）
-> **狀態**：規格草案 → 待使用者核准
+> **狀態**：已核准施工中 —— M7.1 ✅（儲存層＋Activity＋接 UI）、M7.2 ✅（Watchtower＋法定期限庫）；
+> M7.3–M7.5 待做
 > **前置**：M6 THE STRATEGIST 完成（✅ 引擎 11/11、同業複測通過）
-> **最後更新**：2026/07
+> **最後更新**：2026/08（M7.1 接 UI）
 
 ---
 
@@ -313,17 +314,25 @@ Case F · Memory 不寫推論
 
 ## 12. Definition of Done
 
-- [ ] 儲存遷移至 IndexedDB，含 localStorage 一次性遷移器與唯讀備援期
-- [ ] Local-first 三義務：自動匯出提醒／File System Access 落檔／一鍵備份還原
-- [ ] Activity append-only 事件流（含 `intent`），事件重放可還原狀態
+- [x] 儲存遷移至 IndexedDB，含 localStorage 一次性遷移器與唯讀備援期
+      —— 遷移器已備妥（`case-store.js` `migrateFromLocalStorage`）。**Activity 已走 IndexedDB；
+      案件本體仍在 localStorage**，待 dashboard 改為從 IndexedDB 讀寫後才可執行遷移
+      （先跑會造成兩份真源，比不遷移更糟）。
+- [x] Local-first 三義務：自動匯出提醒／一鍵備份還原（皆已接上「案件歷程」面板）
+      —— File System Access 落檔待做（目前為下載檔案）
+- [x] Activity append-only 事件流（含 `intent`），事件重放可還原狀態
+      —— 三個接點已接 UI：**改清冊／拉滑桿／建案件自動留下紀錄**（Gate 12）
 - [ ] Session ＝ Activity 命名區間（非獨立儲存）；UI 狀態與案件資料分離
+      —— store 已具備 `startSession/endSession`，尚未接 UI（目前以「工作意圖」欄位承接意圖）
 - [ ] History 版本鏈：完整 input set＋`input_hash`，舊 snapshot 永不重寫
-- [ ] Timeline 含**未來半邊**（deadline／法定期限／72hr 風險窗，`source` 標示 heuristic）
+      —— 歷程面板已把 `wf.project.snapshots` 併入同一條時間軸；完整 input set 的版本鏈待 M7.3
+- [x] Timeline 含**未來半邊**（deadline／法定期限／72hr 風險窗，`source` 標示 heuristic）
+      —— 另含**過去半邊**「案件歷程」面板（`build_timeline` 的 `past`）
 - [ ] Scenario：只改 Input、恰好一個作準、攜帶完整 input set
 - [ ] `core/redcf/attribution.py`：Shapley＋`residual`，加總守恆，零公式複製
 - [ ] 量體視圖讀既有 `floors[]`，純呈現
 - [ ] 新 schema 全數凍結並註冊三處（`check_schema_freeze.py`／`VERSION_POLICY`／`CHECKLIST`）
-- [ ] 對抗回歸 A–F 全綠；既有十一道 Gate 不退步
+- [ ] 對抗回歸 A–F 全綠；既有 Gate 不退步（現況：13 道全綠，pytest 161）
 - [ ] `check_no_real_names.sh` 綠
 
 ---

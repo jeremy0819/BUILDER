@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urban-renewal-os/milestone.schema.v0.1.json",
+  "title": "Milestone / Deadline v0.1（M7.2 Watchtower）",
+  "description": "M7_CASE_OS_SPEC §6：Timeline 的【未來半邊】。一個沒有未來的工作空間是日誌，不是作業系統——整合人每天打開最想看的是『今天要做什麼、什麼快到期』。紀律：source 必填且分級（statute 法定期限／plan 自訂計畫／heuristic 經驗啟發）；**source=statute 者必附 legal_basis 法源引註**，禁止把經驗值偽裝成法定期限。72hr 風險窗屬 heuristic，必須標示且允許被真實案例推翻（沿用 00_FIRST_PRINCIPLES 規則出處紀律）。本層只記事實與意圖，不含推論。",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["milestone_id", "title", "due", "source"],
+    "additionalProperties": false,
+    "properties": {
+      "milestone_id": { "type": "string" },
+      "title": { "type": "string", "description": "禁真實段名／姓名" },
+      "due": { "type": "string", "description": "到期日 YYYY-MM-DD（或 ISO 8601）" },
+      "stage": { "type": "string", "pattern": "^S([1-9]|1[01])$", "description": "對應 Workflow 階段" },
+      "source": {
+        "type": "string",
+        "enum": ["statute", "plan", "heuristic"],
+        "description": "statute＝法定期限（必附 legal_basis）／plan＝本案自訂計畫／heuristic＝經驗啟發（可被推翻）"
+      },
+      "legal_basis": {
+        "type": "string",
+        "description": "法源引註（如：都市更新條例 §32）。source=statute 時為必填——見 allOf 條件式約束。"
+      },
+      "risk_window_hr": {
+        "type": "integer", "minimum": 0,
+        "description": "重大節點前後的高風險窗（小時）。72hr 為 heuristic 預設，非定律。"
+      },
+      "status": {
+        "type": "string",
+        "enum": ["open", "done", "waived"],
+        "description": "waived＝經決定不辦（須於 Activity 留下意圖）"
+      },
+      "owner_role": { "type": "string" },
+      "note": { "type": "string" },
+      "completed_at": { "type": ["string", "null"] }
+    },
+    "allOf": [
+      {
+        "if": { "properties": { "source": { "const": "statute" } }, "required": ["source"] },
+        "then": {
+          "required": ["legal_basis"],
+          "properties": { "legal_basis": { "type": "string", "minLength": 4 } }
+        }
+      }
+    ]
+  }
+}
