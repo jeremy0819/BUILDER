@@ -192,6 +192,109 @@
       return Promise.resolve({ usage: null, quota: null });
     },
 
+    // ── Scenario（M7.3：多方案＋恰好一個作準）────────────────
+    // 方案存在 meta store，key = "scenario:<caseId>"，值 = { scenarios: [...] }
+    // §7 三規則：(1) 只改 Input 不改 Output (2) 恰好一個 authoritative (3) 完整 input set 非 diff
+
+    _scenarioKey: function (caseId) { return "scenario:" + caseId; },
+
+    listScenarios: function (caseId) {
+      return api.meta(api._scenarioKey(caseId)).then(function (doc) {
+        return (doc && doc.scenarios) || [];
+      });
+    },
+
+    addScenario: function (caseId, sc) {
+      if (!sc || !sc.scenario_id || !sc.name || !sc.engine || !sc.input_hash)
+        return Promise.reject(new Error("Scenario 需 scenario_id, name, engine, input_hash"));
+      if (!sc.engine || typeof sc.engine !== "object" || Object.keys(sc.engine).length === 0)
+        return Promise.reject(new Error("Scenario 必須攜帶完整 input set（engine 不得為空）"));
+      // 推論欄位不得進 engine
+      var engineKeys = Object.keys(sc.engine);
+      for (var i = 0; i < INFERENCE_KEYS.length; i++) {
+        if (engineKeys.indexOf(INFERENCE_KEYS[i]) !== -1) {
+          return Promise.reject(new Error("Scenario 只改 Input 不改 Output——engine 不得含推論欄位（" + INFERENCE_KEYS[i] + "）"));
+        }
+      }
+      return api.listScenarios(caseId).then(function (list) {
+        var entry = Object.assign({}, sc, {
+          authoritative: list.length === 0 ? true : (sc.authoritative === true),
+          created_at: sc.created_at || new Date().toISOString()
+        });
+        // 若新方案宣告 authoritative，其餘必須取消
+        if (entry.authoritative) {
+          for (var j = 0; j < list.length; j++) list[j].authoritative = false;
+        }
+        list.push(entry);
+        // 保證恰好一個 authoritative
+        var authCount = list.filter(function (s) { return s.authoritative; }).length;
+        if (authCount === 0 && list.length > 0) list[0].authoritative = true;
+        return api.meta(api._scenarioKey(caseId), { scenarios: list })
+          .then(function () {
+            // 記錄 Activity
+            return api.append(caseId, {
+              kind: "scenario", target: { type: "scenario", id: entry.scenario_id },
+              field: "create", after: entry.name, intent: "新增方案"
+            });
+          })
+          .then(function () { return entry; });
+      });
+    },
+
+    setAuthoritative: function (caseId, scenarioId) {
+      return api.listScenarios(caseId).then(function (list) {
+        var found = false;
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].scenario_id === scenarioId) { found = true; break; }
+        }
+        if (!found) return Promise.reject(new Error("Scenario " + scenarioId + " 不存在"));
+        for (var j = 0; j < list.length; j++) {
+          list[j].authoritative = (list[j].scenario_id === scenarioId);
+        }
+        return api.meta(api._scenarioKey(caseId), { scenarios: list })
+          .then(function () {
+            return api.append(caseId, {
+              kind: "scenario", target: { type: "scenario", id: scenarioId },
+              field: "authoritative", before: false, after: true,
+              intent: "切換作準方案"
+            });
+          })
+          .then(function () { return list; });
+      });
+    },
+
+    getAuthoritative: function (caseId) {
+      return api.listScenarios(caseId).then(function (list) {
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].authoritative) return list[i];
+        }
+        return null;
+      });
+    },
+
+    deleteScenario: function (caseId, scenarioId) {
+      return api.listScenarios(caseId).then(function (list) {
+        var idx = -1;
+        for (var i = 0; i < list.length; i++) {
+          if (list[i].scenario_id === scenarioId) { idx = i; break; }
+        }
+        if (idx === -1) return Promise.reject(new Error("Scenario " + scenarioId + " 不存在"));
+        if (list.length <= 1)
+          return Promise.reject(new Error("至少需保留一個方案"));
+        var removed = list.splice(idx, 1)[0];
+        // 若刪掉的是 authoritative，轉移給第一個
+        if (removed.authoritative && list.length > 0) list[0].authoritative = true;
+        return api.meta(api._scenarioKey(caseId), { scenarios: list })
+          .then(function () {
+            return api.append(caseId, {
+              kind: "scenario", target: { type: "scenario", id: scenarioId },
+              field: "delete", before: removed.name, intent: "刪除方案"
+            });
+          })
+          .then(function () { return list; });
+      });
+    },
+
     _assertNoInference: assertNoInference,
     _INFERENCE_KEYS: INFERENCE_KEYS
   };
