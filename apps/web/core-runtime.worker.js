@@ -49,6 +49,37 @@ self.onmessage = (e) => {
     } catch (err) {
       post("result", { id: m.id, error: String((err && err.message) || err) });
     }
+  } else if (m.type === "today") {
+    // M7.2 Watchtower：「今天要做什麼」——同一份 core/redcf.build_today（逾期/風險窗判準只有一套）
+    if (!ready) { post("result", { id: m.id, error: "core-not-ready" }); return; }
+    try {
+      pyodide.globals.set("_ms_json", JSON.stringify(m.milestones || []));
+      pyodide.globals.set("_today_str", m.today || "");
+      const out = pyodide.runPython(
+        "json.dumps(_redcf.build_today(json.loads(_ms_json), " +
+        "today=(_today_str or None)))"
+      );
+      post("result", { id: m.id, today: JSON.parse(out) });
+    } catch (err) {
+      post("result", { id: m.id, error: String((err && err.message) || err) });
+    }
+  } else if (m.type === "timeline") {
+    // M7.1→UI 案件歷程：過去（Activity＋History）＋今天＋未來。排序與分段由
+    // core/redcf.build_timeline 決定——同一案在任何頁面的歷程順序只有一套。
+    if (!ready) { post("result", { id: m.id, error: "core-not-ready" }); return; }
+    try {
+      pyodide.globals.set("_tl_act", JSON.stringify(m.activity || []));
+      pyodide.globals.set("_tl_hist", JSON.stringify(m.history || []));
+      pyodide.globals.set("_tl_ms", JSON.stringify(m.milestones || []));
+      pyodide.globals.set("_tl_today", m.today || "");
+      const out = pyodide.runPython(
+        "json.dumps(_redcf.build_timeline(json.loads(_tl_act), json.loads(_tl_hist), " +
+        "json.loads(_tl_ms), today=(_tl_today or None)))"
+      );
+      post("result", { id: m.id, timeline: JSON.parse(out) });
+    } catch (err) {
+      post("result", { id: m.id, error: String((err && err.message) || err) });
+    }
   } else if (m.type === "strategize") {
     // M6 THE STRATEGIST：同一份 core/redcf.strategize（建議層）；Worker 只搬運與呼叫，不含邏輯。
     if (!ready) { post("result", { id: m.id, error: "core-not-ready" }); return; }
