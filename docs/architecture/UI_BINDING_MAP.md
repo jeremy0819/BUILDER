@@ -70,6 +70,37 @@
 | 遊戲「整合資金流」卡 | 遊戲層支出紀錄（沙盤，非 Core 財務） | SIMCORE `spent`（呈現層記帳） | ✅ |
 | 三態地主／選屋順序籌碼（沙盤） | 待定（接 `min_unit_eligible`＋選配） | 遊戲層讀 Core 分配 | ⏳ M3 後段 |
 
+### M7.4 歸因比較（Workspace「歸因比較」分頁）· 合約＝`attribution.schema.v0.1`
+
+> 本面板**零計算**：每個可見數字都逐欄取自 Core 回應；`presentation` 由 Core 產出
+> （含四捨五入），瀏覽器不得自行換算或進位。
+
+| UI 元素 | Schema Field | Core Source | 狀態 |
+|---|---|---|---|
+| 指標名稱「全案投報率」 | `target.label`（＋`target.id`/`higher_is_better`） | `attribution._TARGETS`；**不得標為 IRR** | ✅ |
+| 基準／對照 端點值（%） | `presentation.before` / `presentation.after` | `attribute()` 端點重播 | ✅ |
+| 差異（ppt） | `presentation.delta`（單位＝`target.display_unit`） | 同上 | ✅ |
+| 變更欄位列：前 → 後 | `contributions[].before_value` / `after_value` | Core 由正規路徑取原始輸入值 | ✅ |
+| 變更欄位名稱 | `contributions[].label`（源自 `feature_id`） | Core 給定，**UI 不得自創** | ✅ |
+| 各欄位影響（ppt） | `presentation.contributions[].impact` | Shapley／OAT 邊際貢獻 | ✅ |
+| 交互作用（殘差）列 | `presentation.residual`（raw＝`residual.impact`） | `delta − Σ impact` | ✅ |
+| 顯示進位對帳列 | `presentation.rounding_reconciliation` | Core 計算；**不得併入殘差** | ✅ |
+| 守恆狀態徽章 | `conservation.raw_ok`（＋`tolerance`） | Core 自檢，UI 不自判 | ✅ |
+| Shapley 精確／OAT 近似 徽章 | `method.exact` / `method.resolved` | Core 決定方法 | ✅ |
+| 「N 項變更 / M 次重算」 | `method.feature_count` / `method.runs` | Core 回報權威次數 | ✅ |
+| 「以 Core X 重播」 | `core_version` | 重播所用 Core，非原始日期所見版本 | ✅ |
+| 溯源雜湊 | `before.input_hash` / `after.input_hash` | `input_hash()` | ✅ |
+| 不支援比較的路徑清單 | `unsupported.paths` / `reason_code` / `message` | `AttributionUnsupported`（Worker 信封） | ✅ |
+
+### M7.5 量體視圖（Workspace「量體」分頁）· 純呈現
+
+| UI 元素 | Schema Field | Core Source | 狀態 |
+|---|---|---|---|
+| 逐層長條寬度 | `engine.floors[].樓板`（比例縮放＝版面幾何） | 輸入 verbatim，**非容積** | ✅ |
+| 逐層明細表 | `engine.floors[]`（樓板/計容積/梯廳/安全梯/陽台/啟用） | 輸入 verbatim，無合計列 | ✅ |
+| 總樓地板面積 | `result.total_floor_area_sqm` | Core；取不到顯示「—」，**不由 floors 自行加總** | ✅ |
+| 「計容積皆為 0」提示 | 由 `floors[].計容積` 判定並標示來源 | Core 以面積表彙總為準（圖說為真） | ✅ |
+
 > v2.1 升級即依本表流程執行：新 `schema_version`＋遷移器 `2.0→2.1`＋
 > `check_schema_freeze.py` 基準 +1——凍結檔（v1.1/v2.0）位元組未動。
 
