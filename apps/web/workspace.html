@@ -133,6 +133,27 @@ h1{font-size:21px;margin:0;letter-spacing:-.01em;font-weight:800}
 .tlrow{display:flex;align-items:center;gap:9px;padding:6px 8px;font-size:12.5px}
 .tlic{width:20px;text-align:center} .tlts{font-size:10.5px;color:var(--mute);min-width:72px} .tllb{color:var(--ink)}
 footer{margin-top:30px;border-top:1px solid var(--line);padding-top:13px;font-size:11px;color:var(--mute);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+/* M7.5 量體視圖（純呈現） */
+.mv-wrap{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px}
+.mv-col h4{margin:0 0 6px;font-size:11px;letter-spacing:.07em;color:var(--mute);text-transform:uppercase}
+.mv-col .src{font-family:var(--mono);font-size:10px;color:var(--mute);margin-top:8px;line-height:1.6}
+.mv-full{grid-column:1/-1}
+.massing-svg{display:block;max-width:520px}
+.mv-bar{fill:var(--info);opacity:.85}
+.mv-bar.mv-below{fill:var(--mute);opacity:.55}
+.mv-bar.mv-off{opacity:.22}
+.mv-lbl{font-family:var(--mono);font-size:8px;fill:var(--mute)}
+.mv-ground{stroke:var(--line);stroke-width:1;stroke-dasharray:3 3}
+.mv-na{color:var(--mute)}
+.mv-legend{display:flex;gap:12px;font-size:10.5px;color:var(--mute);margin-top:6px}
+.mv-legend .sw{display:inline-block;width:9px;height:9px;background:var(--info);opacity:.85;margin-right:4px;vertical-align:-1px}
+.mv-legend .sw.below{background:var(--mute);opacity:.55} .mv-legend .sw.off{background:var(--info);opacity:.22}
+.mv-tbl{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:2px}
+.mv-tbl th{text-align:left;font-weight:600;color:var(--mute);font-size:10px;letter-spacing:.05em;text-transform:uppercase;padding:4px 8px;border-bottom:1px solid var(--line)}
+.mv-tbl td{padding:3px 8px;border-bottom:1px dashed var(--line);color:var(--ink)}
+.mv-tbl td.num{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.mv-tbl tr.mv-off-row td{opacity:.45}
+@media(max-width:820px){.mv-wrap{grid-template-columns:1fr}}
 </style>
 
 <div class="wrap">
@@ -173,6 +194,7 @@ footer{margin-top:30px;border-top:1px solid var(--line);padding-top:13px;font-si
   </footer>
 </div>
 
+<script src="massing-view.js"></script>
 <script>
 /*WORKLOGIC-BEGIN*/
 /* WORKLOGIC — 純轉換邏輯（零 DOM、零 localStorage、零財務運算；node headless 可測）。
@@ -459,6 +481,7 @@ function openCase(pid){
         <button class="tab" data-t="task">時程任務</button>
         <button class="tab" data-t="dec">決策紀錄</button>
         <button class="tab" data-t="time">時間軸</button>
+        <button class="tab" data-t="mass">量體</button>
       </div>
       <div class="tabpane" id="pane"></div>
     </div>`;
@@ -469,13 +492,53 @@ function openCase(pid){
       <div class="row"><span>健檢 warnings</span><b>${snap.warnings_n} 項</b></div>
       <div class="src">${snap.detached?'⚠️ 此案由 wf bundle 還原，財務數字留在原 v2.1（SSOT 不複製）——重新匯入對應 v2.1 即補回。':`數字逐欄來自匯入 result（input_hash ${shortHash(snap.input_hash)}…）· 逐戶分回/找補見開發評估儀表板 · 本頁零計算`}</div></div>`,
   };
-  const R={bench:renderBench, board:renderBoard, task:renderTasks, dec:renderDecisions, time:renderTimeline};
+  const R={bench:renderBench, board:renderBoard, task:renderTasks, dec:renderDecisions, time:renderTimeline, mass:renderMassing};
   renderBench(pid);
   cv.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
     cv.querySelectorAll(".tab").forEach(x=>x.classList.remove("on")); b.classList.add("on");
     if(R[b.dataset.t]) R[b.dataset.t](pid); else $("pane").innerHTML=panes[b.dataset.t];
   });
 }
+/* ── M7.5 量體視圖：把既有 engine.floors[] 換一種畫法（純呈現、零計算）──
+   權威合計只從 Core 取；本頁不加總、不回推容積。 */
+function renderMassing(pid){
+  const rec=loadStore().projects[pid]; if(!rec) return;
+  const floors = rec.engine && Array.isArray(rec.engine.floors) ? rec.engine.floors : null;
+  const pane=$("pane");
+  if(!floors || !floors.length){
+    pane.innerHTML=`<div class="wip">此案未攜帶逐層樓板表（<code>engine.floors</code>）——
+      量體視圖只畫既有資料，<b>不由其他欄位反推</b>。<br>
+      wf bundle 還原的案件請重新匯入對應的 v2.1 檔即可補回。</div>`;
+    return;
+  }
+  const m=MassingView.buildModel(floors);
+  const totals=MassingView.totalsFrom(rec.snap && rec.snap.result ? rec.snap.result : null);
+  const totalHTML = totals && typeof totals.total_floor_area_sqm==="number"
+    ? `<div class="row"><span>總樓地板面積（Core）</span><b>${totals.total_floor_area_sqm.toLocaleString()} m²</b></div>`
+    : `<div class="row"><span>總樓地板面積</span><b class="mv-na">—</b></div>`;
+  pane.innerHTML=`<div class="mv-wrap">
+    <div class="mv-col">
+      <h4>量體視圖</h4>
+      ${MassingView.svg(m)}
+      <div class="mv-legend"><span><i class="sw"></i>地上</span><span><i class="sw below"></i>地下</span><span><i class="sw off"></i>停用</span></div>
+    </div>
+    <div class="mv-col">
+      <h4>樓層組成</h4>
+      <div class="fin">
+        <div class="row"><span>地上／地下／屋突</span><b>${m.aboveGround} / ${m.belowGround} / ${m.rooftop} 層</b></div>
+        ${m.disabled?`<div class="row"><span>停用層</span><b>${m.disabled} 層</b></div>`:""}
+        ${totalHTML}
+      </div>
+      <div class="src">長條寬度為<b>樓板面積比例</b>（版面幾何），非容積。
+        ${m.counted_far_all_zero?`<br><b style="color:var(--warn)">⚠ 本案逐層「計容積」皆為 0</b>——Core 以面積表彙總值為準（圖說為真），<b>不代表各層不計容積</b>。`:""}
+        <br>合計數字只取自 Core result；取不到即顯示「—」，<b>本頁不自行加總</b>。</div>
+    </div>
+    <div class="mv-col mv-full">
+      <h4>逐層明細（原始輸入 verbatim）</h4>
+      ${MassingView.table(m)}
+    </div></div>`;
+}
+
 // ── M5-P2 Developer Board（整合人工作台）：整合率＋風險＋下一步＋戶別接觸——全 verbatim ──
 function renderBench(pid){
   const rec=loadStore().projects[pid]; if(!rec) return;
