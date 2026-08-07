@@ -32,6 +32,7 @@
       - activity v0.1 `schemas/activity.schema.v0.1.json` = `04f487db779564ed7359c4e289a5ecb78b22fbc1e3a53ed2cd6fe1a5b73163fa`（M7.1 Memory 層）
       - milestone v0.1 `schemas/milestone.schema.v0.1.json` = `ab3edbab1bdfae6e0b0c4454fb40393d8f38a127b7983e25c84079d8eb692858`（M7.2 Watchtower）
       - scenario v0.1 `schemas/scenario.schema.v0.1.json` = `05534522b8b5a67ea6a2705c1c060fc1aa08c8544a321a8d11014378998fca3c`（M7.3 多方案管理）
+      - attribution v0.1 `schemas/attribution.schema.v0.1.json` = `ff6b284beb386f43485f937a02789e2d1bdeb93dd5a23ddc129a7a1ccbe0a4dd`（M7.4 加總守恆歸因）
       要改凍結檔＝走版本升級流程（新版本＋遷移器＋更新 FROZEN 基準），不得直接改檔。
 - [ ] **Version Updated**：依 `governance/VERSION_POLICY.md` 確認 CORE_VERSION / schema_version /
       APP_VERSION 該動的已動、不該動的沒動；本次 release 對應版本已填入下方發布紀錄。

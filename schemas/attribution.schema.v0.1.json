@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urban-renewal-os/attribution.schema.v0.1.json",
+  "title": "Attribution v0.1（M7.4 可解釋性：兩個 Scenario 之間，指標為何變動）",
+  "description": "M7_CASE_OS_SPEC §8 的合約。歸因不是 diff——diff 只說『什麼變了』，歸因說『誰造成的』。輸出恆滿足加總守恆：Σ contributions[].impact + residual == delta（容差 1e-9），並附可見加總橋 bridge。首版只接受兩份完整 Scenario input；結構性變更（floors/owners/case_type/mode）明確拒答，不以『其他』項吸收差額。單位誠實：return_rate ＝『全案投報率』，差異單位 ppt，非 IRR。",
+  "type": "object",
+  "required": ["attribution_version", "target", "target_label", "unit",
+               "before_value", "after_value", "delta", "contributions",
+               "residual", "method", "runs", "bridge",
+               "conservation_ok", "before_hash", "after_hash"],
+  "additionalProperties": false,
+  "properties": {
+    "attribution_version": { "const": "0.1.0" },
+    "core_version": { "type": "string", "description": "產生本歸因的 Core 版本" },
+    "target": {
+      "type": "string",
+      "enum": ["return_rate", "shared_cost_ratio", "owner_return_ratio", "efficiency_ratio"],
+      "description": "被歸因的 Core result 欄位"
+    },
+    "target_label": {
+      "type": "string",
+      "description": "目標的中文標示。return_rate 必須標為『全案投報率』——**不得標示或換算為 IRR**"
+    },
+    "unit": {
+      "type": "string",
+      "enum": ["ppt", "倍"],
+      "description": "delta／impact／residual 的單位。比率類目標一律 ppt（百分點），避免與百分比變動率混淆"
+    },
+    "before_value": { "type": "number", "description": "變更前的目標值（已換算為 unit）" },
+    "after_value": { "type": "number", "description": "變更後的目標值（已換算為 unit）" },
+    "delta": { "type": "number", "description": "after_value − before_value" },
+    "contributions": {
+      "type": "array",
+      "description": "逐欄位邊際貢獻，依影響絕對值由大到小排序",
+      "items": {
+        "type": "object",
+        "required": ["field", "before", "after", "impact"],
+        "additionalProperties": false,
+        "properties": {
+          "field": { "type": "string", "description": "params 內的輸入欄位名" },
+          "before": { "type": "number", "description": "該欄位的變更前【輸入值】" },
+          "after": { "type": "number", "description": "該欄位的變更後【輸入值】" },
+          "impact": { "type": "number", "description": "該欄位對 delta 的貢獻（單位同 unit）" }
+        }
+      }
+    },
+    "residual": {
+      "type": "number",
+      "description": "交互作用／殘差。shapley 法下應 ≈0（efficiency 公理）；oat 法下承接欄位間交互作用。**存在的意義是讓數字永遠對得起來**"
+    },
+    "method": {
+      "type": "string",
+      "enum": ["shapley", "oat", "none"],
+      "description": "實際採用的方法。shapley＝加總完全等於 delta 且順序無關；oat＝n 過大時的退路；none＝無變更欄位"
+    },
+    "runs": { "type": "integer", "minimum": 0, "description": "實際呼叫 Core recompute 的次數" },
+    "bridge": {
+      "type": "array",
+      "description": "可見加總橋：從 before_value 逐項累加到 after_value，讓使用者親眼看到數字對得起來",
+      "items": {
+        "type": "object",
+        "required": ["step", "label"],
+        "additionalProperties": false,
+        "properties": {
+          "step": { "type": "string", "enum": ["start", "contribution", "residual", "end"] },
+          "label": { "type": "string" },
+          "value": { "type": "number", "description": "start／end 的絕對值" },
+          "impact": { "type": "number", "description": "contribution／residual 的增減量" },
+          "running": { "type": "number", "description": "累計後的running值" }
+        }
+      }
+    },
+    "conservation_ok": {
+      "type": "boolean",
+      "description": "加總守恆是否成立。false 不得呈現給使用者——寧可不答，不可給對不起來的數字"
+    },
+    "conservation_error": { "type": "number", "minimum": 0, "description": "守恆誤差絕對值" },
+    "before_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "after_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+  }
+}

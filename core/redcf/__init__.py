@@ -38,6 +38,8 @@ from core.redcf.workflow import (validate_workflow, migrate_workflow,
 from core.redcf.decision import (decide, validate_decision, calc_完工機率,
     load_stage_tree, load_decision_config)
 from core.redcf.allocation import calc_選配映射, validate_household_outcome
+from core.redcf.attribution import (attribute, validate_attribution,
+    AttributionUnsupported, ATTRIBUTION_VERSION)
 from core.redcf.strategy import (strategize, validate_strategy,
     validate_stakeholder_profiles, load_strategy_config, suggest_willingness_type)
 from core.redcf.contract import (
