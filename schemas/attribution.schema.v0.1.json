@@ -2,80 +2,137 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "urban-renewal-os/attribution.schema.v0.1.json",
   "title": "Attribution v0.1（M7.4 可解釋性：兩個 Scenario 之間，指標為何變動）",
-  "description": "M7_CASE_OS_SPEC §8 的合約。歸因不是 diff——diff 只說『什麼變了』，歸因說『誰造成的』。輸出恆滿足加總守恆：Σ contributions[].impact + residual == delta（容差 1e-9），並附可見加總橋 bridge。首版只接受兩份完整 Scenario input；結構性變更（floors/owners/case_type/mode）明確拒答，不以『其他』項吸收差額。單位誠實：return_rate ＝『全案投報率』，差異單位 ppt，非 IRR。",
+  "description": "M7_CASE_OS_SPEC §8 與 M7_4_ATTRIBUTION_VISUAL_PLAN 的輸出合約。歸因不是 diff——diff 只說『什麼變了』，歸因說『誰造成的』。raw 層恆滿足 Σ contributions[].impact + residual.impact == delta（容差 1e-9）。presentation 由 Core 產出，避免瀏覽器各自進位導致可見列加不回可見 delta；顯示進位誤差獨立為 rounding_reconciliation，不得偽裝成經濟意義上的交互作用殘差。首版只接受兩份完整 Scenario engine；結構性變更明確拒答，不以『其他』吸收差額。單位誠實：return_rate ＝『全案投報率』，顯示單位 ppt，非 IRR。",
   "type": "object",
-  "required": ["attribution_version", "target", "target_label", "unit",
-               "before_value", "after_value", "delta", "contributions",
-               "residual", "method", "runs", "bridge",
-               "conservation_ok", "before_hash", "after_hash"],
+  "required": ["schema_version", "status", "core_version", "target", "before", "after",
+               "delta", "contributions", "residual", "method", "conservation", "presentation"],
   "additionalProperties": false,
   "properties": {
-    "attribution_version": { "const": "0.1.0" },
-    "core_version": { "type": "string", "description": "產生本歸因的 Core 版本" },
+    "schema_version": { "const": "attribution-0.1" },
+    "status": { "const": "ok", "description": "本合約只描述成功報告；拒答走結構化錯誤，不進本 schema" },
+    "core_version": { "type": "string", "description": "產生本報告的 Core 版本（重播用的是此版 Core，非原始日期所見版本）" },
+
     "target": {
-      "type": "string",
-      "enum": ["return_rate", "shared_cost_ratio", "owner_return_ratio", "efficiency_ratio"],
-      "description": "被歸因的 Core result 欄位"
+      "type": "object",
+      "required": ["id", "label", "raw_unit", "display_unit", "higher_is_better"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "enum": ["return_rate"] },
+        "label": {
+          "type": "string",
+          "description": "顯示名稱。return_rate 必須為『全案投報率』——**不得標示或換算為 IRR**"
+        },
+        "raw_unit": { "type": "string", "enum": ["ratio"] },
+        "display_unit": { "type": "string", "enum": ["percentage_points"] },
+        "higher_is_better": {
+          "type": "boolean",
+          "description": "由目標中繼資料決定好壞方向；UI 不得僅以顏色決定『好』或『壞』"
+        }
+      }
     },
-    "target_label": {
-      "type": "string",
-      "description": "目標的中文標示。return_rate 必須標為『全案投報率』——**不得標示或換算為 IRR**"
-    },
-    "unit": {
-      "type": "string",
-      "enum": ["ppt", "倍"],
-      "description": "delta／impact／residual 的單位。比率類目標一律 ppt（百分點），避免與百分比變動率混淆"
-    },
-    "before_value": { "type": "number", "description": "變更前的目標值（已換算為 unit）" },
-    "after_value": { "type": "number", "description": "變更後的目標值（已換算為 unit）" },
-    "delta": { "type": "number", "description": "after_value − before_value" },
+
+    "before": { "$ref": "#/$defs/endpoint" },
+    "after": { "$ref": "#/$defs/endpoint" },
+
+    "delta": { "type": "number", "description": "after.value − before.value（raw 單位）" },
+
     "contributions": {
       "type": "array",
-      "description": "逐欄位邊際貢獻，依影響絕對值由大到小排序",
+      "description": "逐特徵邊際貢獻，依影響絕對值排序。**排序是為了易讀，不是變更時序**——Shapley 與順序無關",
       "items": {
         "type": "object",
-        "required": ["field", "before", "after", "impact"],
+        "required": ["feature_id", "label", "before_value", "after_value", "impact"],
         "additionalProperties": false,
         "properties": {
-          "field": { "type": "string", "description": "params 內的輸入欄位名" },
-          "before": { "type": "number", "description": "該欄位的變更前【輸入值】" },
-          "after": { "type": "number", "description": "該欄位的變更後【輸入值】" },
-          "impact": { "type": "number", "description": "該欄位對 delta 的貢獻（單位同 unit）" }
+          "feature_id": {
+            "type": "string",
+            "pattern": "^params\\.",
+            "description": "正規路徑，如 params.住宅單價 或 params.財務覆寫.管理費率"
+          },
+          "label": { "type": "string", "description": "由 Core 從正規路徑取得，UI 不得自創" },
+          "before_value": { "type": "number" },
+          "after_value": { "type": "number" },
+          "impact": { "type": "number", "description": "該特徵對 delta 的貢獻（raw 單位）" }
         }
       }
     },
+
     "residual": {
-      "type": "number",
-      "description": "交互作用／殘差。shapley 法下應 ≈0（efficiency 公理）；oat 法下承接欄位間交互作用。**存在的意義是讓數字永遠對得起來**"
-    },
-    "method": {
-      "type": "string",
-      "enum": ["shapley", "oat", "none"],
-      "description": "實際採用的方法。shapley＝加總完全等於 delta 且順序無關；oat＝n 過大時的退路；none＝無變更欄位"
-    },
-    "runs": { "type": "integer", "minimum": 0, "description": "實際呼叫 Core recompute 的次數" },
-    "bridge": {
-      "type": "array",
-      "description": "可見加總橋：從 before_value 逐項累加到 after_value，讓使用者親眼看到數字對得起來",
-      "items": {
-        "type": "object",
-        "required": ["step", "label"],
-        "additionalProperties": false,
-        "properties": {
-          "step": { "type": "string", "enum": ["start", "contribution", "residual", "end"] },
-          "label": { "type": "string" },
-          "value": { "type": "number", "description": "start／end 的絕對值" },
-          "impact": { "type": "number", "description": "contribution／residual 的增減量" },
-          "running": { "type": "number", "description": "累計後的running值" }
-        }
+      "type": "object",
+      "required": ["impact", "kind"],
+      "additionalProperties": false,
+      "description": "交互作用殘差。shapley 下應為浮點噪音等級；oat 下承接未解釋的交互作用。**永遠存在，永不靜默丟棄**",
+      "properties": {
+        "impact": { "type": "number" },
+        "kind": { "type": "string", "enum": ["numeric"] }
       }
     },
-    "conservation_ok": {
-      "type": "boolean",
-      "description": "加總守恆是否成立。false 不得呈現給使用者——寧可不答，不可給對不起來的數字"
+
+    "method": {
+      "type": "object",
+      "required": ["requested", "resolved", "feature_count", "runs", "exact"],
+      "additionalProperties": false,
+      "properties": {
+        "requested": { "type": "string", "enum": ["auto", "shapley", "oat"] },
+        "resolved": { "type": "string", "enum": ["shapley", "oat", "none"] },
+        "feature_count": { "type": "integer", "minimum": 0 },
+        "runs": { "type": "integer", "minimum": 0, "description": "實際呼叫 Core recompute 的次數（權威值由 Core 回報）" },
+        "exact": { "type": "boolean", "description": "true＝精確歸因；false＝OAT 近似，UI 須明示並顯著呈現 residual" }
+      }
     },
-    "conservation_error": { "type": "number", "minimum": 0, "description": "守恆誤差絕對值" },
-    "before_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
-    "after_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+
+    "conservation": {
+      "type": "object",
+      "required": ["tolerance", "raw_ok"],
+      "additionalProperties": false,
+      "properties": {
+        "tolerance": { "type": "number", "exclusiveMinimum": 0 },
+        "raw_ok": { "type": "boolean", "description": "false 不得呈現給使用者——寧可不答，不可給對不起來的數字" }
+      }
+    },
+
+    "presentation": {
+      "type": "object",
+      "required": ["precision", "before", "after", "delta", "contributions",
+                   "residual", "rounding_reconciliation", "display_ok"],
+      "additionalProperties": false,
+      "description": "Core 產出的顯示層數值（已換算為 display_unit 並四捨五入）。UI 直接顯示，不得自行換算或進位",
+      "properties": {
+        "precision": { "type": "integer", "minimum": 0 },
+        "before": { "type": "number" },
+        "after": { "type": "number" },
+        "delta": { "type": "number" },
+        "contributions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["feature_id", "impact"],
+            "additionalProperties": false,
+            "properties": {
+              "feature_id": { "type": "string", "pattern": "^params\\." },
+              "impact": { "type": "number" }
+            }
+          }
+        },
+        "residual": { "type": "number" },
+        "rounding_reconciliation": {
+          "type": "number",
+          "description": "顯示進位誤差，獨立成列。**不得被相加進 residual 或被標示為交互作用**；為 0 時 UI 不必顯示此列"
+        },
+        "display_ok": { "type": "boolean", "description": "可見列（含 rounding_reconciliation）是否加得回可見 delta" }
+      }
+    }
+  },
+
+  "$defs": {
+    "endpoint": {
+      "type": "object",
+      "required": ["input_hash", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "input_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "value": { "type": "number", "description": "以目前載入的 Core 重播該輸入所得的目標值（raw 單位）" }
+      }
+    }
   }
 }

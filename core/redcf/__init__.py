@@ -39,7 +39,7 @@ from core.redcf.decision import (decide, validate_decision, calc_完工機率,
     load_stage_tree, load_decision_config)
 from core.redcf.allocation import calc_選配映射, validate_household_outcome
 from core.redcf.attribution import (attribute, validate_attribution,
-    AttributionUnsupported, ATTRIBUTION_VERSION)
+    AttributionUnsupported, SCHEMA_VERSION as ATTRIBUTION_SCHEMA_VERSION)
 from core.redcf.strategy import (strategize, validate_strategy,
     validate_stakeholder_profiles, load_strategy_config, suggest_willingness_type)
 from core.redcf.contract import (
@@ -94,6 +94,9 @@ __all__ = [
     "decide", "validate_decision", "calc_完工機率", "load_stage_tree", "load_decision_config",
     # 傳動軸（M5.5 選配映射層）
     "calc_選配映射", "validate_household_outcome",
+    # 歸因引擎（M7.4 可解釋性：加總守恆的反事實歸因）
+    "attribute", "validate_attribution", "AttributionUnsupported",
+    "ATTRIBUTION_SCHEMA_VERSION",
     # 策略引擎（M6 THE STRATEGIST 建議層）
     "strategize", "validate_strategy", "validate_stakeholder_profiles",
     "load_strategy_config", "suggest_willingness_type",
