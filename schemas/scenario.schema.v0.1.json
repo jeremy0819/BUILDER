@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urban-renewal-os/scenario.schema.v0.1.json",
+  "title": "Case OS Scenario v0.1（M7.3 多方案管理）",
+  "description": "M7_CASE_OS_SPEC §7：Scenario 只改 Input 不改 Output；恰好一個作準（authoritative）；攜帶完整 input set 而非 diff。決策報告與對外輸出只認作準方案。",
+  "type": "object",
+  "required": ["schema_version", "case_id", "scenarios"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": "scenario-0.1" },
+    "case_id": { "type": "string" },
+    "scenarios": {
+      "type": "array",
+      "description": "方案列表：恰好一個 authoritative=true（作準），其餘為 exploratory",
+      "items": { "$ref": "#/$defs/scenario" },
+      "minItems": 1
+    }
+  },
+  "$defs": {
+    "scenario": {
+      "type": "object",
+      "required": ["scenario_id", "name", "authoritative", "engine", "input_hash", "created_at"],
+      "additionalProperties": false,
+      "properties": {
+        "scenario_id": {
+          "type": "string",
+          "pattern": "^sc-",
+          "description": "方案識別碼（如 sc-001）"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "方案名稱（如「基準」「積極拉滿」「保守」）"
+        },
+        "authoritative": {
+          "type": "boolean",
+          "description": "是否為作準方案；同一案恰好一個為 true"
+        },
+        "engine": {
+          "type": "object",
+          "description": "完整 input set（params/floors/owners…），可直接餵回 Core recompute。攜帶完整 input set 而非 diff——diff 會在基準變動時失效且無法重現（§7 規則 3）。",
+          "minProperties": 1
+        },
+        "input_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "description": "engine 的 SHA-256 指紋，保證可溯源"
+        },
+        "created_at": {
+          "type": "string",
+          "description": "ISO 8601 建立時戳"
+        },
+        "description": {
+          "type": "string",
+          "description": "方案說明（選填）"
+        },
+        "parent_scenario_id": {
+          "type": ["string", "null"],
+          "description": "衍生自哪個方案（選填，便於追溯）"
+        }
+      }
+    }
+  }
+}
