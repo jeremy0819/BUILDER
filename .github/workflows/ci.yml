@@ -94,3 +94,12 @@ jobs:
       # ── Gate 13：M7.3 Scenario 紀律（恰好一個作準／engine 不含推論／完整 input set）──
       - name: "Gate 13 — Scenario headless (node)"
         run: node tests/web/test_scenario.mjs
+
+      # ── Gate 14：M7.5 量體視圖紀律（純呈現／零領域公式／合計只從 Core result 取）──
+      - name: "Gate 14 — Massing view headless (node)"
+        run: node tests/web/test_massing.mjs
+
+      # ── Gate 15：M7.4 歸因接線紀律（UI 零計算／送完整 engine／不寫回 CaseStore／
+      #    殘差與進位對帳不得混淆／core 不可用不得退回 JS 自算）──
+      - name: "Gate 15 — Attribution wiring headless (node)"
+        run: node tests/web/test_attribution_wiring.mjs

@@ -3,6 +3,41 @@
 > 記錄 CORE_VERSION 的每次變動（VERSION_POLICY：公式、費率、law_db、合約結構變動才 bump）。
 > UI 版本（app.py v4.x）與 OS release tag（os-vX.Y.Z）另有軸線，不在此表。
 
+## 0.5.0 — 2026-08-07（M7 THE CASE OS：Memory 層＋歸因引擎）
+
+> **版本裁定**：依 `docs/releases/M7_4_ATTRIBUTION_VISUAL_PLAN.md` §3.5 版本治理，
+> M7.4 為**新增 Core 能力**，`CORE_VERSION` 由 0.4.0 → **0.5.0**（minor：純新增，
+> 既有黃金公式零變動，容積/坪效/共負/投報/估值期望值不變）。
+> 既有凍結範例的 provenance **不回填**（歷史快照，可溯源原則）。
+> OS release tag 為獨立軸，`os-v0.5.0` 待走 `docs/releases/CHECKLIST.md` 後另行發布。
+
+- **M7.1 Case OS Foundation**：`apps/web/case-store.js`（IndexedDB）＋合約
+  **`activity.schema.v0.1`** 凍結。Activity append-only、Session ＝事件流上的命名區間
+  （非第二真源）、localStorage 一次性遷移（舊資料保留為唯讀備援不刪）、Local-first 備份三條。
+  `assertNoInference()` 擋下推論欄位寫入（Gate 11／12）。
+- **M7.2 Watchtower**：`core/redcf/timeline.py`——`build_today()`＋`build_timeline()`。
+  合約 **`milestone.schema.v0.1`** 凍結（`source=statute` 條件式必附 `legal_basis`）。
+  法定期限庫每筆附法條出處與 `verification`；「72hr 風險窗」明確標為 heuristic、允許被推翻。
+- **M7.3 Scenario**：多方案管理＋合約 **`scenario.schema.v0.1`** 凍結。三條硬規則機器守衛：
+  只改 Input 不改 Output、**恰好一個 authoritative**、攜帶**完整 input set 而非 diff**（Gate 13）。
+- **M7.4 Attribution**（`core/redcf/attribution.py`，`attribution-0.1`）：
+  把決策報告從「結論」變成**可質詢的結論**。Shapley 精確歸因（核可特徵 ≤10，2ⁿ 次重算，
+  加總完全等於 delta 且順序無關）／OAT 退路；raw 層恆滿足
+  **`Σ contributions[].impact + residual.impact == delta`**（容差 1e-9）。
+  · **可歸因特徵**＝`params.*` 與 **`params.財務覆寫.*`** 的純量葉節點，
+    以正規路徑（`params.住宅單價`）為 `feature_id`，標籤由 Core 給、UI 不得自創。
+  · **結構化拒答**：`floors`／`owners`／`case_type`／`mode`／未知結構路徑一律
+    `AttributionUnsupported`（帶 `reason_code`／`paths`），**不併成一根「其他」長條**。
+  · **呈現由 Core 產出**（`presentation`）：瀏覽器各自進位會讓可見列加不回可見 delta；
+    顯示進位誤差獨立為 `rounding_reconciliation`，**不得偽裝成經濟意義上的交互作用殘差**。
+  · **單位誠實**：`return_rate` ＝「**全案投報率**」，顯示單位 **ppt**，**非 IRR**
+    （回歸測試斷言輸出全文不得出現 IRR 字樣）。
+  · 合約 **`attribution.schema.v0.1`** 凍結；報告離開 Core 前必過 schema 驗證。
+  · 驗收矩陣 A–I 共 37 測（`tests/test_attribution.py`），含零公式複製斷言。
+- **M7.5 Visualization**：`apps/web/massing-view.js` 量體／逐層視圖，讀既有 `floors[]`
+  純呈現、零領域公式、無寫入路徑；合計只從 Core result 取，取不到顯示「—」（Gate 14）。
+  **GIS 疊圖延後**：外部圖磚違反零依賴／可離線的靜態純度紅線，需先決定離線圖資方案。
+
 ## 0.4.0 — 2026-07-24（M4–M5.5＋B1.5：決策引擎／選配映射／B 系列並版）
 
 > **版本裁定（使用者核准）**：0.3.0 後 `core/redcf` 新增了計算能力——`decision.py`（三方 EV）、

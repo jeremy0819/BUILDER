@@ -25,6 +25,16 @@ async function init() {
     }
     post("progress", { pct: 90, msg: "初始化計算核心…" });
     pyodide.runPython("import sys\nif '/builder' not in sys.path: sys.path.insert(0, '/builder')\nimport json\nimport core.redcf as _redcf");
+    // M7.4：把 Core 的結構化拒答（reason_code／paths）保成可解析的信封，
+    // 而非讓它變成一段 traceback 字串——UI 必須能逐條點名不支援的路徑。
+    pyodide.runPython(
+      "def _redcf_attribute_safe(before, after, target, method):\n" +
+      "    try:\n" +
+      "        return {'attribution': _redcf.attribute(before, after, target=target, method=method)}\n" +
+      "    except _redcf.AttributionUnsupported as e:\n" +
+      "        return {'unsupported': {'reason_code': e.reason_code,\n" +
+      "                               'paths': list(e.paths), 'message': str(e)}}\n"
+    );
     ready = true;
     post("ready", {
       core_version: pyodide.runPython("_redcf.CORE_VERSION"),
@@ -77,6 +87,23 @@ self.onmessage = (e) => {
         "json.loads(_tl_ms), today=(_tl_today or None)))"
       );
       post("result", { id: m.id, timeline: JSON.parse(out) });
+    } catch (err) {
+      post("result", { id: m.id, error: String((err && err.message) || err) });
+    }
+  } else if (m.type === "attribute") {
+    // M7.4 歸因：同一份 core/redcf.attribute。Worker **只搬運**——
+    // delta／貢獻／殘差／方法選擇／進位／守恆旗標全部由 Core 決定，此處零計算。
+    if (!ready) { post("result", { id: m.id, error: "core-not-ready" }); return; }
+    try {
+      pyodide.globals.set("_at_before", JSON.stringify(m.before || {}));
+      pyodide.globals.set("_at_after", JSON.stringify(m.after || {}));
+      pyodide.globals.set("_at_target", m.target || "return_rate");
+      pyodide.globals.set("_at_method", m.method || "auto");
+      const out = pyodide.runPython(
+        "json.dumps(_redcf_attribute_safe(json.loads(_at_before), json.loads(_at_after), " +
+        "_at_target, _at_method))"
+      );
+      post("result", Object.assign({ id: m.id }, JSON.parse(out)));
     } catch (err) {
       post("result", { id: m.id, error: String((err && err.message) || err) });
     }

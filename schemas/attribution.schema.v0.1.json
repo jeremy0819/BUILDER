@@ -1,0 +1,138 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "urban-renewal-os/attribution.schema.v0.1.json",
+  "title": "Attribution v0.1（M7.4 可解釋性：兩個 Scenario 之間，指標為何變動）",
+  "description": "M7_CASE_OS_SPEC §8 與 M7_4_ATTRIBUTION_VISUAL_PLAN 的輸出合約。歸因不是 diff——diff 只說『什麼變了』，歸因說『誰造成的』。raw 層恆滿足 Σ contributions[].impact + residual.impact == delta（容差 1e-9）。presentation 由 Core 產出，避免瀏覽器各自進位導致可見列加不回可見 delta；顯示進位誤差獨立為 rounding_reconciliation，不得偽裝成經濟意義上的交互作用殘差。首版只接受兩份完整 Scenario engine；結構性變更明確拒答，不以『其他』吸收差額。單位誠實：return_rate ＝『全案投報率』，顯示單位 ppt，非 IRR。",
+  "type": "object",
+  "required": ["schema_version", "status", "core_version", "target", "before", "after",
+               "delta", "contributions", "residual", "method", "conservation", "presentation"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": "attribution-0.1" },
+    "status": { "const": "ok", "description": "本合約只描述成功報告；拒答走結構化錯誤，不進本 schema" },
+    "core_version": { "type": "string", "description": "產生本報告的 Core 版本（重播用的是此版 Core，非原始日期所見版本）" },
+
+    "target": {
+      "type": "object",
+      "required": ["id", "label", "raw_unit", "display_unit", "higher_is_better"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "enum": ["return_rate"] },
+        "label": {
+          "type": "string",
+          "description": "顯示名稱。return_rate 必須為『全案投報率』——**不得標示或換算為 IRR**"
+        },
+        "raw_unit": { "type": "string", "enum": ["ratio"] },
+        "display_unit": { "type": "string", "enum": ["percentage_points"] },
+        "higher_is_better": {
+          "type": "boolean",
+          "description": "由目標中繼資料決定好壞方向；UI 不得僅以顏色決定『好』或『壞』"
+        }
+      }
+    },
+
+    "before": { "$ref": "#/$defs/endpoint" },
+    "after": { "$ref": "#/$defs/endpoint" },
+
+    "delta": { "type": "number", "description": "after.value − before.value（raw 單位）" },
+
+    "contributions": {
+      "type": "array",
+      "description": "逐特徵邊際貢獻，依影響絕對值排序。**排序是為了易讀，不是變更時序**——Shapley 與順序無關",
+      "items": {
+        "type": "object",
+        "required": ["feature_id", "label", "before_value", "after_value", "impact"],
+        "additionalProperties": false,
+        "properties": {
+          "feature_id": {
+            "type": "string",
+            "pattern": "^params\\.",
+            "description": "正規路徑，如 params.住宅單價 或 params.財務覆寫.管理費率"
+          },
+          "label": { "type": "string", "description": "由 Core 從正規路徑取得，UI 不得自創" },
+          "before_value": { "type": "number" },
+          "after_value": { "type": "number" },
+          "impact": { "type": "number", "description": "該特徵對 delta 的貢獻（raw 單位）" }
+        }
+      }
+    },
+
+    "residual": {
+      "type": "object",
+      "required": ["impact", "kind"],
+      "additionalProperties": false,
+      "description": "交互作用殘差。shapley 下應為浮點噪音等級；oat 下承接未解釋的交互作用。**永遠存在，永不靜默丟棄**",
+      "properties": {
+        "impact": { "type": "number" },
+        "kind": { "type": "string", "enum": ["numeric"] }
+      }
+    },
+
+    "method": {
+      "type": "object",
+      "required": ["requested", "resolved", "feature_count", "runs", "exact"],
+      "additionalProperties": false,
+      "properties": {
+        "requested": { "type": "string", "enum": ["auto", "shapley", "oat"] },
+        "resolved": { "type": "string", "enum": ["shapley", "oat", "none"] },
+        "feature_count": { "type": "integer", "minimum": 0 },
+        "runs": { "type": "integer", "minimum": 0, "description": "實際呼叫 Core recompute 的次數（權威值由 Core 回報）" },
+        "exact": { "type": "boolean", "description": "true＝精確歸因；false＝OAT 近似，UI 須明示並顯著呈現 residual" }
+      }
+    },
+
+    "conservation": {
+      "type": "object",
+      "required": ["tolerance", "raw_ok"],
+      "additionalProperties": false,
+      "properties": {
+        "tolerance": { "type": "number", "exclusiveMinimum": 0 },
+        "raw_ok": { "type": "boolean", "description": "false 不得呈現給使用者——寧可不答，不可給對不起來的數字" }
+      }
+    },
+
+    "presentation": {
+      "type": "object",
+      "required": ["precision", "before", "after", "delta", "contributions",
+                   "residual", "rounding_reconciliation", "display_ok"],
+      "additionalProperties": false,
+      "description": "Core 產出的顯示層數值（已換算為 display_unit 並四捨五入）。UI 直接顯示，不得自行換算或進位",
+      "properties": {
+        "precision": { "type": "integer", "minimum": 0 },
+        "before": { "type": "number" },
+        "after": { "type": "number" },
+        "delta": { "type": "number" },
+        "contributions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["feature_id", "impact"],
+            "additionalProperties": false,
+            "properties": {
+              "feature_id": { "type": "string", "pattern": "^params\\." },
+              "impact": { "type": "number" }
+            }
+          }
+        },
+        "residual": { "type": "number" },
+        "rounding_reconciliation": {
+          "type": "number",
+          "description": "顯示進位誤差，獨立成列。**不得被相加進 residual 或被標示為交互作用**；為 0 時 UI 不必顯示此列"
+        },
+        "display_ok": { "type": "boolean", "description": "可見列（含 rounding_reconciliation）是否加得回可見 delta" }
+      }
+    }
+  },
+
+  "$defs": {
+    "endpoint": {
+      "type": "object",
+      "required": ["input_hash", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "input_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "value": { "type": "number", "description": "以目前載入的 Core 重播該輸入所得的目標值（raw 單位）" }
+      }
+    }
+  }
+}

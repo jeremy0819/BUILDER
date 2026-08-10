@@ -23,6 +23,8 @@
 > M7 Case OS 新增契約：`activity.schema.v0.1` `04f487db…`（Memory：Activity/Session/History，新增檔）。
 > M7.2 Watchtower 新增契約：`milestone.schema.v0.1` `ab3edbab…`（statute 必附 legal_basis）。
 > M7.3 Scenario 新增契約：`scenario.schema.v0.1` `05534522…`（多方案：恰好一個作準、完整 input set）。
+> M7.4 Attribution 新增契約：`attribution.schema.v0.1` `87def91e…`（加總守恆歸因；`ATTRIBUTION_VERSION`
+> 0.1.0 為獨立軸，比照 `ENGINE_VERSION`）。
 > 要改凍結檔＝走版本升級流程（新 `schema_version`＋遷移器＋更新 FROZEN），不得直接改檔。
 
 ## 2. 三層關係（誰依賴誰）

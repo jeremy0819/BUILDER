@@ -6,4 +6,4 @@ CORE_VERSION 隨計算公式 / 合約結構變更而動；app.py 的 UI 版本�
 公式算出的結果，不需要關心 UI 版本。
 """
 
-CORE_VERSION = "0.4.0"
+CORE_VERSION = "0.5.0"

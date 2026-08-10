@@ -51,6 +51,8 @@ FROZEN = {
         "8821db932a83fd4ac6d457f6ae1a8f19b691a1f071084a883769895c1c9b0bd1",  # strategy v0.1（M6 THE STRATEGIST 輸出）
     "schemas/scenario.schema.v0.1.json":
         "05534522b8b5a67ea6a2705c1c060fc1aa08c8544a321a8d11014378998fca3c",  # scenario v0.1（M7.3 多方案管理）
+    "schemas/attribution.schema.v0.1.json":
+        "87def91e01a079a68157c08fd4b011d6efbd5fc37a8192447c8b62a613634dec",  # attribution v0.1（M7.4 加總守恆歸因）
 }
 
 

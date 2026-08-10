@@ -54,6 +54,18 @@
                           today: todayISO || "" });
         });
       },
+      // M7.4：attribute(before, after[, target, method]) → Promise<{attribution}｜{unsupported}>。
+      // before/after 為**完整 engine**；本層不得傳 diff、不得預先算任何 delta 或貢獻。
+      // 不支援的比較回 {unsupported:{reason_code,paths,message}}——呼叫端須逐條點名，
+      // **不得畫成一根「其他」長條**，也不得退回 JS 自算。
+      attribute: function (before, after, target, method) {
+        return new Promise(function (resolve, reject) {
+          if (dead || !w) return reject(new Error("core-runtime 不可用"));
+          var id = ++seq; pending[id] = { resolve: resolve, reject: reject };
+          w.postMessage({ type: "attribute", id: id, before: before, after: after,
+                          target: target || "return_rate", method: method || "auto" });
+        });
+      },
       // M6：strategize(decision, workflow, profiles) → Promise<{strategy}>；同一份 Core，UI 零推論。
       strategize: function (decision, workflow, profiles) {
         return new Promise(function (resolve, reject) {

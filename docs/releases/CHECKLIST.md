@@ -32,6 +32,7 @@
       - activity v0.1 `schemas/activity.schema.v0.1.json` = `04f487db779564ed7359c4e289a5ecb78b22fbc1e3a53ed2cd6fe1a5b73163fa`（M7.1 Memory 層）
       - milestone v0.1 `schemas/milestone.schema.v0.1.json` = `ab3edbab1bdfae6e0b0c4454fb40393d8f38a127b7983e25c84079d8eb692858`（M7.2 Watchtower）
       - scenario v0.1 `schemas/scenario.schema.v0.1.json` = `05534522b8b5a67ea6a2705c1c060fc1aa08c8544a321a8d11014378998fca3c`（M7.3 多方案管理）
+      - attribution v0.1 `schemas/attribution.schema.v0.1.json` = `87def91e01a079a68157c08fd4b011d6efbd5fc37a8192447c8b62a613634dec`（M7.4 加總守恆歸因）
       要改凍結檔＝走版本升級流程（新版本＋遷移器＋更新 FROZEN 基準），不得直接改檔。
 - [ ] **Version Updated**：依 `governance/VERSION_POLICY.md` 確認 CORE_VERSION / schema_version /
       APP_VERSION 該動的已動、不該動的沒動；本次 release 對應版本已填入下方發布紀錄。
@@ -59,6 +60,7 @@
 
 | OS Tag | 日期 | CORE_VERSION | schema_version | 備註 |
 |---|---|---|---|---|
+| `os-v0.5.0` | 2026-08-10 | 0.5.0 | 2.1 | M7.1–M7.5：Case OS、Watchtower、Scenario、Attribution、Massing view；GitHub CI 與手動 Workspace 驗收通過。 |
 | _(os-v0.1.0-alpha)_ | _待 M1 收尾_ | 0.2.0 | 1.1 | 首發；合約仍會於 v2.0 破壞性變更，故僅 alpha/內部 |
 
 ---
