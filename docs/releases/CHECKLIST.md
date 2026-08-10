@@ -60,6 +60,7 @@
 
 | OS Tag | 日期 | CORE_VERSION | schema_version | 備註 |
 |---|---|---|---|---|
+| `os-v0.5.0` | 2026-08-10 | 0.5.0 | 2.1 | M7.1–M7.5：Case OS、Watchtower、Scenario、Attribution、Massing view；GitHub CI 與手動 Workspace 驗收通過。 |
 | _(os-v0.1.0-alpha)_ | _待 M1 收尾_ | 0.2.0 | 1.1 | 首發；合約仍會於 v2.0 破壞性變更，故僅 alpha/內部 |
 
 ---

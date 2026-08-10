@@ -3,39 +3,6 @@
 > 記錄 CORE_VERSION 的每次變動（VERSION_POLICY：公式、費率、law_db、合約結構變動才 bump）。
 > UI 版本（app.py v4.x）與 OS release tag（os-vX.Y.Z）另有軸線，不在此表。
 
-## Unreleased（M7 THE CASE OS：Memory 層）
-
-> **CORE_VERSION 維持 0.4.0**（未 bump）。M7 各子里程碑**零新增計算公式**——
-> `timeline.py` 是純日期算術與衍生視圖、`attribution.py` 只反覆呼叫既有 `recompute()`，
-> 皆不產生新的財務量。依 VERSION_POLICY「公式／費率／law_db／合約結構變動才 bump」，
-> 新增契約檔（activity／milestone／scenario／attribution）屬**純新增、不動既有凍結檔**，
-> 各自帶獨立版本軸（如 `ATTRIBUTION_VERSION 0.1.0`），比照 `ENGINE_VERSION` 慣例。
-
-- **M7.1 Case OS Foundation**：`apps/web/case-store.js`（IndexedDB 儲存層）＋
-  合約 **`activity.schema.v0.1`** 凍結。Activity append-only、Session ＝事件流上的命名區間
-  （非第二真源）、localStorage 一次性遷移（舊資料保留為唯讀備援不刪）、Local-first 備份三條。
-  `assertNoInference()` 主動擋下推論欄位寫入（Gate 11／Gate 12）。
-- **M7.2 Watchtower**：`core/redcf/timeline.py`——`build_today()`「今天要做什麼」＋
-  `build_timeline()`（過去 Activity/History ＋未來 deadline）。合約 **`milestone.schema.v0.1`** 凍結
-  （`source=statute` 條件式必附 `legal_basis`）。法定期限庫 `statutory_deadlines.json`
-  每筆附法條出處與 `verification` 狀態；「72hr 風險窗」明確標為 heuristic、允許被案例推翻。
-- **M7.3 Scenario**：多方案管理（`case-store.js`）＋合約 **`scenario.schema.v0.1`** 凍結。
-  三條硬規則機器守衛：只改 Input 不改 Output、**恰好一個 authoritative**（新增／刪除皆自動轉移）、
-  攜帶**完整 input set 而非 diff**。對抗 Case D 回歸（Gate 13）。
-- **M7.4 Attribution**（`core/redcf/attribution.py`，`ATTRIBUTION_VERSION 0.1.0`）：
-  把決策報告從「結論」變成「**可質詢的結論**」。Shapley 精確歸因（n≤10，2ⁿ 次重算，
-  加總完全等於 delta 且順序無關）／OAT 退路；輸出恆滿足 **`Σ contributions + residual == delta`**
-  （容差 1e-9）並附**可見加總橋** `bridge`。合約 **`attribution.schema.v0.1`** 凍結。
-  · **首版邊界（使用者核定）**：只接受兩份**完整 Scenario input**；
-    `floors`／`owners`／`case_type`／`mode` 等結構性變更**明確拒答**
-    （`AttributionUnsupported`），**不以「其他」項吸收差額**。
-  · **單位誠實**：`return_rate` ＝「**全案投報率**」，差異單位 **`ppt`（百分點）**，
-    **非 IRR**——回歸測試斷言輸出全文不得出現 IRR 字樣。
-  · **零公式複製**：測試斷言本模組不得 import `finance`／`capacity`／`efficiency`／
-    `valuation`／`contract`，只准呼叫 `recompute`。
-  · 對抗回歸 `tests/test_attribution.py`（30 測）：Case A 加總守恆／Case B 順序無關／
-    Case C 單一變更即精確＋結構拒答＋單位誠實＋不改動輸入。
-
 ## 0.5.0 — 2026-08-07（M7 THE CASE OS：Memory 層＋歸因引擎）
 
 > **版本裁定**：依 `docs/releases/M7_4_ATTRIBUTION_VISUAL_PLAN.md` §3.5 版本治理，

@@ -8,7 +8,7 @@
   var V = {
     core: "0.5.0",          // ← 對齊 core/redcf/_version.py（Gate 10 守衛）
     schema: "v2.1",
-    release: "os-v0.4.0",   // ← 對齊最新 git tag
+    release: "os-v0.5.0",   // ← 對齊 os-v0.5.0 release tag
     engine: "0.1.0",        // Decision Engine
     strategy: "0.1.0"       // Strategy Engine（M6）
   };
