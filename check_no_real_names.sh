@@ -16,8 +16,16 @@ if find . -path ./.git -prune -o -path ./local_calibration -prune -o -print \
      | grep -E "竹蓮|安和|安民|中正|龜山|永盛" ; then
   FAIL=1
 fi
+# ── 結構式守衛（補列舉式的洞）──────────────────────────────────
+# 上面的清單只認「已知」段名，新案子一律放行——曾有含「○○段 809 地號」的文件
+# 因此通過 Gate 0。下面改以地籍／門牌的**格式特徵**攔截，不必把真實段名寫進版控。
+# 兩者互補：列舉式擋裸段名，結構式擋帶數字的地籍格式。
+if ! python3 tools/check_real_data_patterns.py ; then
+  FAIL=1
+fi
+
 if [ "$FAIL" -eq 1 ]; then
-  echo "FAIL：發現疑似真實段名（上列命中處需去識別化）"; exit 1
+  echo "FAIL：發現疑似真實案件資料（上列命中處需去識別化）"; exit 1
 else
   echo "PASS：零命中"; exit 0
 fi
