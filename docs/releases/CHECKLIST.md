@@ -33,6 +33,7 @@
       - milestone v0.1 `schemas/milestone.schema.v0.1.json` = `ab3edbab1bdfae6e0b0c4454fb40393d8f38a127b7983e25c84079d8eb692858`（M7.2 Watchtower）
       - scenario v0.1 `schemas/scenario.schema.v0.1.json` = `05534522b8b5a67ea6a2705c1c060fc1aa08c8544a321a8d11014378998fca3c`（M7.3 多方案管理）
       - attribution v0.1 `schemas/attribution.schema.v0.1.json` = `87def91e01a079a68157c08fd4b011d6efbd5fc37a8192447c8b62a613634dec`（M7.4 加總守恆歸因）
+      - chart contract v0.1 `schemas/chart_contract.schema.v0.1.json` = `13c5d7cb066c17918af42648fb25bbccc8cd1f655c4efcef413f16277a4bdf95`（M8.1 視覺契約）
       要改凍結檔＝走版本升級流程（新版本＋遷移器＋更新 FROZEN 基準），不得直接改檔。
 - [ ] **Version Updated**：依 `governance/VERSION_POLICY.md` 確認 CORE_VERSION / schema_version /
       APP_VERSION 該動的已動、不該動的沒動；本次 release 對應版本已填入下方發布紀錄。

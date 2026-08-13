@@ -25,6 +25,8 @@
 > M7.3 Scenario 新增契約：`scenario.schema.v0.1` `05534522…`（多方案：恰好一個作準、完整 input set）。
 > M7.4 Attribution 新增契約：`attribution.schema.v0.1` `87def91e…`（加總守恆歸因；`ATTRIBUTION_VERSION`
 > 0.1.0 為獨立軸，比照 `ENGINE_VERSION`）。
+> M8.1 Viewfinder 新增契約：`chart_contract.schema.v0.1` `13c5d7cb…`（圖表來源、誤讀防線、
+> 不確定性與唯讀互動；`chart-contract-0.1` 為獨立 Presentation 契約，不變更 Project Schema 或 Core）。
 > 要改凍結檔＝走版本升級流程（新 `schema_version`＋遷移器＋更新 FROZEN），不得直接改檔。
 
 ## 2. 三層關係（誰依賴誰）
