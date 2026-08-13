@@ -2,8 +2,13 @@
 """
 tools/check_schema_freeze.py — Schema 凍結守衛（M2 close）
 ==========================================================
-凍結中的合約 schema「位元組不可變」（紅線）。本檢查對每個凍結檔算 sha256，
-與下方基準比對；任何一位元組變動即 Fail，擋 merge。
+凍結中的合約 schema「內容不可變」（紅線）。本檢查對每個凍結檔算 **canonical-LF**
+sha256（CRLF 先正規化為 LF），與下方基準比對；任何內容變動即 Fail，擋 merge。
+
+為何是 canonical-LF 而非 raw bytes：Git 在 Windows 的 checkout 會把 LF 轉成 CRLF，
+raw byte 比對會在該環境產生**假性失敗**。正規化只吸收換行差異，
+JSON 語意零影響；任何實質內容變動仍照擋。
+（導入時 18 個既有基準值皆未變動——repo 內檔案本就是 LF。）
 
 要合法變更凍結 schema：走版本升級流程（新檔 + 新 schema_version + 遷移器 + 更新此表），
 而非直接改凍結檔。基準記錄同時抄錄於 governance/VERSION_POLICY.md 與
@@ -73,7 +78,7 @@ def main() -> int:
             continue
         實際 = _frozen_digest(p)
         if 實際 != 基準:
-            壞.append(f"❌ {相對} 位元組已變（凍結違規）\n     基準 {基準}\n     實際 {實際}")
+            壞.append(f"❌ {相對} 正規化 LF 後內容已變（凍結違規）\n     基準 {基準}\n     實際 {實際}")
         else:
             print(f"✓ frozen {相對}")
     if 壞:
