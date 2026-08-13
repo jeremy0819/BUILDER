@@ -3,6 +3,19 @@
 > 記錄 CORE_VERSION 的每次變動（VERSION_POLICY：公式、費率、law_db、合約結構變動才 bump）。
 > UI 版本（app.py v4.x）與 OS release tag（os-vX.Y.Z）另有軸線，不在此表。
 
+## Unreleased — M8 THE VIEWFINDER
+
+> M8.1／M8.2 僅加厚 Presentation 層；不修改 Core 公式、Project Schema 或 `CORE_VERSION`。
+
+- **M8.1 Chart Contract**：新增並凍結 `chart_contract.schema.v0.1`；圖表必須宣告來源、
+  `must_not_read_as`、權威不確定性欄位與唯讀互動。Gate 16 驗證 schema、UI 綁定、
+  凍結 hash 與瀏覽器 bundle 同步。
+- **M8.2 Attribution Waterfall**：Workspace 將 M7.4 表格升級為可鍵盤選取的瀑布圖與
+  證據抽屜；端點、貢獻、殘差、進位對帳逐欄取自 Core `presentation`，瀏覽器只做版面
+  幾何。精確 Shapley／OAT 方向性、不可誤讀項目與法源未提供狀態皆明示。Gate 17
+  驗證唯讀互動、無障礙、窄版與零領域公式；首次載入 Core 時按鈕會等待 ready，
+  不再送出過早請求。
+
 ## 0.5.0 — 2026-08-07（M7 THE CASE OS：Memory 層＋歸因引擎）
 
 > **版本裁定**：依 `docs/releases/M7_4_ATTRIBUTION_VISUAL_PLAN.md` §3.5 版本治理，

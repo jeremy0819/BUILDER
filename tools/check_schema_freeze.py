@@ -53,7 +53,15 @@ FROZEN = {
         "05534522b8b5a67ea6a2705c1c060fc1aa08c8544a321a8d11014378998fca3c",  # scenario v0.1（M7.3 多方案管理）
     "schemas/attribution.schema.v0.1.json":
         "87def91e01a079a68157c08fd4b011d6efbd5fc37a8192447c8b62a613634dec",  # attribution v0.1（M7.4 加總守恆歸因）
+    "schemas/chart_contract.schema.v0.1.json":
+        "13c5d7cb066c17918af42648fb25bbccc8cd1f655c4efcef413f16277a4bdf95",  # chart contract v0.1（M8.1 視覺契約）
 }
+
+
+def _frozen_digest(path: pathlib.Path) -> str:
+    """Hash canonical LF bytes so Git's Windows checkout mode cannot alter the result."""
+    canonical = path.read_bytes().replace(b"\r\n", b"\n")
+    return hashlib.sha256(canonical).hexdigest()
 
 
 def main() -> int:
@@ -63,7 +71,7 @@ def main() -> int:
         if not p.exists():
             壞.append(f"❌ 缺檔：{相對}")
             continue
-        實際 = hashlib.sha256(p.read_bytes()).hexdigest()
+        實際 = _frozen_digest(p)
         if 實際 != 基準:
             壞.append(f"❌ {相對} 位元組已變（凍結違規）\n     基準 {基準}\n     實際 {實際}")
         else:

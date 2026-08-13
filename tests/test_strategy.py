@@ -6,7 +6,6 @@
 範圍界定（誠實）：v0.1 的結構化輸出＝型別→對策方向＋禁止動作＋雙佇列＋雪崩。
 spec §9 更細的契約戰術（估價基準日鎖定、分配封閉化、corporate substance 證明）屬
 narrative/文案層，記 v0.2；本檔斷言 v0.1 引擎實際編碼的『方向真理』。"""
-import hashlib
 import pathlib
 import pytest
 from core.redcf.strategy import (strategize, validate_strategy, validate_stakeholder_profiles,
@@ -249,5 +248,5 @@ def test_profile_壞訊號列舉被擋():
 def test_strategy_schema_凍結hash():
     import tools.check_schema_freeze as f
     for rel in ("schemas/strategy.schema.v0.2.json", "schemas/stakeholder_profile.schema.v0.2.json"):
-        實際 = hashlib.sha256((根 / rel).read_bytes()).hexdigest()
+        實際 = f._frozen_digest(根 / rel)
         assert 實際 == f.FROZEN[rel], f"{rel} 凍結 hash 不符"

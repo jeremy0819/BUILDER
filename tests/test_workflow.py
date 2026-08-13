@@ -6,7 +6,6 @@ C1 範圍：schema 結構驗證（T1）＋遷移骨架（T5）＋凍結守衛。
 同意狀態機的完整不變式在 C3（本檔只放最小 sanity）。
 合成範例，零真實資料（僅匿名代號）。
 """
-import hashlib
 import json
 import pathlib
 
@@ -186,5 +185,5 @@ def test_wf_derive_signability_與schema列舉一致():
 def test_wf_凍結hash():
     import tools.check_schema_freeze as f
     for rel in ("schemas/workflow_schema.json", "schemas/workflow_schema_v1_1.json"):
-        實際 = hashlib.sha256((根 / rel).read_bytes()).hexdigest()
+        實際 = f._frozen_digest(根 / rel)
         assert 實際 == f.FROZEN[rel], f"{rel} 凍結 hash 不符"

@@ -103,3 +103,12 @@ jobs:
       #    殘差與進位對帳不得混淆／core 不可用不得退回 JS 自算）──
       - name: "Gate 15 — Attribution wiring headless (node)"
         run: node tests/web/test_attribution_wiring.mjs
+
+      # ── Gate 16：M8.1 Chart Contract（schema／來源綁定／唯讀互動／bundle 同步）──
+      - name: "Gate 16 — Viewfinder chart contracts"
+        run: python tools/check_chart_contracts.py
+
+      # ── Gate 17：M8.2 歸因瀑布圖（presentation verbatim／殘差與進位分列／
+      #    唯讀互動／鍵盤可達／窄版約束／零領域公式）──
+      - name: "Gate 17 — Viewfinder attribution waterfall (node)"
+        run: node tests/web/test_viewfinder_waterfall.mjs

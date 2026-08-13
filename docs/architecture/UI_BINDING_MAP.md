@@ -92,6 +92,30 @@
 | 溯源雜湊 | `before.input_hash` / `after.input_hash` | `input_hash()` | ✅ |
 | 不支援比較的路徑清單 | `unsupported.paths` / `reason_code` / `message` | `AttributionUnsupported`（Worker 信封） | ✅ |
 
+### M8.1／M8.2 歸因瀑布圖 · 合約＝`chart-contract-0.1`
+
+> 圖表契約只約束 Presentation，不改 Project Schema，也不新增領域計算。瀑布圖的數字逐字取自
+> `attribution-0.1`；瀏覽器只做座標與寬度映射。`direction_field` 綁定 Core 的方向欄位，
+> 不在圖層硬編碼「正值就是好」。
+
+| 視覺／證據元素 | Chart Contract Field | Attribution Source | 狀態 |
+|---|---|---|---|
+| 基準、差異、對照端點 | `presentation.before` / `presentation.delta` / `presentation.after` | Core `presentation` verbatim | ✅ M8.2 |
+| 各變更影響 | `presentation.contributions[].impact` | Core 進位後貢獻，圖層只做幾何映射 | ✅ M8.2 |
+| 交互作用（殘差） | `presentation.residual` | Core 殘差；永遠獨立成列 | ✅ M8.2 |
+| 顯示進位對帳 | `presentation.rounding_reconciliation` | Core 對帳；非零時獨立成列 | ✅ M8.2 |
+| 單位 | `target.display_unit` | Core 目標定義 | ✅ M8.2 |
+| 好壞方向 | `target.higher_is_better` | Core 目標定義；不得硬編碼 | ✅ M8.2 |
+| 欄位識別與名稱 | `contributions[].feature_id` / `contributions[].label` | Core 正規路徑與標籤 | ✅ M8.2 |
+| 欄位前後原值 | `contributions[].before_value` / `contributions[].after_value` | Core 原始輸入值 | ✅ M8.2 |
+| 證據抽屜影響值 | `presentation.contributions[].impact` | Core presentation | ✅ M8.2 |
+| 重播 Core 版本 | `core_version` | Core provenance | ✅ M8.2 |
+| 方案雜湊 | `before.input_hash` / `after.input_hash` | Core provenance | ✅ M8.2 |
+| 歸因方法／重算次數 | `method.resolved` / `method.runs` | Core 回報 | ✅ M8.2 |
+| 守恆／顯示對帳狀態 | `conservation.raw_ok` / `presentation.display_ok` | Core 自檢旗標；UI 不重算 | ✅ M8.2 |
+
+> `attribution-0.1` 沒有法源欄位，證據抽屜必須明示「未提供」，不得由 UI 補寫或推論法源。
+
 ### M7.5 量體視圖（Workspace「量體」分頁）· 純呈現
 
 | UI 元素 | Schema Field | Core Source | 狀態 |

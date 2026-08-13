@@ -1,0 +1,41 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>M8 synthetic scenario seed</title>
+<button id="seed" type="button">建立合成方案</button>
+<output id="status" aria-live="polite">尚未建立</output>
+<script src="../../../apps/web/case-store.js"></script>
+<script>
+document.getElementById("seed").onclick = async function () {
+  const status = document.getElementById("status");
+  try {
+    const response = await fetch("../../../schemas/examples/v2/v2_1_案例D_權變示範.json");
+    const fixture = await response.json();
+    const base = fixture.engine;
+    const comparison = structuredClone(base);
+    comparison.params.住宅單價 = 68.25;
+    comparison.params.車位數 = 76;
+    const caseId = "prj-737dbda4";
+    const desired = [
+      {
+        scenario_id: "sc-m8-base", name: "合成基準", authoritative: true,
+        engine: base,
+        input_hash: "sha256:737dbda4cd7d863a6b4e00ecdf626c215d77ee6a08510d36a4720601a026e3be"
+      },
+      {
+        scenario_id: "sc-m8-compare", name: "合成對照", authoritative: false,
+        engine: comparison,
+        input_hash: "sha256:ee0d7cd99a8a713d212f0e332cf28ddc3799c42d32d553f1038e1a290052c75f"
+      }
+    ];
+    const existing = await CaseStore.listScenarios(caseId);
+    for (const scenario of desired) {
+      if (!existing.some(item => item.scenario_id === scenario.scenario_id)) {
+        await CaseStore.addScenario(caseId, scenario);
+      }
+    }
+    status.value = "已建立 2 個合成方案";
+  } catch (error) {
+    status.value = "建立失敗：" + (error.message || error);
+  }
+};
+</script>

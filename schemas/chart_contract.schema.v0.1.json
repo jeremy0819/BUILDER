@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://urban-renewal-os/schemas/chart_contract.schema.v0.1.json",
+  "title": "Viewfinder chart contract registry v0.1",
+  "description": "M8 Viewfinder 的機器可驗證圖表契約。契約只描述圖可以呈現的權威欄位、不可誤讀語意、不確定性來源與唯讀互動；不得攜帶領域公式或在 UI 複製 higher_is_better 判斷。",
+  "type": "object",
+  "required": ["schema_version", "charts"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": "chart-contract-0.1" },
+    "charts": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/chart" }
+    }
+  },
+  "$defs": {
+    "field_path": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*|\\[\\])*$"
+    },
+    "chart": {
+      "type": "object",
+      "required": [
+        "chart_id", "title", "source", "series", "direction_field",
+        "unit_label", "endpoint_unit_label", "must_not_read_as", "uncertainty", "interaction", "evidence_fields",
+        "empty_reason"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "chart_id": { "type": "string", "pattern": "^[a-z][a-z0-9-]+$" },
+        "title": { "type": "string", "minLength": 1 },
+        "source": { "type": "string", "minLength": 1 },
+        "unit_label": { "type": "string", "minLength": 1 },
+        "endpoint_unit_label": { "type": "string", "minLength": 1 },
+        "series": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/series" }
+        },
+        "direction_field": { "$ref": "#/$defs/field_path" },
+        "must_not_read_as": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "uncertainty": { "$ref": "#/$defs/uncertainty" },
+        "interaction": { "$ref": "#/$defs/interaction" },
+        "evidence_fields": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/field_path" }
+        },
+        "empty_reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "series": {
+      "type": "object",
+      "required": ["series_id", "field", "source", "unit_field", "role"],
+      "additionalProperties": false,
+      "properties": {
+        "series_id": { "type": "string", "pattern": "^[a-z][a-z0-9-]+$" },
+        "field": { "$ref": "#/$defs/field_path" },
+        "source": { "type": "string", "minLength": 1 },
+        "unit_field": { "$ref": "#/$defs/field_path" },
+        "role": {
+          "enum": ["endpoint", "delta", "contribution", "residual", "reconciliation"]
+        }
+      }
+    },
+    "uncertainty": {
+      "type": "object",
+      "required": ["source_field", "states"],
+      "additionalProperties": false,
+      "properties": {
+        "source_field": { "$ref": "#/$defs/field_path" },
+        "states": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["when", "level", "label"],
+            "additionalProperties": false,
+            "properties": {
+              "when": { "type": "boolean" },
+              "level": { "enum": ["calibrated", "directional", "illustrative"] },
+              "label": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "interaction": {
+      "type": "object",
+      "required": ["selectable", "editable", "draggable"],
+      "additionalProperties": false,
+      "properties": {
+        "selectable": { "const": true },
+        "editable": { "const": false },
+        "draggable": { "const": false }
+      }
+    }
+  }
+}

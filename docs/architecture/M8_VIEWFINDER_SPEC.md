@@ -2,7 +2,7 @@
 
 > **文件類型**：架構規格（docs/architecture/）
 > **里程碑**：M8 · Viewfinder — 圖像互動層
-> **狀態**：規格草案 → 待使用者核准
+> **狀態**：M8.1／M8.2 完成
 > **前置**：M7 THE CASE OS 完成（M7.1–M7.5 已出貨，os-v0.5.0 已發布）
 > **最後更新**：2026/08
 
@@ -71,7 +71,7 @@ Presentation（呈現・零推論）  ← 【M8 在這裡加厚，權威不變�
 |---|---|---|
 | ① | M7.1–M7.5 全數出貨且 CI 全綠 | ✅ os-v0.5.0 已發布 |
 | ② | `UI_BINDING_MAP.md` 已涵蓋 M7.4／M7.5 每個可見數值 | ✅ 已登記 |
-| ③ | **離線圖資方案定案**（僅 M8.5 需要，其餘子里程碑不受阻） | ⏳ 待決策，見 §7 |
+| ③ | **離線圖資方案定案**（僅 M8.5 需要，其餘子里程碑不受阻） | ✅ B：使用者本機匯入，見 §7 |
 
 ---
 
@@ -81,24 +81,33 @@ Presentation（呈現・零推論）  ← 【M8 在這裡加厚，權威不變�
 
 ### 3.1 Chart Contract
 
-每個圖表宣告一份契約（不是新 schema 檔，而是圖層的宣告物件）：
+每個圖表宣告一份機器可驗證的契約。註冊表位於 `apps/web/chart-contracts.json`，由
+`schemas/chart_contract.schema.v0.1.json` 驗證並凍結；瀏覽器只讀產生的
+`apps/web/chart-contracts.js`。這是獨立的 Presentation 契約，**不變更 Project Schema**：
 
 ```json
 {
   "chart_id": "attribution-waterfall",
+  "source": "attribution-0.1",
+  "unit_label": "ppt",
+  "endpoint_unit_label": "%",
   "series": [
-    { "field": "presentation.contributions[].impact",
-      "source": "attribution-0.1", "unit": "ppt", "higher_is_better": true }
+    { "role": "contribution", "field": "presentation.contributions[].impact",
+      "unit_field": "target.display_unit" }
   ],
-  "must_not_read_as": ["時序", "因果強度", "IRR"],
-  "uncertainty": { "level": "calibrated|directional|illustrative", "note": "…" },
+  "direction_field": "target.higher_is_better",
+  "must_not_read_as": ["變更時序", "模型外的因果證明", "IRR", "可拖曳修改的輸入"],
+  "uncertainty": { "source": "method.exact", "states": { "true": "calibrated", "false": "directional" } },
+  "interaction": { "selectable": true, "editable": false, "draggable": false },
   "empty_reason": "兩個方案沒有可歸因的 params 差異"
 }
 ```
 
 - `must_not_read_as` 是本專案特有的欄位，把「這張圖最容易被誤讀成什麼」寫進契約，
   並在 UI 上以說明文字呈現。**誤讀的防線要進契約，不能只靠設計師記得。**
-- `uncertainty.level` 三態直接對應既有紀律：已校準／方向性判斷／示意。
+- `uncertainty` 綁定權威欄位，不由 UI 判讀：精確 Shapley＝已校準；OAT＝方向性判斷。
+- `interaction` 把可選取與可編輯分開；瀑布資料點可供鍵盤選取，但永遠不可拖曳或編輯。
+- Gate 16 驗證 schema、來源綁定、凍結 hash、產生 bundle 與唯讀互動；契約守衛有正反 fixture 自測。
 
 ### 3.2 統一視覺語彙
 
@@ -197,11 +206,15 @@ M7.5 已有逐層長條與明細表。M8.3 升級為可檢視的量體：
 
 ---
 
-## 7. M8.5　GIS 疊圖（被離線圖資決策卡住）
+## 7. M8.5　GIS 疊圖（方案 B 已定案；後續里程碑）
 
 M7.5 已明文延後，原因不變：**外部圖磚違反「單一自含 HTML、零依賴、零 CDN、可離線」的靜態純度紅線。**
 
-三個選項，需使用者裁決：
+2026/08/13 使用者裁決採 **B：本機匯入**。M8.5 僅接受使用者選取的本機
+GeoJSON，座標系固定為 EPSG:4326；不連外抓圖磚、不地理編碼、不把案件圖資寫入 repo。
+原始 SHP／GPKG 等格式須在系統外先轉為 GeoJSON，M8.5 不自行引入轉檔依賴。
+
+決策紀錄：
 
 | 選項 | 做法 | 代價 |
 |---|---|---|
@@ -211,7 +224,7 @@ M7.5 已明文延後，原因不變：**外部圖磚違反「單一自含 HTML�
 
 > ⚠️ 無論選哪個，**真實地籍圖資都不得進版控**——那是 Gate 0 結構式守衛
 > （`tools/check_real_data_patterns.py`）與圖檔白名單（Gate 8）共同守的線。
-> 我的建議是 **B**：與 M7 的 Local-first 策略一致，把資料留在使用者機器上。
+> **已採 B**：與 M7 的 Local-first 策略一致，把資料留在使用者機器上；A／C 保留為歷史選項，不進本輪實作。
 
 ---
 
@@ -225,6 +238,12 @@ Case A · 圖層零計算
 Case B · 每個系列可溯源
   每張圖的每個 series 必須有 field＋source，且能在 UI_BINDING_MAP 找到對應列
   找不到 → 測試紅
+
+Gate 16 · Chart Contract
+  schema 驗證＋契約欄位綁定＋唯讀互動＋凍結 hash＋瀏覽器 bundle 同步
+
+Gate 17 · Attribution Waterfall
+  presentation verbatim＋殘差／進位分列＋鍵盤可達＋窄版不溢位＋UI 零領域計算
 
 Case C · 拖曳只動 Input ★
   對 Output 欄位發出拖曳／編輯事件 → 必須被拒絕且不改變任何狀態
@@ -263,14 +282,14 @@ M8.5 GIS 疊圖             卡在離線圖資決策，可獨立插入或不做
 
 ## 10. Definition of Done
 
-- [ ] Chart Contract 落地，每張圖宣告 series／`must_not_read_as`／`uncertainty`
-- [ ] 歸因瀑布圖：守恆線恆可見、殘差同權重、進位對帳獨立、排序非時序有明文
+- [x] Chart Contract 落地，每張圖宣告 series／`must_not_read_as`／`uncertainty`
+- [x] 歸因瀑布圖：守恆線恆可見、殘差同權重、進位對帳獨立、排序非時序有明文
 - [ ] 互動量體：點選層 ↔ 明細列雙向對照；**無任何拖曳改量體的路徑**
 - [ ] 敏感度地圖：每格真實重算、網格數可見、平滑僅視覺且明示
-- [ ] 每個可見數值登記於 `UI_BINDING_MAP.md`
-- [ ] 對抗回歸 A–G 全綠；既有十五道 Gate 不退步
-- [ ] 靜態純度維持：單一自含 HTML、零依賴、零建置、可離線
-- [ ] `check_no_real_names.sh`（含結構式守衛）綠
+- [x] M8.1／M8.2 每個可見數值登記於 `UI_BINDING_MAP.md`
+- [ ] 對抗回歸 A–G 全綠；M8.1／M8.2 已由 Gate 16／17 覆蓋，其餘隨子里程碑落地
+- [x] M8.1／M8.2 維持零圖表框架、零新增 CDN、可離線呈現
+- [x] `check_no_real_names.sh`（含結構式守衛）綠
 
 ---
 

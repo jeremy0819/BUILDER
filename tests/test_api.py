@@ -82,9 +82,8 @@ def test_deserialize_自動遷移舊版():
 
 
 def test_schema_凍結守衛():
-    """凍結 schema 的 sha256 必須與基準相符（位元組不可變紅線）。"""
+    """凍結 schema 的 canonical-LF sha256 必須與基準相符。"""
     import tools.check_schema_freeze as f
-    import hashlib
     for 相對, 基準 in f.FROZEN.items():
-        實際 = hashlib.sha256((根 / 相對).read_bytes()).hexdigest()
+        實際 = f._frozen_digest(根 / 相對)
         assert 實際 == 基準, f"{相對} 凍結違規：{實際} != {基準}"

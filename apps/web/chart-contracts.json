@@ -1,0 +1,91 @@
+{
+  "schema_version": "chart-contract-0.1",
+  "charts": [
+    {
+      "chart_id": "attribution-waterfall",
+      "title": "歸因瀑布圖",
+      "source": "attribution-0.1",
+      "unit_label": "ppt",
+      "endpoint_unit_label": "%",
+      "series": [
+        {
+          "series_id": "before",
+          "field": "presentation.before",
+          "source": "attribution-0.1",
+          "unit_field": "target.display_unit",
+          "role": "endpoint"
+        },
+        {
+          "series_id": "delta",
+          "field": "presentation.delta",
+          "source": "attribution-0.1",
+          "unit_field": "target.display_unit",
+          "role": "delta"
+        },
+        {
+          "series_id": "contributions",
+          "field": "presentation.contributions[].impact",
+          "source": "attribution-0.1",
+          "unit_field": "target.display_unit",
+          "role": "contribution"
+        },
+        {
+          "series_id": "residual",
+          "field": "presentation.residual",
+          "source": "attribution-0.1",
+          "unit_field": "target.display_unit",
+          "role": "residual"
+        },
+        {
+          "series_id": "rounding-reconciliation",
+          "field": "presentation.rounding_reconciliation",
+          "source": "attribution-0.1",
+          "unit_field": "target.display_unit",
+          "role": "reconciliation"
+        },
+        {
+          "series_id": "after",
+          "field": "presentation.after",
+          "source": "attribution-0.1",
+          "unit_field": "target.display_unit",
+          "role": "endpoint"
+        }
+      ],
+      "direction_field": "target.higher_is_better",
+      "must_not_read_as": [
+        "變更時序",
+        "模型外的因果證明",
+        "IRR",
+        "可拖曳修改的輸入"
+      ],
+      "uncertainty": {
+        "source_field": "method.exact",
+        "states": [
+          { "when": true, "level": "calibrated", "label": "Shapley 精確" },
+          { "when": false, "level": "directional", "label": "OAT 近似" }
+        ]
+      },
+      "interaction": {
+        "selectable": true,
+        "editable": false,
+        "draggable": false
+      },
+      "evidence_fields": [
+        "contributions[].feature_id",
+        "contributions[].label",
+        "contributions[].before_value",
+        "contributions[].after_value",
+        "presentation.contributions[].impact",
+        "core_version",
+        "before.input_hash",
+        "after.input_hash",
+        "method.resolved",
+        "method.runs",
+        "method.feature_count",
+        "conservation.raw_ok",
+        "presentation.display_ok"
+      ],
+      "empty_reason": "兩個方案沒有可歸因的 params 純量差異"
+    }
+  ]
+}
