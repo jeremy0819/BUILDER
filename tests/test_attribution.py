@@ -368,3 +368,116 @@ def test_歸因模組不得引用計算模組():
                "from core.redcf.contract"):
         assert 禁 not in 源, f"歸因層不得複製公式來源（發現 {禁}）——只准呼叫 recompute"
     assert "from core.redcf.recompute import" in 源
+
+
+# ── Shapley 公理（演算法層單元測試）──────────────────────────────
+# 論文附錄 I 承諾之「對稱性、虛擬因子」測試；效率性與排列不變性已於 A/B 覆蓋。
+# 這裡直接對 _shapley 餵合成價值函數——公理是**演算法的性質**，
+# 不該只靠特定領域資料碰巧成立來證明。
+
+from core.redcf.attribution import _shapley
+
+
+def _ev(fn):
+    """把 frozenset→值 的純函式包成 _shapley 需要的 evaluate。"""
+    return lambda paths: fn(frozenset(paths))
+
+
+def test_公理_效率性_加總等於全集減空集():
+    f = ["params.a", "params.b", "params.c"]
+    v = lambda S: len(S) ** 2 + 3 * len(S)
+    phi = _shapley(_ev(v), f)
+    assert sum(phi.values()) == pytest.approx(v(frozenset(f)) - v(frozenset()), abs=TOL)
+
+
+def test_公理_對稱性_可互換因子貢獻相等():
+    """v 僅依賴集合大小 → 所有因子皆可互換 → 貢獻必須完全相等。"""
+    f = ["params.a", "params.b", "params.c", "params.d"]
+    v = lambda S: len(S) ** 3                      # 高度非線性，但完全對稱
+    phi = _shapley(_ev(v), f)
+    vals = list(phi.values())
+    for x in vals:
+        assert abs(x - vals[0]) <= TOL, "可互換因子的 Shapley 貢獻必須相等（對稱性公理）"
+
+
+def test_公理_對稱性_成對可互換():
+    """a 與 b 可互換、c 獨立：φ(a) 必須等於 φ(b)，且不必等於 φ(c)。"""
+    f = ["params.a", "params.b", "params.c"]
+    def v(S):
+        ab = len(S & {"params.a", "params.b"})
+        return 5 * ab + 11 * (1 if "params.c" in S else 0) + 2 * ab * (1 if "params.c" in S else 0)
+    phi = _shapley(_ev(v), f)
+    assert abs(phi["params.a"] - phi["params.b"]) <= TOL
+    assert abs(phi["params.a"] - phi["params.c"]) > TOL
+
+
+def test_公理_虛擬因子_零貢獻():
+    """加入 d 從不改變 v → φ(d) 必須恰為 0，不得把交互作用誤攤給它。"""
+    f = ["params.a", "params.b", "params.d"]
+    v = lambda S: 7 * len(S & {"params.a", "params.b"}) ** 2
+    phi = _shapley(_ev(v), f)
+    assert abs(phi["params.d"]) <= TOL, "虛擬因子的貢獻必須為零（dummy player 公理）"
+
+
+def test_公理_線性_可加性():
+    """φ(v₁+v₂) ＝ φ(v₁)＋φ(v₂)。"""
+    f = ["params.a", "params.b", "params.c"]
+    v1 = lambda S: len(S) ** 2
+    v2 = lambda S: 4 * len(S & {"params.a"}) - len(S & {"params.c"})
+    p1 = _shapley(_ev(v1), f)
+    p2 = _shapley(_ev(v2), f)
+    ps = _shapley(_ev(lambda S: v1(S) + v2(S)), f)
+    for k in f:
+        assert abs(ps[k] - (p1[k] + p2[k])) <= TOL
+
+
+def test_公理_排列不變性_打亂特徵順序結果相同():
+    f = ["params.a", "params.b", "params.c"]
+    v = lambda S: len(S) ** 2 + 2 * len(S & {"params.b"})
+    a = _shapley(_ev(v), f)
+    b = _shapley(_ev(v), list(reversed(f)))
+    for k in f:
+        assert abs(a[k] - b[k]) <= TOL
+
+
+# ── 虛擬因子（領域層）──────────────────────────────────────────
+
+def test_虛擬因子_領域層_不影響目標者貢獻為零(基準):
+    """屋齡不進入 return_rate 的計算鏈 → 其貢獻必須為 0，
+    且不得被當成「無法解釋」而灌進殘差。"""
+    後 = _改(基準, 屋齡=基準["params"]["屋齡"] * 2,
+             住宅單價=基準["params"]["住宅單價"] * 1.06)
+    r = attribute(基準, 後)
+    by = {c["feature_id"]: c["impact"] for c in r["contributions"]}
+    assert "params.屋齡" in by, "有變動的欄位仍須列出（誠實揭露它被評估過）"
+    assert abs(by["params.屋齡"]) <= TOL, "不影響目標的因子貢獻須為零"
+    assert abs(by["params.住宅單價"] - r["delta"]) <= TOL
+    assert abs(r["residual"]["impact"]) <= TOL
+
+
+def test_虛擬因子_全為虛擬時_delta與各貢獻皆為零(基準):
+    後 = _改(基準, 屋齡=基準["params"]["屋齡"] + 5, 地價=基準["params"]["地價"] * 1.3)
+    r = attribute(基準, 後)
+    assert abs(r["delta"]) <= TOL
+    assert all(abs(c["impact"]) <= TOL for c in r["contributions"])
+    assert r["conservation"]["raw_ok"] is True
+
+
+# ── 決定性：同一輸入必得同一份報告（時戳為何不進契約）──────────
+
+def test_決定性_重跑同一輸入得到逐位元相同的報告(基準):
+    """計畫 §6 要求「重跑同一快照結果一致」。這條性質與「輸出含計算時間」
+    互斥——牆鐘時戳會讓同一輸入產生不同 JSON。本實作選擇**決定性**：
+    報告是輸入的純函式，時戳屬傳輸／UI 層，不進 Core 契約。"""
+    後 = _改(基準, 住宅單價=基準["params"]["住宅單價"] * 1.07,
+             車位數=基準["params"]["車位數"] - 2)
+    a = json.dumps(attribute(基準, 後), sort_keys=True, ensure_ascii=False)
+    b = json.dumps(attribute(基準, 後), sort_keys=True, ensure_ascii=False)
+    assert a == b, "同一輸入必須產生逐位元相同的報告（決定性）"
+
+
+def test_決定性_報告不含任何牆鐘時間欄位(基準):
+    後 = _改(基準, 住宅單價=基準["params"]["住宅單價"] * 1.05)
+    r = attribute(基準, 後)
+    for k in ("computed_at", "timestamp", "generated_at", "ts"):
+        assert k not in r, f"報告不得含牆鐘時間欄位 {k}——那會破壞決定性"
