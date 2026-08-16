@@ -376,7 +376,7 @@
   "provenance": {
     "core_version": "0.2.0",
     "computed_at": "2026-07-01T00:00:00+00:00",
-    "input_hash": "sha256:f7d00c5585fd3f6bd16c138dca8db01cca97f1ae7f265381e4198f44b7640dd2",
+    "input_hash": "sha256:3e38ceb1c0dd09eba3c872f46a0a7aea71d17221c1fe5f75f9ff314e20602111",
     "law_db_version": "builtin-2026-07"
   }
 }

@@ -6,7 +6,7 @@
 (function () {
   "use strict";
   var V = {
-    core: "0.5.0",          // ← 對齊 core/redcf/_version.py（Gate 10 守衛）
+    core: "0.6.0",          // ← 對齊 core/redcf/_version.py（Gate 10 守衛）
     schema: "v2.1",
     release: "os-v0.5.0",   // ← 對齊 os-v0.5.0 release tag
     engine: "0.1.0",        // Decision Engine
