@@ -91,9 +91,47 @@ def recompute(engine: dict, computed_at: str = None) -> dict:
     return result
 
 
+def _canonical_number(o):
+    """把輸入正規化成「數值」而非「Python 的型別表示」（遞迴，不改動輸入）。
+
+    為何需要：`input_hash` 原本直接序列化 Python 物件，於是 `65.0` 與 `65`
+    產生**不同**雜湊——那是 `json.dumps` 保留 int/float 型別的實作細節，
+    洩漏進了溯源契約。但在本領域，`65.0` 與 `65` 是同一個單價、同一塊樓板面積。
+
+    這個瑕疵在瀏覽器端會必然引爆：JavaScript **沒有 int／float 之分**
+    （`65.0` 在 JS 裡就是 `65`），故任何 engine 一經 postMessage／localStorage／
+    IndexedDB／`JSON.stringify` 往返，整數值浮點即永久塌陷為整數，雜湊隨之改變。
+    M5.5 B1 起「同一份 Core 在瀏覽器內執行」是既定架構，溯源鍵就必須跨邊界穩定。
+
+    紀律：
+      · `bool` 必須先擋——Python 的 `isinstance(True, int)` 為真，
+        不先攔會把 `True` 變成 `1`，那是型別竄改不是正規化。
+      · 非有限數值（NaN／±Infinity）**明確拒絕**：它們不是合法 JSON，
+        序列化後會產生無法被其他語言解析的字串，靜默放行等於製造假溯源。
+      · **不得就地修改輸入**——一律回傳新結構。
+    """
+    if isinstance(o, bool):
+        return o                                  # bool 先於 int 攔截
+    if isinstance(o, float):
+        if o != o or o in (float("inf"), float("-inf")):
+            raise ValueError(
+                f"input_hash 不接受非有限數值（{o!r}）——非合法 JSON，無法跨語言重現")
+        return int(o) if o.is_integer() else o     # -0.0 → 0，與 JS 一致
+    if isinstance(o, dict):
+        return {k: _canonical_number(v) for k, v in o.items()}
+    if isinstance(o, (list, tuple)):
+        return [_canonical_number(v) for v in o]
+    return o
+
+
 def input_hash(engine: dict) -> str:
-    """對輸入 engine 取 sha256（正規化：sort_keys＋緊湊分隔）。"""
-    正規化 = json.dumps(engine, sort_keys=True, ensure_ascii=False,
+    """對輸入 engine 取 sha256（正規化：數值正規化＋sort_keys＋緊湊分隔）。
+
+    ⚠️ 自 CORE_VERSION 0.6.0 起加入**數值正規化**，雜湊值與 0.5.0 以前**不同**。
+    舊 Result JSON 依 VERSION_POLICY §5 保留不回填；其 `provenance.input_hash`
+    為當時的歷史戳記，**不得宣稱與新版重算值相同**（見 `tests/test_hash_canonical.py`）。
+    """
+    正規化 = json.dumps(_canonical_number(engine), sort_keys=True, ensure_ascii=False,
                         separators=(",", ":"), default=str)
     return "sha256:" + hashlib.sha256(正規化.encode("utf-8")).hexdigest()
 

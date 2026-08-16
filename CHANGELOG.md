@@ -3,6 +3,47 @@
 > 記錄 CORE_VERSION 的每次變動（VERSION_POLICY：公式、費率、law_db、合約結構變動才 bump）。
 > UI 版本（app.py v4.x）與 OS release tag（os-vX.Y.Z）另有軸線，不在此表。
 
+## 0.6.0 — 2026-08-13（`input_hash` 數值正規化：溯源鍵跨語言邊界穩定）
+
+> **版本裁定（使用者核准）**：依 `docs/architecture/DECISION-input_hash_canonicalization.md`
+> 方案 A，在 Core 的 `input_hash()` 定義處處理。**Project Schema 零變更**、
+> 既有凍結 schema 位元組不動、Core 計算公式零變動（容積／坪效／共負／投報／估值
+> 期望值全部不變，234 pytest 綠可證）。
+
+**問題**：`input_hash` 雜湊的是 **Python 的型別表示**而非**數值**——`65.0` 與 `65`
+產生不同雜湊。那是 `json.dumps` 保留 int/float 型別的實作細節洩漏進溯源契約；
+在本領域，`65.0` 與 `65` 是同一個單價、同一塊樓板面積。
+
+**為何非修不可**：JavaScript **沒有 int／float 之分**（`65.0` 在 JS 裡就是 `65`），
+故任何 engine 一經 postMessage／localStorage／IndexedDB／`JSON.stringify` 往返，
+整數值浮點即永久塌陷為整數，雜湊隨之改變。M5.5 B1 起「同一份 Core 在瀏覽器內執行」
+是既定架構，溯源鍵就必須跨邊界穩定，否則 Pyodide 這條路上的所有溯源都是脆的。
+且 `input_hash` 被當**等值比對鍵**用（`matchDecision()` 把 decision 綁到 snapshot），
+失配會**靜默**發生、畫面不報錯。
+
+- **`core/redcf/recompute.py`**：新增 `_canonical_number()`，序列化前遞迴正規化。
+  · `bool` **先於** `int` 攔截——Python 的 `isinstance(True, int)` 為真，
+    不先擋會把 `True` 變成 `1`，那是型別竄改不是正規化。
+  · 非有限數值（NaN／±Infinity）**明確拒絕**：非合法 JSON，跨語言無法重現，
+    靜默放行等於製造假溯源。
+  · `-0.0` → `0`（與 JS 的 `-0` 行為一致）。
+  · **不得就地修改輸入**，一律回傳新結構。
+- **黃金範例**：5 檔 `provenance.input_hash` 重新產生（舊值留在 git 歷史）。
+  依 VERSION_POLICY §5「舊 Result JSON 不重寫：重算＝產新戳，舊檔保留」，
+  舊檔仍可讀可重算（`verify` 比對數值欄位，不比 `input_hash`），
+  但**不得宣稱與新版雜湊相同**——已由回歸釘住。
+- **`tests/test_hash_canonical.py`**（新增 22 測）：涵蓋使用者核定的八項驗收——
+  `65 == 65.0`／巢狀 dict・list／`bool` 不得當 `int`／`-0.0 == 0`／非有限數值拒絕／
+  Python↔JS 往返雜湊相同／輸入不可變／舊版可讀但雜湊不同。
+- `CORE_VERSION` 0.5.0 → **0.6.0**；`version.js` 與各頁徽章同步。
+  **`os-v0.5.0` tag 不移動、不重打**（release 軸獨立，`version.js` 的 release 欄位維持）。
+- `core-bundle.js` 重建（Gate 9 綠）。
+
+> ⚠️ **未解**：`matchDecision()` 仍為 `input_hash` 單鍵比對，`decision.schema.v0.1`
+> 未攜帶 `core_version`。數值正規化解決 Python／JS 失配，**解決不了跨 Core 版本誤掛**——
+> 且正規化讓雜湊更像可靠身分鍵，反而**放大**單鍵誤用風險。
+> 見 `docs/architecture/P1-decision_core_version_binding.md`，須於 `os-v0.6.0` 發布前完成。
+
 ## Unreleased — M8 THE VIEWFINDER
 
 > M8.1／M8.2 僅加厚 Presentation 層；不修改 Core 公式、Project Schema 或 `CORE_VERSION`。
