@@ -119,3 +119,156 @@ def test_CaseC_攔胡型_overpay高名目低期望():
     assert 競["ev"]["地主"]["nominal"] > 我["ev"]["地主"]["nominal"]   # 名目更漂亮
     assert 競["ev"]["地主"]["ev"] < 我["ev"]["地主"]["ev"]             # 期望值反而更差
     assert 競["completion_probability"] < 我["completion_probability"]
+
+
+# ══════════════════════════════════════════════════════════════════
+# N1 · Decision v0.2 溯源二元組（input_hash × core_version）
+# 憲章＝docs/architecture/P1-decision_core_version_binding.md
+# 使用者裁決：三個邊界情形**一律從嚴**。以下三條斷言即該裁決的可執行形式。
+# ══════════════════════════════════════════════════════════════════
+from core.redcf.decision import (snapshot_matches, match_snapshot_in,
+                                 UNKNOWN_CORE, MISMATCH_REASONS,
+                                 DECISION_SCHEMA_VERSION)
+
+_H = "sha256:" + "a" * 64
+_H2 = "sha256:" + "b" * 64
+
+
+def _dec(h=_H, core="0.6.0"):
+    d = {"input_hash": h}
+    if core is not None:
+        d["core_version"] = core
+    return d
+
+
+def _snap(h=_H, core="0.6.0"):
+    s = {"input_hash": h}
+    if core is not None:
+        s["core_version"] = core
+    return s
+
+
+# ── 從嚴 ① core_version 為 unknown（v0.1 舊檔）→ 拒絕綁定 ──────────
+
+def test_從嚴一_unknown版本拒絕綁定():
+    ok, why = snapshot_matches(_dec(core=UNKNOWN_CORE), _snap())
+    assert ok is False and why == "core_version_unknown"
+
+
+def test_從嚴一_v0_1舊檔沒有core_version欄位也拒絕():
+    """舊檔根本沒有這個欄位——不得因為「欄位不存在」就當作通過。"""
+    ok, why = snapshot_matches(_dec(core=None), _snap())
+    assert ok is False and why == "core_version_unknown"
+
+
+def test_從嚴一_不得提供僅供參考的軟綁定():
+    """理由與 M7.4「明確拒答優於虛假歸因」同一條：
+    標著『僅供參考』的錯誤綁定，比一句乾脆的『請重算』更容易被當真。"""
+    assert "重算" in MISMATCH_REASONS["core_version_unknown"]
+
+
+# ── 從嚴 ② 快照與 decision 版本不同 → 視為不相符 ─────────────────
+
+def test_從嚴二_跨版本視為不相符():
+    ok, why = snapshot_matches(_dec(core="0.5.0"), _snap(core="0.6.0"))
+    assert ok is False and why == "core_version_mismatch"
+
+
+def test_從嚴二_快照缺版本也不構成二元組():
+    ok, why = snapshot_matches(_dec(core="0.6.0"), _snap(core=None))
+    assert ok is False and why == "snapshot_core_version_missing"
+
+
+def test_從嚴二_雜湊相同但版本不同仍不得綁定():
+    """這正是 v0.1 會靜默誤掛的情形：畫面只會顯示『已綁定』，不會報錯。"""
+    sn, why = match_snapshot_in(_dec(core="0.5.0"), [_snap(core="0.6.0")])
+    assert sn is None and why == "core_version_mismatch"
+
+
+# ── 從嚴 ③ 只有 patch 差 → 仍視為不相符（最容易被「優化」掉的一條）──
+
+def test_從嚴三_patch版差異仍不相符():
+    ok, why = snapshot_matches(_dec(core="0.6.0"), _snap(core="0.6.1"))
+    assert ok is False and why == "core_version_mismatch"
+
+
+def test_從嚴三_不得做semver拆解():
+    """公式相容與否不該由版號字面推定——patch 版也可能改係數。
+    整串相等才算相符；任何 major/minor 相同就放行的實作都會讓本測試變紅。"""
+    for a, b in [("1.0.0", "1.0.9"), ("0.6.0", "0.6.10"), ("2.3.4", "2.3.4-rc1")]:
+        assert snapshot_matches(_dec(core=a), _snap(core=b))[0] is False
+
+
+# ── 相符路徑仍須成立（從嚴不等於全部拒絕）───────────────────────
+
+def test_二元組完全相同才相符():
+    ok, why = snapshot_matches(_dec(), _snap())
+    assert ok is True and why == "ok"
+
+
+def test_雜湊不同一律不符():
+    ok, why = snapshot_matches(_dec(h=_H), _snap(h=_H2))
+    assert ok is False and why == "hash_mismatch"
+
+
+def test_在多個快照中找出相符者():
+    sn, why = match_snapshot_in(_dec(), [_snap(h=_H2), _snap(core="0.5.0"), _snap()])
+    assert why == "ok" and sn["input_hash"] == _H and sn["core_version"] == "0.6.0"
+
+
+def test_全不符時回報最具體的原因():
+    """『雜湊對得上但版本不符』比『完全找不到』更需要被看見。"""
+    sn, why = match_snapshot_in(_dec(core="0.5.0"), [_snap(h=_H2), _snap(core="0.6.0")])
+    assert sn is None and why == "core_version_mismatch"
+
+
+# ── decide() 輸出契約 ────────────────────────────────────────────
+
+def _最小result(core_version="0.6.0"):
+    r = {"total_sales": 10000.0, "shared_cost_ratio": 0.38,
+         "owner_allocations": [{"owner_id": "O1", "pre_value": 3000.0}]}
+    if core_version is not None:
+        r["core_version"] = core_version
+    return r
+
+
+def test_decide輸出帶core_version且verbatim取自result():
+    out = decide(_最小result("0.6.0"), {"stage": "S3", "input_hash": _H})
+    assert out["core_version"] == "0.6.0"
+
+
+def test_decide不得回填執行中的CORE_VERSION():
+    """記的是『我消費的 result 是誰算的』，不是『誰在跑這支程式』。
+    以一個不可能等於現行版本的假版號釘住這個區別。"""
+    out = decide(_最小result("0.0.1-fixture"), {"stage": "S3", "input_hash": _H})
+    assert out["core_version"] == "0.0.1-fixture"
+
+
+def test_result未帶版本時標unknown並記入缺欄():
+    out = decide(_最小result(None), {"stage": "S3", "input_hash": _H})
+    assert out["core_version"] == UNKNOWN_CORE
+    assert "core_version" in out["insufficient_fields"]
+
+
+def test_decide輸出通過v0_2_schema():
+    out = decide(_最小result(), {"stage": "S3", "input_hash": _H})
+    ok, errs = validate_decision(out)
+    assert ok, errs
+
+
+def test_v0_2缺core_version即不合契約():
+    out = decide(_最小result(), {"stage": "S3", "input_hash": _H})
+    out.pop("core_version")
+    ok, _ = validate_decision(out)
+    assert ok is False, "core_version 是 v0.2 必填"
+
+
+def test_schema版本標記():
+    assert DECISION_SCHEMA_VERSION == "decision-0.2"
+
+
+def test_v0_1契約檔仍凍結未動():
+    """v0.2 是**新增檔**；v0.1 位元組不得變（VERSION_POLICY §1）。"""
+    import pathlib
+    v1 = pathlib.Path(__file__).resolve().parents[1] / "schemas/decision.schema.v0.1.json"
+    assert v1.exists() and "core_version" not in json.loads(v1.read_text(encoding="utf-8"))["required"]

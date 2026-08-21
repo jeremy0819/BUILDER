@@ -1467,6 +1467,7 @@ self.DEMO_CASE = {
   ]
  },
  "decision": {
+  "core_version": "0.3.0",
   "decision_engine_version": "0.1.0",
   "input_hash": "sha256:737dbda4cd7d863a6b4e00ecdf626c215d77ee6a08510d36a4720601a026e3be",
   "verdict": "STOP",

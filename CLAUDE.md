@@ -10,7 +10,7 @@
 > |---|---|---|
 > | CORE_VERSION | **0.6.0** | `grep CORE_VERSION core/redcf/_version.py` |
 > | 最新 release tag | **os-v0.5.0** | `git tag -l \| tail -1` |
-> | 凍結 schema | **19 檔** | `python tools/check_schema_freeze.py` |
+> | 凍結 schema | **20 檔** | `python tools/check_schema_freeze.py` |
 > | CI Gate | **20 道** | `grep -c 'name: "Gate' .github/workflows/ci.yml` |
 >
 > **已出貨**：M4 決策引擎（三方 EV/verdict/exit）→ M5 THE WORKFLOW → M5.5 傳動軸（Pyodide

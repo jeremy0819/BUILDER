@@ -104,12 +104,42 @@ const tln = WL.caseTimeline(wf3);
 ok(tln.length === 3 && tln[0].ts === "1" && tln[2].ts === "3", "caseTimeline 併三源並依 ts 排序");
 ok(tln.map(x=>x.type).sort().join(",") === "consent,decision,stage", "時間軸涵蓋 stage/consent/decision 三型");
 
-// ── 11. M4：decision JSON 配對（input_hash 可溯源；配不上不掛）──
-const decGood = {decision_engine_version:"0.1.0", input_hash: v21.provenance.input_hash, verdict:"CAUTION"};
-const decBad  = {decision_engine_version:"0.1.0", input_hash: "sha256:"+"0".repeat(64), verdict:"GO"};
-ok(WL.matchDecision(wf, decGood) === true,  "decision input_hash 相符→可掛");
-ok(WL.matchDecision(wf, decBad) === false,  "input_hash 不符→拒收（不得掛錯案）");
+// ── 11. M4／N1：decision JSON 配對（身分鍵＝input_hash × core_version 二元組）──
+// 對應 core/redcf/decision.py 的 snapshot_matches()；兩側規則必須一致。
+const 快照核版 = wf.project.snapshots[0].core_version;
+const dec = (h, c) => {
+  const d = {decision_engine_version:"0.2.0", input_hash:h, verdict:"CAUTION"};
+  if(c !== undefined) d.core_version = c;
+  return d;
+};
+const H = v21.provenance.input_hash, 假H = "sha256:"+"0".repeat(64);
+ok(快照核版 && 快照核版.length > 0, "快照本身帶 core_version（二元組的另一半）");
+ok(WL.matchDecision(wf, dec(H, 快照核版)) === true,  "二元組完全相同→可掛");
+ok(WL.matchDecision(wf, dec(假H, 快照核版)) === false, "input_hash 不符→拒收（不得掛錯案）");
 ok(WL.matchDecision(wf, {verdict:"GO"}) === false, "非 decision 檔→拒收");
+
+// 從嚴 ①：core_version 為 unknown 或欄位不存在（v0.1 舊檔）→ 拒絕綁定
+ok(WL.matchDecision(wf, dec(H, "unknown")) === false, "從嚴①：unknown 版本→拒絕綁定");
+ok(WL.matchDecision(wf, dec(H)) === false, "從嚴①：v0.1 舊檔沒有 core_version 欄位→仍拒絕");
+ok(WL.matchDecisionDetail(wf, dec(H, "unknown")).reason === "core_version_unknown",
+   "從嚴①：原因碼為 core_version_unknown（不是含糊的『找不到』）");
+ok(/重算/.test(WL.mismatchMessage("core_version_unknown")),
+   "從嚴①：訊息要求重算，不提供『僅供參考』的軟綁定");
+
+// 從嚴 ②：雜湊相同但版本不同→視為不相符（v0.1 會在此靜默誤掛）
+ok(WL.matchDecision(wf, dec(H, "0.0.1-不可能的版本")) === false, "從嚴②：跨版本→不相符");
+ok(WL.matchDecisionDetail(wf, dec(H, "0.0.1-不可能的版本")).reason === "core_version_mismatch",
+   "從嚴②：回報最具體的原因＝跨版本，而非 hash_mismatch");
+ok(WL.snapshotMatches(dec(H, "0.6.0"), {input_hash:H}).reason === "snapshot_core_version_missing",
+   "從嚴②：快照缺版本→無法構成二元組");
+
+// 從嚴 ③：只有 patch 差仍不相符——不拆 semver，不推定 patch 相容
+[["1.0.0","1.0.9"],["0.6.0","0.6.10"],["2.3.4","2.3.4-rc1"]].forEach(([a,b]) => {
+  ok(WL.snapshotMatches(dec(H,a), {input_hash:H, core_version:b}).matched === false,
+     `從嚴③：${a} vs ${b} 不相符（公式相容與否不由版號字面推定）`);
+});
+ok(WL.snapshotMatches(dec(H,"0.6.0"), {input_hash:H, core_version:"0.6.0"}).matched === true,
+   "從嚴不等於全部拒絕：整串相等仍相符");
 
 // ── 12. M5-P2 Developer Board（純組合：事實＋引擎 verbatim，零推論）──
 const wfB = WL.importV21ToWorkflow(v21);

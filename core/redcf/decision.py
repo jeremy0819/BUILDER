@@ -10,7 +10,9 @@ core/redcf/decision.py — M4 Decision Engine（推論層）
      非重新推導 Core 公式；此為 §56 權變分母的唯一可溯源來源。）
   2. **產出即權威**：GO/CAUTION/STOP、三方 EV、Exit Signal 由本引擎產出，
      UI 只呈現 decision JSON。
-  3. **可溯源**：輸出必帶 input_hash 指回消費的 Core result 版本。
+  3. **可溯源**：輸出必帶 `input_hash` **與** `core_version`——快照身分是**二元組**。
+     只比 input_hash 會讓「同一份輸入、不同 Core 版本算出的 verdict」被誤判為相符，
+     而畫面只會顯示「已綁定」，不會報錯（v0.2 修正；見 P1-decision_core_version_binding.md）。
 
 所有存活率/折現率/status_quo 基準＝**可校準建模假設**（stage_tree.json /
 decision_config.json，標示不得移除）；真實案件在 /local_calibration/ 本地校準，
@@ -23,8 +25,10 @@ _此處 = pathlib.Path(__file__).resolve().parent
 _根 = _此處.parents[1]
 STAGE_TREE_PATH = _此處 / "stage_tree.json"
 DECISION_CONFIG_PATH = _此處 / "decision_config.json"
-DECISION_SCHEMA_PATH = _根 / "schemas" / "decision.schema.v0.1.json"
-ENGINE_VERSION = "0.1.0"
+DECISION_SCHEMA_PATH = _根 / "schemas" / "decision.schema.v0.2.json"
+DECISION_SCHEMA_VERSION = "decision-0.2"
+ENGINE_VERSION = "0.2.0"
+UNKNOWN_CORE = "unknown"      # result 未帶 core_version 時的誠實標記（不臆造）
 
 
 def load_stage_tree(path=None) -> dict:
@@ -174,9 +178,17 @@ def decide(result: dict, workflow: dict, inputs: dict = None,
     urgency = round(min(1.0, w["w1"] * sev + w["w2"] * float(inputs.get("deadline_proximity", 0))
                         + w["w3"] * gap + w["w4"] * float(inputs.get("ev_trajectory", 0))), 4)
 
+    # ── v0.2 溯源二元組：core_version 一律 verbatim 取自 result ──
+    # 不得回填執行中的 CORE_VERSION：那記錄的是「誰在跑這支程式」，
+    # 而我們要記的是「我消費的這份 result 是誰算的」。取不到就誠實標 unknown。
+    核版 = (result or {}).get("core_version") or UNKNOWN_CORE
+    if 核版 == UNKNOWN_CORE:
+        缺.append("core_version")
+
     out = {
         "decision_engine_version": ENGINE_VERSION,
         "input_hash": (workflow or {}).get("input_hash", ""),
+        "core_version": 核版,
         "verdict": verdict,
         "breakpoint_stakeholder": breakpoint_sh,
         "completion_probability": round(p, 4),
@@ -193,12 +205,12 @@ def decide(result: dict, workflow: dict, inputs: dict = None,
     }
     ok, errs = validate_decision(out)
     if not ok:
-        raise ValueError("decision 輸出不符 schema v0.1：" + "; ".join(errs))
+        raise ValueError("decision 輸出不符 schema v0.2：" + "; ".join(errs))
     return out
 
 
 def validate_decision(doc: dict) -> tuple:
-    """對 decision.schema.v0.1.json 驗證。回傳 (ok, errors)。"""
+    """對 decision.schema.v0.2.json 驗證。回傳 (ok, errors)。"""
     try:
         import jsonschema
     except ImportError:
@@ -208,3 +220,64 @@ def validate_decision(doc: dict) -> tuple:
     errs = [f"{'/'.join(str(x) for x in e.path) or '(root)'}: {e.message}"
             for e in sorted(v.iter_errors(doc), key=lambda e: list(e.path))]
     return (len(errs) == 0, errs)
+
+
+# ── v0.2 快照綁定：二元組比對（Core 擁有規則，UI 只呈現結果）────────────
+#
+# 使用者裁決：三個邊界情形**一律從嚴**。從嚴的理由與 M7.4「明確拒答優於虛假歸因」
+# 同一條——一個標著「僅供參考」的錯誤綁定，比一個乾脆的「請重算」更容易被當真。
+
+MISMATCH_REASONS = {
+    "ok": "相符",
+    "hash_mismatch": "輸入不同（input_hash 不符）",
+    "core_version_unknown": "decision 未記錄 Core 版本（v0.1 舊檔）——請以現行 Core 重算",
+    "core_version_mismatch": "跨 Core 版本（公式可能已變）——請以現行 Core 重算",
+    "snapshot_core_version_missing": "快照未記錄 Core 版本——無法構成二元組身分",
+}
+
+
+def snapshot_matches(decision: dict, snapshot: dict) -> tuple:
+    """decision 是否綁定於此 snapshot。回傳 (matched: bool, reason_code: str)。
+
+    身分鍵＝`input_hash` × `core_version` 二元組。三條從嚴規則：
+
+      ① decision 的 core_version 為 "unknown"（v0.1 舊檔）→ **拒絕綁定**
+      ② 快照與 decision 版本不同 → **視為不相符**（不提供「跨版本但相符」的軟綁定）
+      ③ 只有 patch 版差（0.6.0 vs 0.6.1）→ **仍視為不相符**
+
+    ③ 是最容易被「優化」掉的一條。公式相容與否**不該由版號字面推定**——
+    patch 版也可能改係數。若日後真要放寬，必須是 Core 明文宣告的相容矩陣，
+    不是字串比較。故此處不做任何 semver 拆解，整串相等才算相符。
+    """
+    d_hash = (decision or {}).get("input_hash") or ""
+    d_core = (decision or {}).get("core_version") or UNKNOWN_CORE
+    s_hash = (snapshot or {}).get("input_hash") or ""
+    s_core = (snapshot or {}).get("core_version") or ""
+
+    if not d_hash or d_hash != s_hash:
+        return (False, "hash_mismatch")
+    if d_core == UNKNOWN_CORE:
+        return (False, "core_version_unknown")
+    if not s_core:
+        return (False, "snapshot_core_version_missing")
+    if d_core != s_core:          # 整串比對——不拆 semver，不推定 patch 相容
+        return (False, "core_version_mismatch")
+    return (True, "ok")
+
+
+def match_snapshot_in(decision: dict, snapshots) -> tuple:
+    """在一組快照中找出相符者。回傳 (snapshot|None, reason_code)。
+
+    全部不符時回傳**最具體的**原因：雜湊對得上卻版本不符，比「完全找不到」
+    更需要讓使用者看見——那正是 v0.1 會靜默誤掛的情形。
+    """
+    最佳 = "hash_mismatch"
+    優先 = ["hash_mismatch", "snapshot_core_version_missing",
+            "core_version_unknown", "core_version_mismatch"]
+    for sn in (snapshots or []):
+        ok, why = snapshot_matches(decision, sn)
+        if ok:
+            return (sn, "ok")
+        if 優先.index(why) > 優先.index(最佳):
+            最佳 = why
+    return (None, 最佳)

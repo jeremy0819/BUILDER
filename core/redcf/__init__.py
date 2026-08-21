@@ -36,7 +36,8 @@ from core.redcf.timeline import (build_timeline, build_today, classify_milestone
 from core.redcf.workflow import (validate_workflow, migrate_workflow,
     derive_consent_state, derive_signability)
 from core.redcf.decision import (decide, validate_decision, calc_完工機率,
-    load_stage_tree, load_decision_config)
+    load_stage_tree, load_decision_config, snapshot_matches, match_snapshot_in,
+    MISMATCH_REASONS, UNKNOWN_CORE)
 from core.redcf.allocation import calc_選配映射, validate_household_outcome
 from core.redcf.attribution import (attribute, validate_attribution,
     AttributionUnsupported, SCHEMA_VERSION as ATTRIBUTION_SCHEMA_VERSION)
@@ -92,6 +93,7 @@ __all__ = [
     "validate_workflow", "migrate_workflow", "derive_consent_state",
     # 決策引擎（M4 推論層）
     "decide", "validate_decision", "calc_完工機率", "load_stage_tree", "load_decision_config",
+    "snapshot_matches", "match_snapshot_in", "MISMATCH_REASONS", "UNKNOWN_CORE",
     # 傳動軸（M5.5 選配映射層）
     "calc_選配映射", "validate_household_outcome",
     # 歸因引擎（M7.4 可解釋性：加總守恆的反事實歸因）

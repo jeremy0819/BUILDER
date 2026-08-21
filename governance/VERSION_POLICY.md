@@ -10,7 +10,7 @@
 
 | 版本 | 載體（真實來源） | 現值 | bump 時機 |
 |---|---|---|---|
-| **Schema Version** | `schemas/project_schema.json`（v1.1）＋`schemas/project_schema_v2.json`（v2.0）＋`schemas/project_schema_v2_1.json`（v2.1）＋`schemas/v2/*.schema.json` 內 `schema_version` | 1.1＋2.0＋2.1（**皆凍結**；連同各層契約共 **19 檔**凍結） | 加 optional 欄位＝minor（例：2.0→2.1 owner_allocations）；改名/改型別/刪欄位/改必填＝major（見 SCHEMA_STRATEGY）。凍結守衛＝`tools/check_schema_freeze.py`（Gate 6） |
+| **Schema Version** | `schemas/project_schema.json`（v1.1）＋`schemas/project_schema_v2.json`（v2.0）＋`schemas/project_schema_v2_1.json`（v2.1）＋`schemas/v2/*.schema.json` 內 `schema_version` | 1.1＋2.0＋2.1（**皆凍結**；連同各層契約共 **20 檔**凍結） | 加 optional 欄位＝minor（例：2.0→2.1 owner_allocations）；改名/改型別/刪欄位/改必填＝major（見 SCHEMA_STRATEGY）。凍結守衛＝`tools/check_schema_freeze.py`（Gate 6） |
 | **CORE_VERSION** | `core/redcf/_version.py` 的 `CORE_VERSION` | **0.6.0**（`input_hash` 數值正規化，見 `CHANGELOG.md`） | 計算公式、費率、law_db 內容、合約結構變動才 bump；**消費端追溯依據，不可斷號** |
 | **App Version** | `apps/streamlit/app.py` 的 `APP_VERSION`；各 HTML 內版號（evaluator v1.3、simulator V4） | v4.9 / v1.3 / V4 | 純介面/行為變更才 bump（cosmetic）；`BUILD_DATE` 每次部署恆更新 |
 | **OS Release** | git tag `os-vX.Y.Z`（聚合版本，**新增機制**） | os-v0.1.0-alpha／0.2.0-beta／0.3.0／0.4.0／**os-v0.5.0** 已發布；os-v0.6.0 待 P1 完成後發 | 每次正式 release 打 tag，對應一組凍結的上述三者 |
@@ -27,6 +27,9 @@
 > 0.1.0 為獨立軸，比照 `ENGINE_VERSION`）。
 > M8.1 Viewfinder 新增契約：`chart_contract.schema.v0.1` `13c5d7cb…`（圖表來源、誤讀防線、
 > 不確定性與唯讀互動；`chart-contract-0.1` 為獨立 Presentation 契約，不變更 Project Schema 或 Core）。
+> N1 Decision v0.2 新增契約：`decision.schema.v0.2` `16a1a995…`（溯源二元組 `input_hash` × `core_version`；
+> **新增檔**，v0.1 續凍。`DECISION_ENGINE_VERSION` 0.1.0→**0.2.0**；比對規則由 Core
+> `decision.snapshot_matches()` 擁有，三個邊界情形一律從嚴，見 `P1-decision_core_version_binding.md`）。
 > 要改凍結檔＝走版本升級流程（新 `schema_version`＋遷移器＋更新 FROZEN），不得直接改檔。
 
 ## 2. 三層關係（誰依賴誰）

@@ -46,6 +46,7 @@ self.DEMO_CASES = [
    },
    "breakpoint_stakeholder": "地主",
    "completion_probability": 0.2963,
+   "core_version": "0.4.0",
    "decision_engine_version": "0.1.0",
    "decision_urgency": 0.5272,
    "ev": {
@@ -2697,6 +2698,7 @@ self.DEMO_CASES = [
    },
    "breakpoint_stakeholder": "實施者",
    "completion_probability": 0.4559,
+   "core_version": "0.4.0",
    "decision_engine_version": "0.1.0",
    "decision_urgency": 0.2547,
    "ev": {
@@ -4011,6 +4013,7 @@ self.DEMO_CASES = [
    },
    "breakpoint_stakeholder": "實施者",
    "completion_probability": 0.3862,
+   "core_version": "0.4.0",
    "decision_engine_version": "0.1.0",
    "decision_urgency": 0.2278,
    "ev": {

@@ -1,6 +1,9 @@
 # P1 · Decision 契約缺 `core_version`，快照比對只用單鍵
 
-> **狀態**：待規劃裁決（須於 `os-v0.6.0` 發布前完成）
+> **狀態**：**已裁決並實作完成**（2026-08）——三個邊界情形使用者裁決一律從嚴；
+> 落地＝`schemas/decision.schema.v0.2.json`（新增檔）＋`core.redcf.decision.snapshot_matches()`
+> ＋`workspace.html` 二元組比對；回歸見 `tests/test_decision.py`（12 條）與
+> `tests/web/test_workspace.mjs`（13 條）。本文保留為決策紀錄。
 > **提出**：使用者於 M8.1／M8.2 裁決時另立
 > **與 hash 遷移的關係**：**互補，非替代**；兩者必須分開合併與驗收
 > **查證日**：2026/08
@@ -112,3 +115,22 @@ s.input_hash === d.input_hash && s.core_version === d.core_version
 二元組裡的 `input_hash` 那一半仍是跨邊界不穩的，等於在流沙上蓋第二層。
 
 > ⚠️ 本文為規劃紀錄，**不得併入 `input_hash` 遷移 PR**（使用者明示）。
+
+
+---
+
+## 5. 落地紀錄（2026-08）
+
+| 裁決 | 實作位置 | 回歸 |
+|---|---|---|
+| ① `unknown` → 拒絕綁定 | `snapshot_matches()` 回 `core_version_unknown` | `test_從嚴一_*`（3 條）＋ headless |
+| ② 跨版本 → 視為不相符 | `snapshot_matches()` 回 `core_version_mismatch` | `test_從嚴二_*`（3 條）＋ headless |
+| ③ patch 差 → 仍不相符 | 整串相等才算相符，**不拆 semver** | `test_從嚴三_*`（2 條）＋ headless |
+
+**規則歸屬**：比對規則由 **Core** 擁有（`core/redcf/decision.py`），`workspace.html` 只是同規則的
+瀏覽器側鏡像，兩側各有一組測試釘住同樣三條斷言。這符合「UI 零推論」——UI 不得自行發明綁定邏輯。
+
+**附帶處置**：四個示範案的 decision 原為 v0.1（無 `core_version`），已依其快照 verbatim 補記
+（A/B/C＝0.4.0，D＝0.3.0），故仍可正常綁定。
+**未了項**：示範案的 result 快照仍是 Core 0.3.0／0.4.0 產出，與現行 0.6.0 有落差；
+以 0.6.0 重新產生示範案是獨立工作，不在本次範圍。
