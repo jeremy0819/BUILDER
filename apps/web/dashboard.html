@@ -164,7 +164,8 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
 
   <div class="ssot"><span>🔒</span><div>所有數字皆由 <b>RE-DCF Core</b> 計算（Result JSON）；儀表板<b>只讀渲染、不重算</b>（SSOT）。
   v2.0 合約含<b>逐層樓板</b>與<b>可重算驗證</b>：給 Core 這份輸入即可回放出同一組 result。
-  主畫面＝上方<b>作用中案件</b>（Case Workspace）；3 個<b>合成示範案</b>已整合收摺於下方「示範案例庫」，零真實資料。</div></div>
+  主畫面＝上方<b>作用中案件</b>（Case Workspace）。沒有案件時請先到 <a href="index.html">起始頁</a>填四個數字建案；
+  下方「三案對照」是 Core 0.2.0 時期的靜態快照，供型態比較，零真實資料。</div></div>
 
   <!-- M5-P1 Case Workspace（單案容器；純呈現，資料全部 verbatim 自 store）-->
   <div id="casews"></div>
@@ -173,8 +174,8 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
   <!-- 示範案例庫已併入上方 Case Workspace（容積坪效／現金流／逐戶權變／產權清冊皆掛在作用中案件）。
        保留三案對照做為跨案比較，其餘不再重複一份。 -->
   <details class="pack" id="demo-pack">
-    <summary><b>三案對照</b> · 跨案比較（合成 Baked Core）
-      <span class="pack-hint">單案內容請看上方工作區</span></summary>
+    <summary><b>三案對照</b> · 跨案比較（合成 Baked Core <b>0.2.0</b> 靜態快照）
+      <span class="pack-hint">當時算出的數字，不隨現行 Core 0.6.0 重算——只作型態對照，不是可選的起手範本</span></summary>
     <div class="pack-body">
       <div class="cases" id="cases"></div>
       <div class="detail" id="detail"></div>
@@ -206,6 +207,8 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
 <script src="demo-cases.js"></script>
 <script src="case-store.js"></script>
 <script src="core-runtime.js"></script>
+<!-- case-bus 必須在 stepnav 之前：四步導覽列的即時數字由它提供（取不到則退回純導覽） -->
+<script src="case-bus.js"></script>
 <script src="stepnav.js"></script>
 <script src="version.js"></script>
 <script>
@@ -581,8 +584,9 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
   function render(){
     const s=load(); const act=(()=>{try{return localStorage.getItem("uros.active_case")}catch(e){return null}})();
     const pid=(s&&s.projects&&(s.projects[act]?act:(s.order||[])[0]))||null;
-    if(!pid){ host.innerHTML=`<div class="cw-empty">尚無作用中案件——到 <a href="workspace.html">Workspace</a> 匯入
-      v2.1 案件 JSON（STEP 2 Product Planning 產出）後，本頁即成為該案的 Case Workspace。下方為示範案例。</div>`; return; }
+    if(!pid){ host.innerHTML=`<div class="cw-empty">還沒有案件。<b><a href="index.html">先講你的地 →</a></b>
+      填四個數字（基地面積／容積率／住宅單價／戶數），Core 立刻算給你看，四步的數字會同時亮起來。
+      已經有 v2.1 案件 JSON 的話，也可以到 <a href="workspace.html">Workspace</a> 匯入。</div>`; return; }
     const rec=s.projects[pid], {wf,snap}=rec, dec=rec.decision, st=snap.site||{};
     const assets=rec.assets||{};
     const caseOpts=(s.order||[]).filter(p=>s.projects[p]).map(p=>{
@@ -1226,14 +1230,11 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
       const s=load()||{order:[],projects:{}};
       const has=s.projects&&Object.keys(s.projects).length;
       const seedV=localStorage.getItem("uros.demo_seed_v");
-      if(!has){                                        // 全新：整批植入
-        const order=[],projects={};
-        recs.forEach(d=>{order.push(d.pid);projects[d.pid]=asRecord(d);});
-        save({order,projects});
-        localStorage.setItem("uros.active_case",order[0]);
-        localStorage.setItem("uros.demo_seed_v",DEMO_SEED_V);
-        return;
-      }
+      /* 2026-08 起：**空的 store 不再自動植入示範案**。
+         舊行為讓每個新使用者一開頁就被四個陌生案子擋在自己的地前面——順序反了。
+         示範案改為明示索取：起始頁的「先看一個示範案」或本頁的 reloadDemoCases()。
+         已經有示範案的回訪者仍照舊升級（下方分支），不會突然少東西。 */
+      if(!has) return;
       if(seedV===DEMO_SEED_V) return;                  // 已是最新示範集合
       const 全為示範=Object.keys(s.projects).every(k=>s.projects[k]&&s.projects[k].demo);
       let 變動=false;

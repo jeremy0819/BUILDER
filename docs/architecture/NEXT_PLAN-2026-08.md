@@ -14,7 +14,7 @@
 | CORE_VERSION | 0.6.0 | `grep CORE_VERSION core/redcf/_version.py` |
 | 最新 release tag | os-v0.5.0 | `git tag -l \| tail -1` |
 | 凍結 schema | 19 檔全數相符 | `python tools/check_schema_freeze.py` |
-| CI Gate | 20 道 | `grep -c 'name: "Gate' .github/workflows/ci.yml` |
+| CI Gate | 21 道 | `grep -c 'name: "Gate' .github/workflows/ci.yml` |
 | Python 測試 | 234 passed | `python -m pytest -q` |
 | 瀏覽器邏輯測試（node headless） | 379 passed（8 檔） | `for f in tests/web/test_*.mjs; do node $f; done` |
 | **真正開過瀏覽器的測試** | **0** | 見 N3 |
@@ -33,7 +33,7 @@ N1  Decision v0.2 攜帶 core_version ──┐
      （P1，三個邊界情形已裁決從嚴）   ┘
                                               │
                                               ▼
-                                      N3  瀏覽器自動化（Gate 18）
+                                      N3  瀏覽器自動化（Gate 19）
                                               │
                         ┌─────────────────────┼─────────────────────┐
                         ▼                     ▼                     ▼
@@ -107,7 +107,7 @@ N1  Decision v0.2 攜帶 core_version ──┐
 
 ---
 
-## 4. N3 · 瀏覽器自動化（新增 Gate 18）——本計畫的插隊項
+## 4. N3 · 瀏覽器自動化（新增 Gate 19）——本計畫的插隊項
 
 **這是我在本計畫中唯一主動加的一站，理由必須攤開講。**
 
@@ -135,7 +135,7 @@ M8.4 尤其危險：一張漸層敏感度圖會讓人以為每一點都算過。
 | 工具 | Playwright（**CI-only devDependency**，pin 版本），system Chromium，`PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` |
 | 新增 | `package.json`（本 repo 第一個 npm 依賴） |
 | 新增 | `tests/browser/`：先補既有 M8.1／M8.2 的互動斷言，再供 M8.3–8.5 使用 |
-| 新增 | CI `Gate 18 — Browser interaction (playwright)` |
+| 新增 | CI `Gate 19 — Browser interaction (playwright)` |
 
 **唯一需要權衡的取捨**：這會讓 repo 首次有 npm 依賴。
 替代方案是自己用 CDP over WebSocket 手刻 harness（零依賴），但那等於自己維護一個瀏覽器驅動，
@@ -143,7 +143,7 @@ M8.4 尤其危險：一張漸層敏感度圖會讓人以為每一點都算過。
 它是 **CI 與開發工具**，不是執行期依賴——M8「零圖表框架、零新增 CDN、可離線呈現」的紀律不受影響
 （該紀律約束的是使用者載入的頁面，不是我們的測試機）。
 
-**完成判準**：Gate 18 綠；至少一條負面斷言（對 Output 派送 drag 後狀態不變）通過；
+**完成判準**：Gate 19 綠；至少一條負面斷言（對 Output 派送 drag 後狀態不變）通過；
 既有 379 個 node headless 測試**全部保留不刪**（兩者互補，不是替代）。
 
 ---
@@ -156,7 +156,7 @@ M8.4 尤其危險：一張漸層敏感度圖會讓人以為每一點都算過。
 - 從 `massing-view.js` 升級，加雙向對照。
 - **翻車點**：把「調整量體」當成互動的自然延伸。不是。量體是 Output，
   改量體要回到 Input 改 `floors[]` 再重算，中間沒有捷徑。
-- 驗收：Gate 18 的負面斷言（拖不動）＋ 既有 Gate 14。
+- 驗收：Gate 19 的負面斷言（拖不動）＋ 既有 Gate 14。
 
 ### N5 · M8.4 敏感度地圖
 - **前置：N3 必須先綠。** 這是本計畫中唯一的硬性「不准提前」。
@@ -223,7 +223,7 @@ M8.4 尤其危險：一張漸層敏感度圖會讓人以為每一點都算過。
 |---|---|---|---|
 | N1 | Decision v0.2 攜帶 `core_version` | 無（已裁決從嚴） | 三條從嚴斷言綠；凍結清單三處同步 |
 | N2 | os-v0.6.0 發布 | N1 | CHECKLIST 全勾；release notes 含舊檔說明 |
-| N3 | 瀏覽器自動化 Gate 18 | N2 | 至少一條負面斷言（拖不動）通過 |
+| N3 | 瀏覽器自動化 Gate 19 | N2 | 至少一條負面斷言（拖不動）通過 |
 | N4 | M8.3 互動量體 | N3 | 雙向對照＋無拖曳路徑（真瀏覽器驗） |
 | N5 | M8.4 敏感度地圖 | **N3（硬性）** | Case G：宣告網格數 = 實際 recompute 次數 |
 | N6 | M8.5 GIS 方案 B | N4 |（建議先過 P3 Gate ③）匯入不進版控 |

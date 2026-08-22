@@ -112,3 +112,10 @@ jobs:
       #    唯讀互動／鍵盤可達／窄版約束／零領域公式）──
       - name: "Gate 17 — Viewfinder attribution waterfall (node)"
         run: node tests/web/test_viewfinder_waterfall.mjs
+
+      # ── Gate 18：起始介面／四步連動（case-bus）──
+      #   四步讀同一份紀錄；stepValues 的 core／decision 值必須逐欄 verbatim；
+      #   取不到＝null（顯示「—」），不得由 UI 補算；buildEngine 只組輸入，
+      #   不得抄 Core 的允建容積公式（面積表計入容積 必須缺席）。
+      - name: "Gate 18 — Case bus / four-step linkage (node)"
+        run: node tests/web/test_case_bus.mjs

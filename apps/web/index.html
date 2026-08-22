@@ -3,19 +3,24 @@
 <title>URBAN RENEWAL OS · 都市更新作業系統</title>
 <style>
 /* ————————————————————————————————————————————————
-   URBAN RENEWAL OS — 主選單（shell）
-   定位：本頁是唯一入口。資訊架構＝OS 三段流程：
-     ① 資料輸入（開發評估儀表板＋坪效×投報試算）＝把案件參數喂進系統
-     ② 參數推演（整合人沙盤）＝以遊戲反映整合難度
-     ③ 結算報告（遊戲內產出）＝故事化的復盤
-   延伸資源（RE-DCF/簡報/總論/指南/程式庫）收進可展開區塊，不佔主視覺（避免介面混亂）。
-   本頁零公式、零計算——只有導覽與狀態（SSOT 紅線）。
+   URBAN RENEWAL OS — 起始介面（OS shell）
+   ------------------------------------------------------------------
+   改版理由（使用者回饋）：舊版開場是「點選示範案 A～D」——那要求使用者先看懂
+   四個他沒見過的案子，才輪到自己的地。順序反了。
+   新版：**先問你的地**（四個你一定知道的數字）→ Core 立刻算 → 四步同步亮起來。
+   示範案降級為次要入口（想看別人的案子再點）。
+
+   兩條紀律（沿用，未鬆動）：
+     · 本頁零公式：所有數字都來自 core-runtime（Pyodide 跑同一份 core/redcf）。
+       核心還沒就緒時顯示「計算中」，**絕不先給一個估算值頂著**。
+     · 四步連動由 case-bus.js 提供：同一份 engine 輸入、同一份 Core result，
+       四步各自 verbatim 取用。UI 不得自行換算。
 ———————————————————————————————————————————————— */
 :root{
   --bg:#0a0d12; --panel:#11161d; --panel2:#0d1117; --line:#1f2833; --line2:#2a3644;
   --ink:#dce6ec; --mute:#6d7c88; --dim:#43505a;
   --strand:#4fd8e8; --strand-dim:#1d5a64; --amber:#ff8a4a;
-  --ok:#59d8a2;
+  --ok:#59d8a2; --warn:#ffcf5a;
   --mono:"SF Mono",ui-monospace,"Cascadia Mono",Menlo,Consolas,monospace;
   --serif:"Noto Serif TC","Songti TC",serif;
   --sans:-apple-system,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
@@ -26,13 +31,12 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans)
 body::after{content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;z-index:1;
   background:repeating-linear-gradient(0deg,transparent 0 2px,#000 2px 3px)}
 a{color:var(--strand);text-decoration:none}
-a:focus-visible{outline:2px solid var(--strand);outline-offset:2px;border-radius:4px}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{
+  outline:2px solid var(--strand);outline-offset:2px;border-radius:4px}
 .mono{font-family:var(--mono)}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-
 .wrap{position:relative;z-index:2;max-width:1080px;margin:0 auto;padding:0 18px 46px}
 
-/* 頂列：身分 + 系統狀態 */
 header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
   padding:16px 0 14px;border-bottom:1px solid var(--line)}
 .brand{font-family:var(--mono);font-size:13px;letter-spacing:.22em}
@@ -41,49 +45,81 @@ header{display:flex;justify-content:space-between;align-items:center;gap:12px;fl
 .chip{border:1px solid var(--line2);color:var(--mute);border-radius:999px;padding:3px 10px;letter-spacing:.06em}
 .chip.hot{border-color:var(--strand-dim);color:var(--strand)}
 
-/* HERO */
-.hero{text-align:center;padding:46px 10px 22px}
-.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.35em;color:var(--mute);text-transform:uppercase}
-.logo{font-family:var(--mono);font-weight:700;font-size:clamp(38px,7vw,66px);
-  letter-spacing:.12em;margin:14px 0 2px}
+.hero{text-align:center;padding:34px 10px 6px}
+.logo{font-family:var(--mono);font-weight:700;font-size:clamp(30px,5.6vw,52px);
+  letter-spacing:.12em;margin:0 0 2px}
 .logo b{color:var(--strand)}
 .logo .os{color:var(--dim);font-size:.42em;vertical-align:.62em;letter-spacing:.3em;margin-left:8px}
-.tagline{font-family:var(--serif);font-size:16.5px;color:var(--mute);letter-spacing:.22em;margin:4px 0 0}
+.tagline{font-family:var(--serif);font-size:15px;color:var(--mute);letter-spacing:.2em;margin:4px 0 0}
 
-/* 三段流程帶 */
-.pipe{display:flex;align-items:stretch;gap:0;margin:30px 0 8px;flex-wrap:wrap}
-.pstage{flex:1 1 210px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;
-  padding:14px 16px;position:relative;min-width:200px}
-.pstage .pn{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--dim)}
-.pstage .ph{font-weight:750;font-size:15px;margin:5px 0 3px}
-.pstage .pd{font-size:11.5px;color:var(--mute);line-height:1.6}
-.pstage.mid{border-color:var(--strand-dim);background:linear-gradient(135deg,#0d1b1f,var(--panel2))}
-.pstage.mid .ph{color:var(--strand)}
-.parrow{display:flex;align-items:center;color:var(--dim);font-size:20px;padding:0 6px}
-@media(max-width:720px){.parrow{transform:rotate(90deg);padding:2px 0;justify-content:center;width:100%}}
+/* ── 開場：問四個你知道的數字 ───────────────────────────── */
+.start{margin:26px 0 0;background:linear-gradient(135deg,#0d1b1f 0%,var(--panel2) 60%);
+  border:1px solid var(--strand-dim);border-radius:14px;padding:20px 22px}
+.start h2{margin:0 0 3px;font-size:19px;letter-spacing:.02em}
+.start .sub{font-size:12.5px;color:var(--mute);margin:0 0 16px}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:12px}
+.q{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:11px 13px}
+.q label{display:block;font-size:12.5px;font-weight:700;margin-bottom:2px}
+.q .ask{font-size:10.5px;color:var(--dim);line-height:1.45;min-height:29px}
+.q .row{display:flex;align-items:baseline;gap:6px;margin-top:5px}
+.q input{flex:1;min-width:0;background:#070a0e;border:1px solid var(--line2);border-radius:7px;
+  color:var(--ink);font-family:var(--mono);font-size:17px;padding:7px 9px;text-align:right}
+.q .u{font-family:var(--mono);font-size:11px;color:var(--mute);flex:0 0 auto}
 
-/* 模組格 */
+details.adv{margin-top:13px;border-top:1px solid var(--line);padding-top:11px}
+details.adv>summary{cursor:pointer;list-style:none;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.16em;color:var(--mute);text-transform:uppercase}
+details.adv>summary::-webkit-details-marker{display:none}
+details.adv>summary::after{content:" ▾ 展開";color:var(--dim)}
+details.adv[open]>summary::after{content:" ▴ 收合"}
+details.adv .qgrid{margin-top:11px;grid-template-columns:repeat(auto-fit,minmax(158px,1fr))}
+details.adv .q input{font-size:14px}
+.seg{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.seg button{background:var(--panel2);border:1px solid var(--line2);color:var(--mute);
+  border-radius:999px;padding:5px 14px;font-size:12px;cursor:pointer;font-family:var(--sans)}
+.seg button[aria-pressed="true"]{border-color:var(--strand);color:var(--strand);background:#0d1b1f}
+
+/* ── Core 即時讀數 ───────────────────────────────────── */
+.readout{margin-top:16px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);overflow:hidden}
+.readout .rhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:9px 14px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:10px;
+  letter-spacing:.16em;color:var(--dim);text-transform:uppercase}
+.readout .rhead .st{letter-spacing:.04em;text-transform:none;font-size:10.5px}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line)}
+.rcell{background:var(--panel2);padding:12px 14px}
+.rcell .rl{font-size:11px;color:var(--mute)}
+.rcell .rv{font-family:var(--mono);font-size:20px;font-weight:700;margin-top:2px;letter-spacing:.01em}
+.rcell .rv.pending{color:var(--dim);font-size:14px;font-weight:400}
+.rcell .rv.pos{color:var(--ok)} .rcell .rv.neg{color:var(--amber)}
+.rcell .rn{font-size:10px;color:var(--dim);margin-top:2px}
+.cta{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px;align-items:center}
+.cta button.go{background:var(--strand);border:0;color:#04252b;font-weight:800;font-size:14px;
+  border-radius:8px;padding:11px 26px;cursor:pointer;font-family:var(--sans)}
+.cta button.go[disabled]{background:var(--line2);color:var(--dim);cursor:not-allowed}
+.cta .ghost{background:transparent;border:1px solid var(--line2);color:var(--mute);
+  border-radius:8px;padding:10px 16px;cursor:pointer;font-size:12.5px;font-family:var(--sans)}
+.cta .ghost:hover{border-color:var(--strand-dim);color:var(--strand)}
+
+/* ── 四步連動帶 ──────────────────────────────────────── */
 .sect{font-family:var(--mono);font-size:10.5px;letter-spacing:.28em;color:var(--dim);
-  text-transform:uppercase;margin:30px 0 13px;display:flex;align-items:center;gap:12px}
+  text-transform:uppercase;margin:32px 0 12px;display:flex;align-items:center;gap:12px}
 .sect::after{content:"";flex:1;height:1px;background:var(--line)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
-.mod{display:block;background:var(--panel2);border:1px solid var(--line);border-radius:12px;
-  padding:15px 17px;transition:border-color .12s,transform .12s;color:var(--ink)}
-.mod:hover{border-color:var(--strand-dim);transform:translateY(-2px)}
-.mod .mt{font-weight:750;font-size:14.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.mod .mt .tag{font-family:var(--mono);font-size:9px;letter-spacing:.12em;border:1px solid var(--strand-dim);
-  color:var(--strand);border-radius:4px;padding:1.5px 7px}
-.mod .mt .tag.ext{border-color:var(--line2);color:var(--mute)}
-.mod .md{font-size:12px;color:var(--mute);margin-top:5px;line-height:1.65}
-.mod.main{grid-column:1 / -1;background:linear-gradient(135deg,#0d1b1f 0%,var(--panel2) 55%);
-  border-color:var(--strand-dim);padding:20px 22px}
-.mod.main .mt{font-size:18px}
-.mod.main .md{font-size:12.5px;max-width:660px}
-.mod.main .cta-in{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:11.5px;
-  letter-spacing:.15em;border:1px solid var(--strand);color:var(--strand);border-radius:4px;padding:8px 20px;text-transform:uppercase}
-.mod.main:hover .cta-in{background:var(--strand);color:#04252b}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(228px,1fr));gap:12px}
+.step{display:block;background:var(--panel2);border:1px solid var(--line);border-radius:12px;
+  padding:13px 15px;color:var(--ink);transition:border-color .12s,transform .12s}
+.step:hover{border-color:var(--strand-dim);transform:translateY(-2px)}
+.step .sh{display:flex;align-items:baseline;gap:7px}
+.step .sn{font-family:var(--mono);font-size:11px;color:var(--strand);letter-spacing:.1em}
+.step .st{font-weight:750;font-size:14.5px}
+.step dl{margin:9px 0 0;display:grid;grid-template-columns:1fr auto;gap:3px 10px;align-items:baseline}
+.step dt{font-size:11px;color:var(--mute)}
+.step dd{margin:0;font-family:var(--mono);font-size:12.5px;text-align:right}
+.step dd.na{color:var(--dim)}
+.step .src{margin-top:8px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:var(--dim)}
 
-/* 延伸資源（收合，避免主畫面混亂） */
+.prov{margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.7}
+.prov b{color:var(--mute);font-weight:400}
+
 details.more{margin-top:26px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 details.more>summary{cursor:pointer;list-style:none;padding:14px 18px;font-family:var(--mono);font-size:11px;
   letter-spacing:.2em;color:var(--mute);text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
@@ -92,18 +128,17 @@ details.more>summary::after{content:"▾ 展開";color:var(--dim);font-size:10px
 details.more[open]>summary::after{content:"▴ 收合"}
 details.more>summary:hover{color:var(--strand)}
 .more-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:1px;background:var(--line);border-top:1px solid var(--line)}
-.more-grid a{background:var(--panel2);padding:13px 16px;color:var(--ink)}
-.more-grid a:hover{background:var(--panel)}
+.more-grid a,.more-grid button{background:var(--panel2);padding:13px 16px;color:var(--ink);
+  text-align:left;border:0;font-family:var(--sans);font-size:inherit;cursor:pointer;display:block;width:100%}
+.more-grid a:hover,.more-grid button:hover{background:var(--panel)}
 .more-grid .rt{font-weight:700;font-size:13px;display:flex;gap:7px;align-items:center;flex-wrap:wrap}
 .more-grid .rt .x{font-family:var(--mono);font-size:8.5px;color:var(--mute);border:1px solid var(--line2);border-radius:4px;padding:1px 6px}
 .more-grid .rd{font-size:11px;color:var(--mute);margin-top:3px;line-height:1.5}
 
-/* SSOT 紀律條 */
 .ssot{margin-top:26px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;
   padding:14px 17px;font-size:11.5px;color:var(--mute);line-height:1.8}
 .ssot b{color:var(--ink)}
 .ssot .mono{color:var(--dim);font-size:10px}
-
 footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display:flex;
   justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:10px;color:var(--dim)}
 </style>
@@ -112,67 +147,75 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
   <header>
     <span class="brand">URBAN <b>RENEWAL</b> OS</span>
     <span class="stats">
-      <span class="chip hot">core <span data-uros-ver="core">0.4.0</span></span>
-      <span class="chip">schema <span data-uros-ver="schema">v2.1</span></span>
-      <span class="chip"><span data-uros-ver="release">os-v0.4.0</span> 已發布</span>
-      <span class="chip hot">M6 · THE STRATEGIST</span>
+      <span class="chip hot">core <span data-uros-ver="core">—</span></span>
+      <span class="chip">schema <span data-uros-ver="schema">—</span></span>
+      <span class="chip"><span data-uros-ver="release">—</span> 已發布</span>
+      <span class="chip hot" id="chip-engine">計算核心啟動中…</span>
     </span>
   </header>
 
   <div class="hero">
-    <div class="eyebrow">Urban Renewal Operating System</div>
     <div class="logo">URBAN <b>RENEWAL</b><span class="os">OS</span></div>
     <div class="tagline">一塊地，一群人，一個真源。</div>
   </div>
 
-  <!-- B1.5 介面收斂：前門只呈現三個主要表面——駕駛艙 / 沙盤 / 決策報告。其餘工具收進「延伸資源」。 -->
-  <p style="text-align:center;color:var(--mute);font-size:13px;margin:2px 0 20px">
-    三個表面，一條動線：<b style="color:var(--strand)">駕駛艙</b> 拖滑桿看數字 →
-    <b style="color:var(--strand)">沙盤</b> 推演人心 → <b style="color:var(--strand)">決策報告</b> 定去留。
-    <span style="color:var(--dim)">打開駕駛艙即有合成示範案，免匯入、直接玩。</span></p>
-  <div class="pipe">
-    <a class="pstage mid" href="dashboard.html">
-      <div class="pn">表面 1 / 3 · 開這裡 <span class="pstat" id="st-site"></span></div><div class="ph">🚗 駕駛艙 · 基地×產品</div>
-      <div class="pd">Site facts＋即時產品試算（傳動軸滑桿→瀏覽器內 Core 重算）＋案件切換。問「<b>這塊地、這個產品值不值得？</b>」（Site/財務數字來自 Core；verdict 由 Decision Engine 產生，本頁只呈現）</div>
-    </a>
-    <div class="parrow">→</div>
-    <a class="pstage" href="os-simulator.html">
-      <div class="pn">表面 2 / 3 <span class="pstat" id="st-ppl"></span></div><div class="ph">🕹️ 沙盤 · 整合推演</div>
-      <div class="pd">地主、家族、時間、競爭——問「<b>整合機率多少？先談誰？</b>」（匯流點：意願地質×三方 EV；逐型對策＝M6。EV/verdict 由 Decision Engine 產生）</div>
-    </a>
-    <div class="parrow">→</div>
-    <a class="pstage" href="report.html" style="border-style:dashed">
-      <div class="pn">表面 3 / 3 <span class="pstat" id="st-rep"></span></div><div class="ph">📑 決策報告 · 去留</div>
-      <div class="pd">組合 Core（財務）＋Decision Engine（EV/verdict/完工機率）＋Strategy（M6）——「<b>開發商下一步該做什麼</b>」。組合呈現，不計算。</div>
-    </a>
-  </div>
-  <script>
-  /* 表面狀態＝事實旗標（呈現層；零推論）。駕駛艙一律「就緒」（B1.5 零步啟動有示範案）；沙盤/報告依實際進度亮。 */
-  (function(){
-    const g=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
-    let store=null; try{store=JSON.parse(g("uros.workflow.v1"))||null}catch(e){}
-    /* 排除示範案：demo 帶 baked decision，不得讓下游表面誤亮「完成」 */
-    const hasDec=!!(store&&store.order&&store.order.some(p=>store.projects[p]&&store.projects[p].decision&&!store.projects[p].demo));
-    const mark=(id,txt,col)=>{const el=document.getElementById(id); if(el){el.textContent=txt;el.style.color=col;}};
-    mark("st-site","● 就緒","var(--strand)");
-    if(!!g("uros.step.people")||hasDec) mark("st-ppl","✓ 完成","var(--ok,#0f9d6a)");
-    if(hasDec) mark("st-rep","✓ 完成","var(--ok,#0f9d6a)");
-  })();
-  </script>
+  <!-- ① 開場：問四個你一定知道的數字 -->
+  <section class="start">
+    <h2 id="start-title">先講你的地</h2>
+    <p class="sub" id="start-sub">四個數字就好。填完下面的數字會自己動——那些數字之後每一步看到的都是同一份。</p>
 
-  <!-- 延伸資源：收合，避免主畫面混亂 -->
+    <div class="qgrid" id="q-basic"></div>
+
+    <details class="adv">
+      <summary>其他條件（都給了預設值，先不用管）</summary>
+      <div class="seg" role="group" aria-label="案件類型">
+        <button type="button" data-seg="case_type" data-val="urban_renewal" aria-pressed="true">都市更新</button>
+        <button type="button" data-seg="case_type" data-val="danger_building" aria-pressed="false">危老重建</button>
+      </div>
+      <div class="seg" role="group" aria-label="實施模式">
+        <button type="button" data-seg="mode" data-val="全案管理" aria-pressed="true">全案管理</button>
+        <button type="button" data-seg="mode" data-val="合建" aria-pressed="false">合建</button>
+      </div>
+      <div class="qgrid" id="q-adv"></div>
+    </details>
+
+    <!-- Core 即時讀數：這一區的每個數字都由 core/redcf 產出 -->
+    <div class="readout">
+      <div class="rhead"><span>Core 即時試算</span><span class="st" id="ro-status">計算核心啟動中…</span></div>
+      <div class="rgrid" id="ro-grid"></div>
+    </div>
+
+    <div class="cta">
+      <button class="go" id="btn-go" disabled>建立案件並開始 →</button>
+      <button class="ghost" id="btn-demo">先看一個示範案</button>
+      <button class="ghost" id="btn-reset">回到預設值</button>
+    </div>
+    <div class="prov" id="prov"></div>
+  </section>
+
+  <!-- ② 四步連動帶：同一份 result，四步各自 verbatim 取用 -->
+  <div class="sect">四步動線 · 同一份數字</div>
+  <div class="steps" id="steps"></div>
+  <div class="prov" id="steps-note">
+    每一格都標了來源：<b>Core</b>＝計算核心產出、<b>輸入</b>＝你填的事實、<b>決策引擎</b>＝Decision Engine 判定。
+    取不到就顯示「—」，介面不會自己算一個給你看。
+  </div>
+
   <details class="more">
     <summary>延伸資源 · 計算工具 / 方法論 / 程式庫</summary>
     <div class="more-grid">
       <a href="workspace.html">
         <div class="rt">🗂️ 案件工作區 WORKSPACE <span class="x">多案管理</span></div>
-        <div class="rd">匯入 v2.1 案件 JSON 建案、多案列表、同意看板/任務/決策日誌/時間軸、wf 匯出入。駕駛艙的「＋匯入／管理案件」即到這裡。</div></a>
+        <div class="rd">匯入 v2.1 案件 JSON、多案列表、同意看板／任務／決策日誌／時間軸、wf 匯出入。</div></a>
+      <a href="dashboard.html">
+        <div class="rt">🚗 駕駛艙 <span class="x">滑桿即時重算</span></div>
+        <div class="rd">逐層樓板表、產權清冊、傳動軸滑桿——要細調就到這裡。</div></a>
       <a href="evaluator.html">
         <div class="rt">🧮 坪效×投報試算 <span class="x">教學·示意</span></div>
-        <div class="rd">教學試算（非權威）＋「對接 Core」JSON 匯入。即時真 Core 請用駕駛艙傳動軸；精確計算用下方 Streamlit。</div></a>
+        <div class="rd">教學試算（非權威）＋「對接 Core」JSON 匯入。</div></a>
       <a href="https://builder-9sczgrez3a3qsbmkebd6ey.streamlit.app/" target="_blank" rel="noopener">
         <div class="rt">⚙️ RE-DCF 精確計算 <span class="x">↗ STREAMLIT</span></div>
-        <div class="rd">正式容積查核（§162 逐層）・坪效・投報；地主清冊 CSV → §56 逐戶權變；匯出案件 JSON。</div></a>
+        <div class="rd">正式容積查核（§162 逐層）・坪效・投報；地主清冊 CSV → §56 逐戶權變。</div></a>
       <a href="guide.html">
         <div class="rt">📖 都更 11 關指南</div>
         <div class="rd">S1–S11 全生命週期流程與名詞小幫手。</div></a>
@@ -192,16 +235,238 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
   </details>
 
   <div class="ssot">
-    <b>數字紀律（SSOT）</b>：全 OS 只有一個計算來源 <span class="mono">core/redcf</span>。
-    儀表板與沙盤顯示的權威數字皆可溯源到 Core 匯出的 <span class="mono">result</span>
-    與 <span class="mono">input_hash</span>；教學層數字標示意。合約 schema v1.1／v2.0／v2.1 凍結中
-    （Gate 6 位元組守衛）。零真實案件資料。
+    <b>數字紀律（SSOT）</b>：全 OS 只有一個計算來源 <span class="mono">core/redcf</span>——
+    本頁的數字是瀏覽器內以 Pyodide 執行的**同一份** Core 算出來的，不是另寫一套。
+    每組結果帶 <span class="mono">input_hash × core_version</span> 溯源二元組。
+    合約 schema 凍結中（Gate 6 位元組守衛）。零真實案件資料。
   </div>
 
   <footer>
-    <span>URBAN RENEWAL OS — 輸入 → 推演 → 結算 · 其他介面皆為本體之模組</span>
-    <span><a href="os-simulator.html">沙盤</a> · <a href="dashboard.html">儀表板</a> · <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">BUILDER</a></span>
+    <span>URBAN RENEWAL OS — 先講你的地 → 四步同步 → 決策</span>
+    <span><a href="dashboard.html">駕駛艙</a> · <a href="workspace.html">工作區</a> ·
+          <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">BUILDER</a></span>
   </footer>
 </div>
 
 <script src="version.js"></script>
+<script src="case-bus.js"></script>
+<script src="core-runtime.js"></script>
+<script src="demo-cases.js"></script>
+<script src="demo-case.js"></script>
+<script>
+/* ── 起始介面控制器：只組輸入、只搬 Core 的輸出。零公式。 ───────────────── */
+(function(){
+  "use strict";
+  var B = window.CaseBus;
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* 讀數的四格＝「這塊地能蓋多少 / 賣多少 / 划不划算」的最短回答。
+     全部逐欄取自 Core result，缺值顯示「—」。 */
+  var READOUT = [
+    {k:"allow_floor_area",     l:"允建容積",   u:"㎡",  fmt:"num",  note:"基地×容積率×(1+獎勵)＋移轉"},
+    {k:"remaining_floor_area", l:"容積餘量",   u:"㎡",  fmt:"num",  note:"正＝還有空間；負＝量體超出", sign:true},
+    {k:"saleable_area",        l:"銷售坪數",   u:"坪",  fmt:"num",  note:"扣公設後可售"},
+    {k:"return_rate",          l:"全案投報率", u:"",    fmt:"pct",  note:"全案投報率，非 IRR"}
+  ];
+
+  var 表單 = B.defaults();
+  var RT = null, 就緒 = false, 失敗 = false, 最新 = null, 目前pid = null, 忙 = false, 等待 = false;
+
+  function fmtNum(v){ return v==null ? null : Number(v).toLocaleString("en-US",{maximumFractionDigits:0}); }
+  function fmtPct(v){ return v==null ? null : (v*100).toFixed(1)+"%"; }
+  function fmtX(v){ return v==null ? null : Number(v).toFixed(3); }
+
+  /* ── 表單 ── */
+  function 欄位(f){
+    var v = 表單[f.k] != null ? 表單[f.k] : (f.def != null ? f.def : "");
+    return '<div class="q"><label for="f-'+f.k+'">'+f.label+'</label>'
+      + '<div class="ask">'+f.ask+'</div>'
+      + '<div class="row"><input id="f-'+f.k+'" type="number" step="'+(f.step||1)+'" value="'+v+'" '
+      + 'aria-label="'+f.label+(f.unit?("（"+f.unit+"）"):"")+'">'
+      + (f.unit ? '<span class="u">'+f.unit+'</span>' : '') + '</div></div>';
+  }
+  function 畫表單(){
+    $("q-basic").innerHTML = B.BASIC.map(欄位).join("");
+    $("q-adv").innerHTML = B.ADVANCED.map(欄位).join("");
+    B.FIELDS.forEach(function(f){
+      var el = $("f-"+f.k); if(!el) return;
+      el.addEventListener("input", function(){ 表單[f.k] = el.value; 排程試算(); });
+    });
+    document.querySelectorAll("[data-seg]").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        var g = btn.getAttribute("data-seg");
+        document.querySelectorAll('[data-seg="'+g+'"]').forEach(function(b){ b.setAttribute("aria-pressed","false"); });
+        btn.setAttribute("aria-pressed","true");
+        表單[g] = btn.getAttribute("data-val");
+        排程試算();
+      });
+    });
+  }
+
+  /* ── Core 讀數 ── */
+  function 畫讀數(R){
+    $("ro-grid").innerHTML = READOUT.map(function(c){
+      var v = R ? R[c.k] : undefined;
+      var 有 = R && v != null;
+      /* 三種「還沒有數字」的狀態要分清楚：核心啟動中／算完但 Core 沒給這欄／核心掛了。
+         最後一種若還顯示「計算中…」就是在騙人——它不會再算了。 */
+      var txt = !有 ? (失敗 ? "取不到" : 就緒 ? "—" : "計算中…")
+              : (c.fmt==="pct" ? fmtPct(v) : c.fmt==="x" ? fmtX(v) : fmtNum(v));
+      var cls = "rv" + (有 ? "" : " pending")
+              + (有 && c.sign ? (v >= 0 ? " pos" : " neg") : "");
+      return '<div class="rcell"><div class="rl">'+c.l+'</div>'
+        + '<div class="'+cls+'">'+txt+(有&&c.u?' <span style="font-size:11px;color:var(--mute)">'+c.u+'</span>':'')+'</div>'
+        + '<div class="rn">'+c.note+'</div></div>';
+    }).join("");
+  }
+
+  function 狀態(txt, 好){
+    $("ro-status").textContent = txt;
+    $("ro-status").style.color = 好 ? "var(--ok)" : "var(--mute)";
+    $("chip-engine").textContent = 好 ? "Core 就緒" : txt;
+  }
+
+  var 排程試算 = window.coreDebounce(function(){ 試算(); }, 260);
+
+  function 試算(){
+    if(!RT || !就緒){ 畫讀數(null); return; }
+    if(忙){ 等待 = true; return; }
+    忙 = true;
+    var eng = B.buildEngine(表單);
+    RT.recompute(eng).then(function(r){
+      最新 = {engine: eng, result: r.result || {}, input_hash: r.input_hash || ""};
+      畫讀數(最新.result);
+      $("btn-go").disabled = false;
+      $("prov").innerHTML = '<b>溯源</b> input_hash '
+        + (最新.input_hash||"").replace(/^sha256:/,"").slice(0,12) + '… · core '
+        + (最新.result.core_version || "—")
+        + ((最新.result.warnings||[]).length ? ' · <span style="color:var(--warn)">Core 提出 '
+            + 最新.result.warnings.length + ' 則健檢提醒（建立後在駕駛艙可看）</span>' : '');
+      畫四步();
+    }).catch(function(e){
+      狀態("試算失敗：" + e.message, false);
+      畫讀數(null);
+    }).then(function(){
+      忙 = false;
+      if(等待){ 等待 = false; 試算(); }
+    });
+  }
+
+  /* ── 四步連動帶 ── */
+  var 單位 = {"㎡":"㎡","坪":"坪","戶":"戶"};
+  function 顯示(it){
+    if(it.value == null) return {t:"—", na:true};
+    if(it.unit === "ratio") return {t:(it.value*100).toFixed(1)+"%"};
+    if(it.unit === "x")     return {t:Number(it.value).toFixed(3)};
+    if(it.unit === "text")  return {t:String(it.value)};
+    if(typeof it.value === "number") return {t:fmtNum(it.value)+(單位[it.unit]?" "+it.unit:"")};
+    return {t:String(it.value)};
+  }
+  var 來源名 = {core:"Core", input:"你的輸入", decision:"決策引擎"};
+  var 序號 = ["①","②","③","④"];
+
+  function 畫四步(){
+    /* 優先用已存檔的案件；還沒建案就用當下試算結果組一份「預覽紀錄」——
+       兩者都經 B.stepValues() 取數，所以預覽與正式看到的欄位定義完全相同。 */
+    var rec = 目前pid ? B.activeRecord() : null;
+    if(!rec && 最新) rec = B.buildRecord(最新);
+    var sv = rec ? B.stepValues(rec) : null;
+    $("steps").innerHTML = B.STEP_ORDER.map(function(key, i){
+      var s = sv ? sv[key] : {title:["基地","產品","人心","決策"][i], href:"#", items:[]};
+      var rows = (s.items||[]).map(function(it){
+        var d = 顯示(it);
+        return '<dt>'+it.label+'</dt><dd class="'+(d.na?"na":"")+'">'+d.t+'</dd>';
+      }).join("");
+      var 來源 = [].concat.apply([], (s.items||[]).map(function(it){ return 來源名[it.source]; }))
+        .filter(function(x,j,a){ return a.indexOf(x)===j; }).join(" · ");
+      return '<a class="step" href="'+s.href+'">'
+        + '<div class="sh"><span class="sn">'+序號[i]+'</span><span class="st">'+s.title+'</span></div>'
+        + '<dl>'+(rows||'<dt>尚未計算</dt><dd class="na">—</dd>')+'</dl>'
+        + '<div class="src">來源：'+(來源||"—")+'</div></a>';
+    }).join("");
+  }
+
+  /* ── 建立案件 ── */
+  $("btn-go").addEventListener("click", function(){
+    if(!最新) return;
+    var rec = B.buildRecord(最新);
+    目前pid = 目前pid ? B.replace(目前pid, rec) : B.upsert(rec);
+    location.href = "dashboard.html";
+  });
+
+  $("btn-reset").addEventListener("click", function(){
+    表單 = B.defaults(); 畫表單(); 試算();
+  });
+
+  /* 示範案：降級為次要入口。點了才植入，不再開頁就塞四個案子。 */
+  $("btn-demo").addEventListener("click", function(){
+    var list = [].concat(window.DEMO_CASES || [], window.DEMO_CASE ? [window.DEMO_CASE] : []);
+    if(!list.length) return alert("示範案未載入");
+    var s = B.readStore();
+    list.forEach(function(d){
+      if(!d || !d.pid) return;
+      if(!s.projects[d.pid]){
+        s.projects[d.pid] = {wf:d.wf, snap:d.snap, engine:d.engine, decision:d.decision,
+          roster:d.roster||null, view:d.view||null, cashflow:d.cashflow||null, demo:true};
+        s.order.push(d.pid);
+      }
+    });
+    B.writeStore(s);
+    B.setActive(list[0].pid);
+    location.href = "dashboard.html";
+  });
+
+  /* ── 既有案件：開頁就接上，表單預填成那一份 ── */
+  function 接既有(){
+    var rec = B.activeRecord();
+    if(!rec || !rec.engine) return false;
+    目前pid = rec.pid;
+    var P = rec.engine.params || {};
+    var 地上 = (rec.engine.floors||[]).filter(function(f){ return !/^B/.test(String(f.樓層||"")); }).length;
+    var 標準 = (rec.engine.floors||[]).filter(function(f){ return /^\d+F$/.test(String(f.樓層||"")); })[0];
+    表單 = {
+      案件名稱: P.案件名稱, 基地面積: P.基地面積, 人行廣場: P.人行廣場,
+      容積率: (P.容積率||0)*100, 獎勵率: (P.獎勵率||0)*100, 容積移轉: P.容積移轉,
+      公設比: (P.公設比||0)*100, 戶數: P.戶數, 住宅單價: P.住宅單價, 營造單價: P.營造單價,
+      地價: P.地價, 土地成本: P.土融土地成本,
+      地上樓層: 地上 || 7, 標準樓板: 標準 ? 標準.樓板 : null,
+      建蔽率: B.defaults().建蔽率,
+      case_type: (rec.snap && rec.snap.case_type) || "urban_renewal",
+      mode: rec.engine.mode || "全案管理"
+    };
+    $("start-title").textContent = "繼續：" + ((rec.snap && rec.snap.code_name) || "你的案件");
+    $("start-sub").textContent = "已經有一份案件了。改下面任何一個數字，四步的數字會一起變——因為它們讀的是同一份輸入。";
+    $("btn-go").textContent = "更新並回到駕駛艙 →";
+    return true;
+  }
+
+  /* ── 啟動 ── */
+  var 有既有 = 接既有();
+  畫表單();
+  畫讀數(null);
+  畫四步();
+  document.querySelectorAll("[data-seg]").forEach(function(b){
+    b.setAttribute("aria-pressed", String(表單[b.getAttribute("data-seg")] === b.getAttribute("data-val")));
+  });
+
+  RT = window.createCoreRuntime({
+    onProgress: function(m){ 失敗 = false; 狀態(m.msg || ("載入中 " + (m.pct||0) + "%"), false); },
+    onReady: function(m){
+      就緒 = true; 失敗 = false;
+      狀態("Core " + (m.core_version || "") + " 就緒", true);
+      試算();
+    },
+    onError: function(m){
+      就緒 = false; 失敗 = true;
+      狀態("計算核心無法啟動：" + (m.msg || "未知錯誤"), false);
+      畫讀數(null);
+      $("prov").innerHTML = '<b style="color:var(--amber)">數字暫時取不到。</b> '
+        + '本頁不會用估算值頂替——請確認可連線至 Pyodide CDN，或改用 '
+        + '<a href="https://builder-9sczgrez3a3qsbmkebd6ey.streamlit.app/" target="_blank" rel="noopener">Streamlit 精確計算</a>。';
+    }
+  });
+
+  /* 別的分頁改了案件，這裡跟著動（連動不只在同一頁內）。 */
+  B.onChange(function(){ if(有既有){ 畫四步(); } });
+})();
+</script>

@@ -60,6 +60,8 @@ select{font-size:12.5px;padding:6px 9px;border-radius:8px;border:1px solid var(-
 </div>
 
 <script src="core-runtime.js"></script>
+<!-- case-bus 必須在 stepnav 之前：四步導覽列的即時數字由它提供（取不到則退回純導覽） -->
+<script src="case-bus.js"></script>
 <script src="stepnav.js"></script>
 <script>
 const $=id=>document.getElementById(id);
