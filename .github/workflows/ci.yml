@@ -119,3 +119,9 @@ jobs:
       #   不得抄 Core 的允建容積公式（面積表計入容積 必須缺席）。
       - name: "Gate 18 — Case bus / four-step linkage (node)"
         run: node tests/web/test_case_bus.mjs
+
+      # ── Gate 18：四步共用 UI／Decision 圖／本機地政邊界 ──────────────
+      #   共用 shell 必須載入四頁；Decision 互動只換證據，不可拖曳或反算；
+      #   官方地政入口不得夾帶地號、門牌、所有權人或發出案件資料請求。
+      - name: "Gate 18 — Unified UI / Decision view / land-data boundary (node)"
+        run: node tests/web/test_unified_ui.mjs

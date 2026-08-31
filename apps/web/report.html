@@ -43,6 +43,7 @@ td.n{font-family:var(--mono)}
 footer{margin-top:28px;border-top:1px solid var(--line);padding-top:12px;font-size:11px;color:var(--mute);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
 select{font-size:12.5px;padding:6px 9px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
 </style>
+<link rel="stylesheet" href="os-unified.css">
 
 <div class="wrap">
   <header class="top">
@@ -63,6 +64,8 @@ select{font-size:12.5px;padding:6px 9px;border-radius:8px;border:1px solid var(-
 <!-- case-bus 必須在 stepnav 之前：四步導覽列的即時數字由它提供（取不到則退回純導覽） -->
 <script src="case-bus.js"></script>
 <script src="stepnav.js"></script>
+<script src="os-shell.js"></script>
+<script src="decision-view.js"></script>
 <script>
 const $=id=>document.getElementById(id);
 const KEY="uros.workflow.v1";
@@ -92,8 +95,11 @@ function render(pid){
         <td class="n" style="color:${e.ev!=null&&e.ev<=0?"var(--err)":"var(--ink)"}">${e.ev==null?"—":e.ev.toLocaleString()}</td>
         <td>${e.status==="ok"?"✓":"⚠ insufficient_data（缺欄不臆造）"}</td></tr>`;}).join("")}</table>` : "";
   $("body").innerHTML=`
-    <div class="sec"><h2>判讀 · Decision Engine</h2>${vHTML}${evHTML}
-      ${dec?`<div class="src">decision ${dec.decision_engine_version} · input_hash ${sh(dec.input_hash)}…（指回 Core result，可溯源）</div>`:""}</div>
+    <div class="sec uros-decision-stage"><h2>決策關聯圖</h2>
+      <div class="legend">點選量體、財務、人心或判讀，查看該節點的權威證據；圖像只呈現，不修改結果。</div>
+      <div id="decision-visual"></div>
+      <details class="decision-detail"><summary>Decision Engine 詳細判讀與三方 EV</summary>${vHTML}${evHTML}
+        ${dec?`<div class="src">decision ${dec.decision_engine_version} · input_hash ${sh(dec.input_hash)}…（指回 Core result，可溯源）</div>`:""}</details></div>
     <div class="sec"><h2>財務 · RE-DCF Core（逐欄自 result）</h2>
       <div class="rows">
         <div class="row"><span>案件</span><b>${snap.code_name} · ${snap.case_type==="danger_building"?"危老重建":"都市更新"}</b></div>
@@ -104,9 +110,10 @@ function render(pid){
         <div class="row"><span>階段（Workflow 事實）</span><b>${wf.project.stage}</b></div>
       </div>
       <div class="src">input_hash ${sh(snap.input_hash)}…@core ${snap.core_version} · 逐戶分回/找補見 Product Planning（§56）</div></div>
-    <div class="sec" id="strategy-sec"><h2>行動 · Strategy Engine <span class="src" id="strat-stat" style="margin-left:6px"></span></h2>
+    <details class="sec" id="strategy-sec"><summary><b>行動 · Strategy Engine</b> <span class="src" id="strat-stat" style="margin-left:6px"></span></summary>
       <div class="legend">承 <b>People 階段</b>名冊 → 交棒至行動：整合人分型（選項）→ Core Strategy Engine 產出逐型對策。本頁零推論，判讀全文＝引擎輸出。</div>
-      <div id="strategy-slot"><div class="wip">載入策略引擎…</div></div></div>`;
+      <div id="strategy-slot"><div class="wip">載入策略引擎…</div></div></details>`;
+  if(self.DecisionView) self.DecisionView.mount($("decision-visual"), rec);
   initStrategy(pid, rec);
 }
 /* ── M6 THE STRATEGIST：分型輸入（選項）→ Core strategize（Pyodide, Web Worker）→ 逐欄呈現。
