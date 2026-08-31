@@ -1293,24 +1293,11 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
   }
   function ncEngine(){
     const g=k=>{const el=document.getElementById("nc-"+k); return el?el.value:null;};
-    const num=k=>{const f=NC_FIELDS.find(x=>x.k===k), v=parseFloat(g(k));
-      return isFinite(v)?(f&&f.scale?v/f.scale:v):0;};
-    const 基地=num("基地面積"), far=num("容積率"), 獎=num("獎勵率"), 廣=num("人行廣場"), 移=num("容積移轉");
-    const 戶=Math.max(1,Math.round(num("戶數")));
-    const 地上=Math.max(3,Math.ceil(戶/4)), 標準樓板=Math.max(120,(基地-廣)*0.55);
-    const floors=[];
-    floors.push({啟用:true,樓層:"B1F",樓板:標準樓板*1.4,計容積:0,梯廳:0,安全梯:0,陽台:0});
-    floors.push({啟用:true,樓層:"1F",樓板:標準樓板*1.2,計容積:0,梯廳:0,安全梯:標準樓板*0.1,陽台:0});
-    for(let i=2;i<=地上;i++) floors.push({啟用:true,樓層:i+"F",樓板:標準樓板,計容積:0,
-      梯廳:標準樓板*0.05,安全梯:標準樓板*0.08,陽台:標準樓板*0.1});
-    return {params:{案件名稱:g("案件名稱")||"新案件",基地面積:基地,人行廣場:廣,容積率:far,
-        獎勵率:獎,容積移轉:移,公設比:num("公設比"),梯廳免計基準:5,陽台免計基準:10,
-        面積表計入容積:(基地-廣)*far*(1+獎)+移,
-        住宅單價:num("住宅單價"),店舖坪數:0,店舖單價:0,車位數:Math.round(戶*0.8),車位單價:230,
-        營造單價:num("營造單價"),戶數:戶,權變戶數:戶,土融土地成本:0,地價:0,
-        既有建物面積:0,建物單價:0,屋齡:40},
-      floors, case_type:document.getElementById("nc-type").value==="danger_building"?"危老":"都更",
-      mode:document.getElementById("nc-mode").value, owners:[]};
+    const form=self.CaseBus.defaults();
+    NC_FIELDS.forEach(f=>{ form[f.k]=g(f.k); });
+    form.case_type=document.getElementById("nc-type").value;
+    form.mode=document.getElementById("nc-mode").value;
+    return self.CaseBus.buildEngine(form);
   }
   function ncPreview(){
     const pv=document.getElementById("nc-preview"); if(!pv) return;
@@ -1328,39 +1315,18 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
   }
   function submitNewCase(){
     if(!RT||!RT.ready) return alert("計算核心尚未就緒，請稍候再建立（數字必須由 Core 產出）。");
-    const eng=ncEngine(), name=eng.params.案件名稱;
+    const eng=ncEngine();
     RT.recompute(eng).then(r=>{
       const R=r.result||{}, ih=r.input_hash;
-      const pid="prj-"+(ih||"").replace(/^sha256:/,"").slice(0,8);
-      const s=load()||{order:[],projects:{}};
-      if(s.projects[pid]) { localStorage.setItem("uros.active_case",pid); render(); return; }
-      const view={}; ["baseline_far","allow_floor_area","used_floor_area","remaining_floor_area",
-        "saleable_area","efficiency_ratio","total_sales","shared_cost","shared_cost_ratio",
-        "owner_return_value","owner_return_ratio","return_rate","pre_renewal_value","value_multiple"]
-        .forEach(k=>view[k]=R[k]);
-      view.warnings=(R.warnings||[]).map(w=>typeof w==="string"?w:(w.message||w.msg||w.code||""));
-      s.projects[pid]={
-        wf:{schema_version:"wf-1.1",project:{project_id:pid,code_name:name,
-              case_type:document.getElementById("nc-type").value,
-              mode:eng.mode,stage:"S1",active_snapshot:"snap-01",
-              snapshots:[{id:"snap-01",label:"建案版",schema_version:"2.1",input_hash:ih,
-                          core_version:R.core_version||"",computed_at:R.computed_at||""}]},
-            stakeholders:[],consent_events:[],tasks:[],decisions:[]},
-        snap:{code_name:name,case_type:document.getElementById("nc-type").value,
-              stakeholders_n:0,input_hash:ih,core_version:R.core_version||"",
-              computed_at:R.computed_at||"",shared_cost_ratio:R.shared_cost_ratio,
-              return_rate:R.return_rate,warnings_n:(R.warnings||[]).length,
-              agreed:0,total:eng.params.戶數,threshold:eng.case_type==="危老"?1:0.8,
-              allocations:[],site:{site_area_sqm:eng.params.基地面積,
-                plaza_area_sqm:eng.params.人行廣場,far:eng.params.容積率,
-                bonus_ratio:eng.params.獎勵率,tdr_transfer_sqm:eng.params.容積移轉},
-              public_ratio:eng.params.公設比},
-        engine:eng, decision:null, roster:[], view, cashflow:null, demo:false, dirty:true};
-      s.order=s.order||[]; s.order.unshift(pid);
-      save(s); localStorage.setItem("uros.active_case",pid);
+      const rec=self.CaseBus.buildRecord({engine:eng,result:R,input_hash:ih});
+      const s=self.CaseBus.readStore();
+      const exists=!!s.projects[rec.pid];
+      let pid;
+      if(exists){ self.CaseBus.setActive(rec.pid); pid=rec.pid; }
+      else pid=self.CaseBus.upsert(rec);
       document.getElementById("newcase").style.display="none";
       // M7.1：建案件是歷程的第一筆事實（見 ACTLOGIC.createEvent）
-      logAct(pid, ACTLOGIC.createEvent(pid, eng.params, ih));
+      if(!exists) logAct(pid, ACTLOGIC.createEvent(pid, eng.params, ih));
       render();
     }).catch(e=>alert("建立失敗："+e.message));
   }

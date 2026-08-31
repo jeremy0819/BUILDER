@@ -42,7 +42,7 @@ def test_瀏覽器條件下_bundle_Core_與伺服器一致(tmp_path):
         p = tmp_path / rel
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(content, encoding="utf-8")
-    eng = json.loads((根 / "schemas/examples/v2/v2_1_案例D_權變示範.json").read_text())["engine"]
+    eng = json.loads((根 / "schemas/examples/v2/v2_1_案例D_權變示範.json").read_text(encoding="utf-8"))["engine"]
     # 乾淨子行程：只有 bundle 樹在 path，且封鎖 pandas/jsonschema/referencing＝Pyodide 條件
     code = (
         "import sys, json\n"

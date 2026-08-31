@@ -100,6 +100,9 @@ const rec2 = JSON.parse(JSON.stringify(rec));
 rec2.decision = { verdict: "CAUTION", completion_probability: 0.2963,
                   breakpoint_stakeholder: "地主", decision_urgency: 0.5272,
                   input_hash: IH, core_version: "0.6.0" };
+rec2.wf.stakeholders = [{ stakeholder_id: "own-001", consent_status: "agreed" }];
+rec2.wf.tasks = [{ task_id: "task-001", title: "示範任務" }];
+rec2.roster = [{ owner_id: "own-001", share: 0.25 }];
 const sv2 = B.stepValues(rec2);
 ok(sv2.decision.items.find(x => x.label === "判定").value === "CAUTION", "④ 決策：verdict verbatim");
 ok(B.assertNoDerivedOutput(rec2), "掛上 decision 後仍逐欄 verbatim");
@@ -112,24 +115,59 @@ ok(rec.snap.input_hash === rec.wf.project.snapshots[0].input_hash,
 
 // ── 6. 改參數後重算：舊 decision 必須卸下（N1 二元組規則）────────
 const IH2 = "sha256:" + "d".repeat(64);
-const eng4 = B.buildEngine(Object.assign(B.defaults(), { 住宅單價: 90 }));
+const eng4 = B.buildEngine(Object.assign(B.defaults(), {
+  案件名稱: "更新案件", 住宅單價: 90, case_type: "danger_building", mode: "合建"
+}));
 const R2 = Object.assign({}, R, { return_rate: 2.1 });
 const rec3 = B.applyResult(rec2, { engine: eng4, result: R2, input_hash: IH2 });
 ok(rec3.snap.input_hash === IH2, "重算後換上新的 input_hash");
+ok(rec3.pid === rec2.pid && rec3.wf.project.project_id === rec2.pid,
+   "重算只產生新快照，不改 Project Entity 的穩定 pid");
 ok(rec3.decision === null, "輸入變了→舊 decision 卸下（不留下一個對不上的判定）");
 ok(rec3.detached_decision && rec3.detached_decision.verdict === "CAUTION",
    "卸下的 decision 留存可稽核，不是靜默丟棄");
 ok(rec3.view.return_rate === 2.1, "view 換成新結果");
 ok(rec3.wf.project.snapshots[0].input_hash === IH2, "wf 快照同步更新");
+ok(rec3.snap.code_name === "更新案件" && rec3.wf.project.code_name === "更新案件",
+   "案件名稱同步到 snap／workflow，不留下舊標題");
+ok(rec3.snap.case_type === "danger_building" && rec3.snap.threshold === 1 &&
+   rec3.wf.project.case_type === "danger_building" && rec3.wf.project.mode === "合建",
+   "案件類型、門檻與模式同步更新");
+ok(rec3.wf.stakeholders.length === 1 && rec3.wf.tasks.length === 1 && rec3.roster.length === 1,
+   "重算保留地主、任務與產權清冊事實");
 
-// input_hash 沒變時 decision 保留
+// N1 二元組完整相符時 decision 才保留
 const rec4 = B.applyResult(rec2, { engine: eng, result: R, input_hash: IH });
-ok(rec4.decision && rec4.decision.verdict === "CAUTION", "input_hash 不變→decision 保留");
+ok(rec4.decision && rec4.decision.verdict === "CAUTION", "input_hash／core_version 都不變→decision 保留");
+const rec5 = B.applyResult(rec2, {
+  engine: eng, result: Object.assign({}, R, { core_version: "0.7.0" }), input_hash: IH
+});
+ok(rec5.decision === null && rec5.detached_decision,
+   "input_hash 相同但 core_version 改變→舊 decision 仍須卸下");
 
 // applyResult 不得就地改動輸入紀錄
 const 快照 = JSON.stringify(rec2);
 B.applyResult(rec2, { engine: eng4, result: R2, input_hash: IH2 });
 ok(JSON.stringify(rec2) === 快照, "applyResult 回傳新結構，不改動輸入");
+
+// replace 更新同一個 Project Entity，不得讓 input_hash 洩漏成案件身分
+const mem = new Map();
+global.localStorage = {
+  getItem: k => mem.has(k) ? mem.get(k) : null,
+  setItem: (k, v) => mem.set(k, String(v))
+};
+global.CustomEvent = class { constructor(type, init) { this.type = type; this.detail = init && init.detail; } };
+global.window = { dispatchEvent() {}, addEventListener() {} };
+B.writeStore({ order: [rec2.pid], projects: { [rec2.pid]: rec2 } });
+const 偽新pid紀錄 = JSON.parse(JSON.stringify(rec3));
+偽新pid紀錄.pid = B.projectId(IH2);
+偽新pid紀錄.wf.project.project_id = 偽新pid紀錄.pid;
+const stablePid = B.replace(rec2.pid, 偽新pid紀錄);
+const stored = B.readStore();
+ok(stablePid === rec2.pid && stored.projects[rec2.pid] && !stored.projects[B.projectId(IH2)],
+   "replace 強制沿用既有 pid，不因新 input_hash 另生案件");
+ok(stored.projects[rec2.pid].wf.project.project_id === rec2.pid,
+   "replace 同步修正 workflow project_id");
 
 // ── 7. stepnav 的即時數字也只是搬運 ────────────────────────────
 global.self.CaseBus = B;
@@ -170,6 +208,19 @@ const 禁用 = [
 // 唯一允許的算術＝組輸入（樓板／車位數等），且必須可被使用者覆寫
 ok(/標準樓板/.test(src) && B.ADVANCED.some(f => f.k === "標準樓板"),
    "推得的預設樓板必須是可覆寫欄位——否則就從『預設輸入』變成『替使用者決定』");
+
+// 兩個建立／更新入口都必須走同一份 CaseBus 契約
+const homeSrc = readFileSync(join(root, "apps/web/index.html"), "utf8");
+const dashboardSrc = readFileSync(join(root, "apps/web/dashboard.html"), "utf8");
+ok(/rec \? B\.applyResult\(rec, 最新\) : B\.buildRecord\(最新\)/.test(homeSrc),
+   "首頁即時預覽以 applyResult 疊最新 Core 結果，不讀舊 view");
+ok(/existing \? B\.applyResult\(existing, 最新\) : B\.buildRecord\(最新\)/.test(homeSrc),
+   "首頁更新既有案件走 applyResult，保留案件事實");
+ok(/return self\.CaseBus\.buildEngine\(form\)/.test(dashboardSrc) &&
+   /self\.CaseBus\.buildRecord\(\{engine:eng,result:R,input_hash:ih\}\)/.test(dashboardSrc),
+   "Dashboard 新建案件也只走 CaseBus 的 engine／record 契約");
+ok(!/面積表計入容積\s*:/.test(dashboardSrc),
+   "Dashboard 不再私算允建容積並塞回 Core 輸入");
 
 console.log(`\n起始介面／四步連動 headless：${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

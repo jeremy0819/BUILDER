@@ -163,11 +163,19 @@
   function applyResult(rec, o) {
     var R = o.result || {}, ih = o.input_hash || "", eng = o.engine || rec.engine;
     var next = JSON.parse(JSON.stringify(rec));
+    var ct = o.case_type || (eng.case_type === "危老" ? "danger_building" : "urban_renewal");
+    var name = (eng.params && eng.params.案件名稱) || "我的案件";
+    var pid = rec.pid || (rec.wf && rec.wf.project && rec.wf.project.project_id) || projectId(ih);
+    next.pid = pid;
     next.engine = eng;
+    next.view = next.view || {};
     VIEW_KEYS.forEach(function (k) { next.view[k] = (k in R) ? R[k] : null; });
     next.view.warnings = (R.warnings || []).map(function (w) {
       return typeof w === "string" ? w : (w.message || w.msg || w.code || "");
     });
+    next.snap = next.snap || {};
+    next.snap.code_name = name;
+    next.snap.case_type = ct;
     next.snap.input_hash = ih;
     next.snap.core_version = R.core_version || "";
     next.snap.computed_at = R.computed_at || "";
@@ -175,16 +183,25 @@
     next.snap.return_rate = R.return_rate != null ? R.return_rate : null;
     next.snap.warnings_n = (R.warnings || []).length;
     next.snap.total = eng.params.戶數;
+    next.snap.threshold = eng.case_type === "危老" ? 1 : 0.8;
     next.snap.site = { site_area_sqm: eng.params.基地面積, plaza_area_sqm: eng.params.人行廣場,
                        far: eng.params.容積率, bonus_ratio: eng.params.獎勵率,
                        tdr_transfer_sqm: eng.params.容積移轉 };
     next.snap.public_ratio = eng.params.公設比;
+    next.wf = next.wf || { schema_version: "wf-1.1" };
+    next.wf.project = next.wf.project || {};
+    next.wf.project.project_id = pid;
+    next.wf.project.code_name = name;
+    next.wf.project.case_type = ct;
+    next.wf.project.mode = eng.mode;
+    next.wf.project.snapshots = next.wf.project.snapshots || [];
     var sn = next.wf.project.snapshots[0] || {};
     sn.input_hash = ih; sn.core_version = R.core_version || ""; sn.computed_at = R.computed_at || "";
     next.wf.project.snapshots[0] = sn;
     /* 輸入變了，舊 decision 就不再對應這份快照。 */
     /* 依 N1 二元組規則，留著它只會在下游顯示「不相符」；此處直接卸下，理由記在 detached_decision。 */
-    if (next.decision && next.decision.input_hash !== ih) {
+    if (next.decision && (next.decision.input_hash !== ih ||
+                          next.decision.core_version !== (R.core_version || ""))) {
       next.detached_decision = next.decision;
       next.decision = null;
     }
@@ -316,16 +333,15 @@
     setActive(pid);
     return pid;
   }
-  /* 換 pid：輸入一改，input_hash 就變，案件識別跟著換——舊 pid 的紀錄要移除，
-     否則每動一次滑桿就多一個案件。保留使用者自己建立的其他案件。 */
+  /* 更新既有案件：Project Entity 的 pid 建立後固定；input_hash 只識別計算快照。
+     若讓 pid 跟著輸入變動，Activity／里程碑等以 pid 關聯的資料會成為孤兒。 */
   function replace(oldPid, rec) {
     var s = readStore();
-    var pid = rec.pid || projectId(rec.snap && rec.snap.input_hash);
-    if (oldPid && oldPid !== pid && s.projects[oldPid]) {
-      delete s.projects[oldPid];
-      s.order = (s.order || []).filter(function (x) { return x !== oldPid; });
-    }
-    s.projects[pid] = rec;
+    var pid = oldPid || rec.pid || projectId(rec.snap && rec.snap.input_hash);
+    var stored = JSON.parse(JSON.stringify(rec));
+    stored.pid = pid;
+    if (stored.wf && stored.wf.project) stored.wf.project.project_id = pid;
+    s.projects[pid] = stored;
     s.order = s.order || [];
     if (s.order.indexOf(pid) < 0) s.order.unshift(pid);
     writeStore(s);

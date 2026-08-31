@@ -366,10 +366,10 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
   var 序號 = ["①","②","③","④"];
 
   function 畫四步(){
-    /* 優先用已存檔的案件；還沒建案就用當下試算結果組一份「預覽紀錄」——
-       兩者都經 B.stepValues() 取數，所以預覽與正式看到的欄位定義完全相同。 */
-    var rec = 目前pid ? B.activeRecord() : null;
-    if(!rec && 最新) rec = B.buildRecord(最新);
+    /* 既有案件保留人心／任務等事實，再疊上當下 Core 結果做唯讀預覽；不在此落盤。 */
+    var store = 目前pid ? B.readStore() : null;
+    var rec = store && store.projects ? store.projects[目前pid] : null;
+    if(最新) rec = rec ? B.applyResult(rec, 最新) : B.buildRecord(最新);
     var sv = rec ? B.stepValues(rec) : null;
     $("steps").innerHTML = B.STEP_ORDER.map(function(key, i){
       var s = sv ? sv[key] : {title:["基地","產品","人心","決策"][i], href:"#", items:[]};
@@ -389,8 +389,10 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
   /* ── 建立案件 ── */
   $("btn-go").addEventListener("click", function(){
     if(!最新) return;
-    var rec = B.buildRecord(最新);
-    目前pid = 目前pid ? B.replace(目前pid, rec) : B.upsert(rec);
+    var store = 目前pid ? B.readStore() : null;
+    var existing = store && store.projects ? store.projects[目前pid] : null;
+    var rec = existing ? B.applyResult(existing, 最新) : B.buildRecord(最新);
+    目前pid = existing ? B.replace(目前pid, rec) : B.upsert(rec);
     location.href = "dashboard.html";
   });
 
