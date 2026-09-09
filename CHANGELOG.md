@@ -3,6 +3,35 @@
 > 記錄 CORE_VERSION 的每次變動（VERSION_POLICY：公式、費率、law_db、合約結構變動才 bump）。
 > UI 版本（app.py v4.x）與 OS release tag（os-vX.Y.Z）另有軸線，不在此表。
 
+## 0.6.0（續）— 2026-09-09（Decision v0.2：溯源身分改為二元組）
+
+> **CORE_VERSION 不再 bump**，仍為 0.6.0。理由：0.6.0 尚未打 tag、無任何消費端跑過，
+> 把本次併進同一個未發布版本，`os-v0.6.0` 就是一次完整自洽的「溯源語意升級」——
+> 鍵的**穩定性**（上節的數值正規化）與鍵的**完整性**（本節的二元組）同時到位。
+> 拆成兩版會產生一個沒人用過的幽靈版號。
+
+**問題**：快照的身分本來就是「哪一份輸入」×「哪一版公式」兩件事，
+但 `matchDecision()` 只比 `input_hash`。於是同一份輸入、不同 Core 版本算出的 verdict
+會被判定相符——而畫面只顯示「已綁定」，**不會報錯**。上節的正規化讓這個鍵更可靠，
+反而放大了單鍵誤用的風險，故兩者必須在同一個 release 前一起收斂。
+
+- **新增 `schemas/decision.schema.v0.2.json`**（新增檔；v0.1 位元組續凍）：必填 `core_version`。
+- **`core/redcf/decision.py`**：`ENGINE_VERSION` 0.1.0 → **0.2.0**。
+  · `decide()` 輸出補 `core_version`，**verbatim 取自 `result.core_version`**——
+    不得回填執行中的 `CORE_VERSION`（那記錄的是「誰在跑」，不是「我消費的這份結果是誰算的」）；
+    取不到標 `"unknown"` 並記入 `insufficient_fields`，不臆造。
+  · 新增 `snapshot_matches()` / `match_snapshot_in()`：比對規則由 **Core** 擁有，
+    UI 只是鏡像——UI 不得自行發明綁定邏輯。
+- **三個邊界情形依使用者裁決一律從嚴**：
+  · `core_version` 為 `"unknown"`（v0.1 舊檔）→ **拒絕綁定**，不提供「僅供參考」的軟綁定。
+  · 快照與 decision 版本不同 → **視為不相符**。
+  · 只有 patch 差（0.6.0 vs 0.6.1）→ **仍不相符**；整串比對，**不拆 semver**。
+    公式相容與否不該由版號字面推定——patch 也可能改係數。
+- **凍結清單三處同步**：`check_schema_freeze.py`（19→20 檔）／`VERSION_POLICY §1`／`CHECKLIST §C`。
+- 測試：pytest 234 → 253；workspace headless 49 → 61。
+
+---
+
 ## 0.6.0 — 2026-08-13（`input_hash` 數值正規化：溯源鍵跨語言邊界穩定）
 
 > **版本裁定（使用者核准）**：依 `docs/architecture/DECISION-input_hash_canonicalization.md`

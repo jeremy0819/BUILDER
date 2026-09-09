@@ -125,7 +125,7 @@ Core（計算・唯一真源）→ Workflow（案件狀態）→ Decision Engine
 
 | 想做的事 | 讀哪份 |
 |---|---|
-| 本機跑起來、跑測試、CI 十一道 Gate | [`docs/DEVELOPING.md`](docs/DEVELOPING.md) |
+| 本機跑起來、跑測試、CI 全部 Gate | [`docs/DEVELOPING.md`](docs/DEVELOPING.md) |
 | 架構裁決與資料流 | [`ARCHITECTURE.md`](ARCHITECTURE.md) |
 | 產品第一性原理 | [`knowledge/00_FIRST_PRINCIPLES.md`](knowledge/00_FIRST_PRINCIPLES.md) |
 | 決策引擎規格 | [`docs/architecture/DECISION_ENGINE_SPEC.md`](docs/architecture/DECISION_ENGINE_SPEC.md) |

@@ -62,6 +62,7 @@
 
 | OS Tag | 日期 | CORE_VERSION | schema_version | 備註 |
 |---|---|---|---|---|
+| `os-v0.6.0` | 2026-09-09 | 0.6.0 | 2.1 | 溯源語意升級：`input_hash` 數值正規化（跨 Python／JS 邊界穩定）＋Decision v0.2 二元組綁定（`input_hash` × `core_version`，三個邊界情形一律從嚴）。另含起始介面引導式開場、四步數值連動（case-bus）、四步共用 UI／Decision 圖／本機地政邊界。凍結 20 檔；Gate 22 道全綠（253 pytest ＋ 490 node headless）。 |
 | `os-v0.5.0` | 2026-08-10 | 0.5.0 | 2.1 | M7.1–M7.5：Case OS、Watchtower、Scenario、Attribution、Massing view；GitHub CI 與手動 Workspace 驗收通過。 |
 | _(os-v0.1.0-alpha)_ | _待 M1 收尾_ | 0.2.0 | 1.1 | 首發；合約仍會於 v2.0 破壞性變更，故僅 alpha/內部 |
 

@@ -9,18 +9,27 @@
 > | 座標 | 值 | 怎麼查 |
 > |---|---|---|
 > | CORE_VERSION | **0.6.0** | `grep CORE_VERSION core/redcf/_version.py` |
-> | 最新 release tag | **os-v0.5.0** | `git tag -l \| tail -1` |
+> | 最新 release tag | **os-v0.6.0** | `git tag -l \| tail -1` |
 > | 凍結 schema | **20 檔** | `python tools/check_schema_freeze.py` |
-> | CI Gate | **21 道** | `grep -c 'name: "Gate' .github/workflows/ci.yml` |
+> | CI Gate | **22 道** | `grep -c 'name: "Gate' .github/workflows/ci.yml` |
 >
 > **已出貨**：M4 決策引擎（三方 EV/verdict/exit）→ M5 THE WORKFLOW → M5.5 傳動軸（Pyodide
 > 在瀏覽器跑同一份 Core）→ M6 THE STRATEGIST（逐型對策）→ **M7 THE CASE OS 全五項**
 > （Memory/Watchtower/Scenario/**Attribution 加總守恆歸因**/量體視圖）→ **M8.1 圖表契約**＋
-> **M8.2 歸因瀑布圖**。core 0.6.0 ＝ `input_hash` 數值正規化（溯源鍵跨 Python/JS 邊界穩定）。
+> **M8.2 歸因瀑布圖** → 起始介面引導式開場＋**四步數值連動**（case-bus）→ 四步共用 UI。
+> **os-v0.6.0＝溯源語意升級**：`input_hash` 數值正規化（跨 Python/JS 邊界穩定）
+> ＋**Decision v0.2 二元組綁定**（`input_hash` × `core_version`，三個邊界情形一律從嚴）。
 >
 > **進行中／待裁決**：M8.3 互動量體、M8.4 敏感度地圖、M8.5 GIS（方案 B 本機匯入）；
-> **P1：Decision v0.2 攜帶 `core_version`**（`matchDecision()` 目前單鍵比對，跨版本會誤掛，
-> 須於 os-v0.6.0 發布前完成，見 `docs/architecture/P1-decision_core_version_binding.md`）。
+> 施工序見 `docs/architecture/NEXT_PLAN-2026-08.md`（N3 瀏覽器自動化＝Gate 19，M8.4 硬性前置）。
+>
+> ⚠️ **已知缺陷（os-v0.6.0 內，尚未修）**：`jsonschema` 在 Pyodide 缺席，而 `decide()`／
+> `strategize()`／`allocate()` 都是「驗證失敗即 raise」——**這三個進入點在瀏覽器內必定拋錯**；
+> 且 worker 從未暴露 `decide`，故瀏覽器無產生決策的路徑，第四步的判定一律來自匯入或烘焙資料。
+> 修復進行中（`codex/strategy-security-workspace`，尚未推遠端）。
+> `tests/test_core_bundle.py` 以「封鎖 jsonschema＝Pyodide 條件」為前提且只驗 `recompute`，
+> 是本缺陷長期未被發現的原因——修復時該測試的前提必須一併更新。
+>
 > **P3 未開工**——開工 Gate 卡在「stage_tree 存活率僅 n=1 錨定」與「真實清冊 PII 隔離方案未定案」。
 
 ## 開工前必讀（依序，共約 10 分鐘）
@@ -59,7 +68,7 @@
 | 了解已知風險與文件衝突裁決 | `docs/architecture/ARCH_REVIEW.md`、`docs/architecture/FREEZE_REVIEW-2026-07.md` |
 | 版本規則／發布流程／授權 | `governance/VERSION_POLICY.md`、`docs/releases/`（CHECKLIST、LICENSE_ANALYSIS） |
 | 都更開發模式／整合方法論／遊戲架構 | `docs/handbook/`（整合人手冊、整合人沙盤架構手冊）；狀態報告 `docs/releases/PROGRESS_REPORT-2026-07.md` |
-| CI 五道 Gate 怎麼跑／怎麼修 | `.github/workflows/ci.yml`＋`tools/check_*.py` |
+| CI Gate 怎麼跑／怎麼修（現行 22 道，數量以 ci.yml 為準） | `.github/workflows/ci.yml`＋`tools/check_*.py` |
 | harness 常見翻車與修法 | `governance/DIAGNOSIS.md` |
 | 交接脈絡與低信心警示 | `governance/LETTER_TO_FUTURE_SESSIONS.md` |
 | 踩了新雷 | 寫進 `LESSONS.md`（格式見 MAINTENANCE §2） |

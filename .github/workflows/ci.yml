@@ -120,8 +120,11 @@ jobs:
       - name: "Gate 18 — Case bus / four-step linkage (node)"
         run: node tests/web/test_case_bus.mjs
 
-      # ── Gate 18：四步共用 UI／Decision 圖／本機地政邊界 ──────────────
+      # ── Gate 20：四步共用 UI／Decision 圖／本機地政邊界 ──────────────
       #   共用 shell 必須載入四頁；Decision 互動只換證據，不可拖曳或反算；
       #   官方地政入口不得夾帶地號、門牌、所有權人或發出案件資料請求。
-      - name: "Gate 18 — Unified UI / Decision view / land-data boundary (node)"
+      #   註：原標為 Gate 18，與「Case bus／四步連動」撞號。改編 20 而非 19，
+      #   因 19 已在 NEXT_PLAN-2026-08 §4 保留給瀏覽器自動化（Playwright），
+      #   該道正在 codex/strategy-security-workspace 上實作中。
+      - name: "Gate 20 — Unified UI / Decision view / land-data boundary (node)"
         run: node tests/web/test_unified_ui.mjs

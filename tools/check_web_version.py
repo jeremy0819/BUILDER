@@ -9,6 +9,9 @@ tools/check_web_version.py — Gate 10：前端版本徽章與 Core／tag 同步
   1. apps/web/version.js 的 core 必須 == core/redcf/_version.py 的 CORE_VERSION。
   2. apps/web/version.js 的 release 必須是「實際存在的 git tag」中最新的 os-v*。
      （取不到 git 資訊時跳過此項，不讓離線環境誤紅。）
+  2b. version.js 的 engine／strategy 必須 == Core 的 ENGINE_VERSION／STRATEGY_ENGINE_VERSION。
+     （2026-09 補洞：原本只守 core 與 release，於是 N1 把 Decision Engine 升到 0.2.0 後，
+      徽章仍顯示 0.1.0 而 CI 全綠——正是本 Gate 要防的漂移，卻從側門溜過去。）
   3. 各頁不得再出現與現行 CORE_VERSION 矛盾的「Core vX.Y.Z」硬編字串。
      例外：明確標為快照/歷史溯源者（含「快照」字樣的同一行）＝合法 provenance，不算漂移。
 """
@@ -20,6 +23,11 @@ import sys
 根 = pathlib.Path(__file__).resolve().parents[1]
 VERSION_JS = 根 / "apps" / "web" / "version.js"
 CORE_VER_PY = 根 / "core" / "redcf" / "_version.py"
+# 引擎版本各有其真實來源；徽章只是顯示副本，必須逐一對齊（見守衛規則 2b）
+ENGINE_SOURCES = {
+    "engine":   (根 / "core" / "redcf" / "decision.py", r'^ENGINE_VERSION\s*=\s*"([^"]+)"'),
+    "strategy": (根 / "core" / "redcf" / "strategy.py", r'^STRATEGY_ENGINE_VERSION\s*=\s*"([^"]+)"'),
+}
 WEB = 根 / "apps" / "web"
 
 
@@ -64,6 +72,14 @@ def main() -> int:
     lt = latest_tag()
     if lt and js_field("release") != lt:
         壞.append(f"❌ version.js release={js_field('release')!r} ≠ 最新 tag {lt!r}")
+
+    for 欄, (檔, 樣式) in ENGINE_SOURCES.items():
+        m = re.search(樣式, 檔.read_text(encoding="utf-8"), re.M)
+        if not m:
+            壞.append(f"❌ 讀不到 {檔.name} 的版本常數（樣式 {樣式!r}）")
+            continue
+        if js_field(欄) != m.group(1):
+            壞.append(f"❌ version.js {欄}={js_field(欄)!r} ≠ {檔.name} {m.group(1)!r}")
 
     # 各頁硬編版本：與現行 CORE_VERSION 矛盾且未標「快照」＝漂移
     pat = re.compile(r"[Cc]ore\s+v?(\d+\.\d+\.\d+)")

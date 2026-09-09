@@ -11,9 +11,9 @@
 | 版本 | 載體（真實來源） | 現值 | bump 時機 |
 |---|---|---|---|
 | **Schema Version** | `schemas/project_schema.json`（v1.1）＋`schemas/project_schema_v2.json`（v2.0）＋`schemas/project_schema_v2_1.json`（v2.1）＋`schemas/v2/*.schema.json` 內 `schema_version` | 1.1＋2.0＋2.1（**皆凍結**；連同各層契約共 **20 檔**凍結） | 加 optional 欄位＝minor（例：2.0→2.1 owner_allocations）；改名/改型別/刪欄位/改必填＝major（見 SCHEMA_STRATEGY）。凍結守衛＝`tools/check_schema_freeze.py`（Gate 6） |
-| **CORE_VERSION** | `core/redcf/_version.py` 的 `CORE_VERSION` | **0.6.0**（`input_hash` 數值正規化，見 `CHANGELOG.md`） | 計算公式、費率、law_db 內容、合約結構變動才 bump；**消費端追溯依據，不可斷號** |
+| **CORE_VERSION** | `core/redcf/_version.py` 的 `CORE_VERSION` | **0.6.0**（`input_hash` 數值正規化＋Decision v0.2 二元組，見 `CHANGELOG.md`） | 計算公式、費率、law_db 內容、合約結構變動才 bump；**消費端追溯依據，不可斷號** |
 | **App Version** | `apps/streamlit/app.py` 的 `APP_VERSION`；各 HTML 內版號（evaluator v1.3、simulator V4） | v4.9 / v1.3 / V4 | 純介面/行為變更才 bump（cosmetic）；`BUILD_DATE` 每次部署恆更新 |
-| **OS Release** | git tag `os-vX.Y.Z`（聚合版本，**新增機制**） | os-v0.1.0-alpha／0.2.0-beta／0.3.0／0.4.0／**os-v0.5.0** 已發布；os-v0.6.0 待 P1 完成後發 | 每次正式 release 打 tag，對應一組凍結的上述三者 |
+| **OS Release** | git tag `os-vX.Y.Z`（聚合版本，**新增機制**） | os-v0.1.0-alpha／0.2.0-beta／0.3.0／0.4.0／0.5.0／**os-v0.6.0** 已發布 | 每次正式 release 打 tag，對應一組凍結的上述三者 |
 
 > **凍結 hash 基準**（唯一來源＝`tools/check_schema_freeze.py` `FROZEN` 表）：v1.1 `e37e10db…`、
 > v2.0 `f1c466a3…`、三視圖見腳本；Workflow 軸 wf-1.0 `1328690f…`、**wf-1.1 `39e7e88e…`**（M5.5-A：stakeholder

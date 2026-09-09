@@ -35,7 +35,7 @@ node tests/web/test_os_simulator.mjs   # 沙盤遊戲核心 86 項
 node tests/web/test_workspace.mjs      # 工作區 49 項
 ```
 
-## CI 十一道 Gate
+## CI Gate（現行 22 道；數量以 `.github/workflows/ci.yml` 為準，本節不重複載明數字）
 
 定義於 `.github/workflows/ci.yml`，**任一紅即擋 merge**。
 
