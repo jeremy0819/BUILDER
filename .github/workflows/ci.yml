@@ -128,3 +128,22 @@ jobs:
       #   該道正在 codex/strategy-security-workspace 上實作中。
       - name: "Gate 20 — Unified UI / Decision view / land-data boundary (node)"
         run: node tests/web/test_unified_ui.mjs
+
+      - name: "Gate 19 — Strategy / security / site massing boundaries"
+        run: node tests/web/test_strategy_security.mjs
+
+      - name: "Gate 19 — Install browser verification tools"
+        run: |
+          npm ci --prefix tools/browser --ignore-scripts --no-fund
+          node tools/browser/node_modules/playwright/cli.js install --with-deps chromium
+
+      - name: "Gate 19 — Real browser / Pyodide / responsive / stored-XSS regression"
+        run: node tools/browser/verify.mjs
+
+      - name: "Browser evidence (synthetic data only)"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-verification
+          path: tools/browser/artifacts/*.png
+          retention-days: 7

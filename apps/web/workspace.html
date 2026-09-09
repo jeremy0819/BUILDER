@@ -288,6 +288,7 @@ footer{margin-top:30px;border-top:1px solid var(--line);padding-top:13px;font-si
 <script src="attribution-waterfall.js"></script>
 <script src="massing-view.js"></script>
 <script src="case-store.js"></script>
+<script src="security.js"></script>
 <script src="core-runtime.js"></script>
 <script>
 /*WORKLOGIC-BEGIN*/
@@ -484,7 +485,7 @@ const KEY = "uros.workflow.v1";
 const pct = x => x==null ? "—" : (x*100).toFixed(1)+"%";
 const shortHash = h => (h||"").replace(/^sha256:/,"").slice(0,10);
 
-function loadStore(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {order:[],projects:{}}; }catch(e){ return {order:[],projects:{}}; } }
+function loadStore(){ return UROSSecurity.parseJSON(localStorage.getItem(KEY)||"null") || {order:[],projects:{}}; }
 function saveStore(s){ localStorage.setItem(KEY, JSON.stringify(s)); }
 
 function addProject(v21){
@@ -543,36 +544,36 @@ function delProject(pid){
 const V_CLS={GO:"ok",CAUTION:"warn",STOP:"err"};
 function dslotHTML(dec){
   if(!dec) return `<div class="dslot"><span class="dk">決策狀態</span><span>待 Decision Engine 判讀</span><span class="dwait">M4</span></div>`;
-  const bp=dec.breakpoint_stakeholder?` · 引爆點 ${dec.breakpoint_stakeholder}`:"";
+  const bp=dec.breakpoint_stakeholder?` · 引爆點 ${esc(dec.breakpoint_stakeholder)}`:"";
   const ex=dec.exit_signal?` · <b style="color:var(--err)">EXIT</b>`:"";
   return `<div class="dslot decided"><span class="dk">決策狀態</span>
-    <b class="dv" style="color:var(--${V_CLS[dec.verdict]})">${dec.verdict}</b>
-    <span>完工機率 ${(dec.completion_probability*100).toFixed(0)}%${bp}${ex} · 急迫 ${dec.decision_urgency}
+    <b class="dv" style="color:var(--${V_CLS[dec.verdict]||'mute'})">${esc(dec.verdict)}</b>
+    <span>完工機率 ${(dec.completion_probability*100).toFixed(0)}%${bp}${ex} · 急迫 ${esc(dec.decision_urgency)}
       · <b style="color:var(--warn)">⚠ 方向性判斷（存活率未校準）· 非投資結論</b></span>
-    <span class="dwait">DE ${dec.decision_engine_version}</span></div>`;
+    <span class="dwait">DE ${esc(dec.decision_engine_version)}</span></div>`;
 }
 function caseCard(pid, rec){
   const {wf, snap} = rec;
   const typ = snap.case_type==="danger_building" ? "危老重建" : "都市更新";
   const ar = snap.total ? snap.agreed/snap.total : 0, thr = snap.threshold;
   return `<div class="card">
-    <div class="ct">${typ}${wf.project.mode?" · "+wf.project.mode:""}</div>
-    <div class="cn">${snap.code_name}</div>
+    <div class="ct">${typ}${wf.project.mode?" · "+esc(wf.project.mode):""}</div>
+    <div class="cn">${esc(snap.code_name)}</div>
     ${dslotHTML(rec.decision)}
     <div class="sgrp">Core Output · 逐欄自 result</div>
     <div class="kpis">
       <div class="kpi"><div class="k">共負比</div><div class="v">${pct(snap.shared_cost_ratio)}</div></div>
       <div class="kpi"><div class="k">投報率</div><div class="v">${pct(snap.return_rate)}</div></div>
-      <div class="kpi"><div class="k">健檢</div><div class="v">${snap.warnings_n}</div></div>
+      <div class="kpi"><div class="k">健檢</div><div class="v">${esc(snap.warnings_n)}</div></div>
     </div>
     <div class="sgrp">Workflow State · 事實</div>
     <div class="progress"><span style="width:${Math.min(100,ar*100)}%"></span><div class="thr" style="left:${thr*100}%"></div></div>
-    <div class="plab"><span>${wf.project.stage} · 同意 ${snap.agreed}/${snap.total}（計數）</span><span>門檻 ${(thr*100)|0}%</span></div>
-    <div class="meta" style="margin-top:8px">Snapshot ${shortHash(snap.input_hash)}…@${snap.core_version} · ${snap.stakeholders_n} 利害關係人</div>
+    <div class="plab"><span>${esc(wf.project.stage)} · 同意 ${esc(snap.agreed)}/${esc(snap.total)}（計數）</span><span>門檻 ${(thr*100)|0}%</span></div>
+    <div class="meta" style="margin-top:8px">Snapshot ${esc(shortHash(snap.input_hash))}…@${esc(snap.core_version)} · ${esc(snap.stakeholders_n)} 利害關係人</div>
     <div class="acts">
-      <button class="btn sm" onclick="openCase('${pid}')">開啟</button>
-      <button class="btn sm ghost" onclick="exportCase('${pid}')">匯出 wf</button>
-      <button class="btn sm danger" onclick="removeCase('${pid}')">刪除</button>
+      <button class="btn sm" data-case-action="open" data-case-id="${esc(pid)}">開啟</button>
+      <button class="btn sm ghost" data-case-action="export" data-case-id="${esc(pid)}">匯出 wf</button>
+      <button class="btn sm danger" data-case-action="remove" data-case-id="${esc(pid)}">刪除</button>
     </div></div>`;
 }
 function renderList(){
@@ -601,13 +602,13 @@ function openCase(pid){
     <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center">
       <button class="btn sm ghost" onclick="renderList()">← 案件列表</button>
       <span style="display:flex;gap:7px;flex-wrap:wrap">
-        <button class="btn sm" onclick="toSandbox('${pid}')">🕹️ 帶入沙盤推演</button>
+        <button class="btn sm" data-case-action="sandbox" data-case-id="${esc(pid)}">🕹️ 帶入沙盤推演</button>
         <button class="btn sm ghost" onclick="location.href='report.html'">✓ 決策報告</button>
       </span>
     </div>
     <div class="detail">
-      <div style="font-size:19px;font-weight:800;margin-bottom:2px">${snap.code_name}</div>
-      <div class="meta mono" style="color:var(--mute);font-size:11px;margin-bottom:12px">${wf.project.project_id} · snap ${shortHash(snap.input_hash)}…@${snap.core_version}</div>
+      <div style="font-size:19px;font-weight:800;margin-bottom:2px">${esc(snap.code_name)}</div>
+      <div class="meta mono" style="color:var(--mute);font-size:11px;margin-bottom:12px">${esc(wf.project.project_id)} · snap ${esc(shortHash(snap.input_hash))}…@${esc(snap.core_version)}</div>
       ${rec.decision?dslotHTML(rec.decision).replace('class="dslot decided"','class="dslot decided" style="margin-bottom:14px"'):`<div class="dslot" style="margin-bottom:14px"><span class="dk">決策狀態</span><span>GO / CAUTION / STOP 由 Decision Engine 產生——本頁不推論（匯入 decision JSON 即顯示）</span><span class="dwait">M4</span></div>`}
       <div class="spine">${spine}</div>
       <div class="tabs">
@@ -625,9 +626,9 @@ function openCase(pid){
   const panes={
     fin:`<div class="fin"><div class="row"><span>共同負擔比</span><b>${pct(snap.shared_cost_ratio)}</b></div>
       <div class="row"><span>投報率</span><b>${pct(snap.return_rate)}</b></div>
-      <div class="row"><span>同意（計數）</span><b>${snap.agreed}/${snap.total} · 門檻 ${(snap.threshold*100)|0}%</b></div>
-      <div class="row"><span>健檢 warnings</span><b>${snap.warnings_n} 項</b></div>
-      <div class="src">${snap.detached?'⚠️ 此案由 wf bundle 還原，財務數字留在原 v2.1（SSOT 不複製）——重新匯入對應 v2.1 即補回。':`數字逐欄來自匯入 result（input_hash ${shortHash(snap.input_hash)}…）· 逐戶分回/找補見開發評估儀表板 · 本頁零計算`}</div></div>`,
+      <div class="row"><span>同意（計數）</span><b>${esc(snap.agreed)}/${esc(snap.total)} · 門檻 ${(snap.threshold*100)|0}%</b></div>
+      <div class="row"><span>健檢 warnings</span><b>${esc(snap.warnings_n)} 項</b></div>
+      <div class="src">${snap.detached?'⚠️ 此案由 wf bundle 還原，財務數字留在原 v2.1（SSOT 不複製）——重新匯入對應 v2.1 即補回。':`數字逐欄來自匯入 result（input_hash ${esc(shortHash(snap.input_hash))}…）· 逐戶分回/找補見開發評估儀表板 · 本頁零計算`}</div></div>`,
   };
   const R={bench:renderBench, board:renderBoard, task:renderTasks, dec:renderDecisions, time:renderTimeline, mass:renderMassing, attr:renderAttribution};
   renderBench(pid);
@@ -831,23 +832,23 @@ function renderBench(pid){
   const 已=db.tally.agreed_unselected+db.tally.agreed_selected;
   const riskHTML=db.risk
     ? `<div class="cw2"><h4>風險 · Decision Engine（verbatim）</h4>
-        <div class="fin"><div class="row"><span>判讀</span><b style="color:${{GO:"var(--ok)",CAUTION:"var(--warn)",STOP:"var(--err)"}[db.risk.verdict]}">${db.risk.verdict}</b></div>
-        ${db.risk.breakpoint?`<div class="row"><span>破局引爆點</span><b style="color:var(--err)">${db.risk.breakpoint}</b></div>`:""}
+        <div class="fin"><div class="row"><span>判讀</span><b style="color:${{GO:"var(--ok)",CAUTION:"var(--warn)",STOP:"var(--err)"}[db.risk.verdict]}">${esc(db.risk.verdict)}</b></div>
+        ${db.risk.breakpoint?`<div class="row"><span>破局引爆點</span><b style="color:var(--err)">${esc(db.risk.breakpoint)}</b></div>`:""}
         <div class="row"><span>完工機率</span><b>${(db.risk.p*100).toFixed(0)}%</b></div>
-        <div class="row"><span>急迫度</span><b>${db.risk.urgency}</b></div>
+        <div class="row"><span>急迫度</span><b>${esc(db.risk.urgency)}</b></div>
         ${db.risk.exit_signal?`<div class="row"><span>退場訊號</span><b style="color:var(--err)">EXIT</b></div>`:""}
-        <div class="row"><span>健檢 warnings（Core）</span><b>${snap.warnings_n} 項</b></div></div>
-        <div class="src">DE ${db.risk.engine} · 本頁只呈現 · <b style="color:var(--warn)">⚠ 方向性判斷（stage_tree 存活率未校準）· 非投資結論</b></div></div>`
-    : `<div class="cw2"><h4>風險</h4><div class="wip">待 Decision Engine 判讀（匯入 decision JSON）。Core 健檢 warnings：${snap.warnings_n} 項。</div></div>`;
+        <div class="row"><span>健檢 warnings（Core）</span><b>${esc(snap.warnings_n)} 項</b></div></div>
+        <div class="src">DE ${esc(db.risk.engine)} · 本頁只呈現 · <b style="color:var(--warn)">⚠ 方向性判斷（stage_tree 存活率未校準）· 非投資結論</b></div></div>`
+    : `<div class="cw2"><h4>風險</h4><div class="wip">待 Decision Engine 判讀（匯入 decision JSON）。Core 健檢 warnings：${esc(snap.warnings_n)} 項。</div></div>`;
   const nextHTML=db.next.length
-    ? db.next.map(t=>`<div class="cw-t"><span class="bid mono">${t.stage}</span><span style="flex:1">${t.title}</span><span class="cpill" style="color:${t.status==="doing"?"var(--info)":"var(--mute)"};border-color:currentColor">${t.status==="doing"?"進行":"待辦"}</span></div>`).join("")
+    ? db.next.map(t=>`<div class="cw-t"><span class="bid mono">${esc(t.stage)}</span><span style="flex:1">${esc(t.title)}</span><span class="cpill" style="color:${t.status==="doing"?"var(--info)":"var(--mute)"};border-color:currentColor">${t.status==="doing"?"進行":"待辦"}</span></div>`).join("")
     : `<div class="wip">無待辦——到「時程任務」帶入 S1–S11 範本或新增。</div>`;
   const rowsHTML=db.rows.map(r=>`<div class="brow">
-      <span class="bid mono">${r.stakeholder_id}${r.family_group?` <span class="fam">${r.family_group}</span>`:""}</span>
+      <span class="bid mono">${esc(r.stakeholder_id)}${r.family_group?` <span class="fam">${esc(r.family_group)}</span>`:""}</span>
       <span class="cpill" style="color:${CS_COLOR[r.state]};border-color:${CS_COLOR[r.state]}">${CS_LABEL[r.state]}</span>
-      <span class="bev">${r.events_n} 次接觸${r.last_kind?` · 最後 ${EV_LABEL[r.last_kind]||r.last_kind} ${(r.last_ts||"").slice(0,10)}`:""}</span>
-      <select class="evk" data-sid="${r.stakeholder_id}">${EV_KINDS.map(([v,l])=>`<option value="${v}">${l}</option>`).join("")}</select>
-      <button class="btn sm" data-sid="${r.stakeholder_id}">記錄</button>
+      <span class="bev">${r.events_n} 次接觸${r.last_kind?` · 最後 ${esc(EV_LABEL[r.last_kind]||r.last_kind)} ${esc((r.last_ts||"").slice(0,10))}`:""}</span>
+      <select class="evk" data-sid="${esc(r.stakeholder_id)}">${EV_KINDS.map(([v,l])=>`<option value="${v}">${l}</option>`).join("")}</select>
+      <button class="btn sm" data-sid="${esc(r.stakeholder_id)}">記錄</button>
     </div>`).join("");
   $("pane").innerHTML=`<div class="board">
     <div class="btally">
@@ -864,7 +865,7 @@ function renderBench(pid){
     <div class="brows">${rowsHTML}</div>
   </div>`;
   $("pane").querySelectorAll(".brow .btn").forEach(btn=>btn.onclick=()=>{
-    const sid=btn.dataset.sid, sel=$("pane").querySelector(`.evk[data-sid="${sid}"]`);
+    const sid=btn.dataset.sid, sel=btn.closest(".brow").querySelector(".evk");
     addConsentEvent(pid,sid,sel.value); renderBench(pid);
   });
 }
@@ -876,8 +877,8 @@ function renderTasks(pid){
   const tasks=wf.tasks||[], tl=WORKLOGIC.taskTally(tasks);
   const tallyHTML=TASK_ST.map(([k,l])=>`<span class="cstat"><i style="background:${TASK_COLOR[k]}"></i>${l} <b>${tl[k]}</b></span>`).join("");
   const rowsHTML=tasks.length?tasks.slice().sort((a,b)=>a.stage.localeCompare(b.stage,undefined,{numeric:true})).map(t=>`<div class="brow">
-      <span class="bid mono">${t.stage}</span><span style="flex:1;font-size:12.5px">${t.title}</span>
-      <button class="cpill tglt" data-tid="${t.task_id}" style="color:${TASK_COLOR[t.status]};border-color:${TASK_COLOR[t.status]};cursor:pointer">${TASK_LABEL[t.status]}</button>
+      <span class="bid mono">${esc(t.stage)}</span><span style="flex:1;font-size:12.5px">${esc(t.title)}</span>
+      <button class="cpill tglt" data-tid="${esc(t.task_id)}" style="color:${TASK_COLOR[t.status]};border-color:${TASK_COLOR[t.status]};cursor:pointer">${TASK_LABEL[t.status]}</button>
     </div>`).join(""):`<div class="wip">尚無任務——可帶入 S1–S11 里程碑範本，或手動新增。</div>`;
   $("pane").innerHTML=`<div class="board">
     <div class="btally">${tallyHTML}<span class="cstat" style="margin-left:auto">共 <b>${tasks.length}</b> 項</span></div>
@@ -906,10 +907,10 @@ function renderDecisions(pid){
   const rec=loadStore().projects[pid]; if(!rec) return; const wf=rec.wf;
   const ds=(wf.decisions||[]).slice().reverse(); const ev=WORKLOGIC.decisionEvidence(wf);
   const listHTML=ds.length?ds.map(d=>`<div class="dcard">
-      <div class="dhd"><b>${d.title}</b><span class="mono">${(d.ts||"").slice(0,10)}</span></div>
-      ${d.chosen?`<div class="drow"><span>採取</span>${d.chosen}</div>`:""}
-      ${d.rationale?`<div class="drow"><span>理由</span>${d.rationale}</div>`:""}
-      <div class="dev mono">evidence · ${shortHash(d.evidence&&d.evidence.input_hash)}…@${d.evidence&&d.evidence.core_version||"—"}</div>
+      <div class="dhd"><b>${esc(d.title)}</b><span class="mono">${esc((d.ts||"").slice(0,10))}</span></div>
+      ${d.chosen?`<div class="drow"><span>採取</span>${esc(d.chosen)}</div>`:""}
+      ${d.rationale?`<div class="drow"><span>理由</span>${esc(d.rationale)}</div>`:""}
+      <div class="dev mono">evidence · ${esc(shortHash(d.evidence&&d.evidence.input_hash))}…@${esc(d.evidence&&d.evidence.core_version||"—")}</div>
     </div>`).join(""):`<div class="wip">尚無決策紀錄。這裡記錄 ADR 式決策日誌，自動釘住作準計算快照指紋供回放稽核——<b>非</b> GO/CAUTION/STOP 判斷（判斷屬 Decision Engine · M4）。</div>`;
   $("pane").innerHTML=`<div class="board">
     <div class="dadd">
@@ -935,13 +936,13 @@ function renderTimeline(pid){
   const rec=loadStore().projects[pid]; if(!rec) return; const wf=rec.wf, p=wf.project;
   const tl=WORKLOGIC.caseTimeline(wf), snaps=p.snapshots||[];
   const cur=parseInt((p.stage||"S1").slice(1))||1, canAdv=cur<11;
-  const snapHTML=snaps.map(sn=>`<div class="brow"><span class="bid mono">${sn.id}</span>
-      <span style="flex:1;font-size:11.5px" class="mono">${shortHash(sn.input_hash)}…@${sn.core_version}${sn.id===p.active_snapshot?' <b style="color:var(--accent)">· 作準</b>':''}</span>
-      <span class="bev">${(sn.computed_at||"").slice(0,10)}</span></div>`).join("");
+  const snapHTML=snaps.map(sn=>`<div class="brow"><span class="bid mono">${esc(sn.id)}</span>
+      <span style="flex:1;font-size:11.5px" class="mono">${esc(shortHash(sn.input_hash))}…@${esc(sn.core_version)}${sn.id===p.active_snapshot?' <b style="color:var(--accent)">· 作準</b>':''}</span>
+      <span class="bev">${esc((sn.computed_at||"").slice(0,10))}</span></div>`).join("");
   const tlHTML=tl.length?tl.slice().reverse().map(it=>`<div class="tlrow"><span class="tlic">${TL_ICON[it.type]||"•"}</span>
-      <span class="tlts mono">${(it.ts||"").slice(0,10)}</span><span class="tllb">${it.label}</span></div>`).join(""):`<div class="wip">尚無時間軸事件——推進階段、記錄同意事件或決策後即出現。</div>`;
+      <span class="tlts mono">${esc((it.ts||"").slice(0,10))}</span><span class="tllb">${esc(it.label)}</span></div>`).join(""):`<div class="wip">尚無時間軸事件——推進階段、記錄同意事件或決策後即出現。</div>`;
   $("pane").innerHTML=`<div class="board">
-    <div class="btally"><span class="cstat">目前階段 <b>${p.stage} ${WORKLOGIC.STAGE_TITLES[p.stage]||""}</b></span>
+    <div class="btally"><span class="cstat">目前階段 <b>${esc(p.stage)} ${WORKLOGIC.STAGE_TITLES[p.stage]||""}</b></span>
       <button class="btn sm ${canAdv?'':'ghost'}" id="advbtn" ${canAdv?'':'disabled'} style="margin-left:auto">${canAdv?'推進到 S'+(cur+1):'已達 S11'}</button></div>
     <div class="sgrp" style="margin-top:14px">計算快照（多版重評；只存指紋，不複製數字）</div>
     <div class="brows">${snapHTML}</div>
@@ -966,19 +967,19 @@ function renderBoard(pid){
   const {wf,snap}=rec, bd=WORKLOGIC.consentBoard(wf);
   const tallyHTML=WORKLOGIC.CONSENT_STATES.map(k=>`<span class="cstat"><i style="background:${CS_COLOR[k]}"></i>${CS_LABEL[k]} <b>${bd.tally[k]}</b></span>`).join("");
   const rowsHTML=bd.rows.map(r=>`<div class="brow">
-      <span class="bid mono">${r.stakeholder_id}${r.family_group?` <span class="fam">${r.family_group}</span>`:""}</span>
+      <span class="bid mono">${esc(r.stakeholder_id)}${r.family_group?` <span class="fam">${esc(r.family_group)}</span>`:""}</span>
       <span class="cpill" style="color:${CS_COLOR[r.state]};border-color:${CS_COLOR[r.state]}">${CS_LABEL[r.state]}</span>
       <span class="bev">${r.events_n} 事件</span>
-      <select class="evk" data-sid="${r.stakeholder_id}">${EV_KINDS.map(([v,l])=>`<option value="${v}">${l}</option>`).join("")}</select>
-      <button class="btn sm" data-sid="${r.stakeholder_id}">記錄</button>
+      <select class="evk" data-sid="${esc(r.stakeholder_id)}">${EV_KINDS.map(([v,l])=>`<option value="${v}">${l}</option>`).join("")}</select>
+      <button class="btn sm" data-sid="${esc(r.stakeholder_id)}">記錄</button>
     </div>`).join("");
   $("pane").innerHTML=`<div class="board">
     <div class="btally">${tallyHTML}<span class="cstat" style="margin-left:auto">共 <b>${bd.total}</b> 位地主</span></div>
-    <div class="bnote">狀態由 append-only <b>事件重放</b>推導（純邏輯，鏡像 core workflow.py）。此為<b>現場整合事實</b>——與卡片上匯入計算快照的同意計數 ${snap.agreed}/${snap.total} 分屬不同層。三型分類（策略/恐懼/反對）需 stakeholder_profile schema，延 M4/M5。</div>
+    <div class="bnote">狀態由 append-only <b>事件重放</b>推導（純邏輯，鏡像 core workflow.py）。此為<b>現場整合事實</b>——與卡片上匯入計算快照的同意計數 ${esc(snap.agreed)}/${esc(snap.total)} 分屬不同層。三型分類（策略/恐懼/反對）需 stakeholder_profile schema，延 M4/M5。</div>
     <div class="brows">${rowsHTML||'<div class="wip">此案無 owner 關係人。</div>'}</div>
   </div>`;
   $("pane").querySelectorAll(".brow .btn").forEach(btn=>btn.onclick=()=>{
-    const sid=btn.dataset.sid, sel=$("pane").querySelector(`.evk[data-sid="${sid}"]`);
+    const sid=btn.dataset.sid, sel=btn.closest(".brow").querySelector(".evk");
     addConsentEvent(pid,sid,sel.value); renderBoard(pid);
   });
 }
@@ -1016,9 +1017,10 @@ function exportCase(pid){
 }
 function handleFile(f){
   $("imp-err").textContent="";
+  if(f.size > UROSSecurity.MAX_BYTES){ $("imp-err").textContent="匯入檔案超過 5 MB 限制"; return; }
   const rd=new FileReader();
   rd.onload=()=>{ try{
-    const doc=JSON.parse(rd.result);
+    const doc=UROSSecurity.parseJSON(rd.result);
     const pid=(doc && doc.decision_engine_version) ? attachDecision(doc)
             : (doc && doc.schema_version==="wf-1.0") ? importWfBundle(doc) : addProject(doc);
     renderList();
@@ -1034,5 +1036,10 @@ const drop=$("drop");
 ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("drag");}));
 drop.addEventListener("drop",e=>{ const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
 $("tgl").onclick=()=>{const root=document.documentElement;const cur=root.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");root.setAttribute("data-theme",cur==="dark"?"light":"dark");};
+document.addEventListener("click",e=>{
+  const button=e.target.closest("button[data-case-action]"); if(!button)return;
+  const actions={open:openCase,export:exportCase,remove:removeCase,sandbox:toSandbox};
+  const action=actions[button.dataset.caseAction]; if(action)action(button.dataset.caseId);
+});
 renderList();
 </script>

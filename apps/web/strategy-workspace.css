@@ -1,0 +1,40 @@
+.strategy-workspace{max-width:1200px;margin:0 auto;padding:24px 24px 60px;font-size:13px}
+.strategy-heading,.section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.strategy-heading h1{font-size:22px;margin:0}.strategy-heading p{color:var(--uros-mute);margin:4px 0;font-size:12px}
+.strategy-commands{display:flex;gap:8px;flex-wrap:wrap}
+.strategy-workspace button,.strategy-workspace select,.strategy-workspace input{border:1px solid var(--uros-line);border-radius:6px;background:var(--uros-panel);color:var(--uros-ink);padding:8px 10px;min-height:36px;min-width:0}
+.strategy-workspace button{cursor:pointer}.strategy-workspace button:disabled{opacity:.5;cursor:default}
+.strategy-workspace .primary{background:var(--uros-accent);color:var(--uros-bg);font-weight:750;border-color:var(--uros-accent)}
+.analysis-status{border-left:3px solid var(--uros-info);padding:8px 12px;background:var(--uros-panel);margin:16px 0 8px;overflow-wrap:anywhere}
+.analysis-status[data-state="error"]{border-color:var(--uros-err)}.analysis-status[data-state="ready"]{border-color:var(--uros-ok)}
+.analysis-caveat{font-size:11px;color:var(--uros-warn);margin-bottom:12px}
+.analysis-top{padding-bottom:24px;border-bottom:1px solid var(--uros-line)}
+.analysis-top .decision-map,.analysis-top .decision-evidence{min-height:320px}
+.analysis-top .decision-hub{width:118px;height:118px}.analysis-top .decision-node{width:145px;min-height:80px}
+.strategy-columns{display:grid;grid-template-columns:minmax(280px,.8fr) minmax(400px,1.3fr);gap:28px;padding-top:22px}
+.strategy-inputs{min-width:0;border-right:1px solid var(--uros-line);padding-right:24px}.strategy-results{min-width:0}
+.section-heading h2{font-size:16px;margin:0}.section-heading>span{font-size:11px;color:var(--uros-mute)}
+.profile-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:12px 0}
+.profile-list{max-height:560px;overflow:auto;scrollbar-gutter:stable}
+.profile-row{padding:12px 0;border-bottom:1px solid var(--uros-line)}.profile-row>summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;overflow-wrap:anywhere}
+.profile-row>summary b{max-width:50%;overflow-wrap:anywhere}.profile-row>summary span{font-size:11px;color:var(--uros-mute)}
+.profile-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.profile-fields label{display:grid;gap:4px;font-size:11px;color:var(--uros-mute)}.profile-fields select{width:100%;font-size:12px}
+.profile-fields .key-field{display:flex;align-items:center;gap:7px}.key-field input{min-height:0}
+.profile-signals{grid-column:1/-1}.profile-signals summary{cursor:pointer}.profile-signals label{display:flex;align-items:flex-start;gap:6px;margin-top:7px}.profile-signals input{min-height:0;margin-top:2px}
+.assumptions-panel{margin-top:18px;border-top:1px solid var(--uros-line);padding-top:12px}.assumptions-panel summary,.decision-details summary{cursor:pointer;font-weight:650}
+.assumption-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.assumption-grid label{display:grid;gap:4px;color:var(--uros-mute);font-size:11px}.assumption-grid input{width:100%}
+.assumptions-panel p{font-size:11px;color:var(--uros-mute)}
+.strategy-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--uros-line);border:1px solid var(--uros-line);border-radius:6px;overflow:hidden;margin:12px 0}
+.strategy-summary>div{background:var(--uros-panel);padding:11px}.strategy-summary small{display:block;color:var(--uros-mute);font-size:10px}.strategy-summary b{display:block;font-size:19px;margin-top:4px}
+.strategy-summary .risk-low{color:var(--uros-ok)}.strategy-summary .risk-medium{color:var(--uros-warn)}.strategy-summary .risk-high{color:var(--uros-err)}
+.queue-tabs{display:flex;border-bottom:1px solid var(--uros-line);gap:6px;padding-bottom:8px}.queue-tabs button[aria-selected="true"]{background:var(--uros-accent-soft);border-color:var(--uros-accent)}
+.action-list{max-height:360px;overflow:auto;margin-top:8px}.action-list>button{display:grid;grid-template-columns:38px minmax(60px,.5fr) minmax(130px,1.3fr);align-items:center;text-align:left;gap:8px;width:100%;border:0;border-bottom:1px solid var(--uros-line);border-radius:0;background:transparent;padding:12px 8px;overflow-wrap:anywhere}
+.action-list>button[aria-pressed="true"]{background:var(--uros-accent-soft)}.action-list>button span{color:var(--uros-mute);font-size:11px}
+.action-evidence{border-top:2px solid var(--uros-accent);margin-top:14px;padding-top:12px;overflow-wrap:anywhere}.action-evidence h3{font-size:14px;margin:0 0 8px}.action-evidence h4{font-size:11px;color:var(--uros-mute);margin:12px 0 4px}.action-evidence p{margin:4px 0}.action-evidence .forbidden{color:var(--uros-err)}.action-evidence ul{padding-left:20px;margin:5px 0}
+.decision-details{margin-top:18px;border-top:1px solid var(--uros-line);padding-top:12px}.decision-details table{width:100%;border-collapse:collapse;font-size:12px;margin:12px 0}.decision-details th,.decision-details td{padding:8px 4px;border-bottom:1px solid var(--uros-line);text-align:right}.decision-details th:first-child,.decision-details td:first-child{text-align:left}.decision-details p{font-size:11px;color:var(--uros-mute);overflow-wrap:anywhere}
+.analysis-empty-text{color:var(--uros-mute);padding:20px 0}.icon-command{width:36px;padding:0!important}
+.strategy-workspace [hidden]{display:none!important}
+@media(max-width:900px){.strategy-columns{grid-template-columns:1fr}.strategy-inputs{border-right:0;padding-right:0;border-bottom:1px solid var(--uros-line);padding-bottom:20px}.profile-list{max-height:340px}.analysis-top .uros-decision-layout{grid-template-columns:1fr}.analysis-top .decision-evidence{min-height:0}}
+@media(max-width:560px){.strategy-workspace{padding:18px 12px 40px}.strategy-heading{align-items:flex-start;flex-direction:column}.strategy-commands{width:100%}.strategy-commands .primary{flex:1}.analysis-top .decision-map{min-height:370px}.analysis-top .decision-node{width:calc(50% - 18px)}.strategy-summary>div{padding:8px}.strategy-summary b{font-size:17px}.action-list>button{grid-template-columns:28px minmax(55px,.5fr) minmax(100px,1fr);gap:5px}.queue-tabs button{flex:1}.analysis-top{padding-bottom:16px}}
+@media print{#uros-stepnav,.uros-shell,.strategy-inputs,.strategy-commands,.queue-tabs,.icon-command,#export-decision{display:none!important}.strategy-columns{display:block}.strategy-workspace{max-width:none;padding:0}.action-list{max-height:none}.decision-details{display:block}}

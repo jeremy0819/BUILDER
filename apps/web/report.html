@@ -1,232 +1,51 @@
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>URBAN RENEWAL OS · DECISION REPORT 決策報告</title>
-<style>
-/* ─────────────────────────────────────────────
-   DECISION REPORT（M5 P0 scaffold）— 產品 payoff。
-   鐵律：本頁「組合」三引擎輸出（Core 財務／Decision Engine EV·verdict／Strategy=M6），
-   自己一條都不算：每個數字逐欄來自 localStorage 案件（v2.1 snap）與 decision JSON。
-───────────────────────────────────────────── */
-:root{--accent:#5A3FE0;--accent-2:#8A6BF5;--accent-soft:#eeeafb;--bg:#f5f4f9;--panel:#fff;--ink:#171529;
-  --mute:#67637d;--line:#e7e4f0;--err:#d1394b;--warn:#b7791f;--ok:#0f9d6a;
-  --shadow:0 1px 2px rgba(23,21,41,.05),0 12px 30px rgba(23,21,41,.07);--r:16px;
-  --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
-@media (prefers-color-scheme:dark){:root{--accent:#9a86ff;--accent-2:#b9abff;--accent-soft:#221d3c;--bg:#0d0c15;
-  --panel:#181626;--ink:#edeafb;--mute:#a6a2c0;--line:#2a2740;--err:#f4788a;--warn:#e0aa55;--ok:#4fd3a4;
-  --shadow:0 1px 2px rgba(0,0,0,.35),0 12px 30px rgba(0,0,0,.4)}}
-:root[data-theme="light"]{--accent:#5A3FE0;--accent-2:#8A6BF5;--accent-soft:#eeeafb;--bg:#f5f4f9;--panel:#fff;--ink:#171529;--mute:#67637d;--line:#e7e4f0;--err:#d1394b;--warn:#b7791f;--ok:#0f9d6a;--shadow:0 1px 2px rgba(23,21,41,.05),0 12px 30px rgba(23,21,41,.07)}
-:root[data-theme="dark"]{--accent:#9a86ff;--accent-2:#b9abff;--accent-soft:#221d3c;--bg:#0d0c15;--panel:#181626;--ink:#edeafb;--mute:#a6a2c0;--line:#2a2740;--err:#f4788a;--warn:#e0aa55;--ok:#4fd3a4;--shadow:0 1px 2px rgba(0,0,0,.35),0 12px 30px rgba(0,0,0,.4)}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);line-height:1.55;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
-.wrap{max-width:900px;margin:0 auto;padding:26px 20px 64px}
-a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
-header.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--line)}
-h1{font-size:20px;margin:0;font-weight:800} .sub{color:var(--mute);font-size:12px;margin-top:2px}
-.pill{font-size:11.5px;font-weight:650;padding:5px 11px;border-radius:999px;border:1px solid var(--line);color:var(--mute);background:var(--panel);cursor:pointer;text-decoration:none}
-.mono{font-family:var(--mono)}
-.sec{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:18px 20px;margin-top:16px}
-.sec h2{margin:0 0 4px;font-size:14px} .sec .src{font-family:var(--mono);font-size:10px;color:var(--mute);margin-top:10px}
-.verdict{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.vbig{font-size:34px;font-weight:900;letter-spacing:.02em}
-.vmeta{font-size:12.5px;color:var(--mute)} .vmeta b{color:var(--ink)}
-.rows{margin-top:8px} .row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid var(--line);color:var(--mute)}
-.row b{color:var(--ink);font-family:var(--mono)}
-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
-th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)} th{color:var(--mute);font-weight:650;font-size:11px}
-td.n{font-family:var(--mono)}
-.wip{background:color-mix(in srgb,var(--warn) 12%,transparent);color:var(--warn);border-radius:10px;padding:11px 14px;font-size:12.5px}
-.empty{border:1px dashed var(--line);border-radius:var(--r);padding:30px;text-align:center;color:var(--mute);font-size:13px;margin-top:16px}
-.legend{font-size:11.5px;color:var(--mute);margin-top:8px;line-height:1.6}
-.vguard{margin-top:10px;padding:10px 13px;border:1.5px solid var(--warn);border-radius:10px;
-  background:color-mix(in srgb,var(--warn) 10%,transparent);color:var(--ink);font-size:12.5px;line-height:1.6}
-.vguard b{color:var(--warn)}
-footer{margin-top:28px;border-top:1px solid var(--line);padding-top:12px;font-size:11px;color:var(--mute);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
-select{font-size:12.5px;padding:6px 9px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
-</style>
-<link rel="stylesheet" href="os-unified.css">
-
-<div class="wrap">
-  <header class="top">
-    <div><h1>Decision Report · 決策報告</h1>
-      <div class="sub">Site → Product → People → <b>Decision</b> ｜ 組合三引擎輸出，本頁零計算</div></div>
-    <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">
-      <select id="case-sel"></select>
-      <a class="pill" href="index.html">⌂ OS</a><a class="pill" href="workspace.html">🗂️ Workspace</a>
-      <span class="pill" id="tgl">◐ 主題</span>
-    </div>
-  </header>
-  <div id="body"></div>
-  <footer><span>URBAN RENEWAL OS · DECISION REPORT（M5 P0 scaffold）</span>
-    <span>Core＝財務 · Decision Engine＝判讀 · Strategy＝M6 · 本頁只組合</span></footer>
-</div>
-
-<script src="core-runtime.js"></script>
-<!-- case-bus 必須在 stepnav 之前：四步導覽列的即時數字由它提供（取不到則退回純導覽） -->
-<script src="case-bus.js"></script>
-<script src="stepnav.js"></script>
-<script src="os-shell.js"></script>
-<script src="decision-view.js"></script>
-<script>
-const $=id=>document.getElementById(id);
-const KEY="uros.workflow.v1";
-const pct=x=>x==null?"—":(x*100).toFixed(1)+"%";
-const sh=h=>(h||"").replace(/^sha256:/,"").slice(0,10);
-const VC={GO:"var(--ok)",CAUTION:"var(--warn)",STOP:"var(--err)"};
-function store(){ try{return JSON.parse(localStorage.getItem(KEY))||{order:[],projects:{}}}catch(e){return{order:[],projects:{}}} }
-function render(pid){
-  const s=store(), rec=s.projects[pid];
-  if(!rec){ $("body").innerHTML=`<div class="empty">尚無案件。到 <a href="workspace.html">Workspace</a> 匯入 v2.1 案件 JSON（STEP 2 產出），再回到本頁。</div>`; return; }
-  try{localStorage.setItem("uros.active_case",pid)}catch(e){}
-  const {snap,wf}=rec, dec=rec.decision;
-  const vHTML = dec
-    ? `<div class="verdict"><span class="vbig" style="color:${VC[dec.verdict]}">${dec.verdict}</span>
-       <div class="vmeta">完工機率 <b>${pct(dec.completion_probability)}</b> · 剩餘 <b>${dec.T_remaining_yr} 年</b>
-       ${dec.breakpoint_stakeholder?` · 破局引爆點 <b style="color:var(--err)">${dec.breakpoint_stakeholder}</b>`:""}
-       ${dec.exit_signal?` · <b style="color:var(--err)">EXIT SIGNAL</b>（沉沒成本已排除）`:""}
-       · 急迫度 <b>${dec.decision_urgency}</b></div></div>
-       <div class="vguard">⚠ <b>方向性判斷 · 非投資結論</b> — 完工機率所依 stage_tree 存活率為<b>未校準示意預設</b>；
-       財務/係數（Core）已與真實案比對，<b>存活率尚未</b>——兩者校準狀態不同，不得混讀。
-       假設全揭露：r=${dec.assumptions.r} · g=${dec.assumptions.g} · ${dec.assumptions.status_quo_baseline}。</div>
-       <div class="legend">GO＝三方 EV 皆正且逾門檻報酬；CAUTION＝我方正但有一方 EV≤0（整合不對稱）；STOP＝我方 EV≤0 或地主 EV 顯著為負。判讀全文＝Decision Engine 輸出（DE ${dec.decision_engine_version}）。</div>`
-    : `<div class="wip">本案尚未判讀——在 Core 端執行 decide() 產出 decision JSON，於 Workspace 匯入即顯示（引擎產出即權威，本頁不代算）。</div>`;
-  const evHTML = dec ? `<table><tr><th>視角</th><th>名目</th><th>期望值 EV</th><th>狀態</th></tr>
-      ${["地主","實施者","我方"].map(k=>{const e=dec.ev[k];
-        return `<tr><td>${k}</td><td class="n">${e.nominal==null?"—":e.nominal.toLocaleString()}</td>
-        <td class="n" style="color:${e.ev!=null&&e.ev<=0?"var(--err)":"var(--ink)"}">${e.ev==null?"—":e.ev.toLocaleString()}</td>
-        <td>${e.status==="ok"?"✓":"⚠ insufficient_data（缺欄不臆造）"}</td></tr>`;}).join("")}</table>` : "";
-  $("body").innerHTML=`
-    <div class="sec uros-decision-stage"><h2>決策關聯圖</h2>
-      <div class="legend">點選量體、財務、人心或判讀，查看該節點的權威證據；圖像只呈現，不修改結果。</div>
-      <div id="decision-visual"></div>
-      <details class="decision-detail"><summary>Decision Engine 詳細判讀與三方 EV</summary>${vHTML}${evHTML}
-        ${dec?`<div class="src">decision ${dec.decision_engine_version} · input_hash ${sh(dec.input_hash)}…（指回 Core result，可溯源）</div>`:""}</details></div>
-    <div class="sec"><h2>財務 · RE-DCF Core（逐欄自 result）</h2>
-      <div class="rows">
-        <div class="row"><span>案件</span><b>${snap.code_name} · ${snap.case_type==="danger_building"?"危老重建":"都市更新"}</b></div>
-        <div class="row"><span>共同負擔比</span><b>${pct(snap.shared_cost_ratio)}</b></div>
-        <div class="row"><span>投報率</span><b>${pct(snap.return_rate)}</b></div>
-        <div class="row"><span>同意（計數）</span><b>${snap.agreed}/${snap.total} · 門檻 ${(snap.threshold*100)|0}%</b></div>
-        <div class="row"><span>健檢 warnings</span><b>${snap.warnings_n} 項</b></div>
-        <div class="row"><span>階段（Workflow 事實）</span><b>${wf.project.stage}</b></div>
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>BUILDER · 策略分析工作區</title>
+  <link rel="stylesheet" href="os-unified.css">
+  <link rel="stylesheet" href="strategy-workspace.css">
+  <script src="security.js" defer></script>
+  <script src="case-bus.js" defer></script>
+  <script src="stepnav.js" defer></script>
+  <script src="os-shell.js" defer></script>
+  <script src="core-runtime.js" defer></script>
+  <script src="decision-view.js" defer></script>
+  <script src="strategy-workspace.js" defer></script>
+</head>
+<body class="uros-unified uros-page-decision">
+  <main class="strategy-workspace" id="strategy-workspace">
+    <div class="strategy-heading"><div><h1>策略分析</h1><p id="analysis-context">讀取案件中</p></div>
+      <div class="strategy-commands"><button type="button" id="runtime-retry" hidden>重新連線</button>
+        <button type="button" id="analysis-run" class="primary" disabled>產生策略分析</button></div></div>
+    <div class="analysis-status" id="analysis-status" role="status" aria-live="polite">準備中</div>
+    <div class="analysis-caveat">方向性建議。完工機率尚未校準；同意計數採案件快照，不等同最新簽署或法定同意比例；地主分型以實際接觸紀錄為準。</div>
+    <div id="analysis-empty" hidden></div>
+    <div id="analysis-content" hidden>
+      <section class="analysis-top" aria-label="判讀與財務"><div id="decision-visual"></div></section>
+      <div class="strategy-columns">
+        <section class="strategy-inputs" aria-labelledby="profiles-title">
+          <div class="section-heading"><h2 id="profiles-title">地主觀察</h2><span id="profile-save" role="status"></span></div>
+          <div class="profile-tools"><input id="owner-search" type="search" placeholder="搜尋戶別代號" aria-label="搜尋戶別代號"><select id="owner-filter" aria-label="篩選地主"><option value="all">全部</option><option value="unclassified">未分型</option><option value="blocked">產權待清理</option><option value="key">關鍵戶</option></select></div>
+          <div id="profiles" class="profile-list"></div>
+          <details class="assumptions-panel"><summary>財務假設與情境</summary>
+            <form id="analysis-assumptions" class="assumption-grid"></form>
+            <p>空白欄位保留為資料不足。金額單位：萬元。</p>
+          </details>
+        </section>
+        <section class="strategy-results" aria-labelledby="actions-title">
+          <div class="section-heading"><h2 id="actions-title">行動順序</h2><button id="export-strategy" type="button" class="icon-command" title="匯出策略 JSON" aria-label="匯出策略 JSON" disabled>↓</button></div>
+          <div id="strategy-summary" class="strategy-summary"></div>
+          <div class="queue-tabs" role="tablist" aria-label="行動類別"><button type="button" role="tab" data-queue="persuasion" aria-selected="true">地主溝通</button><button type="button" role="tab" data-queue="administrative" aria-selected="false" tabindex="-1">產權清理</button></div>
+          <div id="action-list" class="action-list" aria-live="polite"></div>
+          <div id="action-evidence" class="action-evidence"></div>
+          <details id="decision-details" class="decision-details"><summary>三方期望值與模型依據</summary><div id="decision-table"></div><button type="button" id="export-decision" disabled>匯出判讀 JSON</button></details>
+        </section>
       </div>
-      <div class="src">input_hash ${sh(snap.input_hash)}…@core ${snap.core_version} · 逐戶分回/找補見 Product Planning（§56）</div></div>
-    <details class="sec" id="strategy-sec"><summary><b>行動 · Strategy Engine</b> <span class="src" id="strat-stat" style="margin-left:6px"></span></summary>
-      <div class="legend">承 <b>People 階段</b>名冊 → 交棒至行動：整合人分型（選項）→ Core Strategy Engine 產出逐型對策。本頁零推論，判讀全文＝引擎輸出。</div>
-      <div id="strategy-slot"><div class="wip">載入策略引擎…</div></div></details>`;
-  if(self.DecisionView) self.DecisionView.mount($("decision-visual"), rec);
-  initStrategy(pid, rec);
-}
-/* ── M6 THE STRATEGIST：分型輸入（選項）→ Core strategize（Pyodide, Web Worker）→ 逐欄呈現。
-   鐵律：JS 只收整合人「選了什麼」與渲染引擎回傳的 JSON；型別判定/優先序/禁止動作/雪崩一律由 Core
-   strategize 產出，本頁一條邏輯都不算（UI 零推論）。整合人選了型別＝recorded（權威）。 */
-const WT=[["","未分型"],["strategic","策略型"],["fearful","恐懼型"],["opposed","反對型"],["unknown","無法判斷"]];
-const SG=[["signable","可簽"],["blocked","簽不了(產權)"]];
-const BR=[["inherited_unregistered","繼承未辦"],["joint_ownership","共有"],["mortgaged","抵押"],["illegal_structure","增建"]];
-const WT_ZH={strategic:"策略型",fearful:"恐懼型",opposed:"反對型",unknown:"未判"};
-const ACT_ZH={institutional_guarantee:"制度性擔保",time_limited_offer:"限時條件談判",statutory_process:"走法定程序",clarify_and_record:"先接觸釐清"};
-const FBD_ZH={increase_allocation:"加碼／提高分配",verbal_guarantee_only:"僅口頭保證",authority_endorsement_as_substitute:"以權威背書代擔保",reveal_urgency:"顯露急迫",continue_sweetening:"持續加碼說服"};
-const ADM_ZH={assist_inheritance_registration:"協助繼承登記",co_owner_agreement:"共有人協議",mortgage_clearance:"抵押塗銷",illegal_structure_rights_assessment:"增建權益認定"};
-const BR_ZH={inherited_unregistered:"繼承未辦",joint_ownership:"共有",mortgaged:"抵押",illegal_structure:"增建"};
-const CM_ZH={do_not_sweeten:"不加碼",surface_silent_supporters:"促沉默支持者表態",publish_hard_information:"投放硬資訊（第三方估價）",address_doubts_publicly_for_middle:"對中間派逐條公開回應"};
-const CR_ZH={low:["var(--ok)","低"],medium:["var(--warn)","中"],high:["var(--err)","高"]};
-let STRAT_RT=null;
-const profKey=pid=>"uros.profiles."+pid;
-function loadProfiles(pid){try{return JSON.parse(localStorage.getItem(profKey(pid)))||{}}catch(e){return{}}}
-function saveProfiles(pid,m){try{localStorage.setItem(profKey(pid),JSON.stringify(m))}catch(e){}}
-
-function initStrategy(pid, rec){
-  const slot=$("strategy-slot"), stat=$("strat-stat");
-  if(!rec){ if(slot) slot.innerHTML=""; return; }
-  const owners=((rec.wf&&rec.wf.stakeholders)||[]).filter(s=>s.role==="owner");
-  if(!owners.length){ slot.innerHTML=`<div class="wip">本案無 owner 名冊，無法分型——到 Workspace 補 stakeholders。</div>`; return; }
-  const saved=loadProfiles(pid);
-  slot.innerHTML=`
-    <div id="prof-panel" style="max-height:230px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px">
-      <table><tr><th>戶</th><th>意願型別</th><th>可簽性</th><th>產權原因</th><th>關鍵戶</th></tr>
-      ${owners.map(s=>{const v=saved[s.stakeholder_id]||{};return `<tr data-id="${s.stakeholder_id}">
-        <td>${s.stakeholder_id}</td>
-        <td><select class="p-wt">${WT.map(o=>`<option value="${o[0]}" ${(v.willingness_type||"")===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select></td>
-        <td><select class="p-sg">${SG.map(o=>`<option value="${o[0]}" ${(v.signability||"signable")===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select></td>
-        <td><select class="p-br">${[["","—"]].concat(BR).map(o=>`<option value="${o[0]}" ${(v.blocking_reason||"")===o[0]?"selected":""}>${o[1]}</option>`).join("")}</select></td>
-        <td style="text-align:center"><input type="checkbox" class="p-key" ${v.is_key_household?"checked":""}></td></tr>`;}).join("")}
-      </table>
     </div>
-    <div class="legend">你選型別＝<b>recorded（權威）</b>；空白＝未分型（不列入，不猜測）。可簽性 blocked＝行政工作量，自動分流。</div>
-    <div id="strat-out" style="margin-top:12px"></div>`;
-  $("prof-panel").addEventListener("change", ()=>computeStrategy(pid, rec));
-  if(STRAT_RT && STRAT_RT.ready){ computeStrategy(pid, rec); return; }
-  if(!window.createCoreRuntime){ stat.textContent=""; $("strat-out").innerHTML=`<div class="wip">core-runtime 未載入。</div>`; return; }
-  if(!STRAT_RT){
-    stat.textContent="載入計算核心…";
-    STRAT_RT=window.createCoreRuntime({
-      onReady:m=>{ stat.textContent=`就緒 · core ${m.core_version}`; computeStrategy(pid, rec); },
-      onError:m=>{ stat.textContent="計算核心離線"; const o=$("strat-out"); if(o) o.innerHTML=`<div class="wip">⚠ 計算核心無法載入（${(m&&m.msg)||"部署後即時生效"}）——分型已可記錄，上線即算。</div>`; }
-    });
-  }
-}
-
-function collectProfiles(pid){
-  const store2={}, out=[];
-  [...document.querySelectorAll("#prof-panel tr[data-id]")].forEach(r=>{
-    const id=r.getAttribute("data-id");
-    const wt=r.querySelector(".p-wt").value, sg=r.querySelector(".p-sg").value,
-          br=r.querySelector(".p-br").value, key=r.querySelector(".p-key").checked;
-    const v={signability:sg}; if(wt) v.willingness_type=wt; if(sg==="blocked"&&br) v.blocking_reason=br; if(key) v.is_key_household=true;
-    store2[id]=v;
-    if(wt || sg==="blocked" || key){                    // 未分型且可簽且非關鍵＝不列入（不猜）
-      const p={household_id:id, classification_source: wt?"recorded":"suggested", signability:sg};
-      if(wt) p.willingness_type=wt; if(sg==="blocked"&&br) p.blocking_reason=br; if(key) p.is_key_household=true;
-      out.push(p);
-    }
-  });
-  saveProfiles(pid, store2);
-  return out;
-}
-
-function computeStrategy(pid, rec){
-  if(!STRAT_RT || !STRAT_RT.ready) return;
-  const snap=rec.snap, dec=rec.decision, hash=(dec&&dec.input_hash)||snap.input_hash;
-  const workflow={stakeholders:(rec.wf.stakeholders||[]), input_hash:hash,
-                  consent:{agreed:snap.agreed, total:snap.total, threshold:snap.threshold}};
-  const decision={input_hash:hash, verdict:(dec&&dec.verdict)||"CAUTION", breakpoint_stakeholder:(dec&&dec.breakpoint_stakeholder)||null};
-  STRAT_RT.strategize(decision, workflow, collectProfiles(pid)).then(r=>{
-    try{const s=store(); if(s.projects[pid]){ s.projects[pid].strategy=r.strategy; localStorage.setItem(KEY,JSON.stringify(s)); }}catch(e){}
-    renderStrategy(r.strategy);
-  }).catch(e=>{ const o=$("strat-out"); if(o) o.innerHTML=`<div class="wip">策略計算失敗：${e.message}</div>`; });
-}
-
-function renderStrategy(s){
-  const out=$("strat-out"); if(!out) return; if(!s){ out.innerHTML=""; return; }
-  const cr=CR_ZH[s.cascade_risk]||CR_ZH.low;
-  const pq=(s.persuasion_queue||[]).map(x=>`<tr>
-    <td>#${x.rank}</td><td>${x.household_id}</td>
-    <td>${WT_ZH[x.willingness_type]||x.willingness_type}<br><span class="src">${x.classification_source==="recorded"?"已記錄":x.classification_source==="simulated"?"劇本":"訊號推測"}</span></td>
-    <td><b>${ACT_ZH[x.recommended_action]||x.recommended_action}</b></td>
-    <td style="color:var(--err)">${(x.forbidden_actions||[]).map(f=>"✋"+(FBD_ZH[f]||f)).join("<br>")||"—"}</td>
-    <td class="src">${x.reason||""}</td></tr>`).join("");
-  const aq=(s.administrative_queue||[]).map(a=>`<tr><td>${a.household_id}</td><td>${BR_ZH[a.blocking_reason]||a.blocking_reason}</td><td><b>${ADM_ZH[a.action]||a.action}</b></td></tr>`).join("");
-  out.innerHTML=`
-    <div class="verdict" style="gap:18px">
-      <div>反向雪崩風險 <b style="color:${cr[0]};font-size:18px">${cr[1]}</b></div>
-      <div class="vmeta">工作量分流：說服 <b>${s.workload_split.persuasion_count}</b> · 產權清理 <b>${s.workload_split.administrative_count}</b>（§2：兩者不得混算）</div>
-    </div>
-    ${(s.cascade_countermeasures&&s.cascade_countermeasures.length)?`<div class="legend">雪崩對策：${s.cascade_countermeasures.map(c=>CM_ZH[c]||c).join("・")}</div>`:""}
-    <h2 style="font-size:13px;margin-top:12px">先談誰 · persuasion_queue（說服）</h2>
-    ${pq?`<table><tr><th>序</th><th>戶</th><th>型別（來源）</th><th>建議動作</th><th>絕不能做</th><th>理由</th></tr>${pq}</table>`:`<div class="wip">尚無分型戶——上方選項記錄後即排序。</div>`}
-    ${aq?`<h2 style="font-size:13px;margin-top:12px">產權清理 · administrative_queue（行政，與說服分流）</h2><table><tr><th>戶</th><th>產權原因</th><th>行政動作</th></tr>${aq}</table>`:""}
-    <div class="vguard">⚠ <b>方向性建議 · 非投資結論</b> — 對策庫源自 3 個實案＋理論，樣本小；willingness suggested 僅訊號推測，權威＝整合人 recorded。引擎只建議下一步、不預測結果。</div>
-    <div class="src">strategy ${s.strategy_engine_version} · input_hash ${sh(s.input_hash)}… · UI 零推論（判讀全文＝Strategy Engine 輸出）</div>`;
-}
-
-(function(){
-  const s=store();
-  const sel=$("case-sel");
-  sel.innerHTML=s.order.length?s.order.map(p=>`<option value="${p}">${(s.projects[p].snap||{}).code_name||p}</option>`).join(""):`<option>（無案件）</option>`;
-  let act=null; try{act=localStorage.getItem("uros.active_case")}catch(e){}
-  const pid=(act&&s.projects[act])?act:s.order[0];
-  if(pid) sel.value=pid;
-  sel.onchange=e=>render(e.target.value);
-  render(pid);
-})();
-$("tgl").onclick=()=>{const r=document.documentElement;const c=r.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");r.setAttribute("data-theme",c==="dark"?"light":"dark");};
-</script>
+  </main>
+</body>
+</html>

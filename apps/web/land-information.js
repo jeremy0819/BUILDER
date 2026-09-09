@@ -48,7 +48,7 @@
         + esc(row.land_area_sqm == null ? "—" : row.land_area_sqm + " ㎡") + "</span></div>";
     }).join("") : '<div class="uros-land-row"><b>尚無清冊</b><span>可在下方新增，或由 Workspace 匯入</span><span>—</span><span>—</span></div>';
     var services = model.services.map(function (service) {
-      return '<a class="uros-service" href="' + service.url + '" target="_blank" rel="noopener"><span>'
+      return '<a class="uros-service" href="' + service.url + '" target="_blank" rel="noopener noreferrer"><span>'
         + esc(service.label) + '<br><small>' + esc(service.note) + '</small></span><b aria-hidden="true">↗</b></a>';
     }).join("");
     return '<section class="uros-land" id="land-information"><div class="uros-land-head"><div><h2>地政資訊</h2>'

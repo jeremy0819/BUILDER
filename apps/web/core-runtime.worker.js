@@ -15,6 +15,8 @@ async function init() {
     importScripts(CDN + "pyodide.js");          // 跨源 importScripts（Worker 合法）
     importScripts("core-bundle.js");            // 同源；設定 self.CORE_FILES / CORE_BUNDLE_VERSION
     pyodide = await loadPyodide({ indexURL: CDN });
+    // Decision and Strategy validate their frozen schemas with Core's existing dependency.
+    await pyodide.loadPackage("jsonschema");
     post("progress", { pct: 70, msg: "還原 RE-DCF Core 原始碼…" });
     const files = self.CORE_FILES || {};
     for (const rel in files) {
@@ -102,6 +104,26 @@ self.onmessage = (e) => {
       const out = pyodide.runPython(
         "json.dumps(_redcf_attribute_safe(json.loads(_at_before), json.loads(_at_after), " +
         "_at_target, _at_method))"
+      );
+      post("result", Object.assign({ id: m.id }, JSON.parse(out)));
+    } catch (err) {
+      post("result", { id: m.id, error: String((err && err.message) || err) });
+    }
+  } else if (m.type === "analyze") {
+    if (!ready) { post("result", { id: m.id, error: "core-not-ready" }); return; }
+    try {
+      pyodide.globals.set("_analysis_json", JSON.stringify({ engine: m.engine, workflow: m.workflow,
+        inputs: m.inputs || {}, profiles: m.profiles || [] }));
+      const out = pyodide.runPython(
+        "_a = json.loads(_analysis_json)\n" +
+        "_valid, _errors = _redcf.validate_stakeholder_profiles(_a['profiles'])\n" +
+        "if not _valid: raise ValueError('; '.join(_errors))\n" +
+        "_r = _redcf.recompute(_a['engine'])\n" +
+        "_h = _redcf.input_hash(_a['engine'])\n" +
+        "_w = dict(_a['workflow'], input_hash=_h)\n" +
+        "_d = _redcf.decide(_r, _w, _a['inputs'])\n" +
+        "_s = _redcf.strategize(_d, _w, _a['profiles'])\n" +
+        "json.dumps({'result': _r, 'input_hash': _h, 'decision': _d, 'strategy': _s})"
       );
       post("result", Object.assign({ id: m.id }, JSON.parse(out)));
     } catch (err) {

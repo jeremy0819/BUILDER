@@ -2,6 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <!-- case-bus 必須在 stepnav 之前：四步導覽列的即時數字由它提供（取不到則退回純導覽） -->
+<script src="security.js"></script>
 <script src="case-bus.js"></script>
 <script src="stepnav.js"></script>
 <script src="os-shell.js"></script>
@@ -9,9 +10,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>都市更新開發評估試算模擬器 · Urban-Renewal</title>
 <meta name="description" content="都更／危老兩層引擎互動試算：坪效層（容積帳→銷售坪）與投報層（總銷→共同負擔→分回比），含健檢與敏感度。[FRAME] 帳務模型示意，非估價或預測，不含真實案件資料。">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<meta name="referrer" content="no-referrer">
 <style>
   :root{
     --emer:#064e3b;--emer-d:#053d2e;--emer-l:#10b981;--mint:#ecfdf5;--mint-2:#d1fae5;
@@ -485,7 +484,7 @@ function loadCore(j){ const eb=$('impErr'), errs=validateCore(j);
   const tName={urban_renewal:'都更',danger_building:'危老'}[j.project.renewal_type]||j.project.renewal_type;
   $('ssotVer').textContent='schema '+j.schema_version+'｜'+j.project.name+'（'+tName+'）'
     +(r.core_version?'｜Core v'+r.core_version:'')+(r.computed_at?'｜算於 '+String(r.computed_at).slice(0,10):'');
-  let html='<tr class="sum"><td>案件（Core 權威輸出）</td><td>'+j.project.name+'</td></tr>';
+  let html='<tr class="sum"><td>案件（Core 權威輸出）</td><td>'+UROSSecurity.esc(j.project.name)+'</td></tr>';
   CORE_META.forEach(([grp,rows])=>{ const present=rows.filter(([k])=>typeof r[k]==='number'); if(!present.length)return;
     html+='<tr><td colspan="2" style="padding-top:10px;color:var(--emer-l);font-weight:800;font-size:11px;letter-spacing:.1em;text-transform:uppercase">'+grp+'</td></tr>';
     present.forEach(([k,lab,u])=>{ const hl=(k==='saleable_area'||k==='shared_cost_ratio'||k==='owner_return_ratio'); html+='<tr class="'+(hl?'hl':'')+'"><td>'+lab+' <span class="flab">'+k+'</span></td><td>'+fmtCore(r[k],u)+'</td></tr>'; }); });
@@ -510,7 +509,7 @@ function renderCoreChecks(j){ const r=j.result,o=j.owners||[],b=j.building||{},c
   }
   if(!o.length)c.push(['warn','owners[] 為空','逐戶分回／同意率需權利人清冊；現僅顯示總量（總量可信、逐戶不可算）']);
   else c.push(['ok','owners['+o.length+']','已含權利人清冊，下方顯示逐戶分回與同意率']);
-  $('coreChecks').innerHTML=c.map(x=>`<div class="chk ${x[0]}"><span class="dot"></span><div><b>${x[1]}</b><span class="s">${x[2]}</span></div></div>`).join(''); }
+  $('coreChecks').innerHTML=c.map(x=>`<div class="chk ${x[0]}"><span class="dot"></span><div><b>${UROSSecurity.esc(x[1])}</b><span class="s">${UROSSecurity.esc(x[2])}</span></div></div>`).join(''); }
 function renderOwners(j){ const o=j.owners||[],box=$('ownersBox'); if(!o.length){box.innerHTML='';return;}
   const r=j.result, sumPre=o.reduce((a,b)=>a+(b.pre_value||0),0)||1;
   // Σ 一致性：優先讀 Core 權威 OWNERS_*_MISMATCH；舊檔（無 warnings）本地備援自檢（容差 3%）
@@ -524,8 +523,8 @@ function renderOwners(j){ const o=j.owners||[],box=$('ownersBox'); if(!o.length)
   const IC={agreed:['✅','var(--emer-d)','同意'],pending:['⏳','var(--amber)','觀望'],opposed:['✖','var(--red)','反對']};
   const rows=o.map(x=>{ const ic=IC[x.consent]||['—','var(--mute)',x.consent||'?'];
     const rv=(x.return_value!=null)?x.return_value:((typeof r.owner_return_value==='number')?r.owner_return_value*(x.pre_value||0)/sumPre:null);
-    return '<tr><td>'+x.owner_id+'</td><td>'+((x.land_share||0)*100).toFixed(1)+'%</td><td>'+fmt(x.pre_value||0)+'</td>'
-      +'<td style="color:'+ic[1]+';font-weight:700;font-family:var(--sans)">'+ic[0]+' '+ic[2]+'</td><td>'+(rv!=null?fmt(rv):'—')+'</td></tr>'; }).join('');
+    return '<tr><td>'+UROSSecurity.esc(x.owner_id)+'</td><td>'+((x.land_share||0)*100).toFixed(1)+'%</td><td>'+fmt(x.pre_value||0)+'</td>'
+      +'<td style="color:'+ic[1]+';font-weight:700;font-family:var(--sans)">'+ic[0]+' '+UROSSecurity.esc(ic[2])+'</td><td>'+(rv!=null?fmt(rv):'—')+'</td></tr>'; }).join('');
   box.innerHTML='<div style="font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--emer-l);margin:16px 0 6px">權利人清冊（'+o.length+' 戶）</div>'
     +mismBanner
     +'<div class="barlbl"><span>同意率（人數比）</span><span>'+agreed+'/'+o.length+'（'+pct.toFixed(1)+'%）｜門檻 '+th+'%'+(pct>=th?' ✓ 達標':'')+'</span></div>'
@@ -557,10 +556,11 @@ const SAMPLE_CORE={schema_version:"1.1",project:{name:"（合成範例）示範�
   result:{baseline_far:2700,allow_floor_area:3945,used_floor_area:3820,remaining_floor_area:125,stair_exempt_cap:591.75,balcony_exempt_area:410,saleable_area:1985,efficiency_ratio:1.66,total_sales:139500,shared_cost:80910,shared_cost_ratio:0.58,owner_return_value:58590,owner_return_ratio:0.42,return_rate:0.724,pre_renewal_value:26200,value_multiple:2.24,
     computed_at:"2026-07-01T00:00:00+00:00",core_version:"0.2.0",
     warnings:[{code:"SHARED_COST_HIGH",level:"warn",message:"共負比 58.0% 高於全案管理合理帶 30–50%（未達警示線 65%）",field:"shared_cost_ratio"}]}};
-$('jsonFile').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f)return; const rd=new FileReader();
-  rd.onload=()=>{ try{loadCore(JSON.parse(rd.result));}catch(err){$('impErr').style.display='block';$('impErr').textContent='⚠️ JSON 解析失敗：'+err.message;} }; rd.readAsText(f); });
+$('jsonFile').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f)return;
+  if(f.size>UROSSecurity.MAX_BYTES){$('impErr').style.display='block';$('impErr').textContent='JSON 檔案超過 5 MB 限制';return;} const rd=new FileReader();
+  rd.onload=()=>{ try{loadCore(UROSSecurity.parseJSON(rd.result));}catch(err){$('impErr').style.display='block';$('impErr').textContent='⚠️ JSON 解析失敗：'+err.message;} }; rd.readAsText(f); });
 $('pasteToggle').addEventListener('click',()=>{ const t=$('jsonPaste'),show=t.style.display!=='block'; t.style.display=show?'block':'none'; $('pasteRun').style.display=show?'flex':'none'; });
-$('parsePaste').addEventListener('click',()=>{ try{loadCore(JSON.parse($('jsonPaste').value));}catch(err){$('impErr').style.display='block';$('impErr').textContent='⚠️ JSON 解析失敗：'+err.message;} });
+$('parsePaste').addEventListener('click',()=>{ try{loadCore(UROSSecurity.parseJSON($('jsonPaste').value));}catch(err){$('impErr').style.display='block';$('impErr').textContent='⚠️ JSON 解析失敗：'+err.message;} });
 $('sampleBtn').addEventListener('click',()=>loadCore(JSON.parse(JSON.stringify(SAMPLE_CORE))));
 $('clearImp').addEventListener('click',()=>{ CORE=null;$('coreOut').innerHTML='';$('ownersBox').innerHTML='';$('impErr').style.display='none';$('jsonPaste').value='';$('jsonFile').value='';$('prefillBar').style.display='none';
   $('coreChecks').innerHTML='<div class="chk"><span class="dot" style="background:var(--mute)"></span><div><b>尚未匯入</b><span class="s">載入 Core JSON 後顯示健檢。</span></div></div>'; });
@@ -574,7 +574,7 @@ document.querySelectorAll('input').forEach(el=>el.addEventListener('input',()=>{
 (function inheritSite(){
   var rec=null, name="";
   try{
-    var s=JSON.parse(localStorage.getItem("uros.workflow.v1")||"null");
+    var s=UROSSecurity.parseJSON(localStorage.getItem("uros.workflow.v1")||"null");
     var act=localStorage.getItem("uros.active_case");
     var pid=(s&&s.projects&&act&&s.projects[act])?act:(s&&s.order&&s.order[0]);
     if(s&&pid&&s.projects[pid]){ rec=s.projects[pid]; name=(rec.snap&&rec.snap.code_name)||pid; }
@@ -600,9 +600,9 @@ document.querySelectorAll('input').forEach(el=>el.addEventListener('input',()=>{
   if(rec.snap.public_ratio!=null) set("common", Math.round(rec.snap.public_ratio*100));
   bar.style.cssText+=";border:1px solid #b9abff;background:rgba(154,134,255,.10)";
   var av=(rec.view&&rec.view.allow_floor_area);
-  bar.innerHTML='🔗 已<b>承接自 ① 基地</b>：<b>'+name+'</b>'
-    +(av!=null?' — <b>允建容積 '+av.toLocaleString()+' ㎡</b>（Core 權威值，與其他頁同一個數字）':'')
-    +(plaza>0?'<br><span style="color:#67637d">基地 '+st.site_area_sqm+'㎡ 已扣除人行廣場 '+plaza+'㎡ → 有效 '+有效基地+'㎡</span>':'')
+  bar.innerHTML='🔗 已<b>承接自 ① 基地</b>：<b>'+UROSSecurity.esc(name)+'</b>'
+    +(av!=null?' — <b>允建容積 '+UROSSecurity.esc(av.toLocaleString())+' ㎡</b>（Core 權威值，與其他頁同一個數字）':'')
+    +(plaza>0?'<br><span style="color:#67637d">基地 '+UROSSecurity.esc(st.site_area_sqm)+'㎡ 已扣除人行廣場 '+UROSSecurity.esc(plaza)+'㎡ → 有效 '+有效基地+'㎡</span>':'')
     +'<br><span style="color:#67637d">下方為<b>教學試算</b>，可自由調整看敏感度；'
     +'案件的正式數字一律以 Core 為準（見 <a href="dashboard.html">儀表板</a>）。</span>';
   host.insertBefore(bar,host.firstChild);

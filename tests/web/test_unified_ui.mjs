@@ -76,7 +76,7 @@ const dashboard = readFileSync(join(root, "apps/web/dashboard.html"), "utf8");
 const report = readFileSync(join(root, "apps/web/report.html"), "utf8");
 ok(dashboard.includes('src="land-information.js"') && dashboard.includes("LandInformation.render(rec)"),
    "基地頁接上地政資訊模組");
-ok(report.includes('src="decision-view.js"') && report.includes("DecisionView.mount"),
+ok(report.includes('src="decision-view.js"') && report.includes('src="strategy-workspace.js"') && readFileSync(join(root, "apps/web/strategy-workspace.js"), "utf8").includes("DecisionView.mount"),
    "決策頁接上互動關聯圖");
 const shell = readFileSync(join(root, "apps/web/os-shell.js"), "utf8");
 ok(shell.includes('aria-selected=') && !shell.includes('aria-pressed='),

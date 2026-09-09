@@ -16,6 +16,7 @@ const ok = (c, n) => { if (c) { pass++; } else { fail++; console.error("❌", n)
 const throws = (fn, n) => { try { fn(); fail++; console.error("❌", n, "(應拋錯)"); } catch { pass++; } };
 
 global.self = {};
+new Function("self", readFileSync(join(root, "apps/web/security.js"), "utf8"))(global.self);
 const src = readFileSync(join(root, "apps/web/case-bus.js"), "utf8");
 new Function("self", "module", src)(global.self, { exports: {} });
 const B = global.self.CaseBus;
