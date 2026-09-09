@@ -57,6 +57,25 @@ SemVer 語意：X＝合約破壞性變更；Y＝相容新增；Z＝修正。alph
 `premerge-v0.2.0`。補推 tag 是 repo 擁有者待辦（原始稽核紀錄含真實段名，
 已於 2026-08 移出版控至 `/local_calibration/`，不再於此引用）。
 
+⚠️ **`os-v0.6.0`（2026-09-09）同一情形**：release commit `787ea5b` 已在遠端 `main`，
+但 tag ref 推送被拒（重試三次；代理端 `recentRelayFailures` 為空，非網路或政策攔截，
+且同一通道推 `main` 成功——研判為該憑證對 tag ref 的權限限制）。
+遠端替代 ref＝分支 **`release-os-v0.6.0`**（指向 `787ea5b`，與本地 tag 同一 commit）。
+
+**repo 擁有者待辦**（在本機執行一次即可）：
+
+```
+git fetch origin
+git tag -a os-v0.6.0 787ea5b -m "os-v0.6.0 — 溯源語意升級"
+git push origin os-v0.6.0
+git push origin --delete release-os-v0.6.0    # tag 推上後即可刪除替代 ref
+```
+
+**在 tag 補推之前**：`version.js` 的 `release` 已是 `os-v0.6.0`，而遠端最新 tag 仍是
+`os-v0.5.0`。Gate 10 在 CI 不會紅（`actions/checkout` 預設不取 tag，該項自動跳過），
+但**任何取了 tag 的本機 clone 會紅**。這是預期的、且會在補推後自動消失——
+不得為了讓它變綠而把 `version.js` 改回 0.5.0（那會讓徽章與實際發布內容不符）。
+
 ## 4. Release Strategy（何時發哪種版）
 
 - **alpha**：M1 完成（CI 綠＋五道 Gate＋本政策＋Checklist）即可發 os-v0.1.0-alpha。
