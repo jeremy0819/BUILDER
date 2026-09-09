@@ -1,16 +1,27 @@
 # BUILDER（→ Urban-Renewal-OS）— Session 索引
 
-> 本 repo 是 Urban Renewal OS 的目標容器（monorepo）。現況：**M3 收斂＋M4 決策引擎 v0.1 落地**：
-> core 0.3.0（`rights.py` §56、`cashflow.py` 結構 v1、`valuation.py` B 系列係數矩陣——係數在
-> `apps/web/coefficients.json` 單一可換檔，`_note`「非估價值」標示不得移除）；schema 凍結 8 檔
-> （v1.1/v2.0/v2.1/三視圖/wf-1.0/**decision v0.1**，Gate 6 守衛）。**M3-C Workflow OS 閉環完成**
-> （workspace.html：匯入→同意看板→任務→決策日誌→時間軸→wf 匯出入）；**B1–B5 完成**（沙盤三滑桿
-> 12–80 戶、三態＋選屋券、匯入開局、結局權變表）。**M4＝`core/redcf/decision.py`**（憲法＝
-> `docs/architecture/DECISION_ENGINE_SPEC.md`：三方 EV/完工機率/verdict/exit/urgency；引擎只讀
-> result＋workflow state 不反算 Core；三對抗案例回歸在 `tests/test_decision.py`；Workspace 只呈現
-> decision JSON）。**入口＝OS shell（`apps/web/index.html`）**；**分支＝單線 `main`**。
-> M4 待續：S 曲線/IRR、stakeholder_profile；真實校準一律 `/local_calibration/`（gitignored）。
-> 本檔只做路由——保持 ≤150 行。
+> 本 repo 是 Urban Renewal OS 的目標容器（monorepo）。**入口＝OS shell（`apps/web/index.html`）**；
+> **分支＝單線 `main`**；真實校準一律 `/local_calibration/`（gitignored）。
+> 本檔只做路由——保持 ≤150 行。**改動現況段時，數字一律以下方指令實測，不得憑印象寫。**
+>
+> ### 現況（2026-08｜實測基準）
+>
+> | 座標 | 值 | 怎麼查 |
+> |---|---|---|
+> | CORE_VERSION | **0.6.0** | `grep CORE_VERSION core/redcf/_version.py` |
+> | 最新 release tag | **os-v0.5.0** | `git tag -l \| tail -1` |
+> | 凍結 schema | **19 檔** | `python tools/check_schema_freeze.py` |
+> | CI Gate | **20 道** | `grep -c 'name: "Gate' .github/workflows/ci.yml` |
+>
+> **已出貨**：M4 決策引擎（三方 EV/verdict/exit）→ M5 THE WORKFLOW → M5.5 傳動軸（Pyodide
+> 在瀏覽器跑同一份 Core）→ M6 THE STRATEGIST（逐型對策）→ **M7 THE CASE OS 全五項**
+> （Memory/Watchtower/Scenario/**Attribution 加總守恆歸因**/量體視圖）→ **M8.1 圖表契約**＋
+> **M8.2 歸因瀑布圖**。core 0.6.0 ＝ `input_hash` 數值正規化（溯源鍵跨 Python/JS 邊界穩定）。
+>
+> **進行中／待裁決**：M8.3 互動量體、M8.4 敏感度地圖、M8.5 GIS（方案 B 本機匯入）；
+> **P1：Decision v0.2 攜帶 `core_version`**（`matchDecision()` 目前單鍵比對，跨版本會誤掛，
+> 須於 os-v0.6.0 發布前完成，見 `docs/architecture/P1-decision_core_version_binding.md`）。
+> **P3 未開工**——開工 Gate 卡在「stage_tree 存活率僅 n=1 錨定」與「真實清冊 PII 隔離方案未定案」。
 
 ## 開工前必讀（依序，共約 10 分鐘）
 
