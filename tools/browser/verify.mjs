@@ -48,6 +48,24 @@ try {
   const exported=JSON.parse(readFileSync(output,'utf8'));
   const native=spawnSync(process.env.PYTHON||'python',['-c',"import json,sys; import core.redcf as r; a=json.load(sys.stdin); print(r.input_hash(a))"],{cwd:root,input:JSON.stringify(rec.engine),encoding:'utf8',env:{...process.env,PYTHONIOENCODING:'utf-8'}});
   check(native.status===0 && native.stdout.trim()===exported.input_hash,'browser and native Python input_hash match');
+  const allocationCase=JSON.parse(readFileSync(resolve(root,'schemas/examples/v2/v2_1_案例D_權變示範.json'),'utf8'));
+  const payload={engine:allocationCase.engine,workflow:{stage:'S2',consent:{agreed:1,total:2,threshold:0.8},stakeholders:[{stakeholder_id:'W01',role:'owner',land_share:0.5}]},
+    profiles:[{household_id:'W01',classification_source:'recorded',willingness_type:'anchored'}],
+    product:{每坪均價:74,公設比:0.34,車位數:2,坪型組合:[{id:'A',area_坪:25,count:10}]}};
+  const pipeline=await page.evaluate(async p=>{
+    let rt;await new Promise((resolve,reject)=>{rt=createCoreRuntime({onReady:resolve,onError:m=>reject(Error(m.msg))});});
+    try {
+      const d=await rt.decide(p.engine,p.workflow,{}),a=await rt.allocate(p.engine,p.product,{});
+      const s=await rt.strategize(d.decision,{...p.workflow,input_hash:d.input_hash},p.profiles);
+      let rejected=false;try {await rt.allocate(p.engine,{...p.product,坪型組合:[{id:12,area_坪:1,count:1}]},{});} catch(e){rejected=/schema/.test(e.message);}
+      return {decision:d.decision,strategy:s.strategy,allocation:a.household_outcome,allocationHash:a.input_hash,rejected};
+    } finally {rt.terminate();}
+  },payload);
+  const reference=spawnSync(process.env.PYTHON||'python',['-c',"import json,sys; import core.redcf as r; a=json.load(sys.stdin); out=r.recompute(a['engine']); h=r.input_hash(a['engine']); wf=dict(a['workflow'],input_hash=h); d=r.decide(out,wf,{}); print(json.dumps({'decision':d,'strategy':r.strategize(d,wf,a['profiles']),'allocation':r.calc_選配映射(out['owner_allocations'],a['product'],h)}))"],{cwd:root,input:JSON.stringify(payload),encoding:'utf8',env:{...process.env,PYTHONIOENCODING:'utf-8'}});
+  check(reference.status===0,'native pipeline reference completed');const ref=JSON.parse(reference.stdout);
+  for(const key of ['decision','strategy','allocation']){assert.deepEqual(pipeline[key],ref[key]);check(true,'real standalone '+key+' equals native Core');}
+  check(pipeline.allocation.length===48&&pipeline.allocation.every(h=>h.input_hash===pipeline.allocationHash),'48 household outcomes retain input provenance');
+  check(pipeline.rejected,'allocation schema rejects malformed unit IDs in real Pyodide');
   check(await page.evaluate(()=>localStorage.getItem("uros.workflow.v1"))===originalStore,"strategy analysis never writes case store");
   await page.locator('[data-node="site"]').click();check(await page.locator('[data-node="site"]').getAttribute("aria-pressed")==="true","decision evidence interaction");
   await page.screenshot({path:resolve(artifacts,"strategy-desktop.png"),fullPage:true});
@@ -100,5 +118,11 @@ try {
   const row=off.locator(".profile-row").first();await row.locator("summary").first().click();await row.locator("select").first().selectOption("anchored");
   check(await off.locator("#profile-save").innerText()==="已存本機","unavailable Core does not lose observations");
   check(await off.locator("#analysis-run").isDisabled(),"unavailable Core cannot fabricate results");
+  const blocked=await browser.newContext();
+  await blocked.addInitScript(({rec})=>{localStorage.setItem('uros.workflow.v1',JSON.stringify({order:[rec.pid],projects:{[rec.pid]:rec}}));localStorage.setItem('uros.active_case',rec.pid);},{rec});
+  await blocked.route('**/*jsonschema*.whl',route=>route.abort());
+  const missing=await blocked.newPage();await missing.goto(origin+'/report.html');
+  await missing.locator('#runtime-retry').waitFor({state:'visible',timeout:90000});
+  check(await missing.locator('#analysis-run').isDisabled(),'missing jsonschema prevents runtime readiness');
   console.log("BROWSER: "+passed+" passed; screenshots: "+artifacts);
 } finally {if(browser)await browser.close();await new Promise(r=>server.close(r));}
