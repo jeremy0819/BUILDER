@@ -147,6 +147,9 @@ h1{font-size:23px;margin:0;letter-spacing:-.02em;font-weight:800}
 footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-size:12px;color:var(--mute);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 </style>
 <link rel="stylesheet" href="os-unified.css">
+<link rel="stylesheet" href="site-massing.css">
+<script src="massing-view.js"></script>
+<script src="site-massing.js"></script>
 
 <div class="wrap">
   <header class="top">
@@ -209,6 +212,7 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
 <script src="case-store.js"></script>
 <script src="core-runtime.js"></script>
 <!-- case-bus 必須在 stepnav 之前：四步導覽列的即時數字由它提供（取不到則退回純導覽） -->
+<script src="security.js"></script>
 <script src="case-bus.js"></script>
 <script src="stepnav.js"></script>
 <script src="os-shell.js"></script>
@@ -474,7 +478,7 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
   const pc=x=>x==null?"—":(x*100).toFixed(1)+"%";
   const VC={GO:"var(--ok)",CAUTION:"var(--warn)",STOP:"var(--err)"};
   const SLOTS=[["site_plan","🗺️ 基地圖說"],["cadastral","📐 地籍圖"],["zoning","🏙️ 都市計畫圖"],["street","📷 街景照片"]];
-  function load(){ try{return JSON.parse(localStorage.getItem(KEY))||null}catch(e){return null} }
+  function load(){ try{return UROSSecurity.parseJSON(localStorage.getItem(KEY)||"null")||null}catch(e){return null} }
   function save(s){ localStorage.setItem(KEY, JSON.stringify(s)); }
   function activePid(){
     const s=load(); if(!s||!s.projects) return null;
@@ -594,12 +598,12 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
     const assets=rec.assets||{};
     const caseOpts=(s.order||[]).filter(p=>s.projects[p]).map(p=>{
       const r=s.projects[p], nm=(r.snap&&r.snap.code_name)||p;
-      return `<option value="${p}"${p===pid?" selected":""}>${nm}${r.demo?"（示範）":""}</option>`;}).join("");
+      return `<option value="${esc(p)}"${p===pid?" selected":""}>${esc(nm)}${r.demo?"（示範）":""}</option>`;}).join("");
     host.innerHTML=`<div class="cw">
       <div class="cw-head">
-        <div><div class="cw-name">🗂️ ${snap.code_name}
-          <span style="font-size:11px;color:var(--accent);font-weight:700">${snap.case_type==="danger_building"?"危老重建":"都市更新"}${wf.project.mode?" · "+wf.project.mode:""}</span></div>
-          <div class="cw-sub">Case Workspace · ${wf.project.project_id} · snap ${(snap.input_hash||"").replace(/^sha256:/,"").slice(0,10)}…@${snap.core_version}</div>
+        <div><div class="cw-name">🗂️ ${esc(snap.code_name)}
+          <span style="font-size:11px;color:var(--accent);font-weight:700">${snap.case_type==="danger_building"?"危老重建":"都市更新"}${wf.project.mode?" · "+esc(wf.project.mode):""}</span></div>
+          <div class="cw-sub">Case Workspace · ${esc(wf.project.project_id)} · snap ${esc((snap.input_hash||"").replace(/^sha256:/,"").slice(0,10))}…@${esc(snap.core_version)}</div>
           <div class="cw-switch">
             <span>作用中案件</span><select id="cw-switch">${caseOpts}</select>
             ${rec.demo?`<span class="cw-demo-tag">合成示範</span>`:""}
@@ -607,21 +611,22 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
             <a href="#" onclick="openNewCase();return false" title="直接輸入基地與產品參數建立新案件"><b>＋ 新增案件</b></a>
             <a href="#" onclick="reloadDemoCases();return false" title="重新載入 A/B/C/D 四個合成示範案（不會刪除你自己匯入的案件）">↻ 重載示範案</a></div></div>
         <div style="text-align:right">
-          ${dec?`<div class="cw-verdict" style="color:${VC[dec.verdict]};font-size:22px">${dec.verdict}</div>
-                 <div style="font-size:10.5px;color:var(--mute)">Decision Engine ${dec.decision_engine_version}${dec.breakpoint_stakeholder?` · 引爆點 ${dec.breakpoint_stakeholder}`:""}<br>
+          ${dec?`<div class="cw-verdict" style="color:${VC[dec.verdict]||'var(--mute)'};font-size:22px">${esc(dec.verdict)}</div>
+                 <div style="font-size:10.5px;color:var(--mute)">Decision Engine ${esc(dec.decision_engine_version)}${dec.breakpoint_stakeholder?` · 引爆點 ${esc(dec.breakpoint_stakeholder)}`:""}<br>
                  <b style="color:var(--warn)">⚠ 方向性判斷（存活率未校準）· 非投資結論</b></div>`
                :`<div style="font-size:11px;color:var(--mute);border:1px dashed var(--line);border-radius:9px;padding:6px 10px">決策狀態：待 Decision Engine<br>（Workspace 匯入 decision JSON）</div>`}
         </div></div>
       ${self.LandInformation?self.LandInformation.render(rec):""}
+      ${rec.engine?'<div id="site-massing-host"></div>':''}
       <div class="cw-grid">
         <div class="cw-card"><h4>案件狀態 · Workflow 事實</h4>
-          <div class="cw-row"><span>階段</span><b>${wf.project.stage}</b></div>
-          <div class="cw-row"><span>同意（計數）</span><b>${snap.agreed}/${snap.total} · 門檻 ${(snap.threshold*100)|0}%</b></div>
-          <div class="cw-row"><span>健檢 warnings</span><b>${snap.warnings_n} 項</b></div>
-          <div class="cw-row"><span>利害關係人</span><b>${snap.stakeholders_n}</b></div></div>
+          <div class="cw-row"><span>階段</span><b>${esc(wf.project.stage)}</b></div>
+          <div class="cw-row"><span>同意（計數）</span><b>${esc(snap.agreed)}/${esc(snap.total)} · 門檻 ${(snap.threshold*100)|0}%</b></div>
+          <div class="cw-row"><span>健檢 warnings</span><b>${esc(snap.warnings_n)} 項</b></div>
+          <div class="cw-row"><span>利害關係人</span><b>${esc(snap.stakeholders_n)}</b></div></div>
         <div class="cw-card"><h4>Site Facts ·（input.site 逐欄）</h4>
           <div class="cw-row"><span>基地面積</span><b>${fmt(st.site_area_sqm)} m²</b></div>
-          <div class="cw-row"><span>容積率</span><b>${st.far!=null?st.far:"—"}</b></div>
+          <div class="cw-row"><span>容積率</span><b>${st.far!=null?esc(st.far):"—"}</b></div>
           <div class="cw-row"><span>獎勵率</span><b>${pc(st.bonus_ratio)}</b></div>
           <div class="cw-row"><span>容積移轉</span><b>${fmt(st.tdr_transfer_sqm)} m²</b></div>
           <div class="cw-row"><span>公設比</span><b>${pc(snap.public_ratio)}</b></div></div>
@@ -650,6 +655,8 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
       <div class="cw-note">影像僅存本機瀏覽器（縮圖 ≤800px）·零上傳、零進版控 ·「值不值得」由 Decision Engine 判讀，本頁只呈現。</div>
     </div>`;
     ensureRuntime();                      // 沒有傳動軸的案件也要有 Core（今天要做什麼／案件歷程）
+    if(window._siteMassing) window._siteMassing.dispose();
+    if(rec.engine && self.SiteMassing) window._siteMassing=self.SiteMassing.mount(document.getElementById("site-massing-host"),rec,ensureRuntime);
     try{ renderToday(pid); }catch(e){}
     try{ renderHistory(pid); }catch(e){}
     // 傳動軸掛載失敗不得拖垮整頁（案件切換器、附圖槽在其後綁定）；但也不吞——留在 console
@@ -661,13 +668,13 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
     ah.innerHTML=SLOTS.map(([k,l])=>`<div class="cw-slot" data-k="${k}">
         ${assets[k]?`<img alt="${l}" data-ak="${k}"><button class="del" data-k="${k}">✕</button>`:`<span style="font-size:20px">${l.split(" ")[0]}</span><span>${l.split(" ")[1]}<br>點擊附圖（本機）</span>`}
       </div>`).join("");
-    ah.querySelectorAll("img[data-ak]").forEach(im=>{ im.src=assets[im.dataset.ak]; });   // src 由 JS 指定（dataURL，本機）
+    ah.querySelectorAll("img[data-ak]").forEach(im=>{ const src=UROSSecurity.imageData(assets[im.dataset.ak]); if(src) im.src=src; });
     ah.querySelectorAll(".cw-slot").forEach(slot=>slot.onclick=e=>{
       if(e.target.classList.contains("del")){ const s2=load(); delete (s2.projects[pid].assets||{})[e.target.dataset.k]; save(s2); render(); return; }
       if(assets[slot.dataset.k]){   // 已有圖：點開放大（P1 spec §1.1），換圖走 lightbox 內按鈕
         const ov=document.createElement("div");
         ov.style.cssText="position:fixed;inset:0;background:rgba(10,8,20,.86);z-index:99;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;cursor:zoom-out";
-        const big=document.createElement("img"); big.src=assets[slot.dataset.k];
+        const big=document.createElement("img"); const src=UROSSecurity.imageData(assets[slot.dataset.k]); if(src) big.src=src;
         big.style.cssText="max-width:92vw;max-height:80vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.5)";
         const bar=document.createElement("div"); bar.style.cssText="display:flex;gap:10px";
         bar.innerHTML=`<button class="cwlb" data-a="swap">⇄ 換圖</button><button class="cwlb" data-a="close">✕ 關閉</button>`;
@@ -748,7 +755,7 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
       (進階.length?`<details class="drv-adv"><summary>進階參數（${進階.length}）</summary>${進階.map(ctl).join("")}</details>`:"");
     $$("drv-out").innerHTML=DRV_OUT.map(c=>`<div class="drv-d" title="來源：${c.src}"><span>${c.l} ⓘ</span><b id="do-${c.k}">—</b></div>`).join("");
     function showFail(msg){ stat.textContent=""; fail.style.display="block";
-      fail.innerHTML=`⚠ 計算核心無法載入（${msg||"可能離線或無法連線 Pyodide CDN"}）——`+
+      fail.innerHTML=`⚠ 計算核心無法載入（${esc(msg||"可能離線或無法連線 Pyodide CDN")}）——`+
         `改用 <a href="https://builder-9sczgrez3a3qsbmkebd6ey.streamlit.app/" target="_blank" rel="noopener">RE-DCF Streamlit 版</a> 精確計算。`; }
     // 本次掛載的回呼（DOM 綁定只活在這一輪 render）
     RTCB={
@@ -773,7 +780,7 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
         // Core warnings 為物件 {code,level,message,field}；逐欄取訊息呈現（不自算，只挑既有欄位）
         const wtext=w.map(x=>typeof x==="string"?x:(x.message||x.msg||x.code||"")).filter(Boolean);
         wl.style.display=wtext.length?"block":"none";
-        wl.innerHTML=wtext.length?`⚠ Core 健檢：${wtext.join("、")}`:"";
+        wl.textContent=wtext.length?`⚠ Core 健檢：${wtext.join("、")}`:"";
         stat.textContent=`✓ 即時（${Math.round(performance.now()-t0)}ms）· ${RTVER} · hash ${(r.input_hash||"").replace(/^sha256:/,"").slice(0,8)}…`;
       }).catch(e=>showFail(e.message));
     },250);
@@ -811,7 +818,7 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
   };
   const SRC_ZH = {statute:"法定期限", plan:"自訂計畫", heuristic:"經驗啟發"};
   function msKey(pid){ return "uros.milestones." + pid; }
-  function loadMs(pid){ try{return JSON.parse(localStorage.getItem(msKey(pid)))||[]}catch(e){return []} }
+  function loadMs(pid){ return UROSSecurity.parseJSON(localStorage.getItem(msKey(pid))||"[]"); }
   function saveMs(pid, arr){ try{localStorage.setItem(msKey(pid), JSON.stringify(arr))}catch(e){} }
 
   function renderToday(pid){
@@ -842,10 +849,10 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
         const when = x.urgency==="overdue" ? `逾期 <b>${x.overdue_days}</b> 天`
                                            : `剩 <b>${x.days_remaining}</b> 天`;
         const src = x.source==="statute"
-          ? `<span style="color:var(--err)">法定期限</span>${x.legal_basis?` · ${x.legal_basis}`:""}`
-          : (SRC_ZH[x.source]||x.source);
-        return `<tr><td style="color:${u.c}">${u.icon} ${u.zh}</td><td>${x.title}</td>
-          <td class="tnum">${x.due}</td><td>${when}</td><td class="src">${src}</td></tr>`;
+          ? `<span style="color:var(--err)">法定期限</span>${x.legal_basis?` · ${esc(x.legal_basis)}`:""}`
+          : esc(SRC_ZH[x.source]||x.source);
+        return `<tr><td style="color:${u.c}">${u.icon} ${esc(u.zh)}</td><td>${esc(x.title)}</td>
+          <td class="tnum">${esc(x.due)}</td><td>${when}</td><td class="src">${src}</td></tr>`;
       }).join("");
       const c = t.counts || {};
       box.innerHTML = shell(`
@@ -857,7 +864,7 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
           ${!act.length?`<div class="vmeta">✓ 目前沒有到期或逾期項目</div>`:""}
         </div>
         ${act.length?`<table style="margin-top:8px"><tr><th>狀態</th><th>項目</th><th>到期日</th><th>剩餘</th><th>出處</th></tr>${rows}</table>`:""}`);
-    }).catch(e=>{ box.innerHTML = shell(`<div class="wip">期限判讀失敗：${e.message}</div>`); });
+    }).catch(e=>{ box.innerHTML = shell(`<div class="wip">期限判讀失敗：${esc(e.message)}</div>`); });
   }
 
   const MS_SRC = [["plan","自訂計畫"],["statute","法定期限（需附法源）"],["heuristic","經驗啟發"]];
@@ -870,12 +877,12 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
       <table style="width:100%;border-collapse:collapse;font-size:11.5px">
       <tr><th>項目</th><th>到期日</th><th>出處</th><th>法源</th><th>風險窗(hr)</th><th>狀態</th><th></th></tr>
       ${ms.map((m,i)=>`<tr>
-        <td><input class="rs" style="width:150px" value="${m.title||""}" onchange="editMs(${i},'title',this.value)"></td>
-        <td><input class="rs" type="date" value="${(m.due||"").slice(0,10)}" onchange="editMs(${i},'due',this.value)"></td>
+        <td><input class="rs" style="width:150px" value="${esc(m.title||"")}" onchange="editMs(${i},'title',this.value)"></td>
+        <td><input class="rs" type="date" value="${esc((m.due||"").slice(0,10))}" onchange="editMs(${i},'due',this.value)"></td>
         <td><select class="rs" onchange="editMs(${i},'source',this.value)">${
           MS_SRC.map(o=>`<option value="${o[0]}"${m.source===o[0]?" selected":""}>${o[1]}</option>`).join("")}</select></td>
-        <td><input class="rs" style="width:130px" placeholder="如 都更條例 §32" value="${m.legal_basis||""}" onchange="editMs(${i},'legal_basis',this.value)"></td>
-        <td><input class="rs" type="number" style="width:60px" value="${m.risk_window_hr||""}" onchange="editMs(${i},'risk_window_hr',this.value)"></td>
+        <td><input class="rs" style="width:130px" placeholder="如 都更條例 §32" value="${esc(m.legal_basis||"")}" onchange="editMs(${i},'legal_basis',this.value)"></td>
+        <td><input class="rs" type="number" style="width:60px" value="${esc(m.risk_window_hr||"")}" onchange="editMs(${i},'risk_window_hr',this.value)"></td>
         <td><select class="rs" onchange="editMs(${i},'status',this.value)">${
           [["open","進行中"],["done","已完成"],["waived","不辦"]].map(o=>`<option value="${o[0]}"${(m.status||"open")===o[0]?" selected":""}>${o[1]}</option>`).join("")}</select></td>
         <td><a href="#" onclick="delMs(${i});return false" style="color:var(--err)">✕</a></td></tr>`).join("")}
@@ -1110,15 +1117,15 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
     const blocked=sts.filter(s=>s.signability==="blocked").length;
     const 同意opts=["同意","未表態","不同意"], 限制opts=["無","繼承未辦","公同共有","抵押權","未保存增建"];
     const body = rows
-      ? rows.map((r,i)=>`<tr><td>${r["土地編號"]}</td><td>${r["地段"]} ${r["地號"]}</td>
-          <td class="tnum">${r["土地面積_㎡"]}</td><td>${r["土地所有權人"]}</td>
-          <td class="tnum">${r["權利範圍分子"]}/${r["權利範圍分母"]}</td>
-          <td class="tnum">${r["土地持分面積_㎡"]}</td>
+      ? rows.map((r,i)=>`<tr><td>${esc(r["土地編號"])}</td><td>${esc(r["地段"])} ${esc(r["地號"])}</td>
+          <td class="tnum">${esc(r["土地面積_㎡"])}</td><td>${esc(r["土地所有權人"])}</td>
+          <td class="tnum">${esc(r["權利範圍分子"])}/${esc(r["權利範圍分母"])}</td>
+          <td class="tnum">${esc(r["土地持分面積_㎡"])}</td>
           <td><select class="rs" onchange="editRoster(${i},'同意與否',this.value)">${
             同意opts.map(o=>`<option${r["同意與否"]===o?" selected":""}>${o}</option>`).join("")}</select></td>
           <td><select class="rs" onchange="editRoster(${i},'限制登記',this.value)">${
             限制opts.map(o=>`<option${r["限制登記"]===o?" selected":""}>${o}</option>`).join("")}</select></td></tr>`).join("")
-      : sts.slice(0,80).map(s=>`<tr><td>—</td><td>—</td><td class="tnum">—</td><td>${s.stakeholder_id}</td>
+      : sts.slice(0,80).map(s=>`<tr><td>—</td><td>—</td><td class="tnum">—</td><td>${esc(s.stakeholder_id)}</td>
           <td class="tnum">—</td><td class="tnum">—</td>
           <td>${s.min_unit_eligible?"符合最小單元":"—"}</td>
           <td>${OC_ZH[s.ownership_complexity]||"—"}</td></tr>`).join("");
@@ -1192,9 +1199,7 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
       const s=load(), rec=s.projects[activePid()]; const rows=(rec&&rec.roster)||[];
       if(!rows.length) return alert("本案無清冊可匯出");
       const cols=Object.keys(rows[0]);
-      const csv=[cols.join(",")].concat(rows.map(r=>cols.map(c=>{
-        const v=r[c]==null?"":String(r[c]); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;
-      }).join(","))).join("\n");
+      const csv=[cols.map(UROSSecurity.csvCell).join(",")].concat(rows.map(r=>cols.map(c=>UROSSecurity.csvCell(r[c])).join(","))).join("\n");
       const a=document.createElement("a");
       a.href=URL.createObjectURL(new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"}));
       a.download=((rec.snap&&rec.snap.code_name)||"case")+"_產權清冊.csv"; a.click();

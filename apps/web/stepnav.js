@@ -87,7 +87,7 @@
       var live = liveOf(s);
       if (live) 有連動 = true;
       var body = "<b>" + s.n + " " + s.label + "</b>"
-        + (live ? '<span class="sn-live' + (live.na ? " na" : "") + '">' + live.text + "</span>"
+        + (live ? '<span class="sn-live' + (live.na ? " na" : "") + '">' + String(live.text).replace(/[&<>"']/g, function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}) + "</span>"
                   + "<small>" + live.label + "</small>"
                 : "<small>" + (i === cur ? "交棒：" : "") + s.hand + "</small>");
       inner += (i === cur)

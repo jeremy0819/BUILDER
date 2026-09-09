@@ -299,11 +299,16 @@
   /* ── 儲存層（瀏覽器）────────────────────────────────────────────── */
 
   function readStore() {
-    try { return JSON.parse(localStorage.getItem(KEY)) || { order: [], projects: {} }; }
-    catch (e) { return { order: [], projects: {} }; }
+    var text = localStorage.getItem(KEY);
+    if (!text) return { order: [], projects: {} };
+    var store = self.UROSSecurity.parseJSON(text);
+    if (!store || !Array.isArray(store.order) || !store.projects || typeof store.projects !== "object" || Array.isArray(store.projects)) throw new Error("案件儲存格式無效；原始資料保留");
+    return store;
   }
   function writeStore(s) {
-    localStorage.setItem(KEY, JSON.stringify(s));
+    var text = JSON.stringify(s);
+    self.UROSSecurity.parseJSON(text);
+    localStorage.setItem(KEY, text);
     try { window.dispatchEvent(new CustomEvent(EVT, { detail: { pid: activePid() } })); } catch (e) {}
   }
   function activePid() {
@@ -319,8 +324,10 @@
     try { window.dispatchEvent(new CustomEvent(EVT, { detail: { pid: pid } })); } catch (e) {}
   }
   function activeRecord() {
-    var pid = activePid(); if (!pid) return null;
-    var r = readStore().projects[pid]; if (!r) return null;
+    var store = readStore(), pid = localStorage.getItem(ACTIVE);
+    if (!pid || !Object.prototype.hasOwnProperty.call(store.projects, pid)) pid = store.order[0];
+    if (!pid) return null;
+    var r = store.projects[pid]; if (!r) return null;
     r.pid = pid; return r;
   }
   function upsert(rec) {

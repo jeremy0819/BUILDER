@@ -35,7 +35,8 @@
   }
   function optionsHtml(active) {
     if (!root.CaseBus || !root.CaseBus.readStore) return '<option>尚無案件</option>';
-    var store = root.CaseBus.readStore();
+    var store;
+    try { store = root.CaseBus.readStore(); } catch (e) { return '<option>案件資料無法讀取</option>'; }
     return (store.order || []).filter(function (pid) { return store.projects && store.projects[pid]; }).map(function (pid) {
       var rec = store.projects[pid], snap = rec.snap || {};
       return '<option value="' + esc(pid) + '"' + (pid === active ? " selected" : "") + '>'
@@ -60,7 +61,7 @@
     hub.id = "uros-product-hub";
     hub.className = "uros-product-hub";
     hub.innerHTML = '<div class="uros-product-title"><div><h1>產品規劃工作區</h1>'
-      + '<p>先看 Core 權威結果；教學試算、敏感度與匯入工具按需切換。</p></div>'
+      + '<p>作用中案件 · Core 權威摘要</p></div>'
       + '<a href="dashboard.html" class="uros-icon-btn" title="回基地頁" aria-label="回基地頁">←</a></div>'
       + '<div class="uros-kpis">'
       + kpi("允建容積", fmt(v.allow_floor_area, "㎡"))
@@ -86,8 +87,14 @@
         b.setAttribute("tabindex", selected ? "0" : "-1");
       });
     }
-    Array.prototype.forEach.call(buttons, function (b) {
+    Array.prototype.forEach.call(buttons, function (b, index) {
       b.addEventListener("click", function () { show(b.getAttribute("data-view")); });
+      b.addEventListener("keydown", function (event) {
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+        event.preventDefault();
+        var next = event.key === "Home" ? 0 : event.key === "End" ? buttons.length - 1 : (index + (event.key === "ArrowRight" ? 1 : buttons.length - 1)) % buttons.length;
+        buttons[next].focus(); buttons[next].click();
+      });
     });
     var requested = location.hash ? location.hash.slice(1) : "core";
     show(PRODUCT_VIEWS.some(function (x) { return x.id === requested; }) ? requested : "core");
@@ -115,7 +122,7 @@
       + '<div class="uros-shell-actions"><a class="uros-icon-btn" href="index.html" title="OS 主選單" aria-label="OS 主選單">⌂</a>'
       + '<a class="uros-icon-btn" href="workspace.html" title="案件工作區" aria-label="案件工作區">▦</a>'
       + '<button class="uros-icon-btn" id="uros-theme" type="button" title="切換主題" aria-label="切換主題">◐</button></div>'
-      + '<div class="uros-shell-prov"><b>' + esc(snap.code_name || "尚無案件") + "</b><span>" + esc(snap.case_type === "danger_building" ? "危老重建" : "都市更新")
+      + '<div class="uros-shell-prov"><span>案件快照</span><b>' + esc(snap.code_name || "尚無案件") + "</b><span>" + esc(snap.case_type === "danger_building" ? "危老重建" : "都市更新")
       + '</span><span>input ' + esc(shortHash(snap.input_hash) || "—") + '</span><span>core ' + esc(snap.core_version || "—") + "</span></div></div>";
     var stepnav = document.getElementById("uros-stepnav");
     if (stepnav && stepnav.nextSibling) stepnav.parentNode.insertBefore(shell, stepnav.nextSibling);

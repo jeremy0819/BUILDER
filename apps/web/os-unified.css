@@ -34,7 +34,7 @@ body.uros-unified{
   margin:0;background:var(--uros-bg);color:var(--uros-ink);font-family:-apple-system,BlinkMacSystemFont,
   "Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;line-height:1.5;
 }
-body.uros-unified *,body.uros-unified *::before,body.uros-unified *::after{letter-spacing:0}
+body.uros-unified *,body.uros-unified *::before,body.uros-unified *::after{letter-spacing:0;box-sizing:border-box}
 body.uros-unified::after{display:none}
 body.uros-unified a{color:var(--uros-accent)}
 body.uros-unified .wrap{width:min(1120px,100%);max-width:1120px;margin-inline:auto;padding-inline:20px}
