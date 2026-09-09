@@ -1,6 +1,7 @@
 /* core-runtime.worker.js — M5.5 B 軌：瀏覽器內執行「同一份」RE-DCF Core（Pyodide, Web Worker）。
-   在背景執行緒把 core-bundle.js 還原成 /builder 目錄樹後 import core.redcf——計算主線純 stdlib，
-   零 pandas / 零 micropip / 零第二真源。每個結果帶 input_hash，溯源不變。
+   在背景執行緒把 core-bundle.js 還原成 /builder 目錄樹後 import core.redcf。
+   不載入 pandas；Decision / Strategy / Allocation 使用 jsonschema 驗證凍結合約，
+   由固定版本 Pyodide loadPackage 載入驗證器及相依套件。唯一計算來源仍是 Core。
    紅線：唯一計算來源＝core/redcf；本檔只搬運與呼叫，不含任何財務公式。 */
 "use strict";
 const PYODIDE_VER = "0.26.4";
@@ -15,8 +16,9 @@ async function init() {
     importScripts(CDN + "pyodide.js");          // 跨源 importScripts（Worker 合法）
     importScripts("core-bundle.js");            // 同源；設定 self.CORE_FILES / CORE_BUNDLE_VERSION
     pyodide = await loadPyodide({ indexURL: CDN });
-    // Decision and Strategy validate their frozen schemas with Core's existing dependency.
+    // Decision, Strategy and Allocation validate with Core's existing dependency.
     await pyodide.loadPackage("jsonschema");
+    pyodide.runPython("import jsonschema"); // Failed package downloads must prevent ready.
     post("progress", { pct: 70, msg: "還原 RE-DCF Core 原始碼…" });
     const files = self.CORE_FILES || {};
     for (const rel in files) {
@@ -105,6 +107,24 @@ self.onmessage = (e) => {
         "json.dumps(_redcf_attribute_safe(json.loads(_at_before), json.loads(_at_after), " +
         "_at_target, _at_method))"
       );
+      post("result", Object.assign({ id: m.id }, JSON.parse(out)));
+    } catch (err) {
+      post("result", { id: m.id, error: String((err && err.message) || err) });
+    }
+  } else if (m.type === "decide" || m.type === "allocate") {
+    if (!ready) { post("result", { id: m.id, error: "core-not-ready" }); return; }
+    try {
+      pyodide.globals.set("_request_json", JSON.stringify({ engine: m.engine, workflow: m.workflow || {},
+        inputs: m.inputs || {}, product: m.product || {}, before_map: m.beforeMap || {} }));
+      const prepare = "_q = json.loads(_request_json)\n" +
+        "_r = _redcf.recompute(_q['engine'])\n" +
+        "_h = _redcf.input_hash(_q['engine'])\n";
+      const call = m.type === "decide"
+        ? "_d = _redcf.decide(_r, dict(_q['workflow'], input_hash=_h), _q['inputs'])\n" +
+          "json.dumps({'result': _r, 'input_hash': _h, 'decision': _d})"
+        : "_ho = _redcf.calc_選配映射(_r.get('owner_allocations', []), _q['product'], _h, _q['before_map'])\n" +
+          "json.dumps({'result': _r, 'input_hash': _h, 'household_outcome': _ho})";
+      const out = pyodide.runPython(prepare + call);
       post("result", Object.assign({ id: m.id }, JSON.parse(out)));
     } catch (err) {
       post("result", { id: m.id, error: String((err && err.message) || err) });

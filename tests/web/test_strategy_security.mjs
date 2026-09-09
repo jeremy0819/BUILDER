@@ -40,6 +40,12 @@ function runtime(options={}) {
   w.emit({type:"ready"});const p=rt.analyze(engine,{},{},[]);assert.equal(w.message.type,"analyze");assert.equal(w.message.engine,engine);count++;
   w.emit({type:"result",id:w.message.id,result:{test:1}});assert.equal((await p).result.test,1);count++;rt.terminate();
 }
+for (const method of ["decide","allocate"]) {
+  const {rt,w}=runtime();w.emit({type:"ready"});const extra={a:1},p=rt[method](engine,extra,{});
+  assert.equal(w.message.type,method);assert.equal(w.message.engine,engine);
+  assert.equal(w.message[method==="decide"?"workflow":"product"],extra);
+  w.emit({type:"result",id:w.message.id,test:true});assert.ok((await p).test);rt.terminate();count++;
+}
 for (const type of ["fatal","error","messageerror","terminate"]) {
   const {rt,w}=runtime();w.emit({type:"ready"});const p=rt.recompute({});const rejected=assert.rejects(p);
   if(type==="fatal")w.emit({type:"fatal",msg:"failure"});else if(type==="terminate")rt.terminate();else w["on"+type]({});

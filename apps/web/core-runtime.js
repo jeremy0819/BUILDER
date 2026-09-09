@@ -61,6 +61,12 @@
       analyze: function (engine, workflow, inputs, profiles) {
         return request({ type: "analyze", engine: engine, workflow: workflow, inputs: inputs, profiles: profiles });
       },
+      decide: function (engine, workflow, inputs) {
+        return request({ type: "decide", engine: engine, workflow: workflow, inputs: inputs });
+      },
+      allocate: function (engine, product, beforeMap) {
+        return request({ type: "allocate", engine: engine, product: product, beforeMap: beforeMap });
+      },
       terminate: function () { fail("計算已取消", false); }
     };
   }
