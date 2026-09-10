@@ -66,14 +66,35 @@ grep -c "cdn.jsdelivr" apps/web/core-runtime.worker.js      # → 1
 **這不是假想情境**：本次稽核的環境政策擋掉該網域（CONNECT 403），結果整個產品降級——
 四步的數字全部「取不到」，只剩示範案可看。企業內網、政府單位、金融機構常態擋外部 CDN。
 
-### 要做的
+### 使用者裁決（2026-09-10）：分兩階段，**本階段只做程式與驗證，不動部署設定**
 
-- [ ] 把 Pyodide 自帶進版控或部署產物（約 10 MB），`CDN` 常數改為可設定，預設走本地
-- [ ] 保留 CDN 作為 fallback（本地取不到才回退），不是反過來
-- [ ] 順帶解掉「離線首次啟動」——`RELEASE_NOTES-os-v0.6.0.md` 已知缺陷第 6 項
+> 這樣切是安全的：本地優先＋CDN 備援，在本地檔案尚未部署時，行為與今天完全相同
+> （找不到本地就回退 CDN），故程式可先合併、不改變線上行為。
 
-**驗收**：斷網（或封鎖 `cdn.jsdelivr.net`）後開頁，Core 仍能就緒並算出數字。
-建議在 `tools/browser/verify.mjs` 加一條：攔截該網域回 403，斷言 Core 仍 ready。
+**階段一（現在做）— 程式與驗證**
+
+- [ ] `CDN` 常數改為可設定：預設先找同源的 `./pyodide/`，找不到才回退 `cdn.jsdelivr.net`
+      （**本地優先、CDN 備援**，不是反過來）
+- [ ] `ready` 訊息回報**實際用了哪個來源**（`source: "local" | "cdn"`）。
+      ⚠️ 這條不是可有可無：靜默回退等於「本地副本漏掉了也沒人知道」，
+      部署階段上線後會以為成功、其實一直在走 CDN。
+- [ ] 測試用的本地副本以腳本抓進 **gitignored** 目錄（例：`tools/browser/.pyodide/`），
+      **不得 commit 進版控**——repo 現在 `size-pack: 1.33 MiB`，二進位一旦進 git 歷史就拿不掉
+- [ ] `tools/browser/verify.mjs` 加兩條斷言：
+      ① 封鎖 `cdn.jsdelivr.net` 回 403 → Core 仍 ready 且 `source === "local"`
+      ② 移除本地副本 → Core 仍 ready 且 `source === "cdn"`（備援確實有效）
+
+**階段一驗收**：上述兩條瀏覽器斷言綠；`git status` 無二進位新增；線上行為不變
+（未部署本地副本時仍走 CDN，`source === "cdn"`）。
+
+**階段二（暫緩，待裁決）— 部署**
+
+- [ ] `pages.yml` 加一步：部署時下載固定版本 Pyodide 至 artifact（**不進版控**）
+- [ ] 解掉「離線首次啟動」——`RELEASE_NOTES-os-v0.6.0.md` 已知缺陷第 6 項
+- [ ] 注意 Pages 流量：每月 100 GB 軟上限，約 25 MB × 首次訪客
+
+> **不需要動 repo Settings**：`pages.yml` 已走 `actions/deploy-pages`，
+> Source 若已是「GitHub Actions」，階段二只是改這個 workflow 檔案。
 
 ---
 
