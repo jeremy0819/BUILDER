@@ -215,7 +215,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
         <div class="rd">教學試算（非權威）＋「對接 Core」JSON 匯入。</div></a>
       <a href="https://builder-9sczgrez3a3qsbmkebd6ey.streamlit.app/" target="_blank" rel="noopener">
         <div class="rt">⚙️ RE-DCF 精確計算 <span class="x">↗ STREAMLIT</span></div>
-        <div class="rd">正式容積查核（§162 逐層）・坪效・投報；地主清冊 CSV → §56 逐戶權變。</div></a>
+        <div class="rd">與瀏覽器內 Core 同一份計算，跑在伺服器上。日常用本站即可；批次匯入或本機連不上計算核心時可用這裡備援。</div></a>
       <a href="guide.html">
         <div class="rt">📖 都更 11 關指南</div>
         <div class="rd">S1–S11 全生命週期流程與名詞小幫手。</div></a>
@@ -321,10 +321,24 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
     }).join("");
   }
 
-  function 狀態(txt, 好){
-    $("ro-status").textContent = txt;
-    $("ro-status").style.color = 好 ? "var(--ok)" : "var(--mute)";
+  /* 錯誤訊息人話化：原本把 worker 的原始例外整串丟給使用者——
+     「Failed to execute 'importScripts' on 'WorkerGlobalScope'…」對開發商毫無意義，
+     只會讓人以為系統壞了。技術細節保留在 title（滑過可見），不佔版面。 */
+  function 人話(msg){
+    var m = String(msg || "");
+    if (/importScripts|jsdelivr|Failed to fetch|NetworkError/i.test(m))
+      return "連不上計算核心——常見原因是網路或公司防火牆擋住了外部資源";
+    if (/timeout|逾時/i.test(m)) return "計算核心回應逾時";
+    if (/Worker/i.test(m)) return "計算核心無法啟動";
+    return m.length > 60 ? m.slice(0, 60) + "…" : m;
+  }
+  function 狀態(txt, 好, 原文){
+    var el = $("ro-status");
+    el.textContent = txt;
+    el.style.color = 好 ? "var(--ok)" : "var(--mute)";
+    el.title = 原文 || "";
     $("chip-engine").textContent = 好 ? "Core 就緒" : txt;
+    $("chip-engine").title = 原文 || "";
   }
 
   var 排程試算 = window.coreDebounce(function(){ 試算(); }, 260);
@@ -345,7 +359,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
             + 最新.result.warnings.length + ' 則健檢提醒（建立後在駕駛艙可看）</span>' : '');
       畫四步();
     }).catch(function(e){
-      狀態("試算失敗：" + e.message, false);
+      狀態("試算失敗：" + 人話(e.message), false, e.message);
       畫讀數(null);
     }).then(function(){
       忙 = false;
@@ -389,7 +403,14 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
 
   /* ── 建立案件 ── */
   $("btn-go").addEventListener("click", function(){
-    if(!最新) return;
+    /* Core 可用就用它的結果；不可用時只存輸入，計算欄位由 buildRecord 填 null（顯示「—」）不是 0。 */
+    var 最新或空 = 最新 || { engine: B.buildEngine(表單), result: {}, input_hash: "" };
+    if (!最新或空.input_hash) {
+      /* 沒有 Core 就沒有 input_hash。用明確標示「未算」的暫時識別，
+         不得偽造成 sha256——那會讓假戳記混進溯源鏈。 */
+      最新或空.input_hash = "pending:" + Date.now().toString(36);
+    }
+    最新 = 最新或空;
     var store = 目前pid ? B.readStore() : null;
     var existing = store && store.projects ? store.projects[目前pid] : null;
     var rec = existing ? B.applyResult(existing, 最新) : B.buildRecord(最新);
@@ -461,11 +482,16 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
     },
     onError: function(m){
       就緒 = false; 失敗 = true;
-      狀態("計算核心無法啟動：" + (m.msg || "未知錯誤"), false);
+      狀態(人話(m.msg || "未知錯誤"), false, m.msg || "");
       畫讀數(null);
-      $("prov").innerHTML = '<b style="color:var(--amber)">數字暫時取不到。</b> '
-        + '本頁不會用估算值頂替——請確認可連線至 Pyodide CDN，或改用 '
-        + '<a href="https://builder-9sczgrez3a3qsbmkebd6ey.streamlit.app/" target="_blank" rel="noopener">Streamlit 精確計算</a>。';
+      /* 算不出來 ≠ 連你打的字都不能存。基地面積、容積率是**抄謄本抄來的事實**，
+         不需要 Core 就能記下來。舊版把兩者綁在一起，Core 一掛整個入口鎖死，
+         唯一能按的只剩「看示範案」——那正是拿掉 A~D 開場時要避免的事。 */
+      $("btn-go").disabled = false;
+      $("btn-go").textContent = "先建立案件（數字稍後補算）→";
+      $("prov").innerHTML = '<b style="color:var(--amber)">計算的部分暫時取不到。</b> '
+        + '本頁不會用估算值頂替，但你填的數字是事實、可以先存下來——'
+        + '建立案件後計算欄位顯示「—」，等計算核心恢復再重算即可。';
     }
   });
 

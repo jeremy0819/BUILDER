@@ -13,7 +13,7 @@
   var STEPS = [
     { n: "①", label: "Site 基地", href: "dashboard.html", hand: "基地事實", key: "site", pick: "允建容積" },
     { n: "②", label: "Product 產品", href: "evaluator.html", hand: "規劃滑桿", key: "product", pick: "全案投報率" },
-    { n: "③", label: "People 人心", href: "os-simulator.html", hand: "地主意願", key: "people", pick: "權變戶數" },
+    { n: "③", label: "People 人心", href: "os-simulator.html", hand: "地主意願", key: "people", pick: "同意進度" },
     { n: "④", label: "Decision 決策", href: "report.html", hand: "逐型對策", key: "decision", pick: "判定" }
   ];
 
@@ -28,8 +28,23 @@
     try { sv = B.stepValues(rec); } catch (e) { return null; }
     var group = sv[step.key];
     if (!group) return null;
+    /* ③ 顯示「同意 22/56」而不是「56 戶」——後者不會變，看了等於沒看。
+       兩個數字都是既有的輸入事實，此處只是挑一個有資訊量的來顯示，不做任何計算。 */
+    if (step.pick === "同意進度") {
+      var 全 = (group.items || []).filter(function (x) { return x.label === "權變戶數"; })[0];
+      var 同 = (group.items || []).filter(function (x) { return x.label === "已同意"; })[0];
+      if (全 && 全.value != null && 同 && 同.value != null)
+        return { label: "同意戶數", text: 同.value + "/" + 全.value, na: false };
+      if (全 && 全.value != null) return { label: "權變戶數", text: 全.value + " 戶", na: false };
+      return { label: "同意進度", text: "—", na: true };
+    }
     var it = (group.items || []).filter(function (x) { return x.label === step.pick; })[0];
-    if (!it || it.value == null) return { label: step.pick, text: "—", na: true };
+    if (!it || it.value == null) {
+      /* 決策那格：說出「為什麼沒有值」。一個沉默的「—」會讓人以為系統壞了，
+         而「需重算」是可行動的——這正是 N1 從嚴裁決要傳達給使用者的訊息。 */
+      var 註 = (group.bound === false && group.bind_note) ? group.bind_note : step.pick;
+      return { label: 註, text: "—", na: true };
+    }
     var t;
     if (it.unit === "ratio") t = (it.value * 100).toFixed(1) + "%";
     else if (it.unit === "x") t = Number(it.value).toFixed(3);
@@ -95,11 +110,20 @@
         : '<a class="sn-node' + on + '" href="' + s.href + '">' + body + "</a>";
     });
     inner += "</div>";
+    /* 陳舊快照要講出來：畫面上同時有 core 0.6.0 徽章和 0.4.0 算的數字，不標等於誤導。 */
+    var 陳舊 = "";
+    try {
+      var B = self.CaseBus;
+      if (B && B.provenance && B.activeRecord) {
+        var pv = B.provenance(B.activeRecord());
+        if (pv && pv.stale) 陳舊 = "　⚠️ " + pv.stale_note;
+      }
+    } catch (e) {}
     inner += '<div class="sn-cap">'
       + (有連動
           ? "四步讀同一份案件：數字全部逐欄取自 Core result／Decision Engine，取不到顯示「—」（介面不自算）"
           : "決策動線：每步產出交棒下一步 — 基地事實 → 規劃滑桿 → 地主意願 → 逐型對策")
-      + "</div>";
+      + 陳舊 + "</div>";
     bar.innerHTML = inner;
     var mount = document.getElementById("stepnav-mount");
     if (mount) mount.appendChild(bar);
