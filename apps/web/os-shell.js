@@ -68,7 +68,13 @@
       + kpi("銷售坪數", fmt(v.saleable_area, "坪"))
       + kpi("共同負擔比", fmt(v.shared_cost_ratio, "ratio"))
       + kpi("全案投報率", fmt(v.return_rate, "ratio"))
-      + '</div><div class="uros-view-tabs" role="tablist" aria-label="產品工作區視圖">'
+      + '</div>'
+      /* 「Core 摘要」視圖刻意不展開任何教學 section（沒有 <section id="core">），
+         結果是四張 KPI 底下一整片空白——玩家讀起來就是壞頁。
+         這裡補一段真內容：說明下面的分頁是什麼，並附這組數字的溯源戳記。
+         零計算：溯源欄位逐字取自案件快照。 */
+      + '<div class="uros-core-note" id="uros-core-note"></div>'
+      + '<div class="uros-view-tabs" role="tablist" aria-label="產品工作區視圖">'
       + PRODUCT_VIEWS.map(function (x) {
         return '<button type="button" role="tab" data-view="' + x.id + '" aria-selected="' + (x.id === "core")
           + '" tabindex="' + (x.id === "core" ? "0" : "-1") + '">' + x.label + "</button>";
@@ -81,6 +87,25 @@
         var section = document.getElementById(x.id);
         if (section) section.hidden = id === "core" || x.id !== id;
       });
+      var note = document.getElementById("uros-core-note");
+      if (note) {
+        note.hidden = id !== "core";
+        if (id === "core") {
+          var pv = {};
+          try { pv = (self.CaseBus && self.CaseBus.provenance(self.CaseBus.activeRecord())) || {}; }
+          catch (e) {}
+          note.innerHTML =
+            '<p>上面四個數字是這個案件的 <b>Core 權威摘要</b>——與其他三步看到的是同一份。</p>'
+            + '<p>需要細看時，點上面的分頁：<b>量體教學</b>／<b>財務教學</b> 說明數字怎麼來，'
+            + '<b>健檢與敏感度</b> 顯示 Core 的警示，<b>匯入比對</b> 可對照外部 JSON。</p>'
+            + (pv.input_hash
+                ? '<p class="uros-core-prov">溯源 input_hash '
+                  + String(pv.input_hash).replace(/^sha256:/, "").slice(0, 12) + '… · core '
+                  + (pv.core_version || "—")
+                  + (pv.stale ? ' <b>⚠️ ' + pv.stale_note + '</b>' : '') + '</p>'
+                : '<p class="uros-core-prov">尚無作用中案件的溯源戳記。</p>');
+        }
+      }
       Array.prototype.forEach.call(buttons, function (b) {
         var selected = b.getAttribute("data-view") === id;
         b.setAttribute("aria-selected", String(selected));

@@ -247,25 +247,76 @@
           { label: "地主分回比", value: 取(v, "owner_return_ratio"), unit: "ratio", source: "core" }
         ]
       },
-      decision: {
-        title: "決策", href: "report.html",
-        items: [
-          { label: "判定", value: 取(d, "verdict"), unit: "text", source: "decision" },
-          { label: "完工機率", value: 取(d, "completion_probability"), unit: "ratio", source: "decision" },
-          { label: "破局引爆點", value: 取(d, "breakpoint_stakeholder"), unit: "text", source: "decision" },
-          { label: "決策急迫度", value: 取(d, "decision_urgency"), unit: "ratio", source: "decision" }
-        ]
-      }
+      decision: (function () {
+        /* 綁不上就一律視為「沒有這個值」——寧可顯示「—」，也不顯示一個
+           不屬於這份快照的判定。理由與 M7.4「明確拒答優於虛假歸因」同一條。 */
+        var 綁 = decisionBinds(rec);
+        var 取D = function (k) { return 綁.bound ? 取(d, k) : null; };
+        return {
+          title: "決策", href: "report.html",
+          bound: 綁.bound, bind_reason: 綁.reason, bind_note: BIND_NOTE[綁.reason] || 綁.reason,
+          items: [
+            { label: "判定", value: 取D("verdict"), unit: "text", source: "decision" },
+            { label: "完工機率", value: 取D("completion_probability"), unit: "ratio", source: "decision" },
+            { label: "破局引爆點", value: 取D("breakpoint_stakeholder"), unit: "text", source: "decision" },
+            { label: "決策急迫度", value: 取D("decision_urgency"), unit: "ratio", source: "decision" }
+          ]
+        };
+      })()
     };
   }
 
+  /* ── N1 二元組綁定：decision 對不上目前快照就不得顯示 ────────────────
+     這裡曾經有個洞：stepValues() 直接讀 rec.decision.verdict，**完全沒檢查**
+     那份 decision 綁不綁得上目前的快照。於是導覽列會顯示一個
+     「照 N1 規則根本不該綁定」的判定——例如示範案的 STOP 是 core 0.4.0 算的，
+     而現行 Core 是 0.6.0，二元組規則明文說跨版本一律不相符。
+     N1 把誤綁擋在 matchDecision()，卻在顯示層又開了同一個洞。此處補上。
+     規則與 core/redcf/decision.py 的 snapshot_matches() 一致（三條從嚴）。 */
+  var UNKNOWN_CORE = "unknown";
+  function decisionBinds(rec) {
+    var d = (rec && rec.decision) || null;
+    var sn = (rec && rec.snap) || {};
+    if (!d || !d.input_hash) return { bound: false, reason: "no_decision" };
+    if (d.input_hash !== (sn.input_hash || "")) return { bound: false, reason: "hash_mismatch" };
+    var dc = d.core_version || UNKNOWN_CORE;
+    if (dc === UNKNOWN_CORE) return { bound: false, reason: "core_version_unknown" };
+    if (!sn.core_version) return { bound: false, reason: "snapshot_core_version_missing" };
+    if (dc !== sn.core_version) return { bound: false, reason: "core_version_mismatch" };
+    return { bound: true, reason: "ok" };
+  }
+  var BIND_NOTE = {
+    no_decision: "尚未產生判定",
+    hash_mismatch: "輸入已變更，需重算",
+    core_version_unknown: "判定未記錄 Core 版本，需重算",
+    core_version_mismatch: "判定由其他 Core 版本算出，需重算",
+    snapshot_core_version_missing: "快照未記錄 Core 版本"
+  };
+
   var STEP_ORDER = ["site", "product", "people", "decision"];
 
-  /* 溯源戳記：四步顯示的數字是同一份輸入算出來的嗎？（連動的可稽核證明） */
-  function provenance(rec) {
+  /* 溯源戳記：四步顯示的數字是同一份輸入算出來的嗎？（連動的可稽核證明）
+
+     另附**陳舊**判斷。這與 N1 的「綁定」是兩件不同的事，很容易混為一談：
+       · 綁定（decisionBinds）＝ decision 與**快照**是不是同一對（同輸入、同 Core）。
+         0.4.0 的判定配 0.4.0 的快照，是一致的歷史配對，**綁得上**。
+       · 陳舊（stale）＝ 這份快照是不是由**現行** Core 算的。
+         0.4.0 的快照在 Core 0.6.0 的今天就是舊的——數字沒錯，但公式已經換過。
+     示範案就是「綁得上但陳舊」：畫面同時出現 core 0.6.0 徽章與 0.4.0 的 STOP，
+     不標出來會讓人以為那是現在這版算的。 */
+  function runningCore() {
+    try { return (self.UROS_VERSION && self.UROS_VERSION.core) || ""; } catch (e) { return ""; }
+  }
+  function provenance(rec, 現行) {
     var sn = (rec && rec.snap) || {};
-    return { input_hash: sn.input_hash || "", core_version: sn.core_version || "",
-             computed_at: sn.computed_at || "" };
+    var cur = 現行 || runningCore();
+    var snapCore = sn.core_version || "";
+    return { input_hash: sn.input_hash || "", core_version: snapCore,
+             computed_at: sn.computed_at || "",
+             running_core: cur,
+             stale: !!(cur && snapCore && snapCore !== cur),
+             stale_note: (cur && snapCore && snapCore !== cur)
+               ? "數字來自 Core " + snapCore + " 快照（現行 " + cur + "）" : "" };
   }
 
   /* ── 守衛：本模組不得出現任何輸出公式 ──────────────────────────────── */
@@ -279,8 +330,13 @@
     var 對照 = { allow_floor_area: v.allow_floor_area, remaining_floor_area: v.remaining_floor_area,
       saleable_area: v.saleable_area, efficiency_ratio: v.efficiency_ratio,
       shared_cost_ratio: v.shared_cost_ratio, return_rate: v.return_rate,
-      owner_return_ratio: v.owner_return_ratio, verdict: d.verdict,
-      completion_probability: d.completion_probability, decision_urgency: d.decision_urgency };
+      owner_return_ratio: v.owner_return_ratio };
+    var 綁 = decisionBinds(rec);
+    if (綁.bound) {
+      對照.verdict = d.verdict;
+      對照.completion_probability = d.completion_probability;
+      對照.decision_urgency = d.decision_urgency;
+    }
     var 映射 = { "允建容積": "allow_floor_area", "容積餘量": "remaining_floor_area",
       "銷售坪數": "saleable_area", "坪效": "efficiency_ratio", "共同負擔比": "shared_cost_ratio",
       "全案投報率": "return_rate", "地主分回比": "owner_return_ratio", "判定": "verdict",
@@ -294,6 +350,63 @@
       });
     });
     return true;
+  }
+
+  /* ── ③ 人心沙盤橋接：把作用中案件的「事實」帶進沙盤 ──────────────────
+     背景：沙盤的消費端（os-simulator 的 BRIDGE_OWNERS）早就存在，但**只有
+     workspace.html 會寫** `uros.bridge.case`。走四步動線進 ③ 從來不設橋接，
+     於是永遠落回「經典局」——導覽列說 56 戶、盤面說 48 戶，同一畫面兩個答案。
+
+     ⚠️ 誠實邊界（本函式最重要的一段）：
+     案件通常只有**彙總**同意數（snap.agreed=22/56），沒有**逐戶**同意事實
+     （示範案的 stakeholders 全無 consent: 標籤）。把 22 戶「分配」給 56 個具名戶別
+     ＝**發明哪幾戶同意了**，那是捏造事實，不是呈現事實。
+     故：逐戶 consent 只在該戶真的有 consent 標籤時才給；沒有就是 "pending"，
+     並以 consent_known=false 明白告訴沙盤「彙總已知、逐戶未知」，由沙盤決定怎麼講。 */
+  function buildSandboxBridge(rec) {
+    if (!rec || !rec.wf || !rec.wf.project) return null;
+    var wf = rec.wf, snap = rec.snap || {};
+    var allocById = {};
+    (snap.allocations || []).forEach(function (a) { allocById[a.owner_id] = a; });
+    var owners = (wf.stakeholders || [])
+      .filter(function (x) { return x.role === "owner"; })
+      .map(function (x) {
+        var tag = (x.tags || []).filter(function (t) { return t.indexOf("consent:") === 0; })[0];
+        var a = allocById[x.stakeholder_id] || null;
+        return { owner_id: x.stakeholder_id,
+                 consent: tag ? tag.slice(8) : "pending",
+                 pre_value: a ? a.pre_value : (x.pre_value != null ? x.pre_value : null),
+                 value_share: a ? a.value_share : null, alloc: a };
+      });
+    var 有逐戶同意 = owners.some(function (o) { return o.consent && o.consent !== "pending"; });
+    return {
+      source: "case-bus", project_id: wf.project.project_id,
+      code_name: snap.code_name, case_type: snap.case_type,
+      owners_n: snap.stakeholders_n, agreed: snap.agreed, total: snap.total,
+      stage: wf.project.stage, ts: new Date().toISOString(),
+      /* 逐戶同意未知時仍傳 owners（身分與價值是事實），但明示同意面不可信 */
+      consent_known: 有逐戶同意,
+      owners: (owners.length && owners.length <= 80) ? owners : null
+    };
+  }
+
+  var BRIDGE_KEY = "uros.bridge.case";
+  var BRIDGE_OPTOUT = "uros.bridge.optout";   // 使用者明示「改用經典局」時記住這個選擇
+
+  /* 讓 ③ 預設跟著作用中案件走（四步連動的一部分），但尊重使用者的退出選擇。 */
+  function syncSandboxBridge() {
+    try {
+      if (localStorage.getItem(BRIDGE_OPTOUT) === "1") return null;
+      var rec = activeRecord();
+      var b = buildSandboxBridge(rec);
+      if (!b) return null;
+      var 舊 = null;
+      try { 舊 = JSON.parse(localStorage.getItem(BRIDGE_KEY) || "null"); } catch (e) {}
+      /* 使用者從 workspace 手動帶入的橋接優先，不覆蓋 */
+      if (舊 && 舊.source === "workspace" && 舊.project_id === b.project_id) return 舊;
+      localStorage.setItem(BRIDGE_KEY, JSON.stringify(b));
+      return b;
+    } catch (e) { return null; }
   }
 
   /* ── 儲存層（瀏覽器）────────────────────────────────────────────── */
@@ -369,6 +482,9 @@
     BASIC: BASIC, ADVANCED: ADVANCED, FIELDS: FIELDS, STEP_ORDER: STEP_ORDER,
     VIEW_KEYS: VIEW_KEYS, DERIVED_OUTPUTS: DERIVED_OUTPUTS,
     defaults: defaults, buildEngine: buildEngine, buildRecord: buildRecord,
+    decisionBinds: decisionBinds, BIND_NOTE: BIND_NOTE,
+    buildSandboxBridge: buildSandboxBridge, syncSandboxBridge: syncSandboxBridge,
+    BRIDGE_KEY: BRIDGE_KEY, BRIDGE_OPTOUT_KEY: BRIDGE_OPTOUT,
     applyResult: applyResult, stepValues: stepValues, provenance: provenance,
     projectId: projectId, assertNoDerivedOutput: assertNoDerivedOutput,
     readStore: readStore, writeStore: writeStore, activePid: activePid, setActive: setActive,

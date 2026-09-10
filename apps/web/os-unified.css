@@ -202,3 +202,12 @@ body.uros-unified input:focus-visible{outline:2px solid var(--uros-accent);outli
   .decision-node{width:calc(50% - 18px);min-height:82px}.decision-node[data-node="site"]{left:8px;top:12px}.decision-node[data-node="product"]{right:8px;top:12px}
   .decision-node[data-node="people"]{left:8px;bottom:12px}.decision-node[data-node="decision"]{right:8px;bottom:12px}
 }
+
+/* 「Core 摘要」視圖的說明區（補掉原本四張 KPI 底下的整片空白） */
+.uros-core-note{margin:14px 0 0;padding:14px 16px;border:1px solid var(--line,#e2e6ee);
+  border-radius:12px;background:var(--card,#fff);font-size:13px;line-height:1.75;color:var(--mute,#5a6478)}
+.uros-core-note p{margin:0 0 6px}
+.uros-core-note p:last-child{margin-bottom:0}
+.uros-core-note b{color:var(--ink,#16203a)}
+.uros-core-note .uros-core-prov{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  font-size:11px;color:var(--dim,#8a93a6)}

@@ -3,6 +3,8 @@
 <title>整合人 THE INTEGRATOR · 整合戰術沙盤</title>
 <!-- case-bus 必須在 stepnav 之前：四步導覽列的即時數字由它提供（取不到則退回純導覽） -->
 <script src="security.js"></script>
+<!-- version.js＝前端版本徽章 SSOT；case-bus 的陳舊快照判斷需要它 -->
+<script src="version.js"></script>
 <script src="case-bus.js"></script>
 <script src="stepnav.js"></script>
 <style>
@@ -874,6 +876,20 @@ function render(){
   const g=$("grid");g.innerHTML="";
   g.style.setProperty("--gcols", S.cols||8);
   $("street-lbl").textContent=`Street Block · 這條街的 ${S.N} 戶`;
+  /* ⚠️ 常駐警語：盤面一格一格的戶別會讓人以為「這幾戶同意、那幾戶沒有」是案件事實。
+     當案件只有**彙總**同意數時，那是程序生成的示意分佈。
+     這句不能放在規劃疊層（#bridge-banner）——按下「開始整合」疊層就收掉了，
+     而盤面正是最需要這句話的地方。 */
+  (function(){
+    var lbl=$("street-lbl"); if(!lbl||!lbl.parentNode) return;
+    var id="street-consent-caveat", old=document.getElementById(id);
+    if(!CONSENT_ILLUSTRATIVE){ if(old) old.remove(); return; }
+    var el=old||document.createElement("span");
+    el.id=id; el.className="lbl";
+    el.style.cssText="margin-left:8px;color:var(--amber,#b45309);font-size:10.5px";
+    el.textContent="⚠️ 同意分佈為示意（本案只有彙總同意數，無逐戶紀錄）";
+    if(!old) lbl.parentNode.insertBefore(el, lbl.nextSibling);
+  })();
   const tk=$("m-tickets"); if(tk) tk.textContent=S.tickets;
   S.pos.forEach(id=>{
     const u=S.units[id];
@@ -1023,24 +1039,59 @@ function ending(){
 /* ── C6/B4 沙盤橋接：讀工作區帶入的案件「事實」——模式＋逐戶 owners（不搬判斷）── */
 let BRIDGE_OWNERS=null;
 function applyBridge(){
+  /* 四步連動：③ 預設跟著作用中案件走。消費端（下面這段）本來就在，
+     缺的是生產端——過去只有 workspace 會寫橋接，走四步動線進來永遠落回經典局，
+     於是導覽列說 56 戶、盤面說 48 戶。CaseBus.syncSandboxBridge() 補上生產端。 */
+  try{ if(window.CaseBus && CaseBus.syncSandboxBridge) CaseBus.syncSandboxBridge(); }catch(e){}
   let b=null; try{ b=JSON.parse(localStorage.getItem("uros.bridge.case")||"null"); }catch(e){}
   const el=$("bridge-banner"); if(!el) return;
-  if(!b){ el.style.display="none"; BRIDGE_OWNERS=null; return; }
+  if(!b){ el.style.display="none"; BRIDGE_OWNERS=null; FABRIC_NOTE_LOCKED=false; CONSENT_ILLUSTRATIVE=false; return; }
   plan.mode = b.case_type==="danger_building" ? "weilao" : "duegeng";  // 帶入案件類型（事實）
   syncPlan();
-  BRIDGE_OWNERS = (b.owners && b.owners.length) ? b.owners : null;     // B4：逐戶事實 verbatim
+  /* ⚠️ 逐戶同意「未知」時不得假裝知道。
+     案件多半只有彙總同意數（如 22/56），沒有逐戶 consent 標籤。
+     若照樣把 owners 當事實餵進去，每戶都是 pending → 盤面顯示 0 同意，
+     與案件的 22/56 互相打臉；反過來把 22 戶「分配」給具名戶別，則是**發明**
+     哪幾戶同意了。兩者都不可接受。
+     故分兩條路：
+       consent_known=true  → 逐戶事實 verbatim（原 B4 路徑）
+       consent_known=false → 只採彙總（戶數＋同意比），盤面分佈明示為示意 */
+  const 逐戶同意已知 = b.consent_known !== false;
+  CONSENT_ILLUSTRATIVE = !逐戶同意已知 && !!b.total;
+  BRIDGE_OWNERS = (逐戶同意已知 && b.owners && b.owners.length) ? b.owners : null;
   if(BRIDGE_OWNERS){                                                    // 街區＝案件事實，鎖戶數/同意比滑桿
     fabric.N=BRIDGE_OWNERS.length;
-    $("sl-n").value=fabric.N; $("sl-n").disabled=true; $("sl-c").disabled=true; syncFabric();
+    $("sl-n").value=fabric.N; $("sl-n").disabled=true; $("sl-c").disabled=true;
+    FABRIC_NOTE_LOCKED=false; syncFabric(); FABRIC_NOTE_LOCKED=true;
     $("fabric-note").textContent=`街區＝案件 owners 事實（${BRIDGE_OWNERS.length} 戶，開局同意/價值皆 verbatim）——戶數與同意比滑桿已鎖定。`;
-  } else { $("sl-n").disabled=false; $("sl-c").disabled=false; }
+  } else if(b.total){                                                   // 彙總已知、逐戶未知
+    fabric.N=Math.max(12, Math.min(80, b.total));
+    $("sl-n").value=fabric.N; $("sl-n").disabled=true;
+    if(b.agreed!=null && b.total){
+      fabric.consent=Math.round(b.agreed/b.total*100);
+      $("sl-c").value=fabric.consent; $("sl-c").disabled=true;
+    } else { $("sl-c").disabled=false; }
+    FABRIC_NOTE_LOCKED=false; syncFabric(); FABRIC_NOTE_LOCKED=true;
+    $("fabric-note").textContent=`戶數 ${b.total} 戶與同意 ${b.agreed==null?"—":b.agreed+"/"+b.total}`
+      + ` 取自案件（事實）。但案件只記了**彙總**同意數，沒有逐戶同意紀錄——`
+      + `盤面上「哪幾戶同意」為程序生成的示意分佈，不是這個案子的真實戶別。`;
+  } else { FABRIC_NOTE_LOCKED=false; $("sl-n").disabled=false; $("sl-c").disabled=false; }
   el.style.display="block";
   el.style.cssText="display:block;margin:12px 0 4px;padding:10px 13px;border:1px solid var(--strand);"+
     "border-radius:9px;background:rgba(120,120,255,.06);font-size:12px;line-height:1.6";
   el.innerHTML=`🗂️ 以工作區案件 <b>${b.code_name||"案件"}</b> 為背景（地主 ${b.owners_n||"—"} 戶 · 同意 ${b.agreed||0}/${b.total||"—"} · 階段 ${b.stage||"—"}${BRIDGE_OWNERS?" · 逐戶事實已載入":""}）`+
     `<br><span style="color:var(--dim);font-size:10.5px">已依案件類型預選「${b.case_type==="danger_building"?"危老重建":"都更・合建"}」。沙盤只帶入案件事實作背景，推演結果不回寫案件（只搬狀態、不搬判斷）。</span>`+
+    /* ⚠️ 這句必須留在**遊戲進行中也看得到的地方**。盤面上一格一格的戶別會讓人以為
+       「這幾戶同意了、那幾戶沒有」是案件事實——當案件只有彙總同意數時，那是示意分佈。
+       放在 fabric-note 不行：按下「開始整合」後那塊就不在畫面上了。 */
+    (逐戶同意已知 ? "" :
+      `<br><span style="color:var(--amber,#b45309);font-size:10.5px">⚠️ 本案只記了彙總同意數 ${b.agreed==null?"—":b.agreed+"/"+b.total}，沒有逐戶同意紀錄——盤面上「哪幾戶同意」為程序生成的示意分佈，不是這個案子的真實戶別。</span>`)+
     `<br><a href="#" id="bridge-clear" style="color:var(--dim);font-size:10.5px">✕ 清除背景，改用預設情境</a>`;
   const clr=$("bridge-clear"); if(clr) clr.onclick=e=>{e.preventDefault();localStorage.removeItem("uros.bridge.case");
+    /* 記住這個選擇：否則下一次進來 syncSandboxBridge() 又會自動接上，
+       使用者會覺得「我明明清掉了」。 */
+    try{ localStorage.setItem("uros.bridge.optout","1"); }catch(err){}
+    FABRIC_NOTE_LOCKED=false; CONSENT_ILLUSTRATIVE=false;
     plan.mode=null;BRIDGE_OWNERS=null;$("sl-n").disabled=false;$("sl-c").disabled=false;syncPlan();syncFabric();el.style.display="none";};
 }
 /* ── B2 基地文理三滑桿（值域＝coefficients.json scenario_sliders）── */
@@ -1051,8 +1102,14 @@ fetch("coefficients.json").then(r=>r.json()).then(c=>{
   if(ss["戶數"]){$("sl-n").min=ss["戶數"].min;$("sl-n").max=ss["戶數"].max;}
 }).catch(()=>{/* file:// 等無法 fetch 時：滑桿仍可用，僅無逐戶權值矩陣 */});
 const fabric={N:48,consent:71,fam:40,seed:1412};
+let FABRIC_NOTE_LOCKED=false;   // 由 applyBridge 接管說明文字時設為 true
+let CONSENT_ILLUSTRATIVE=false; // 街區取自案件、但只有彙總同意數時為 true
 function syncFabric(){
   $("fv-n").textContent=fabric.N; $("fv-c").textContent=fabric.consent+"%"; $("fv-f").textContent=fabric.fam+"%";
+  /* 橋接說明優先：街區來自作用中案件時，這裡的「程序生成」敘述會誤導
+     （戶數與同意比是案件事實，不是滑桿產生的）。由 applyBridge 負責寫，此處不覆蓋說明——
+     但上面的滑桿讀數仍必須更新，故只跳過文字那一段。 */
+  if(FABRIC_NOTE_LOCKED) return;
   const classic=(fabric.N===48&&fabric.consent===71&&fabric.fam===40&&fabric.seed===1412);
   $("fabric-note").textContent=classic
     ?"預設＝經典局（48 戶・34 同意・固定家族）。動任一滑桿＝程序生成新街區（同 seed 可重現）。"

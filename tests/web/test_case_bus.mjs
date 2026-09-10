@@ -108,6 +108,39 @@ const sv2 = B.stepValues(rec2);
 ok(sv2.decision.items.find(x => x.label === "判定").value === "CAUTION", "④ 決策：verdict verbatim");
 ok(B.assertNoDerivedOutput(rec2), "掛上 decision 後仍逐欄 verbatim");
 
+// ── 4b. N1 二元組綁定：顯示層不得放行對不上的 decision ──────────────
+// 這是修補一個真實的洞：stepValues 原本直接讀 rec.decision.verdict，於是導覽列會顯示
+// 一個「照 N1 規則根本不該綁定」的判定（示範案的 STOP 是 core 0.4.0 算的）。
+const 綁定案例 = (patch) => {
+  const r = JSON.parse(JSON.stringify(rec2));
+  Object.assign(r.decision, patch);
+  return r;
+};
+ok(B.decisionBinds(rec2).bound === true, "二元組相同→綁定成立");
+ok(B.stepValues(rec2).decision.bound === true, "綁定時 stepValues 標記 bound");
+
+const 跨版本 = 綁定案例({ core_version: "0.4.0" });
+ok(B.decisionBinds(跨版本).reason === "core_version_mismatch", "跨 Core 版本→不相符");
+ok(B.stepValues(跨版本).decision.items.every(it => it.value === null),
+   "跨版本時四格全部 null——不得顯示不屬於這份快照的判定");
+ok(/重算/.test(B.stepValues(跨版本).decision.bind_note), "不綁定時給出可行動的說明（需重算）");
+
+const 舊檔 = 綁定案例({ core_version: undefined });
+delete 舊檔.decision.core_version;
+ok(B.decisionBinds(舊檔).reason === "core_version_unknown", "v0.1 舊檔無 core_version→拒絕綁定");
+ok(B.stepValues(舊檔).decision.items[0].value === null, "舊檔判定不得顯示");
+
+const 換輸入 = 綁定案例({ input_hash: "sha256:" + "9".repeat(64) });
+ok(B.decisionBinds(換輸入).reason === "hash_mismatch", "input_hash 不符→不相符");
+ok(B.stepValues(換輸入).decision.items[0].value === null, "輸入已變更的判定不得顯示");
+
+ok(B.decisionBinds(rec).reason === "no_decision", "沒有 decision→標記 no_decision");
+ok(B.assertNoDerivedOutput(跨版本), "不綁定時 assertNoDerivedOutput 仍成立（不比對已隱藏的欄位）");
+
+// patch 版差異同樣不放行（與 Core snapshot_matches 第三條一致）
+ok(B.decisionBinds(綁定案例({ core_version: "0.6.1" })).reason === "core_version_mismatch",
+   "patch 版差異→仍不相符（不拆 semver）");
+
 // ── 5. 溯源：四步看到的是同一份輸入算出來的 ─────────────────────
 const pv = B.provenance(rec);
 ok(pv.input_hash === IH && pv.core_version === "0.6.0", "provenance 給出二元組");
