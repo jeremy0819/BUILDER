@@ -1,0 +1,83 @@
+{
+  "version": "0.26.4",
+  "assets": [
+    {
+      "file": "pyodide.js",
+      "url": "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js",
+      "sha256": "c0069107621d5b942a659e737a12e774cc0451feaa2256f475d72e071d844ec7",
+      "bytes": 14761
+    },
+    {
+      "file": "pyodide.asm.js",
+      "url": "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.asm.js",
+      "sha256": "919560652ed3dad3707cb3a394785da1e046fb13dc0defa162058ff230cb7eed",
+      "bytes": 1229099
+    },
+    {
+      "file": "pyodide.asm.wasm",
+      "url": "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.asm.wasm",
+      "sha256": "b7e66a19427a55010ac3367c1b6c64b893f9826f783412945fdf0c3337f3bc94",
+      "bytes": 10088051
+    },
+    {
+      "file": "python_stdlib.zip",
+      "url": "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/python_stdlib.zip",
+      "sha256": "72894522b791858b9d613ac786b951d8b5094035dcf376313ea24a466810f336",
+      "bytes": 2341872
+    },
+    {
+      "file": "pyodide-lock.json",
+      "url": "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide-lock.json",
+      "sha256": "cd50b49de944c579045e122fe8628b31f9ce446379f032f36c05e273d38766e0",
+      "bytes": 106335
+    },
+    {
+      "file": "attrs-23.2.0-py3-none-any.whl",
+      "url": "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/attrs-23.2.0-py3-none-any.whl",
+      "sha256": "e14998da6ad135f2159325e21cdcdfaae2b616dd9a5e9281f7737afcddf4315a",
+      "bytes": 209507
+    },
+    {
+      "file": "jsonschema-4.21.1-py3-none-any.whl",
+      "url": "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/jsonschema-4.21.1-py3-none-any.whl",
+      "sha256": "cfb8aa4d591f07c5f64308fc5a121e0b0cfa6d9be7e9e8a3d5508703eb54048a",
+      "bytes": 279581
+    },
+    {
+      "file": "jsonschema_specifications-2023.12.1-py3-none-any.whl",
+      "url": "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/jsonschema_specifications-2023.12.1-py3-none-any.whl",
+      "sha256": "b06297b8d3778c7472988b961088f0843531d250cb8e87d3420d0b138f836042",
+      "bytes": 51191
+    },
+    {
+      "file": "pyrsistent-0.20.0-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "url": "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyrsistent-0.20.0-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "sha256": "bee480515311377eabeeda9f43440db48ff427d3d8888b3dfc948ccaa4fc5671",
+      "bytes": 217345
+    },
+    {
+      "file": "referencing-0.34.0-py3-none-any.whl",
+      "url": "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/referencing-0.34.0-py3-none-any.whl",
+      "sha256": "83b726cc22fb592e5c90b7e560634b990e5bc9234f1a70787b98149edc613760",
+      "bytes": 60038
+    },
+    {
+      "file": "rpds_py-0.18.0-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "url": "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/rpds_py-0.18.0-cp312-cp312-pyodide_2024_0_wasm32.whl",
+      "sha256": "e68bb7503de91350f3f0495d8b1d6ca491ae7aca7089f77ad2e764e4a0acd803",
+      "bytes": 397323
+    },
+    {
+      "file": "six-1.16.0-py2.py3-none-any.whl",
+      "url": "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/six-1.16.0-py2.py3-none-any.whl",
+      "sha256": "f359c3850331f250d1a5e394aae58193774c6358676340aba992718589b9dcf1",
+      "bytes": 38737
+    },
+    {
+      "file": "LICENSE",
+      "url": "https://raw.githubusercontent.com/pyodide/pyodide/0.26.4/LICENSE",
+      "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+      "bytes": 16725
+    }
+  ]
+}

@@ -85,6 +85,8 @@ lsData["uros.workflow.v1"] = JSON.stringify({
 });
 
 const run = async () => {
+  ok(await CS.meta("missing-backup") === null, "不存在的 meta 回 null，不洩漏 IDBRequest");
+  ok(await CS.getCase("missing-case") === undefined, "不存在案件回 undefined");
   // §2 遷移：舊資料進 IndexedDB，且 localStorage 原檔保留（唯讀備援，不刪）
   const m = await CS.migrateFromLocalStorage();
   ok(m.migrated === true && m.count === 2, "localStorage → IndexedDB 遷移 2 案");

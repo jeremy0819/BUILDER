@@ -77,6 +77,7 @@ body.uros-unified input:focus-visible{outline:2px solid var(--uros-accent);outli
 #uros-stepnav .sn-live{font-size:10.5px!important}
 #uros-stepnav .sn-node small{font-size:9.5px!important}
 #uros-stepnav .sn-cap{display:none!important}
+#uros-stepnav .sn-cap.sn-stale{display:block!important;white-space:normal;overflow-wrap:anywhere;color:var(--uros-warn);margin-top:6px}
 
 /* Site */
 .uros-page-site>.wrap>header.top,.uros-page-site>.wrap>.ssot{display:none}
@@ -211,3 +212,18 @@ body.uros-unified input:focus-visible{outline:2px solid var(--uros-accent);outli
 .uros-core-note b{color:var(--ink,#16203a)}
 .uros-core-note .uros-core-prov{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   font-size:11px;color:var(--dim,#8a93a6)}
+
+/* Keep the game, but make its entry and planning surfaces part of the same workspace. */
+.uros-page-people #ovl-title,.uros-page-people #ovl-plan{position:relative;inset:auto;min-height:440px;padding:28px 16px;background:var(--uros-bg);color:var(--uros-ink);z-index:1;overflow:visible}
+.uros-page-people .title-box,.uros-page-people .plan-box{max-width:900px;width:100%;margin:auto}
+.uros-page-people .brief{background:var(--uros-panel);border-radius:6px;color:var(--uros-mute)}
+.uros-page-people .brief b{color:var(--uros-ink)}
+.uros-page-people .logo-strand{font-size:48px;letter-spacing:0}
+.decision-calibration{font-size:12px;color:var(--uros-warn,#88520c);margin:8px 0}
+.uros-workflow-links{max-width:1120px;margin:auto;padding:8px 16px;display:flex;gap:20px;flex-wrap:wrap;border-top:1px solid var(--uros-line);font-size:12px}
+.uros-workflow-links a{color:var(--uros-accent);text-decoration:underline;text-underline-offset:3px}
+.uros-page-people:has(#ovl-title.show)>.wrap,.uros-page-people:has(#ovl-plan.show)>.wrap{display:none}
+.uros-page-people #ovl-chapter{background:var(--uros-panel);color:var(--uros-ink);z-index:80}
+.uros-page-people #ovl-chapter .chapter{padding:20px;max-width:100%;overflow-wrap:anywhere}
+.uros-page-people #ovl-chapter h2{font-size:28px}
+.uros-page-people #ovl-title .fadein,.uros-page-people #ovl-plan .fadein{animation:none;opacity:1}

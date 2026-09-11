@@ -52,7 +52,7 @@
     else if (typeof it.value === "number") t = Number(it.value).toLocaleString("en-US", { maximumFractionDigits: 0 })
       + (it.unit && it.unit !== "text" ? " " + it.unit : "");
     else t = String(it.value);
-    return { label: step.pick, text: t, na: false };
+    return { label: (step.key === "decision" ? "快照判定" : step.pick) + (step.key === "decision" && self.UROSCalibration ? " · " + self.UROSCalibration.label : ""), text: t, na: false };
   }
   var MAP = { "dashboard.html": 0, "evaluator.html": 1, "os-simulator.html": 2, "report.html": 3 };
 
@@ -89,11 +89,13 @@
   function build() {
     if (document.getElementById("uros-stepnav")) return;
     var cur = currentIdx();
-    var st = document.createElement("style");
-    st.textContent = css();
-    document.head.appendChild(st);
+    if (!document.getElementById("stepnav-style")) {
+      var st = document.createElement("style"); st.id = "stepnav-style";
+      st.textContent = css(); document.head.appendChild(st);
+    }
     var bar = document.createElement("nav");
     bar.id = "uros-stepnav";
+    bar.setAttribute("aria-label", "案件四步工作流程");
     var inner = '<div class="sn-wrap">';
     var 有連動 = false;
     STEPS.forEach(function (s, i) {
@@ -119,11 +121,8 @@
         if (pv && pv.stale) 陳舊 = "　⚠️ " + pv.stale_note;
       }
     } catch (e) {}
-    inner += '<div class="sn-cap">'
-      + (有連動
-          ? "四步讀同一份案件：數字全部逐欄取自 Core result／Decision Engine，取不到顯示「—」（介面不自算）"
-          : "決策動線：每步產出交棒下一步 — 基地事實 → 規劃滑桿 → 地主意願 → 逐型對策")
-      + 陳舊 + "</div>";
+    inner += '<div class="sn-cap' + (陳舊 ? ' sn-stale' : '') + '">'
+      + (self.UROSSecurity ? self.UROSSecurity.esc(陳舊) : "") + "</div>";
     bar.innerHTML = inner;
     var mount = document.getElementById("stepnav-mount");
     if (mount) mount.appendChild(bar);

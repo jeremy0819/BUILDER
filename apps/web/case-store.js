@@ -60,7 +60,7 @@
       return new Promise(function (resolve, reject) {
         var t = db.transaction(store, mode), s = t.objectStore(store), out;
         try { out = fn(s); } catch (e) { reject(e); return; }
-        t.oncomplete = function () { resolve(out && out.result !== undefined ? out.result : out); };
+        t.oncomplete = function () { resolve(out && typeof out === "object" && "result" in out ? out.result : out); };
         t.onerror = function () { reject(t.error); };
         t.onabort = function () { reject(t.error || new Error("交易中止（可能配額不足）")); };
       });
@@ -158,12 +158,15 @@
     // ── §2.3 Local-first 三義務 ────────────────────────────
     /* (3) 一鍵完整備份：單一 JSON 含所有案件＋Activity＋meta */
     exportAll: function () {
-      return Promise.all([api.listCases(), tx(S_ACT, "readonly", function (s) { return s.getAll(); }),
-                          tx(S_META, "readonly", function (s) { return s.getAll(); })])
-        .then(function (r) {
-          return { format: "uros-backup", version: 1, exported_at: new Date().toISOString(),
-                   cases: r[0] || [], activity: r[1] || [], meta: r[2] || [] };
+      return open().then(function (db) {
+        return new Promise(function (resolve, reject) {
+          var t = db.transaction([S_CASES, S_ACT, S_META], "readonly");
+          var rows = [S_CASES, S_ACT, S_META].map(function (name) { return t.objectStore(name).getAll(); });
+          t.oncomplete = function () { resolve({ format: "uros-backup", version: 1, exported_at: new Date().toISOString(),
+            cases: rows[0].result || [], activity: rows[1].result || [], meta: rows[2].result || [] }); };
+          t.onabort = t.onerror = function () { reject(t.error || new Error("備份讀取未完成")); };
         });
+      });
     },
     /* 還原：合併匯入（同 pid 以匯入檔為準），不清空既有其他案件 */
     importAll: function (doc) {

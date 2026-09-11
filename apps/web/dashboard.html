@@ -213,6 +213,12 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
 <script src="core-runtime.js"></script>
 <!-- case-bus 必須在 stepnav 之前：四步導覽列的即時數字由它提供（取不到則退回純導覽） -->
 <script src="security.js"></script>
+<script src="local-diagnostics.js"></script>
+<link rel="stylesheet" href="data-notices.css">
+<script src="calibration-data.js"></script>
+<script src="calibration-notice.js"></script>
+<script src="browser-backup.js"></script>
+<script src="case-drafts.js"></script>
 <script src="case-bus.js"></script>
 <script src="stepnav.js"></script>
 <script src="os-shell.js"></script>
@@ -385,7 +391,7 @@ document.getElementById("alloc").innerHTML=allocTable();
 const root=document.documentElement;
 document.getElementById("tgl").onclick=()=>{const cur=root.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");root.setAttribute("data-theme",cur==="dark"?"light":"dark");};
 /* ── M5-P1 Case Workspace（單案容器）——純呈現：所有欄位 verbatim 自 store；影像僅本機 ── */
-try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實旗標
+try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
 (function(){
   const css=document.createElement("style");
   css.textContent=`
@@ -560,15 +566,14 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
   const vstr = ACTLOGIC.vstr;
   const CS = self.CaseStore || null;
   let ACT_ERR = "";                     // 最近一次寫入失敗原因（誠實顯示，不吞）
-  const IK = "uros.intent";
-  function curIntent(){ try{return localStorage.getItem(IK)||""}catch(e){return ""} }
-  function setIntent(v){ try{localStorage.setItem(IK, v||"")}catch(e){} }
+  function curIntent(pid){ try{return CaseDrafts.get(pid||activePid(),"intent")||""}catch(e){return ""} }
+  function setIntent(v){ try{CaseDrafts.set(activePid(),"intent",v||"")}catch(e){alert("意圖未儲存，請先備份並檢查瀏覽器空間")} }
   /* 記一筆事實。ev 需符合 activity.schema.v0.1 的 event：
      kind ∈ edit/consent/stage/snapshot/scenario/roster/note/create；
      target.type ∈ case/site/product/stakeholder/scenario。 */
   function logAct(pid, ev){
     if(!CS || !pid || !ev) return;
-    const it = curIntent();
+    const it = curIntent(pid);
     if(it && !ev.intent) ev.intent = it;          // 意圖由使用者當下填寫，非系統臆測
     CS.append(pid, ev).then(()=>{ ACT_ERR=""; try{renderHistory(pid)}catch(e){} })
       .catch(e=>{ ACT_ERR=e.message||String(e); console.warn("Activity 未寫入：", ACT_ERR);
@@ -579,10 +584,11 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
      若最後回到原值則整筆取消（沒有淨改動＝沒有事實可記）。 */
   const _pendEdit = {};
   function logEditDebounced(pid, field, before, after, targetId){
-    const p=_pendEdit[field];
+    const editKey=JSON.stringify([pid,field]);
+    const p=_pendEdit[editKey];
     if(p){ clearTimeout(p.t); before=p.before; }
-    _pendEdit[field]={before:before, t:setTimeout(function(){
-      delete _pendEdit[field];
+    _pendEdit[editKey]={before:before, t:setTimeout(function(){
+      delete _pendEdit[editKey];
       if(before===after) return;
       logAct(pid, ACTLOGIC.productEvent(field, before, after, targetId));
     }, 1500)};
@@ -608,7 +614,7 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
             <span>作用中案件</span><select id="cw-switch">${caseOpts}</select>
             ${rec.demo?`<span class="cw-demo-tag">合成示範</span>`:""}
             <a href="workspace.html">＋ 匯入／管理案件 →</a>
-            <a href="#" onclick="openNewCase();return false" title="直接輸入基地與產品參數建立新案件"><b>＋ 新增案件</b></a>
+            <a href="index.html#entry" title="前往統一建案入口"><b>建立另一案件</b></a>
             <a href="#" onclick="reloadDemoCases();return false" title="重新載入 A/B/C/D 四個合成示範案（不會刪除你自己匯入的案件）">↻ 重載示範案</a></div></div>
         <div style="text-align:right">
           ${dec?`<div class="cw-verdict" style="color:${VC[dec.verdict]||'var(--mute)'};font-size:22px">${esc(dec.verdict)}</div>
@@ -940,6 +946,7 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
       <summary>案件歷程 <span class="src">· Timeline 過去半邊（誰在何時把哪個輸入改成什麼、為什麼）</span>${n?` · ${n} 筆`:""}</summary>
       <label class="hist-intent">現在在做什麼？（選填）
         <input id="hist-intent" placeholder="如：地主要求增加坪數／審議委員要求降低棟距" value="${esc(curIntent())}">
+        ${CaseDrafts.legacyIntent()&&!curIntent()?'<button type="button" id="adopt-legacy-intent">採用舊版意圖至本案</button>':""}
         <span class="src">填了之後，接下來每一次編輯都會附上這句話。這是<b>意圖</b>（你的理由），不是推論——
           系統不會替你猜為什麼。</span></label>
       ${ACT_ERR?`<div class="hist-warn">⚠ 最近一次紀錄未寫入：${esc(ACT_ERR)}（編輯本身已生效）</div>`:""}
@@ -959,6 +966,8 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
       if(d) d.ontoggle=()=>{ HIST_OPEN=d.open; };
       const i=document.getElementById("hist-intent");
       if(i){ i.oninput=()=>setIntent(i.value); }
+      const legacy=document.getElementById("adopt-legacy-intent");
+      if(legacy) legacy.onclick=()=>{ if(confirm("將舊版未分案的意圖指定給目前案件？原始舊資料仍保留。")){setIntent(CaseDrafts.legacyIntent());renderHistory(pid);} };
     };
     if(!CS){ box.innerHTML=histShell(`<div class="wip" style="margin-top:8px">
       此瀏覽器不支援 IndexedDB（或處於無痕模式），無法保存案件歷程。編輯仍然有效，只是不會留下紀錄。</div>`);
@@ -1030,14 +1039,7 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
   /* M7.1 §2.3 備份三條之(3)：一鍵完整備份（全部案件＋Activity＋meta）。
      Local-first 的代價是「資料只在這台機器」——備份必須是一個按鈕，不是一份說明。 */
   function backupAll(){
-    if(!CS) return alert("儲存層不可用");
-    CS.exportAll().then(bak=>{
-      bak.legacy_localStorage=(()=>{ try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null} })();
-      dlFile(JSON.stringify(bak,null,2),
-        "uros_備份_"+new Date().toISOString().slice(0,10)+".json", "application/json");
-      return CS.markBackedUp();
-    }).then(()=>{ HIST_BACKUP_DAYS=null; try{renderHistory(activePid())}catch(e){} })
-      .catch(e=>alert("備份失敗："+e.message));
+    return self.BrowserBackup.save();
   }
   function dlFile(text, name, mime){
     const a=document.createElement("a");
@@ -1266,80 +1268,8 @@ try{ localStorage.setItem("uros.step.site","1"); }catch(e){}   // STEP 1 事實�
      設計原則：欄位少、看得懂、**輸入當下就顯示 Core 算出的允建容積**——
      那個數字就是之後每一頁看到的同一個數字（同專案同數字），因為它由 Core 算、存進案件。
      UI 零計算：允建容積等一切數字都來自 Core recompute，本表單只組輸入。 */
-  const NC_FIELDS=[
-    {k:"案件名稱", l:"案件代號", type:"text", v:"新案件", hint:"禁真實段名/姓名"},
-    {k:"基地面積", l:"基地面積", u:"㎡", v:1000, step:0.01},
-    {k:"人行廣場", l:"人行廣場（退縮）", u:"㎡", v:0, step:0.01, hint:"會從基地面積扣除再算容積"},
-    {k:"容積率",   l:"容積率", u:"%", v:300, step:1, scale:100, hint:"如 300 代表 300%"},
-    {k:"獎勵率",   l:"容積獎勵", u:"%", v:30, step:1, scale:100},
-    {k:"容積移轉", l:"容積移轉", u:"㎡", v:0, step:1},
-    {k:"公設比",   l:"公設比", u:"%", v:33, step:0.5, scale:100},
-    {k:"戶數",     l:"戶數（權變戶）", v:30, step:1},
-    {k:"住宅單價", l:"住宅單價", u:"萬/坪", v:70, step:1},
-    {k:"營造單價", l:"營造單價", u:"萬/坪", v:20, step:0.5},
-  ];
-  function openNewCase(){
-    const box=document.getElementById("newcase"); if(!box) return;
-    box.style.display="block";
-    box.innerHTML=`<div class="nc-card">
-      <h4>＋ 新增案件 <span class="src" id="nc-stat"></span></h4>
-      <div class="nc-grid">
-        <label>案件類型<select id="nc-type"><option value="urban_renewal">都市更新</option><option value="danger_building">危老重建</option></select></label>
-        <label>實施模式<select id="nc-mode"><option>全案管理</option><option>合建</option></select></label>
-        ${NC_FIELDS.map(f=>`<label>${f.l}${f.u?` <span class="src">${f.u}</span>`:""}
-          <input id="nc-${f.k}" type="${f.type||"number"}" value="${f.v}" ${f.step?`step="${f.step}"`:""}>
-          ${f.hint?`<span class="src">${f.hint}</span>`:""}</label>`).join("")}
-      </div>
-      <div class="nc-preview" id="nc-preview">輸入後即以 Core 試算…</div>
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-        <button class="btn-sm" onclick="submitNewCase()"><b>建立案件</b></button>
-        <button class="btn-sm" onclick="document.getElementById('newcase').style.display='none'">取消</button>
-      </div>
-      <div class="src" style="margin-top:6px">建立後可在「產權清冊」逐筆登打地主；財務與判讀一律由 Core／Decision Engine 產出。</div>
-    </div>`;
-    box.querySelectorAll("input,select").forEach(el=>el.addEventListener("input",ncPreview));
-    ncPreview();
-  }
-  function ncEngine(){
-    const g=k=>{const el=document.getElementById("nc-"+k); return el?el.value:null;};
-    const form=self.CaseBus.defaults();
-    NC_FIELDS.forEach(f=>{ form[f.k]=g(f.k); });
-    form.case_type=document.getElementById("nc-type").value;
-    form.mode=document.getElementById("nc-mode").value;
-    return self.CaseBus.buildEngine(form);
-  }
-  function ncPreview(){
-    const pv=document.getElementById("nc-preview"); if(!pv) return;
-    if(!RT||!RT.ready){ pv.textContent="計算核心載入中…（就緒後自動試算）"; return; }
-    const eng=ncEngine();
-    RT.recompute(eng).then(r=>{
-      const R=r.result||{};
-      pv.innerHTML=`<b>Core 試算</b>（這就是建立後每一頁看到的同一組數字）
-        <div class="nc-out"><span>允建容積</span><b>${fmt(R.allow_floor_area)} ㎡</b></div>
-        <div class="nc-out"><span>銷售坪 / 坪效</span><b>${fmt(R.saleable_area)} 坪 · ${R.efficiency_ratio!=null?R.efficiency_ratio.toFixed(3):"—"}</b></div>
-        <div class="nc-out"><span>共同負擔比</span><b>${pc(R.shared_cost_ratio)}</b></div>
-        <div class="nc-out"><span>投報率</span><b>${pc(R.return_rate)}</b></div>
-        <div class="src">input_hash ${(r.input_hash||"").replace(/^sha256:/,"").slice(0,10)}…（可溯源）</div>`;
-    }).catch(e=>{ pv.textContent="試算失敗："+e.message; });
-  }
-  function submitNewCase(){
-    if(!RT||!RT.ready) return alert("計算核心尚未就緒，請稍候再建立（數字必須由 Core 產出）。");
-    const eng=ncEngine();
-    RT.recompute(eng).then(r=>{
-      const R=r.result||{}, ih=r.input_hash;
-      const rec=self.CaseBus.buildRecord({engine:eng,result:R,input_hash:ih});
-      const s=self.CaseBus.readStore();
-      const exists=!!s.projects[rec.pid];
-      let pid;
-      if(exists){ self.CaseBus.setActive(rec.pid); pid=rec.pid; }
-      else pid=self.CaseBus.upsert(rec);
-      document.getElementById("newcase").style.display="none";
-      // M7.1：建案件是歷程的第一筆事實（見 ACTLOGIC.createEvent）
-      if(!exists) logAct(pid, ACTLOGIC.createEvent(pid, eng.params, ih));
-      render();
-    }).catch(e=>alert("建立失敗："+e.message));
-  }
-  self.openNewCase=openNewCase; self.submitNewCase=submitNewCase; self.ncPreview=ncPreview;
+  function openNewCase(){ location.href="index.html#entry"; }
+  self.openNewCase=openNewCase;
 
   // 手動重載示範案（顧問端救援：清掉示範資料重新植入，使用者自有案件保留）
   function reloadDemoCases(){
