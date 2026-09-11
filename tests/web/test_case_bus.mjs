@@ -208,7 +208,7 @@ global.self.CaseBus = B;
 const nav = { exports: {} };
 const 假document = {
   readyState: "complete", getElementById: () => null,
-  createElement: () => ({ style: {}, set textContent(v) {}, set innerHTML(v) {} }),
+  createElement: () => ({ style: {}, setAttribute() {}, set textContent(v) {}, set innerHTML(v) {} }),
   head: { appendChild() {} }, body: { insertBefore() {}, firstChild: null },
   addEventListener() {}
 };
@@ -250,9 +250,9 @@ ok(/rec \? B\.applyResult\(rec, 最新\) : B\.buildRecord\(最新\)/.test(homeSr
    "首頁即時預覽以 applyResult 疊最新 Core 結果，不讀舊 view");
 ok(/existing \? B\.applyResult\(existing, 最新\) : B\.buildRecord\(最新\)/.test(homeSrc),
    "首頁更新既有案件走 applyResult，保留案件事實");
-ok(/return self\.CaseBus\.buildEngine\(form\)/.test(dashboardSrc) &&
-   /self\.CaseBus\.buildRecord\(\{engine:eng,result:R,input_hash:ih\}\)/.test(dashboardSrc),
-   "Dashboard 新建案件也只走 CaseBus 的 engine／record 契約");
+ok(/function openNewCase\(\)\{ location.href="index.html#entry"; \}/.test(dashboardSrc) &&
+   !/function submitNewCase/.test(dashboardSrc) && /B\.buildRecord\(最新\)/.test(homeSrc),
+   "Dashboard 導向唯一建案入口，首頁仍走 CaseBus engine／record 契約");
 ok(!/面積表計入容積\s*:/.test(dashboardSrc),
    "Dashboard 不再私算允建容積並塞回 Core 輸入");
 

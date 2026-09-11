@@ -100,9 +100,9 @@
             + '<b>健檢與敏感度</b> 顯示 Core 的警示，<b>匯入比對</b> 可對照外部 JSON。</p>'
             + (pv.input_hash
                 ? '<p class="uros-core-prov">溯源 input_hash '
-                  + String(pv.input_hash).replace(/^sha256:/, "").slice(0, 12) + '… · core '
-                  + (pv.core_version || "—")
-                  + (pv.stale ? ' <b>⚠️ ' + pv.stale_note + '</b>' : '') + '</p>'
+                  + esc(String(pv.input_hash).replace(/^sha256:/, "").slice(0, 12)) + '… · core '
+                  + esc(pv.core_version || "—")
+                  + (pv.stale ? ' <b>⚠️ ' + esc(pv.stale_note) + '</b>' : '') + '</p>'
                 : '<p class="uros-core-prov">尚無作用中案件的溯源戳記。</p>');
         }
       }
@@ -167,6 +167,14 @@
       applyTheme(current === "dark" ? "light" : "dark");
     });
     if (page.key === "product") productHub(rec);
+    var routes = page.key === "people" ? [["board","同意看板"],["task","時程任務"]]
+      : page.key === "decision" ? [["dec","決策紀錄"],["time","時間軸"],["attr","歸因比較"]] : [];
+    if (routes.length) {
+      var links = document.createElement("nav"); links.className = "uros-workflow-links";
+      links.setAttribute("aria-label", "本步案件工具");
+      routes.forEach(function (route) { var a=document.createElement("a"); a.href="workspace.html?view="+route[0]; a.textContent=route[1]; links.appendChild(a); });
+      shell.appendChild(links);
+    }
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", build);

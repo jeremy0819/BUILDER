@@ -160,7 +160,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
   </div>
 
   <!-- ① 開場：問四個你一定知道的數字 -->
-  <section class="start">
+  <section class="start" id="entry">
     <h2 id="start-title">先講你的地</h2>
     <p class="sub" id="start-sub">四個數字就好。填完下面的數字會自己動——那些數字之後每一步看到的都是同一份。</p>
 
@@ -202,7 +202,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
   </div>
 
   <details class="more">
-    <summary>延伸資源 · 計算工具 / 方法論 / 程式庫</summary>
+    <summary>案件檔案與進階工具</summary>
     <div class="more-grid">
       <a href="workspace.html">
         <div class="rt">🗂️ 案件工作區 WORKSPACE <span class="x">多案管理</span></div>
@@ -216,6 +216,11 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
       <a href="https://builder-9sczgrez3a3qsbmkebd6ey.streamlit.app/" target="_blank" rel="noopener">
         <div class="rt">⚙️ RE-DCF 精確計算 <span class="x">↗ STREAMLIT</span></div>
         <div class="rd">與瀏覽器內 Core 同一份計算，跑在伺服器上。日常用本站即可；批次匯入或本機連不上計算核心時可用這裡備援。</div></a>
+    </div>
+  </details>
+  <details class="more">
+    <summary>方法論與閱讀資料</summary>
+    <div class="more-grid">
       <a href="guide.html">
         <div class="rt">📖 都更 11 關指南</div>
         <div class="rd">S1–S11 全生命週期流程與名詞小幫手。</div></a>
@@ -225,6 +230,11 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
       <a href="briefing.html">
         <div class="rt">🗣️ 住戶說明會簡報</div>
         <div class="rd">對住戶溝通的制式簡報範本（HTML）。</div></a>
+    </div>
+  </details>
+  <details class="more">
+    <summary>經典版本與程式庫</summary>
+    <div class="more-grid">
       <a href="simulator.html">
         <div class="rt">🎮 整合策略沙盤 <span class="x">V4 經典版</span></div>
         <div class="rd">封版保留；優點已蒸餾進《整合人》主線。</div></a>
@@ -250,6 +260,12 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
 
 <script src="version.js"></script>
 <script src="security.js"></script>
+<script src="local-diagnostics.js"></script>
+<link rel="stylesheet" href="data-notices.css">
+<script src="calibration-data.js"></script>
+<script src="calibration-notice.js"></script>
+<script src="case-store.js"></script>
+<script src="browser-backup.js"></script>
 <script src="case-bus.js"></script>
 <script src="core-runtime.js"></script>
 <script src="demo-cases.js"></script>

@@ -3,6 +3,13 @@
 <title>整合人 THE INTEGRATOR · 整合戰術沙盤</title>
 <!-- case-bus 必須在 stepnav 之前：四步導覽列的即時數字由它提供（取不到則退回純導覽） -->
 <script src="security.js"></script>
+<script src="local-diagnostics.js"></script>
+<link rel="stylesheet" href="data-notices.css">
+<script src="calibration-data.js"></script>
+<script src="calibration-notice.js"></script>
+<script src="case-store.js"></script>
+<script src="browser-backup.js"></script>
+<script src="case-drafts.js"></script>
 <!-- version.js＝前端版本徽章 SSOT；case-bus 的陳舊快照判斷需要它 -->
 <script src="version.js"></script>
 <script src="case-bus.js"></script>
@@ -835,15 +842,15 @@ function renderCore(){
   $("hud-scen").textContent=`· ${S.cfg.mode==="weilao"?"危老":"都更"} × ${sc.label}`;
   $("corebox").innerHTML=`
     <div class="card-head"><span class="lbl">RE-DCF Core · 本方案財務</span><span class="chip">${
-      sc._fromCase?`本案實算 · ${sc._case}`:"快照 core 0.3.0"} · 只讀</span></div>
+      sc._fromCase?`本案實算 · ${UROSSecurity.esc(sc._case)}`:"快照 core 0.3.0"} · 只讀</span></div>
     ${sc._fromCase?`<div class="row" style="border:0;padding-top:0"><span style="font-size:10.5px;color:var(--dim)">
       承接 ①基地×②產品 的規劃：基地面積・容積率・獎勵・公設比改變，這裡與下方人心反應一起變。</span></div>`:""}
-    <div class="row"><span>允建容積 / 餘量</span><b class="tnum">${n0(sc.allow)} m² / ${sc.remaining>0?'+':''}${sc.remaining}</b></div>
+    <div class="row"><span>允建容積 / 餘量</span><b class="tnum">${n0(sc.allow)} m² / ${sc.remaining>0?'+':''}${UROSSecurity.esc(sc.remaining)}</b></div>
     <div class="row"><span>總銷</span><b class="tnum">${n0(sc.total)} 萬</b></div>
     <div class="row"><span>共同負擔比</span><b class="tnum">${pct(sc.scr)}</b></div>
     <div class="row"><span>地主分回比</span><b class="tnum">${pct(sc.ratio)}</b></div>
     <div class="row"><span>投報率</span><b class="tnum">${pct(sc.rr)}</b></div>
-    ${sc.warn.map(w=>`<div class="warn ${w==="SHARED_COST_HIGH"||w==="VOLUME_EXCEEDED"?"err":"warn"}">${w}${w==="SHARED_COST_HIGH"?` — 共負比 ${pct(sc.scr)} 偏高，地主接受度下降（＝難度來源）`:w==="VOLUME_EXCEEDED"?` — 超容 ${Math.abs(sc.remaining)} m²，需調整設計`:""}</div>`).join("")}
+    ${sc.warn.map(w=>`<div class="warn ${w==="SHARED_COST_HIGH"||w==="VOLUME_EXCEEDED"?"err":"warn"}">${UROSSecurity.esc(w)}${w==="SHARED_COST_HIGH"?` — 共負比 ${pct(sc.scr)} 偏高，地主接受度下降（＝難度來源）`:w==="VOLUME_EXCEEDED"?` — 超容 ${Math.abs(sc.remaining)} m²，需調整設計`:""}</div>`).join("")}
     <div class="src">recompute(engine) 預算結果 · schema v2.1 · 遊戲層零財務公式</div>`;
 }
 /* v3 呈現層記帳：每週支出快照（UI 紀錄，非 SIMCORE 狀態、非財務公式） */
@@ -1000,7 +1007,7 @@ function ending(){
     rows+=us.slice().sort((a,b)=>(b.alloc?.return_value||0)-(a.alloc?.return_value||0)).map(u=>{
       const a=u.alloc||{}, tri=u.consent==="agreed"?(u.tri||"抽籤"):"現金補償";
       const eq=a.equalization!=null?(a.equalization>=0?`找補 +${n0(a.equalization)}`:`找補 −${n0(-a.equalization)}`):"—";
-      return `<div class="hrow"><span class="who">${u.oid||SIMCORE.code(u.id)} <span class="p">${tri}</span></span>`+
+      return `<div class="hrow"><span class="who">${UROSSecurity.esc(u.oid||SIMCORE.code(u.id))} <span class="p">${tri}</span></span>`+
         `<span class="st ${u.consent==="agreed"?"ok":"no"}">分回 ${a.return_value!=null?n0(a.return_value)+"萬":"—"} · ${eq}</span></div>`;
     }).join("");
     rows+=`<div class="hrow"><span class="who p" style="font-size:10px">權變表數字＝匯入 result.owner_allocations 逐欄（§56 Core 權威，本頁只讀）</span><span></span></div>`;
@@ -1017,7 +1024,7 @@ function ending(){
 
   // Core 財務結算（唯讀，權威數字）
   $("end-core").innerHTML=`
-    <div class="rc-row"><span>方案</span><b>${modeL} × ${sc.label}（獎勵率 ${sc.bonus}）</b></div>
+    <div class="rc-row"><span>方案</span><b>${modeL} × ${UROSSecurity.esc(sc.label)}（獎勵率 ${UROSSecurity.esc(sc.bonus)}）</b></div>
     <div class="rc-row"><span>總銷</span><b>${n0(sc.total)} 萬</b></div>
     <div class="rc-row"><span>共同負擔比</span><b>${pct(sc.scr)}</b></div>
     <div class="rc-row"><span>地主分回比 / 投報率</span><b>${pct(sc.ratio)} / ${pct(sc.rr)}</b></div>
@@ -1057,7 +1064,7 @@ function applyBridge(){
        consent_known=true  → 逐戶事實 verbatim（原 B4 路徑）
        consent_known=false → 只採彙總（戶數＋同意比），盤面分佈明示為示意 */
   const 逐戶同意已知 = b.consent_known !== false;
-  CONSENT_ILLUSTRATIVE = !逐戶同意已知 && !!b.total;
+  CONSENT_ILLUSTRATIVE = (!逐戶同意已知 || !b.owners) && !!b.total;
   BRIDGE_OWNERS = (逐戶同意已知 && b.owners && b.owners.length) ? b.owners : null;
   if(BRIDGE_OWNERS){                                                    // 街區＝案件事實，鎖戶數/同意比滑桿
     fabric.N=BRIDGE_OWNERS.length;
@@ -1079,14 +1086,18 @@ function applyBridge(){
   el.style.display="block";
   el.style.cssText="display:block;margin:12px 0 4px;padding:10px 13px;border:1px solid var(--strand);"+
     "border-radius:9px;background:rgba(120,120,255,.06);font-size:12px;line-height:1.6";
-  el.innerHTML=`🗂️ 以工作區案件 <b>${b.code_name||"案件"}</b> 為背景（地主 ${b.owners_n||"—"} 戶 · 同意 ${b.agreed||0}/${b.total||"—"} · 階段 ${b.stage||"—"}${BRIDGE_OWNERS?" · 逐戶事實已載入":""}）`+
+  el.innerHTML=`🗂️ 以工作區案件 <b>${UROSSecurity.esc(b.code_name||"案件")}</b> 為背景（地主 ${UROSSecurity.esc(b.owners_n||"—")} 戶 · 同意 ${UROSSecurity.esc(b.agreed||0)}/${UROSSecurity.esc(b.total||"—")} · 階段 ${UROSSecurity.esc(b.stage||"—")}${BRIDGE_OWNERS?" · 逐戶事實已載入":""}）`+
     `<br><span style="color:var(--dim);font-size:10.5px">已依案件類型預選「${b.case_type==="danger_building"?"危老重建":"都更・合建"}」。沙盤只帶入案件事實作背景，推演結果不回寫案件（只搬狀態、不搬判斷）。</span>`+
     /* ⚠️ 這句必須留在**遊戲進行中也看得到的地方**。盤面上一格一格的戶別會讓人以為
        「這幾戶同意了、那幾戶沒有」是案件事實——當案件只有彙總同意數時，那是示意分佈。
        放在 fabric-note 不行：按下「開始整合」後那塊就不在畫面上了。 */
     (逐戶同意已知 ? "" :
-      `<br><span style="color:var(--amber,#b45309);font-size:10.5px">⚠️ 本案只記了彙總同意數 ${b.agreed==null?"—":b.agreed+"/"+b.total}，沒有逐戶同意紀錄——盤面上「哪幾戶同意」為程序生成的示意分佈，不是這個案子的真實戶別。</span>`)+
+      `<br><span style="color:var(--amber,#b45309);font-size:10.5px">⚠️ 本案只記了彙總同意數 ${UROSSecurity.esc(b.agreed==null?"—":b.agreed+"/"+b.total)}，沒有逐戶同意紀錄——盤面上「哪幾戶同意」為程序生成的示意分佈，不是這個案子的真實戶別。</span>`)+
     `<br><a href="#" id="bridge-clear" style="color:var(--dim);font-size:10.5px">✕ 清除背景，改用預設情境</a>`;
+  let cap=$("owners-cap-notice");
+  if(!cap){ cap=document.createElement("p");cap.id="owners-cap-notice";cap.className="data-notice";cap.setAttribute("role","status");document.querySelector("#uros-shell").after(cap); }
+  cap.textContent=b.owners_notice||((!BRIDGE_OWNERS&&b.total&&b.total!==fabric.N)?`本案 ${b.total} 戶，沙盤呈現 ${fabric.N} 戶示意，非完整逐戶清冊`:"");
+  cap.hidden=!cap.textContent;
   const clr=$("bridge-clear"); if(clr) clr.onclick=e=>{e.preventDefault();localStorage.removeItem("uros.bridge.case");
     /* 記住這個選擇：否則下一次進來 syncSandboxBridge() 又會自動接上，
        使用者會覺得「我明明清掉了」。 */
@@ -1176,7 +1187,7 @@ $("btn-start").onclick=()=>{
 $("btn-plan-go").onclick=()=>startPlay(false);
 function startPlay(inherited){
   $("ovl-plan").classList.remove("show");
-  try{localStorage.setItem("uros.step.people","1");}catch(e){}   // M5 STEP 3 事實旗標
+  try{CaseDrafts.set(CaseBus.activePid(),"people_started",true);}catch(e){}
   const cfg={mode:plan.mode,scale:plan.scale,
              N:fabric.N,consent:fabric.consent,fam:fabric.fam,seed:fabric.seed,coeff:COEFF};
   if(BRIDGE_OWNERS){cfg.owners=BRIDGE_OWNERS;}          // B4：匯入案件＝事實開局
@@ -1197,4 +1208,11 @@ function startPlay(inherited){
 }
 /* 預設先建一局（危老×基準）供背景顯示；正式開局在規劃定案後重建 */
 S=SIMCORE.create(); renderProcess(); renderCore(); render();
+const introRec=activeCaseRec(), intro=document.querySelector("#ovl-title .brief");
+if(introRec&&intro){
+  const snap=introRec.snap||{};
+  intro.innerHTML=`<b>任務簡報 · ${UROSSecurity.esc(snap.code_name||introRec.pid)}</b>`+
+    `<p>案件同意紀錄 ${UROSSecurity.esc(snap.agreed??"—")} / ${UROSSecurity.esc(snap.total??"—")} 戶。推演結果不會改寫案件紀錄。</p>`+
+    `<div class="src">案件快照 core ${UROSSecurity.esc(snap.core_version||"—")} · 戶別資料不足時以示意盤面呈現。</div>`;
+}
 </script>
