@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;font-family:system-ui,-apple-system,"Noto Sans TC","PingFang TC",sans-serif;
+      background:#f4f5f7;color:#16181d;-webkit-font-smoothing:antialiased}
+    a{color:#5a48d6}a:hover{color:#4536b0}
+    .mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+    .spec{font-size:10.5px;line-height:1.6;color:#68707d}
+    .spec b{color:#16181d}
+    .sect{display:flex;align-items:center;gap:10px;margin:26px 0 12px}
+    .sect .l{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;
+      letter-spacing:.16em;color:#5a48d6;text-transform:uppercase}
+    .sect .r{flex-grow:1;height:1px;background:#dfe3e8}
+  </style>
+</helmet>
+<div style="padding:36px 40px;background:#f4f5f7">
+
+  <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:6px">
+    <div style="font:750 22px/1.25 system-ui">元件規格</div>
+    <div class="mono" style="font-size:11px;letter-spacing:.14em;color:#68707d;text-transform:uppercase">Component Specs</div>
+  </div>
+  <div style="font-size:12.5px;line-height:1.7;color:#68707d;max-width:74ch">
+    數值取自 <span class="mono" style="color:#16181d">os-unified.css</span> 既有實作，不是新發明的尺寸。
+  </div>
+
+  <div class="sect"><span class="l">數值格 · KPI Cell</span><span class="r"></span></div>
+  <div style="display:grid;grid-template-columns:240px 1fr;gap:20px;align-items:start">
+    <div style="background:#fff;border:1px solid #dfe3e8;border-radius:8px;padding:13px 14px">
+      <span style="display:block;font-size:10.5px;color:#68707d">允建容積</span>
+      <b class="mono" style="display:block;margin-top:4px;font:750 19px/1.2 'SF Mono',ui-monospace,Menlo,Consolas,monospace;color:#16181d">7,020 ㎡</b>
+      <span class="mono" style="display:block;margin-top:4px;font-size:9.5px;color:#5a48d6">CORE</span>
+    </div>
+    <div class="spec">
+      <b>padding</b> 13px 14px　<b>radius</b> 8px　<b>border</b> 1px #dfe3e8<br>
+      <b>標籤</b> 10.5px / #68707d　<b>數值</b> 750 19px/1.2 mono / #16181d<br>
+      <b>來源標籤</b> 9.5px mono，CORE→#5a48d6、INPUT→#68707d、DECISION→#a86616<br>
+      <b>取不到</b> 數值改 13px/400 #68707d，內容「—」或「取不到」，<b>不得填 0</b><br>
+      <b>千分位</b> 一律加；單位與數值同列、11px #68707d
+    </div>
+  </div>
+
+  <div class="sect"><span class="l">空狀態 · Empty</span><span class="r"></span></div>
+  <div style="display:grid;grid-template-columns:240px 1fr;gap:20px;align-items:start">
+    <div style="background:#fff;border:1px solid #dfe3e8;border-radius:8px;padding:20px 16px;text-align:center">
+      <div style="font-size:12.5px;font-weight:600;color:#16181d">還沒有案件</div>
+      <div style="margin-top:6px;font-size:11px;line-height:1.6;color:#68707d">填四個數字，Core 立刻算給你看</div>
+      <div style="margin-top:12px;display:inline-block;height:32px;line-height:32px;padding:0 14px;border-radius:6px;background:#5a48d6;color:#fff;font-size:11.5px;font-weight:700">先講你的地 →</div>
+    </div>
+    <div class="spec">
+      <b>三段式</b>：發生什麼事 → 為什麼 → 下一步能做什麼（必含可按的動作）<br>
+      <b>禁止</b> 只有一句「尚無資料」而沒有出路——② 的預設分頁曾整片空白，讀起來就是壞頁<br>
+      <b>按鈕</b> height 32px、radius 6px、padding 0 14px、11.5px（沿用 .uros-view-tabs 尺寸）<br>
+      <b>語氣</b> 用使用者的話，不是系統的話（「還沒有案件」不是「無資料」）
+    </div>
+  </div>
+
+  <div class="sect"><span class="l">警語條 · Caveat</span><span class="r"></span></div>
+  <div style="display:grid;grid-template-columns:240px 1fr;gap:20px;align-items:start">
+    <div>
+      <div style="background:#fff;border-left:2px solid #a86616;border-radius:0 6px 6px 0;padding:11px 13px">
+        <div class="mono" style="font-size:10px;color:#a86616">⚠ 存活率未校準 · 非投資結論</div>
+        <div style="margin-top:5px;font-size:11px;line-height:1.6;color:#68707d">方向性判斷。完工機率尚未經真實成敗案校準。</div>
+      </div>
+      <div style="margin-top:10px;background:#fff;border-left:2px solid #c33f54;border-radius:0 6px 6px 0;padding:11px 13px">
+        <div style="font-size:11px;line-height:1.6;color:#16181d">連不上計算核心——常見原因是網路或公司防火牆擋住了外部資源</div>
+      </div>
+    </div>
+    <div class="spec">
+      <b>左邊界</b> 2px 實心：warn #a86616（模型限制）／err #c33f54（系統失效）<br>
+      <b>絕不</b> 把原始例外丟給使用者。技術細節收進 <span class="mono">title</span>／診斷紀錄<br>
+      <b>位置紀律</b> 警語要放在「使用者會看到那個數字的地方」——放在規劃疊層裡，
+      按下開始整合疊層就收掉了，盤面上看不到，等於沒有<br>
+      <b>語氣</b> 講原因與下一步，不講錯誤代碼
+    </div>
+  </div>
+
+  <div class="sect"><span class="l">四步導覽列 · Stepnav</span><span class="r"></span></div>
+  <div style="background:#fff;border:1px solid #dfe3e8;border-radius:8px;padding:0;overflow:hidden;margin-bottom:14px">
+    <div style="display:flex;align-items:stretch;gap:2px;padding:9px 14px;background:#fff;border-bottom:1px solid #dfe3e8">
+      <div style="padding:3px 10px;border-radius:6px;background:#eeebff">
+        <div style="font-size:12.5px;font-weight:700;color:#16181d">① Site 基地</div>
+        <div class="mono" style="font-size:11px;font-weight:700;color:#5a48d6">7,020 ㎡</div>
+        <div style="font-size:10px;color:#5a48d6">允建容積</div>
+      </div>
+      <div style="display:flex;align-items:center;padding:0 4px;color:#68707d;font-size:12px">→</div>
+      <div style="padding:3px 10px">
+        <div style="font-size:12.5px;font-weight:700;color:#16181d">② Product 產品</div>
+        <div class="mono" style="font-size:11px;font-weight:700;color:#16181d">179.9%</div>
+        <div style="font-size:10px;color:#68707d">全案投報率</div>
+      </div>
+      <div style="display:flex;align-items:center;padding:0 4px;color:#68707d;font-size:12px">→</div>
+      <div style="padding:3px 10px">
+        <div style="font-size:12.5px;font-weight:700;color:#16181d">③ People 人心</div>
+        <div class="mono" style="font-size:11px;font-weight:700;color:#16181d">18/42</div>
+        <div style="font-size:10px;color:#68707d">同意戶數</div>
+      </div>
+      <div style="display:flex;align-items:center;padding:0 4px;color:#68707d;font-size:12px">→</div>
+      <div style="padding:3px 10px">
+        <div style="font-size:12.5px;font-weight:700;color:#16181d">④ Decision 決策</div>
+        <div class="mono" style="font-size:11px;font-weight:700;color:#a86616">CAUTION</div>
+        <div style="font-size:10px;color:#a86616">未校準</div>
+      </div>
+    </div>
+    <div style="padding:6px 14px;font-size:10.5px;color:#68707d">
+      四步讀同一份案件：數字全部逐欄取自 Core／決策引擎，取不到顯示「—」　⚠ 數字來自 Core 0.4.0 快照（現行 0.6.0）
+    </div>
+  </div>
+  <div class="spec">
+    <b>每步顯示一個有資訊量的數字</b>——③ 顯示「18/42 同意」而不是「42 戶」（後者不會變，看了等於沒看）<br>
+    <b>目前缺</b> ④ 的未校準標示；導覽列說 CAUTION、頁面本體說「待判讀」，同畫面兩個答案<br>
+    <b>成因</b> 導覽列讀已存的 decision，④ 的面板只認本次即時跑的結果——兩個表面回答不同問題卻沒區分<br>
+    <b>修法</b> 導覽列標「快照判定」，面板標「本次分析」，兩者並存不互相取代
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

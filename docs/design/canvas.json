@@ -1,0 +1,14 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1440, "h": 1060, "title": "四步動線 · 資訊架構" },
+    { "file": "SourceSystem.dc.html", "x": 0, "y": 1180, "w": 900, "h": 760, "title": "來源語意系統" },
+    { "file": "StateMatrix.dc.html", "x": 980, "y": 1180, "w": 1100, "h": 780, "title": "狀態矩陣" },
+    { "file": "Components.dc.html", "x": 0, "y": 2080, "w": 900, "h": 1120, "title": "元件規格" },
+    { "file": "Mobile.dc.html", "x": 980, "y": 2080, "w": 390, "h": 844, "title": "手機規格" }
+  ],
+  "annotations": [
+    { "id": "brief", "x": 0, "y": -150, "w": 560,
+      "text": "BUILDER 遊玩介面 UI/UX 規劃\n\n所有 token 取自 os-unified.css 實際值，不新增設計語言。\n紅色數字＝2026-09-11 真實瀏覽器實測。" }
+  ],
+  "launch": { "view": "canvas" }
+}

@@ -1,0 +1,163 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;font-family:system-ui,-apple-system,"Noto Sans TC","PingFang TC",sans-serif;
+      background:#f4f5f7;color:#16181d;-webkit-font-smoothing:antialiased}
+    a{color:#5a48d6}a:hover{color:#4536b0}
+    .mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+  </style>
+</helmet>
+<div style="padding:40px 44px;background:#f4f5f7">
+
+  <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:6px">
+    <div style="font:750 24px/1.25 system-ui;color:#16181d">四步動線 · 資訊架構</div>
+    <div class="mono" style="font-size:11px;letter-spacing:.14em;color:#68707d;text-transform:uppercase">Information Architecture</div>
+  </div>
+  <div style="font-size:13px;line-height:1.7;color:#68707d;max-width:86ch;margin-bottom:28px">
+    現況問題不是版面，是<b style="color:#16181d">結構重疊</b>：四步是後來嫁接的骨幹，「一個工具一頁」的舊結構沒退場，
+    於是兩套案件管理平行存在，而四步本身的份量差到 5 倍。
+  </div>
+
+  <!-- 現況量測 -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+    <div class="mono" style="font-size:10.5px;letter-spacing:.16em;color:#a86616;text-transform:uppercase">現況實測 2026-09-11</div>
+    <div style="flex-grow:1;height:1px;background:#dfe3e8"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:32px">
+    <div style="background:#fff;border:1px solid #dfe3e8;border-radius:8px;padding:13px 14px">
+      <span style="display:block;font-size:10.5px;color:#68707d">① 基地 dashboard</span>
+      <b class="mono" style="display:block;margin-top:4px;font-size:19px;font-weight:750;color:#c33f54">2,440 px</b>
+      <span style="display:block;margin-top:3px;font-size:10.5px;color:#68707d">可點 40 個 · 過重</span>
+    </div>
+    <div style="background:#fff;border:1px solid #dfe3e8;border-radius:8px;padding:13px 14px">
+      <span style="display:block;font-size:10.5px;color:#68707d">② 產品 evaluator</span>
+      <b class="mono" style="display:block;margin-top:4px;font-size:19px;font-weight:750;color:#c33f54">483 px</b>
+      <span style="display:block;margin-top:3px;font-size:10.5px;color:#68707d">可點 13 個 · 空殼</span>
+    </div>
+    <div style="background:#fff;border:1px solid #dfe3e8;border-radius:8px;padding:13px 14px">
+      <span style="display:block;font-size:10.5px;color:#68707d">③ 人心 os-simulator</span>
+      <b class="mono" style="display:block;margin-top:4px;font-size:19px;font-weight:750;color:#16181d">1,293 px</b>
+      <span style="display:block;margin-top:3px;font-size:10.5px;color:#68707d">可點 14 個</span>
+    </div>
+    <div style="background:#fff;border:1px solid #dfe3e8;border-radius:8px;padding:13px 14px">
+      <span style="display:block;font-size:10.5px;color:#68707d">④ 決策 report</span>
+      <b class="mono" style="display:block;margin-top:4px;font-size:19px;font-weight:750;color:#16181d">1,044 px</b>
+      <span style="display:block;margin-top:3px;font-size:10.5px;color:#68707d">可點 27 個</span>
+    </div>
+  </div>
+
+  <!-- 目標架構 -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+    <div class="mono" style="font-size:10.5px;letter-spacing:.16em;color:#5a48d6;text-transform:uppercase">目標架構 · 每步一個問題</div>
+    <div style="flex-grow:1;height:1px;background:#dfe3e8"></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px">
+
+    <div style="background:#fff;border:1px solid #dfe3e8;border-top:3px solid #5a48d6;border-radius:8px;padding:16px 16px 18px">
+      <div style="display:flex;align-items:baseline;gap:7px">
+        <span class="mono" style="font-size:12px;color:#5a48d6">01</span>
+        <span style="font:750 15px/1.3 system-ui">基地</span>
+      </div>
+      <div style="margin-top:7px;font-size:12.5px;line-height:1.6;color:#16181d;font-weight:600">這塊地能蓋多少？</div>
+      <div style="margin-top:12px;height:1px;background:#dfe3e8"></div>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:7px">
+        <div style="font-size:11.5px;line-height:1.55;color:#16181d">基地條件輸入</div>
+        <div style="font-size:11.5px;line-height:1.55;color:#16181d">逐層樓板／量體生成</div>
+        <div style="font-size:11.5px;line-height:1.55;color:#16181d">容積查核結果</div>
+      </div>
+      <div style="margin-top:14px;padding:9px 10px;background:#f8f9fb;border-radius:6px">
+        <div class="mono" style="font-size:9.5px;letter-spacing:.1em;color:#a86616;text-transform:uppercase">移出</div>
+        <div style="margin-top:4px;font-size:11px;line-height:1.55;color:#68707d">地政資訊區（新案全空，佔滿版）→ 收為摺疊</div>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #dfe3e8;border-top:3px solid #5a48d6;border-radius:8px;padding:16px 16px 18px">
+      <div style="display:flex;align-items:baseline;gap:7px">
+        <span class="mono" style="font-size:12px;color:#5a48d6">02</span>
+        <span style="font:750 15px/1.3 system-ui">產品</span>
+      </div>
+      <div style="margin-top:7px;font-size:12.5px;line-height:1.6;color:#16181d;font-weight:600">蓋出來值不值得？</div>
+      <div style="margin-top:12px;height:1px;background:#dfe3e8"></div>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:7px">
+        <div style="font-size:11.5px;line-height:1.55;color:#16181d">四項 Core 權威數字</div>
+        <div style="font-size:11.5px;line-height:1.55;color:#16181d">傳動軸滑桿（即時重算）</div>
+        <div style="font-size:11.5px;line-height:1.55;color:#16181d">健檢與敏感度</div>
+      </div>
+      <div style="margin-top:14px;padding:9px 10px;background:#eeebff;border-radius:6px">
+        <div class="mono" style="font-size:9.5px;letter-spacing:.1em;color:#5a48d6;text-transform:uppercase">移入</div>
+        <div style="margin-top:4px;font-size:11px;line-height:1.55;color:#16181d">傳動軸滑桿自 ① 移來——這一步才是「調產品」</div>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #dfe3e8;border-top:3px solid #5a48d6;border-radius:8px;padding:16px 16px 18px">
+      <div style="display:flex;align-items:baseline;gap:7px">
+        <span class="mono" style="font-size:12px;color:#5a48d6">03</span>
+        <span style="font:750 15px/1.3 system-ui">人心</span>
+      </div>
+      <div style="margin-top:7px;font-size:12.5px;line-height:1.6;color:#16181d;font-weight:600">誰會點頭？先談誰？</div>
+      <div style="margin-top:12px;height:1px;background:#dfe3e8"></div>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:7px">
+        <div style="font-size:11.5px;line-height:1.55;color:#16181d">戶別盤面（作用中案件）</div>
+        <div style="font-size:11.5px;line-height:1.55;color:#16181d">整合推演沙盤</div>
+      </div>
+      <div style="margin-top:14px;padding:9px 10px;background:#eeebff;border-radius:6px">
+        <div class="mono" style="font-size:9.5px;letter-spacing:.1em;color:#5a48d6;text-transform:uppercase">移入</div>
+        <div style="margin-top:4px;font-size:11px;line-height:1.55;color:#16181d">同意看板、任務——自 workspace 搬來，人的事歸人心</div>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #dfe3e8;border-top:3px solid #5a48d6;border-radius:8px;padding:16px 16px 18px">
+      <div style="display:flex;align-items:baseline;gap:7px">
+        <span class="mono" style="font-size:12px;color:#5a48d6">04</span>
+        <span style="font:750 15px/1.3 system-ui">決策</span>
+      </div>
+      <div style="margin-top:7px;font-size:12.5px;line-height:1.6;color:#16181d;font-weight:600">下一步該做什麼？</div>
+      <div style="margin-top:12px;height:1px;background:#dfe3e8"></div>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:7px">
+        <div style="font-size:11.5px;line-height:1.55;color:#16181d">四象限判讀圖</div>
+        <div style="font-size:11.5px;line-height:1.55;color:#16181d">逐型對策與行動順序</div>
+      </div>
+      <div style="margin-top:14px;padding:9px 10px;background:#eeebff;border-radius:6px">
+        <div class="mono" style="font-size:9.5px;letter-spacing:.1em;color:#5a48d6;text-transform:uppercase">移入</div>
+        <div style="margin-top:4px;font-size:11px;line-height:1.55;color:#16181d">決策日誌、時間軸——自 workspace 搬來</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- workspace 的去留 -->
+  <div style="margin-top:30px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    <div style="background:#fff;border:1px solid #dfe3e8;border-radius:8px;padding:16px 18px">
+      <div style="font:750 13.5px/1.3 system-ui;color:#16181d">workspace.html 降級為「案件櫃」</div>
+      <div style="margin-top:8px;font-size:12px;line-height:1.7;color:#68707d">
+        五項功能拆散歸位後，它只留<b style="color:#16181d">選案</b>與<b style="color:#16181d">匯出入</b>。
+        不再是與四步平行的第二套案件管理——那正是使用者要記「同意看板在那邊、產權清冊在這邊」的原因。
+      </div>
+    </div>
+    <div style="background:#fff;border:1px solid #dfe3e8;border-radius:8px;padding:16px 18px">
+      <div style="font:750 13.5px/1.3 system-ui;color:#16181d">建案入口 5 → 1</div>
+      <div style="margin-top:8px;font-size:12px;line-height:1.7;color:#68707d">
+        目前 <span class="mono" style="color:#c33f54">5</span> 個頁面都能建案。只有起始頁真正建案，其餘改為跳轉。
+        功能一項不減，要記的概念從 5 個變 1 個。
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:26px;padding:14px 16px;border-left:2px solid #5a48d6;background:#fff;border-radius:0 6px 6px 0">
+    <div style="font-size:12px;line-height:1.75;color:#16181d">
+      <b>收斂原則</b>：每一步只回答一個問題，答完才進下一步。
+      判斷某個區塊該放哪一步，就問「它幫使用者回答的是哪一個問題」——回答不了就不屬於主動線，收進摺疊或案件櫃。
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
