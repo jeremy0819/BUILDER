@@ -66,14 +66,35 @@ grep -c "cdn.jsdelivr" apps/web/core-runtime.worker.js      # → 1
 **這不是假想情境**：本次稽核的環境政策擋掉該網域（CONNECT 403），結果整個產品降級——
 四步的數字全部「取不到」，只剩示範案可看。企業內網、政府單位、金融機構常態擋外部 CDN。
 
-### 要做的
+### 使用者裁決（2026-09-10）：分兩階段，**本階段只做程式與驗證，不動部署設定**
 
-- [ ] 把 Pyodide 自帶進版控或部署產物（約 10 MB），`CDN` 常數改為可設定，預設走本地
-- [ ] 保留 CDN 作為 fallback（本地取不到才回退），不是反過來
-- [ ] 順帶解掉「離線首次啟動」——`RELEASE_NOTES-os-v0.6.0.md` 已知缺陷第 6 項
+> 這樣切是安全的：本地優先＋CDN 備援，在本地檔案尚未部署時，行為與今天完全相同
+> （找不到本地就回退 CDN），故程式可先合併、不改變線上行為。
 
-**驗收**：斷網（或封鎖 `cdn.jsdelivr.net`）後開頁，Core 仍能就緒並算出數字。
-建議在 `tools/browser/verify.mjs` 加一條：攔截該網域回 403，斷言 Core 仍 ready。
+**階段一（現在做）— 程式與驗證**
+
+- [ ] `CDN` 常數改為可設定：預設先找同源的 `./pyodide/`，找不到才回退 `cdn.jsdelivr.net`
+      （**本地優先、CDN 備援**，不是反過來）
+- [ ] `ready` 訊息回報**實際用了哪個來源**（`source: "local" | "cdn"`）。
+      ⚠️ 這條不是可有可無：靜默回退等於「本地副本漏掉了也沒人知道」，
+      部署階段上線後會以為成功、其實一直在走 CDN。
+- [ ] 測試用的本地副本以腳本抓進 **gitignored** 目錄（例：`tools/browser/.pyodide/`），
+      **不得 commit 進版控**——repo 現在 `size-pack: 1.33 MiB`，二進位一旦進 git 歷史就拿不掉
+- [ ] `tools/browser/verify.mjs` 加兩條斷言：
+      ① 封鎖 `cdn.jsdelivr.net` 回 403 → Core 仍 ready 且 `source === "local"`
+      ② 移除本地副本 → Core 仍 ready 且 `source === "cdn"`（備援確實有效）
+
+**階段一驗收**：上述兩條瀏覽器斷言綠；`git status` 無二進位新增；線上行為不變
+（未部署本地副本時仍走 CDN，`source === "cdn"`）。
+
+**階段二（暫緩，待裁決）— 部署**
+
+- [ ] `pages.yml` 加一步：部署時下載固定版本 Pyodide 至 artifact（**不進版控**）
+- [ ] 解掉「離線首次啟動」——`RELEASE_NOTES-os-v0.6.0.md` 已知缺陷第 6 項
+- [ ] 注意 Pages 流量：每月 100 GB 軟上限，約 25 MB × 首次訪客
+
+> **不需要動 repo Settings**：`pages.yml` 已走 `actions/deploy-pages`，
+> Source 若已是「GitHub Actions」，階段二只是改這個 workflow 檔案。
 
 ---
 
@@ -129,10 +150,24 @@ grep -c "cdn.jsdelivr" apps/web/core-runtime.worker.js      # → 1
 - [ ] **4.2 workspace 併進四步**：同意看板／任務 → **③ 人心**；決策日誌／時間軸 → **④ 決策**；
       多案列表／wf 匯出保留為「案件櫃」，降級為選案與匯出，不再是平行的案件管理頁。
       *成本：搬移不是重寫，約 1–2 天。*
-- [ ] **4.3 散鍵收進案件紀錄**：`uros.step.site`、`uros.step.people`、`uros.intent`、
-      `uros.milestones.*`、`uros.profiles.*` 應是案件欄位而非全域狀態。
-      **現在切換案件時它們不會跟著換——這是潛在的錯資料來源，等同一個未爆彈。**
-      *成本：約半天，但要補遷移（既有使用者的散鍵要搬進當前案件）。*
+- [ ] **4.3 散鍵收進案件紀錄**
+      **⚠️ 更正（2026-09-11）**：本項原列六個鍵，**其中三個是我誤判**。實測結果：
+
+      | 鍵 | 實際 | 怎麼查 |
+      |---|---|---|
+      | `uros.profiles.<pid>` | **已分案** ✓ | `strategy-workspace.js:66` |
+      | `uros.analysis.inputs.<pid>` | **已分案** ✓ | `strategy-workspace.js:67` |
+      | `uros.milestones.<pid>` | **已分案** ✓ | `dashboard.html:820` `msKey(pid)` |
+      | `uros.step.site` | 全域 ✗ | `dashboard.html:388` |
+      | `uros.step.people` | 全域 ✗ | `os-simulator.html:1179` |
+      | `uros.intent` | 全域 ✗ | `dashboard.html:563` |
+
+      故本項範圍縮小為**後三個**。前三個已正確分案，不要重複遷移。
+      `uros.step.*` 是 UI 狀態（這一步開過沒有），`uros.intent` 是使用者意圖——
+      兩者切換案件時都不會跟著換，是潛在的錯資料來源。
+      ⚠️ 舊 `uros.intent` **沒有可信的案件歸屬**，不得自動掛給目前案件（那是臆造），
+      需使用者明確確認後才採用，原鍵保留。
+      *成本：約半天。*
 - [ ] **4.4 延伸資源再砍**：`simulator.html`（V4 已封版）、`briefing`／`guide`／`whitepaper`
       是讀物，不該與工具並列於同一展開區。**不重寫 V4（紅線 5），只調整導覽。**
 
