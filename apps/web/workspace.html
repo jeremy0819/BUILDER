@@ -264,7 +264,8 @@ footer{margin-top:30px;border-top:1px solid var(--line);padding-top:13px;font-si
   <b>result</b>（SSOT）；同意進度為<b>計數</b>。案件存於瀏覽器 <b>localStorage</b>——真實資料僅在本機、不上傳、不進版控。</div></div>
 
   <div class="import" id="drop">
-    <h2>＋ 新案件</h2>
+    <h2>案件檔案匯入</h2>
+    <p><a href="index.html#entry">前往建立案件</a></p>
     <p>匯入 <b>v2.1 案件 JSON</b>（由儀表板／RE-DCF 計算匯出）建案或重評；或還原 <b>wf 案件包</b>（本區匯出的工作流）——選擇或拖放到此。</p>
     <button class="btn" id="pick">選擇 JSON 檔</button>
     <input type="file" id="file" accept="application/json,.json" style="display:none">
@@ -289,6 +290,11 @@ footer{margin-top:30px;border-top:1px solid var(--line);padding-top:13px;font-si
 <script src="massing-view.js"></script>
 <script src="case-store.js"></script>
 <script src="security.js"></script>
+<script src="local-diagnostics.js"></script>
+<link rel="stylesheet" href="data-notices.css">
+<script src="calibration-data.js"></script>
+<script src="calibration-notice.js"></script>
+<script src="browser-backup.js"></script>
 <script src="core-runtime.js"></script>
 <script>
 /*WORKLOGIC-BEGIN*/
@@ -1042,4 +1048,11 @@ document.addEventListener("click",e=>{
   const action=actions[button.dataset.caseAction]; if(action)action(button.dataset.caseId);
 });
 renderList();
+</script>
+<script>
+const requestedView=new URLSearchParams(location.search).get("view");
+if(["board","task","dec","time","attr"].includes(requestedView)){
+  const s=loadStore(), pid=localStorage.getItem("uros.active_case");
+  if(pid&&s.projects[pid]){openCase(pid);document.querySelector('[data-t="'+requestedView+'"]').click();}
+}
 </script>

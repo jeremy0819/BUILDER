@@ -7,6 +7,7 @@
     function fail(message, notify) {
       if (dead) return;
       dead = true; ready = false; clearTimeout(initTimer);
+      if (notify && window.UROSDiagnostics) window.UROSDiagnostics.record("core-unavailable");
       pending.forEach(function (p) { clearTimeout(p.timer); p.reject(new Error(message)); });
       pending.clear();
       if (w) w.terminate();
@@ -36,7 +37,7 @@
         else if (m.type === "result") {
           var p = pending.get(m.id); if (!p) return;
           clearTimeout(p.timer); pending.delete(m.id);
-          if (m.error) p.reject(new Error(String(m.error))); else p.resolve(m);
+          if (m.error) { if (window.UROSDiagnostics) window.UROSDiagnostics.record("core-request-rejected"); p.reject(new Error(String(m.error))); } else p.resolve(m);
         }
       };
       w.onerror = function () { fail("計算核心中斷，請重新連線", true); };

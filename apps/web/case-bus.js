@@ -386,6 +386,8 @@
       stage: wf.project.stage, ts: new Date().toISOString(),
       /* 逐戶同意未知時仍傳 owners（身分與價值是事實），但明示同意面不可信 */
       consent_known: 有逐戶同意,
+      owners_count: owners.length, owners_limit: 80,
+      owners_notice: owners.length > 80 ? "本案 " + owners.length + " 戶超過沙盤上限 80，逐戶事實未載入；完整清冊仍保留在案件中" : "",
       owners: (owners.length && owners.length <= 80) ? owners : null
     };
   }

@@ -98,7 +98,8 @@
       + '<path d="M50 50 L20 20 M50 50 L80 20 M50 50 L20 80 M50 50 L80 80"></path></svg>'
       + '<div class="decision-hub"><div><span>' + esc(model.center.label) + '</span><b>' + esc(model.center.value || "—")
       + '</b><span>' + esc(model.center.source + completion) + "</span></div></div>"
-      + model.nodes.map(nodeHtml).join("") + '</div><aside class="decision-evidence" aria-live="polite"></aside></div>';
+      + model.nodes.map(nodeHtml).join("") + '</div><aside class="decision-evidence" aria-live="polite"></aside></div>'
+      + (root.UROSCalibration ? '<p class="decision-calibration">' + esc(root.UROSCalibration.label) + ' · 判定非投資結論</p>' : '');
     var evidence = container.querySelector(".decision-evidence");
     function select(node) {
       Array.prototype.forEach.call(container.querySelectorAll(".decision-node"), function (button) {

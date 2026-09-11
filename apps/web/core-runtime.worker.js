@@ -6,6 +6,7 @@
 "use strict";
 const PYODIDE_VER = "0.26.4";
 const CDN = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VER}/full/`;
+const LOCAL = new URL(`runtime/pyodide-${PYODIDE_VER}/`, self.location.href).href;
 let pyodide = null, ready = false;
 
 const post = (type, extra) => self.postMessage(Object.assign({ type }, extra || {}));
@@ -13,9 +14,14 @@ const post = (type, extra) => self.postMessage(Object.assign({ type }, extra || 
 async function init() {
   try {
     post("progress", { pct: 5, msg: "載入 Python 執行環境…" });
-    importScripts(CDN + "pyodide.js");          // 跨源 importScripts（Worker 合法）
+    // Fall back only when the local distribution is absent. Corruption/partial loads fail closed.
+    let base = LOCAL;
+    const probe = await fetch(LOCAL + "pyodide.js", { method: "HEAD" });
+    if (probe.status === 404) base = CDN;
+    else if (!probe.ok) throw new Error("local-runtime-unavailable");
+    importScripts(base + "pyodide.js");
     importScripts("core-bundle.js");            // 同源；設定 self.CORE_FILES / CORE_BUNDLE_VERSION
-    pyodide = await loadPyodide({ indexURL: CDN });
+    pyodide = await loadPyodide({ indexURL: base });
     // Decision, Strategy and Allocation validate with Core's existing dependency.
     await pyodide.loadPackage("jsonschema");
     pyodide.runPython("import jsonschema"); // Failed package downloads must prevent ready.
@@ -42,7 +48,7 @@ async function init() {
     ready = true;
     post("ready", {
       core_version: pyodide.runPython("_redcf.CORE_VERSION"),
-      bundle: self.CORE_BUNDLE_VERSION, pyodide: PYODIDE_VER
+      bundle: self.CORE_BUNDLE_VERSION, pyodide: PYODIDE_VER, runtime_source: base === LOCAL ? "same-origin" : "cdn-fallback"
     });
   } catch (err) {
     post("fatal", { msg: String((err && err.message) || err) });   // 不得靜默失敗
