@@ -761,7 +761,9 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
       (進階.length?`<details class="drv-adv"><summary>進階參數（${進階.length}）</summary>${進階.map(ctl).join("")}</details>`:"");
     $$("drv-out").innerHTML=DRV_OUT.map(c=>`<div class="drv-d" title="來源：${c.src}"><span>${c.l} ⓘ</span><b id="do-${c.k}">—</b></div>`).join("");
     function showFail(msg){ stat.textContent=""; fail.style.display="block";
-      fail.innerHTML=`⚠ 計算核心無法載入（${esc(msg||"可能離線或無法連線 Pyodide CDN")}）——`+
+      /* 不把 worker 的原始例外丟給使用者；原文收進 title 供除錯。 */
+      fail.title=String(msg||"");
+      fail.innerHTML=`⚠ ${esc((window.corePlainError||String)(msg||"計算核心無法載入"))}——`+
         `改用 <a href="https://builder-9sczgrez3a3qsbmkebd6ey.streamlit.app/" target="_blank" rel="noopener">RE-DCF Streamlit 版</a> 精確計算。`; }
     // 本次掛載的回呼（DOM 綁定只活在這一輪 render）
     RTCB={

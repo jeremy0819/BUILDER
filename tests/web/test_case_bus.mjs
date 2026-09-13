@@ -228,6 +228,30 @@ ok(NAV.liveOf(NAV.STEPS[0]).na === true, "取不到就標 na（顯示「—」�
 global.self.CaseBus = undefined;
 ok(NAV.liveOf(NAV.STEPS[0]) === null, "case-bus 未載入→退回純導覽，不擋頁");
 
+// ── 7b. 錯誤訊息人話化與 runtime 來源標示（共用於四步）────────────
+// 曾經只有 index.html 有私有拷貝，於是 ① 與 ④ 仍把 worker 的原始例外丟給使用者。
+const rtSrc = readFileSync(join(root, "apps/web/core-runtime.js"), "utf8");
+const rtWin = { document: { querySelectorAll: () => [] } };
+new Function("window", "document", rtSrc)(rtWin, rtWin.document);
+const PE = rtWin.corePlainError;
+ok(typeof PE === "function", "core-runtime 匯出 corePlainError（共用，非各頁私有）");
+ok(!/importScripts|WorkerGlobalScope/.test(
+     PE("Failed to execute 'importScripts' on 'WorkerGlobalScope': ...jsdelivr...")),
+   "原始例外不得出現在人話化後的字串");
+ok(/防火牆|網路/.test(PE("Failed to execute 'importScripts' on 'WorkerGlobalScope'")),
+   "CDN 被擋時給得出可行動的原因");
+ok(/逾時/.test(PE("計算逾時，請重新連線後再試")), "逾時有對應說法");
+ok(PE("").length === 0 && PE(null).length === 0, "空訊息不炸");
+ok(PE("x".repeat(200)).length <= 61, "過長訊息截斷，不撐破版面");
+ok(typeof rtWin.coreStampRuntimeSource === "function",
+   "core-runtime 匯出 coreStampRuntimeSource——runtime 來源要能露出到畫面");
+
+// 各頁不得再自建一份人話化對照
+["index.html", "dashboard.html"].forEach(f => {
+  const src = readFileSync(join(root, "apps/web", f), "utf8");
+  ok(!/importScripts\|jsdelivr/.test(src), `${f} 不得自建人話化對照（應用共用函式）`);
+});
+
 // ── 8. 原始碼紀律掃描：本層不得出現輸出公式 ─────────────────────
 const 去註解 = src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
 const 禁用 = [

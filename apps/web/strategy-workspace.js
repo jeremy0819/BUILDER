@@ -153,7 +153,7 @@
     runtime = root.createCoreRuntime({
       onProgress: function (m) { if (!draftError) status(m.msg); },
       onReady: function () { if (!draftError) status("計算核心已就緒，可產生策略分析。", "ready"); buttons(); },
-      onError: function (m) { invalidate(); status(m.msg + "。已儲存的觀察仍保留在本機。", "error"); $("runtime-retry").hidden = false; buttons(); }
+      onError: function (m) { invalidate(); status((window.corePlainError || String)(m.msg) + "。已儲存的觀察仍保留在本機。", "error"); $("runtime-retry").hidden = false; buttons(); }
     }); buttons();
   }
   async function run() {

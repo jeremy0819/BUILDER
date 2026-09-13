@@ -32,7 +32,15 @@
         if (dead) return;
         var m = e.data || {};
         if (m.type === "progress") { if (opts.onProgress) opts.onProgress(m); }
-        else if (m.type === "ready") { clearTimeout(initTimer); ready = true; if (opts.onReady) opts.onReady(m); }
+        else if (m.type === "ready") {
+          clearTimeout(initTimer); ready = true;
+          /* runtime_source 原本只有瀏覽器測試在讀，畫面上看不到。
+             它存在的理由是「部署後能確認真的走本地」——本機副本若漏了檔案，
+             worker 會安靜回退 CDN，沒有這個標示就會以為部署成功。故蓋到畫面上。 */
+          window.UROS_RUNTIME_SOURCE = m.runtime_source || "";
+          stampRuntimeSource(m.runtime_source);
+          if (opts.onReady) opts.onReady(m);
+        }
         else if (m.type === "fatal") fail(m.msg || "計算核心初始化失敗", true);
         else if (m.type === "result") {
           var p = pending.get(m.id); if (!p) return;
@@ -71,9 +79,42 @@
       terminate: function () { fail("計算已取消", false); }
     };
   }
+  /* 錯誤訊息人話化。原本只有 index.html 有一份私有拷貝，於是 ① 與 ④ 仍把
+     worker 的原始例外整串丟給使用者看——「Failed to execute 'importScripts' on
+     'WorkerGlobalScope'…」對開發商毫無意義，只會讓人以為系統壞了。
+     放在這裡是因為它解讀的正是本模組拋出的錯誤。技術原文由呼叫端收進 title。 */
+  var 對照 = [
+    [/importScripts|jsdelivr|Failed to fetch|NetworkError|載入逾時/i,
+     "連不上計算核心——常見原因是網路或公司防火牆擋住了外部資源"],
+    [/逾時|timeout/i, "計算核心回應逾時"],
+    [/佇列已滿/, "計算排隊中，請稍候再試"],
+    [/尚未就緒/, "計算核心還在啟動"],
+    [/Worker|初始化失敗|不可用/i, "計算核心無法啟動"]
+  ];
+  function plainError(msg) {
+    var m = String(msg || "");
+    for (var i = 0; i < 對照.length; i++) if (對照[i][0].test(m)) return 對照[i][1];
+    return m.length > 60 ? m.slice(0, 60) + "…" : m;
+  }
+
+  var SOURCE_LABEL = { "same-origin": "本機", "cdn-fallback": "CDN 備援" };
+  function stampRuntimeSource(src) {
+    if (!src) return;
+    try {
+      var els = document.querySelectorAll("[data-uros-runtime]");
+      for (var i = 0; i < els.length; i++) {
+        els[i].textContent = SOURCE_LABEL[src] || src;
+        els[i].title = "計算核心來源：" + src
+          + (src === "cdn-fallback" ? "（本機未部署 runtime，已回退外部 CDN）" : "（同源，未依賴外部 CDN）");
+      }
+    } catch (e) {}
+  }
+
   function debounce(fn, ms) {
     var timer; return function () { var args = arguments, ctx = this; clearTimeout(timer); timer = setTimeout(function () { fn.apply(ctx, args); }, ms || 250); };
   }
   window.createCoreRuntime = createCoreRuntime;
   window.coreDebounce = debounce;
+  window.corePlainError = plainError;
+  window.coreStampRuntimeSource = stampRuntimeSource;
 })();
