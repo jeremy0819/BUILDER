@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;font-family:system-ui,-apple-system,"Noto Sans TC","PingFang TC",sans-serif;
+      background:#f4f5f7;color:#16181d;-webkit-font-smoothing:antialiased}
+    a{color:#5a48d6}a:hover{color:#4536b0}
+    .mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+  </style>
+</helmet>
+<div style="padding:20px 16px;background:#f4f5f7;min-height:804px">
+
+  <div style="font:750 17px/1.25 system-ui">手機規格</div>
+  <div class="mono" style="margin-top:3px;font-size:10px;letter-spacing:.12em;color:#68707d;text-transform:uppercase">390 × 844</div>
+
+  <div style="margin-top:16px;background:#fff;border:1px solid #c33f54;border-radius:8px;padding:13px 14px">
+    <div class="mono" style="font-size:10px;letter-spacing:.1em;color:#c33f54;text-transform:uppercase">實測問題</div>
+    <div style="margin-top:9px;display:flex;flex-direction:column;gap:9px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
+        <span style="font-size:11.5px;line-height:1.5;color:#16181d">① 基地頁小於 12px 的文字</span>
+        <b class="mono" style="font-size:15px;font-weight:750;color:#c33f54">149</b>
+      </div>
+      <div style="height:1px;background:#dfe3e8"></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
+        <span style="font-size:11.5px;line-height:1.5;color:#16181d">觸控目標小於 44px</span>
+        <b class="mono" style="font-size:15px;font-weight:750;color:#c33f54">18</b>
+      </div>
+      <div style="height:1px;background:#dfe3e8"></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
+        <span style="font-size:11.5px;line-height:1.5;color:#16181d">導覽列固定佔用</span>
+        <b class="mono" style="font-size:15px;font-weight:750;color:#16181d">68 px</b>
+      </div>
+      <div style="height:1px;background:#dfe3e8"></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
+        <span style="font-size:11.5px;line-height:1.5;color:#16181d">整頁橫向溢出</span>
+        <b class="mono" style="font-size:15px;font-weight:750;color:#16845b">0 ✓</b>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:14px;background:#fff;border:1px solid #dfe3e8;border-radius:8px;padding:13px 14px">
+    <div class="mono" style="font-size:10px;letter-spacing:.1em;color:#5a48d6;text-transform:uppercase">規範</div>
+    <div style="margin-top:9px;font-size:11.5px;line-height:1.75;color:#68707d">
+      <b style="color:#16181d">字級下限 12px</b>　供閱讀的文字不得低於 12px。
+      單位、來源標籤等附屬字可到 10.5px，但不得承載使用者必須讀懂的資訊。<br><br>
+      <b style="color:#16181d">觸控目標 44 × 44</b>　所有可按元素。目前 32px 高的分頁鈕在手機要加大到 44px
+      （桌機維持 32px，用 media query 分開）。<br><br>
+      <b style="color:#16181d">導覽列可收合</b>　68px 在 844px 高的螢幕上佔 8%。
+      向下捲動時收成單列 36px，只留當前步與數字。
+    </div>
+  </div>
+
+  <div style="margin-top:14px;background:#fff;border:1px solid #dfe3e8;border-radius:8px;overflow:hidden">
+    <div style="padding:9px 12px;border-bottom:1px solid #dfe3e8;background:#f8f9fb">
+      <div class="mono" style="font-size:10px;letter-spacing:.1em;color:#68707d;text-transform:uppercase">收合後的導覽列</div>
+    </div>
+    <div style="padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div style="display:flex;align-items:baseline;gap:7px">
+        <span class="mono" style="font-size:11px;color:#5a48d6">02</span>
+        <span style="font-size:12.5px;font-weight:700;color:#16181d">產品</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:6px">
+        <b class="mono" style="font-size:13px;font-weight:750;color:#16181d">179.9%</b>
+        <span style="font-size:10px;color:#68707d">投報率</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:14px;background:#fff;border:1px solid #dfe3e8;border-radius:8px;padding:13px 14px">
+    <div class="mono" style="font-size:10px;letter-spacing:.1em;color:#5a48d6;text-transform:uppercase">四問卡片 · 手機版</div>
+    <div style="margin-top:10px;background:#f8f9fb;border:1px solid #dfe3e8;border-radius:8px;padding:11px 13px">
+      <div style="font-size:12.5px;font-weight:700;color:#16181d">基地有多大</div>
+      <div style="margin-top:2px;font-size:11px;line-height:1.45;color:#68707d">土地登記謄本上的面積</div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
+        <div style="flex-grow:1;height:44px;line-height:44px;background:#fff;border:1px solid #dfe3e8;border-radius:7px;
+          padding:0 11px;text-align:right" class="mono">
+          <span style="font-size:17px;color:#16181d">1,800</span>
+        </div>
+        <span class="mono" style="font-size:11px;color:#68707d">㎡</span>
+      </div>
+    </div>
+    <div style="margin-top:9px;font-size:11px;line-height:1.65;color:#68707d">
+      輸入框高度 44px（原 padding 7px 9px 約 36px）。說明文字 11px，不再壓到 10.5px。
+    </div>
+  </div>
+
+  <div style="margin-top:14px;padding:12px 14px;border-left:2px solid #5a48d6;background:#fff;border-radius:0 6px 6px 0">
+    <div style="font-size:11.5px;line-height:1.7;color:#16181d">
+      <b>手機不是縮小的桌機。</b>在工地、在說明會現場、在地主家客廳打開的就是手機——
+      這三個場景要能<b>單手看數字</b>，不需要看得到全部四步。
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

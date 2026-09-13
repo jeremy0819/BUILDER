@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;font-family:system-ui,-apple-system,"Noto Sans TC","PingFang TC",sans-serif;
+      background:#f4f5f7;color:#16181d;-webkit-font-smoothing:antialiased}
+    a{color:#5a48d6}a:hover{color:#4536b0}
+    .mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+  </style>
+</helmet>
+<div style="padding:36px 40px;background:#f4f5f7">
+
+  <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:6px">
+    <div style="font:750 22px/1.25 system-ui">來源語意系統</div>
+    <div class="mono" style="font-size:11px;letter-spacing:.14em;color:#68707d;text-transform:uppercase">Provenance as Visual System</div>
+  </div>
+  <div style="font-size:12.5px;line-height:1.7;color:#68707d;max-width:74ch;margin-bottom:26px">
+    這個產品最特別的紀律是「每個數字都要說出自己從哪來」。視覺系統的核心不是配色，是
+    <b style="color:#16181d">讓來源看得見</b>——只有三種，沒有第四種。
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+
+    <div style="background:#fff;border:1px solid #dfe3e8;border-radius:8px;padding:16px 18px;display:grid;grid-template-columns:130px 1fr 200px;gap:18px;align-items:center">
+      <div>
+        <span class="mono" style="display:inline-block;padding:3px 8px;border-radius:4px;background:#eeebff;color:#5a48d6;font-size:10px;letter-spacing:.08em;font-weight:700">CORE</span>
+        <div style="margin-top:7px;font:750 13px/1.3 system-ui">計算核心</div>
+      </div>
+      <div style="font-size:11.5px;line-height:1.65;color:#68707d">
+        由 <span class="mono" style="color:#16181d">core/redcf</span> 算出的權威數字。允建容積、銷售坪數、共同負擔比、全案投報率。<br>
+        <b style="color:#16181d">介面一律逐欄搬運，不得換算。</b>
+      </div>
+      <div style="background:#f8f9fb;border:1px solid #dfe3e8;border-radius:6px;padding:10px 12px">
+        <span style="display:block;font-size:10.5px;color:#68707d">全案投報率</span>
+        <b class="mono" style="display:block;margin-top:4px;font-size:19px;font-weight:750;color:#16181d">179.9%</b>
+        <span class="mono" style="display:block;margin-top:4px;font-size:9.5px;color:#5a48d6">CORE</span>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #dfe3e8;border-radius:8px;padding:16px 18px;display:grid;grid-template-columns:130px 1fr 200px;gap:18px;align-items:center">
+      <div>
+        <span class="mono" style="display:inline-block;padding:3px 8px;border-radius:4px;background:#f0f2f5;color:#68707d;font-size:10px;letter-spacing:.08em;font-weight:700">INPUT</span>
+        <div style="margin-top:7px;font:750 13px/1.3 system-ui">你的輸入</div>
+      </div>
+      <div style="font-size:11.5px;line-height:1.65;color:#68707d">
+        使用者登打的<b style="color:#16181d">事實</b>——基地面積、容積率、戶數。抄謄本抄來的，不是算出來的。<br>
+        計算核心不可用時<b style="color:#16181d">仍可記錄</b>，因為它本來就不需要計算。
+      </div>
+      <div style="background:#f8f9fb;border:1px solid #dfe3e8;border-radius:6px;padding:10px 12px">
+        <span style="display:block;font-size:10.5px;color:#68707d">基地面積</span>
+        <b class="mono" style="display:block;margin-top:4px;font-size:19px;font-weight:750;color:#16181d">1,800 ㎡</b>
+        <span class="mono" style="display:block;margin-top:4px;font-size:9.5px;color:#68707d">INPUT</span>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid #dfe3e8;border-radius:8px;padding:16px 18px;display:grid;grid-template-columns:130px 1fr 200px;gap:18px;align-items:center">
+      <div>
+        <span class="mono" style="display:inline-block;padding:3px 8px;border-radius:4px;background:#fdf1e3;color:#a86616;font-size:10px;letter-spacing:.08em;font-weight:700">DECISION</span>
+        <div style="margin-top:7px;font:750 13px/1.3 system-ui">決策引擎</div>
+      </div>
+      <div style="font-size:11.5px;line-height:1.65;color:#68707d">
+        GO／CAUTION／STOP、完工機率、破局引爆點。<br>
+        <b style="color:#a86616">存活率尚未校準</b>——凡顯示此類數值處，一律附標示。
+      </div>
+      <div style="background:#f8f9fb;border:1px solid #dfe3e8;border-radius:6px;padding:10px 12px">
+        <span style="display:block;font-size:10.5px;color:#68707d">判定</span>
+        <b class="mono" style="display:block;margin-top:4px;font-size:19px;font-weight:750;color:#a86616">CAUTION</b>
+        <span class="mono" style="display:block;margin-top:4px;font-size:9.5px;color:#a86616">DECISION · 未校準</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="margin-top:24px;display:flex;align-items:center;gap:10px;margin-bottom:12px">
+    <div class="mono" style="font-size:10.5px;letter-spacing:.16em;color:#68707d;text-transform:uppercase">既有 Token（不新增，直接沿用）</div>
+    <div style="flex-grow:1;height:1px;background:#dfe3e8"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px">
+    <div style="background:#fff;border:1px solid #dfe3e8;border-radius:6px;overflow:hidden">
+      <div style="height:34px;background:#5a48d6"></div>
+      <div style="padding:7px 9px"><div class="mono" style="font-size:9.5px;color:#16181d">accent</div><div class="mono" style="font-size:9px;color:#68707d">#5a48d6</div></div>
+    </div>
+    <div style="background:#fff;border:1px solid #dfe3e8;border-radius:6px;overflow:hidden">
+      <div style="height:34px;background:#16845b"></div>
+      <div style="padding:7px 9px"><div class="mono" style="font-size:9.5px;color:#16181d">ok</div><div class="mono" style="font-size:9px;color:#68707d">#16845b</div></div>
+    </div>
+    <div style="background:#fff;border:1px solid #dfe3e8;border-radius:6px;overflow:hidden">
+      <div style="height:34px;background:#a86616"></div>
+      <div style="padding:7px 9px"><div class="mono" style="font-size:9.5px;color:#16181d">warn</div><div class="mono" style="font-size:9px;color:#68707d">#a86616</div></div>
+    </div>
+    <div style="background:#fff;border:1px solid #dfe3e8;border-radius:6px;overflow:hidden">
+      <div style="height:34px;background:#c33f54"></div>
+      <div style="padding:7px 9px"><div class="mono" style="font-size:9.5px;color:#16181d">err</div><div class="mono" style="font-size:9px;color:#68707d">#c33f54</div></div>
+    </div>
+    <div style="background:#fff;border:1px solid #dfe3e8;border-radius:6px;overflow:hidden">
+      <div style="height:34px;background:#68707d"></div>
+      <div style="padding:7px 9px"><div class="mono" style="font-size:9.5px;color:#16181d">mute</div><div class="mono" style="font-size:9px;color:#68707d">#68707d</div></div>
+    </div>
+    <div style="background:#fff;border:1px solid #dfe3e8;border-radius:6px;overflow:hidden">
+      <div style="height:34px;background:#dfe3e8"></div>
+      <div style="padding:7px 9px"><div class="mono" style="font-size:9.5px;color:#16181d">line</div><div class="mono" style="font-size:9px;color:#68707d">#dfe3e8</div></div>
+    </div>
+  </div>
+
+  <div style="margin-top:22px;padding:14px 16px;border-left:2px solid #c33f54;background:#fff;border-radius:0 6px 6px 0">
+    <div style="font-size:12px;line-height:1.75;color:#16181d">
+      <b>視覺語言收斂</b>：目前走一輪會遇到三種——起始頁深色終端風、①②④ 淺色、③ 進場深色遊戲風。
+      建議<b>保留起始頁深色</b>（它像開機畫面，說得通），<b>收斂 ③ 的進場黑畫面</b>（按下開始整合後本來就變淺色，那一下的全黑沒有作用）。
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

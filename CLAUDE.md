@@ -11,7 +11,7 @@
 > | CORE_VERSION | **0.6.0** | `grep CORE_VERSION core/redcf/_version.py` |
 > | 最新 release tag | **os-v0.6.0** | `git tag -l \| tail -1` |
 > | 凍結 schema | **20 檔** | `python tools/check_schema_freeze.py` |
-> | CI Gate | **22 道** | `grep -c 'name: "Gate' .github/workflows/ci.yml` |
+> | CI Gate | **25 道** | `grep -c 'name: "Gate' .github/workflows/ci.yml` |
 >
 > **已出貨**：M4 決策引擎（三方 EV/verdict/exit）→ M5 THE WORKFLOW → M5.5 傳動軸（Pyodide
 > 在瀏覽器跑同一份 Core）→ M6 THE STRATEGIST（逐型對策）→ **M7 THE CASE OS 全五項**
@@ -23,12 +23,14 @@
 > **進行中／待裁決**：M8.3 互動量體、M8.4 敏感度地圖、M8.5 GIS（方案 B 本機匯入）；
 > 施工序見 `docs/architecture/NEXT_PLAN-2026-08.md`（N3 瀏覽器自動化＝Gate 19，M8.4 硬性前置）。
 >
-> ⚠️ **已知缺陷（os-v0.6.0 內，尚未修）**：`jsonschema` 在 Pyodide 缺席，而 `decide()`／
-> `strategize()`／`allocate()` 都是「驗證失敗即 raise」——**這三個進入點在瀏覽器內必定拋錯**；
-> 且 worker 從未暴露 `decide`，故瀏覽器無產生決策的路徑，第四步的判定一律來自匯入或烘焙資料。
-> 修復進行中（`codex/strategy-security-workspace`，尚未推遠端）。
-> `tests/test_core_bundle.py` 以「封鎖 jsonschema＝Pyodide 條件」為前提且只驗 `recompute`，
-> 是本缺陷長期未被發現的原因——修復時該測試的前提必須一併更新。
+> **os-v0.6.0 後續已合併**（2026-09）：jsonschema 在 Pyodide 缺席的缺陷已修（worker 補載驗證器
+> 並暴露 `decide`）；玩家回饋強化——資料遺失提醒、本機 Pyodide runtime（`runtime_source`
+> 回報 same-origin／cdn-fallback，僅 404 回退）、四步未校準標示、分案草稿、Gate 編號守衛。
+> **N3 瀏覽器自動化已完成**（Gate 19 真瀏覽器＋Pyodide），M8.4 的硬性前置解除。
+>
+> ⚠️ **仍未完成**：手機未動（① 148 處 <12px 文字、19 個 <44px 觸控目標、導覽列固定 68px）；
+> Workspace 僅深連結、面板本體未搬移；Pyodide **部署設定未變更**（使用者裁決：階段一只做程式與驗證，
+> 正式站仍走 CDN）；`runtime_source` 已可蓋到 `[data-uros-runtime]`，但僅首頁掛了徽章。
 >
 > **P3 未開工**——開工 Gate 卡在「stage_tree 存活率僅 n=1 錨定」與「真實清冊 PII 隔離方案未定案」。
 
@@ -66,6 +68,7 @@
 | 排優先序／判斷某功能該不該現在做 | `docs/architecture/ROADMAP.md`（P0–P3） |
 | 下一步做什麼／各站順序與驗收 | `docs/architecture/NEXT_PLAN-2026-08.md`（N1–N7 施工序） |
 | 工程師待辦／介面複雜度與技術缺口 | `docs/architecture/ENGINEER_BACKLOG-2026-09.md`（實測稽核，附驗收） |
+| 遊玩介面 UI/UX 規劃／元件規格／狀態矩陣 | `docs/design/UI_UX_PLAN-2026-09.md`（文字版）＋同名畫布 |
 | 了解已知風險與文件衝突裁決 | `docs/architecture/ARCH_REVIEW.md`、`docs/architecture/FREEZE_REVIEW-2026-07.md` |
 | 版本規則／發布流程／授權 | `governance/VERSION_POLICY.md`、`docs/releases/`（CHECKLIST、LICENSE_ANALYSIS） |
 | 都更開發模式／整合方法論／遊戲架構 | `docs/handbook/`（整合人手冊、整合人沙盤架構手冊）；狀態報告 `docs/releases/PROGRESS_REPORT-2026-07.md` |

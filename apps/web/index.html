@@ -151,6 +151,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
       <span class="chip">schema <span data-uros-ver="schema">—</span></span>
       <span class="chip"><span data-uros-ver="release">—</span> 已發布</span>
       <span class="chip hot" id="chip-engine">計算核心啟動中…</span>
+      <span class="chip" title="計算核心來源">runtime <span data-uros-runtime>—</span></span>
     </span>
   </header>
 
@@ -337,17 +338,11 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
     }).join("");
   }
 
-  /* 錯誤訊息人話化：原本把 worker 的原始例外整串丟給使用者——
-     「Failed to execute 'importScripts' on 'WorkerGlobalScope'…」對開發商毫無意義，
-     只會讓人以為系統壞了。技術細節保留在 title（滑過可見），不佔版面。 */
-  function 人話(msg){
-    var m = String(msg || "");
-    if (/importScripts|jsdelivr|Failed to fetch|NetworkError/i.test(m))
-      return "連不上計算核心——常見原因是網路或公司防火牆擋住了外部資源";
-    if (/timeout|逾時/i.test(m)) return "計算核心回應逾時";
-    if (/Worker/i.test(m)) return "計算核心無法啟動";
-    return m.length > 60 ? m.slice(0, 60) + "…" : m;
-  }
+  /* 錯誤訊息人話化已抽到 core-runtime.js——原本這裡是私有拷貝，
+     於是 ① 與 ④ 仍各自把 worker 的原始例外整串丟給使用者看。
+     技術原文由呼叫端收進 title，不佔版面。 */
+  var 人話 = window.corePlainError || function (m) { return String(m || ""); };
+
   function 狀態(txt, 好, 原文){
     var el = $("ro-status");
     el.textContent = txt;

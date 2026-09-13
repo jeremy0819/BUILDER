@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body{margin:0;font-family:system-ui,-apple-system,"Noto Sans TC","PingFang TC",sans-serif;
+      background:#f4f5f7;color:#16181d;-webkit-font-smoothing:antialiased}
+    a{color:#5a48d6}a:hover{color:#4536b0}
+    .mono{font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+    .cell{background:#fff;border:1px solid #dfe3e8;border-radius:6px;padding:11px 12px}
+    .cell .t{font-size:11px;line-height:1.55;color:#16181d}
+    .cell .v{font-size:15px;font-weight:750;margin-top:5px}
+  </style>
+</helmet>
+<div style="padding:36px 40px;background:#f4f5f7">
+
+  <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:6px">
+    <div style="font:750 22px/1.25 system-ui">狀態矩陣</div>
+    <div class="mono" style="font-size:11px;letter-spacing:.14em;color:#68707d;text-transform:uppercase">What each cell renders</div>
+  </div>
+  <div style="font-size:12.5px;line-height:1.7;color:#68707d;max-width:80ch;margin-bottom:24px">
+    每一格都要有明文規定的長相。<b style="color:#16181d">沒有規定的格子就會被即興發揮</b>，
+    而即興發揮出來的通常是「顯示一個看起來合理的數字」——那正是這個產品最不能犯的錯。
+  </div>
+
+  <!-- 軸一 -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+    <div class="mono" style="font-size:10.5px;letter-spacing:.16em;color:#5a48d6;text-transform:uppercase">軸一 · 計算核心</div>
+    <div style="flex-grow:1;height:1px;background:#dfe3e8"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:26px">
+    <div class="cell">
+      <div class="mono" style="font-size:9.5px;letter-spacing:.1em;color:#16845b">就緒</div>
+      <div class="v mono" style="color:#16181d">179.9%</div>
+      <div class="t" style="margin-top:6px;color:#68707d">顯示數值＋來源標籤</div>
+    </div>
+    <div class="cell">
+      <div class="mono" style="font-size:9.5px;letter-spacing:.1em;color:#68707d">啟動中</div>
+      <div class="v" style="color:#68707d;font-weight:400;font-size:13px">計算中…</div>
+      <div class="t" style="margin-top:6px;color:#68707d">明示還在跑，<b style="color:#16181d">不得先給估算值</b></div>
+    </div>
+    <div class="cell" style="border-color:#a86616">
+      <div class="mono" style="font-size:9.5px;letter-spacing:.1em;color:#a86616">連不上</div>
+      <div class="v" style="color:#a86616;font-weight:400;font-size:13px">取不到</div>
+      <div class="t" style="margin-top:6px;color:#68707d">不可再顯示「計算中」——它不會再算了</div>
+    </div>
+  </div>
+
+  <!-- 軸二 -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+    <div class="mono" style="font-size:10.5px;letter-spacing:.16em;color:#5a48d6;text-transform:uppercase">軸二 · 決策綁定（N1 二元組）</div>
+    <div style="flex-grow:1;height:1px;background:#dfe3e8"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:26px">
+    <div class="cell">
+      <div class="mono" style="font-size:9.5px;letter-spacing:.1em;color:#16845b">綁定成立</div>
+      <div class="v mono" style="color:#a86616">CAUTION</div>
+      <div class="t" style="margin-top:6px;color:#68707d">hash 與 core_version 皆相符</div>
+    </div>
+    <div class="cell">
+      <div class="mono" style="font-size:9.5px;letter-spacing:.1em;color:#68707d">尚未產生</div>
+      <div class="v" style="color:#68707d;font-weight:400">—</div>
+      <div class="t" style="margin-top:6px;color:#68707d">標「尚未產生判定」</div>
+    </div>
+    <div class="cell" style="border-color:#a86616">
+      <div class="mono" style="font-size:9.5px;letter-spacing:.1em;color:#a86616">跨版本</div>
+      <div class="v" style="color:#68707d;font-weight:400">—</div>
+      <div class="t" style="margin-top:6px;color:#68707d">標「判定由其他 Core 版本算出，需重算」</div>
+    </div>
+    <div class="cell" style="border-color:#a86616">
+      <div class="mono" style="font-size:9.5px;letter-spacing:.1em;color:#a86616">輸入已變</div>
+      <div class="v" style="color:#68707d;font-weight:400">—</div>
+      <div class="t" style="margin-top:6px;color:#68707d">標「輸入已變更，需重算」</div>
+    </div>
+  </div>
+
+  <!-- 軸三 -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+    <div class="mono" style="font-size:10.5px;letter-spacing:.16em;color:#5a48d6;text-transform:uppercase">軸三 · 快照陳舊（與綁定是兩件事）</div>
+    <div style="flex-grow:1;height:1px;background:#dfe3e8"></div>
+  </div>
+  <div style="background:#fff;border:1px solid #dfe3e8;border-radius:8px;padding:16px 18px;margin-bottom:26px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div>
+        <div style="font:750 12.5px/1.3 system-ui;color:#16181d">綁定 ≠ 不陳舊</div>
+        <div style="margin-top:7px;font-size:11.5px;line-height:1.7;color:#68707d">
+          0.4.0 的判定配 0.4.0 的快照，<b style="color:#16181d">是一致的歷史配對，綁得上</b>。
+          但現行 Core 是 0.6.0——數字沒錯，公式已經換過。
+        </div>
+      </div>
+      <div style="background:#f8f9fb;border:1px solid #dfe3e8;border-radius:6px;padding:11px 13px">
+        <div class="mono" style="font-size:10px;color:#a86616">⚠ 數字來自 Core 0.4.0 快照（現行 0.6.0）</div>
+        <div style="margin-top:6px;font-size:11px;line-height:1.55;color:#68707d">
+          陳舊時在導覽列說明列常駐標示；<b style="color:#16181d">不隱藏數值</b>，因為它仍是當時的事實。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 未校準 -->
+  <div style="padding:15px 17px;border-left:2px solid #a86616;background:#fff;border-radius:0 6px 6px 0">
+    <div style="font:750 12.5px/1.3 system-ui;color:#16181d">貫穿全矩陣的一條：未校準標示</div>
+    <div style="margin-top:8px;font-size:11.5px;line-height:1.75;color:#68707d">
+      <span class="mono" style="color:#16181d">stage_tree.json</span> 自述「p_survival 仍為示意預設，尚未經真實成敗案校準」，
+      而它正是 GO／CAUTION／STOP 的來源。凡顯示 verdict、完工機率、EV 之處<b style="color:#16181d">一律附標示</b>，
+      文字取自 Core 的 <span class="mono">_note</span>，不由各頁自己寫一份。
+      <b style="color:#a86616">目前 ④ 的四象限圖與導覽列都沒有這個標示。</b>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

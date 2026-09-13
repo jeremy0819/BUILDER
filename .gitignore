@@ -31,3 +31,6 @@ Thumbs.db
 # 但那條會把 apps/web 靜態站的頁面全部排除，導致 GitHub Pages 沒有 index.html→404。
 # 已移除。HTML 的資料安全改由 CI Gate 0（check_no_real_names.sh 掃全檔含 HTML）把關。
 /local_calibration/
+
+# 設計畫布產出檔（約 2.5 MB，內含編輯器本體；原始檔在 docs/design/*.dc.html）
+docs/design/builder-play-ui-plan.html
