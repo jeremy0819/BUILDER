@@ -33,8 +33,8 @@ M7 THE CASE OS 全五項 → M8.1 圖表契約 → M8.2 歸因瀑布圖 → core
 | N2 os-v0.6.0 發布 | ✅ 完成 | tag `os-v0.6.0` → `787ea5b` |
 | N3 瀏覽器自動化 | ✅ 完成 | **Gate 19「Real browser / Pyodide / responsive / stored-XSS」**；
   `tools/browser/verify.mjs`。**M8.4 的硬性前置已解除** |
-| N4 M8.3 互動量體 | ⬜ 待做 | — |
-| N5 M8.4 敏感度地圖 | ⬜ 待做 | 前置已解除，可開工 |
+| N4 M8.3 互動量體 | ✅ 完成 | 軸測堆疊＋雙向對照＋免計項疊加；Gate 14（80 條） |
+| N5 M8.4 敏感度地圖 | ✅ 完成 | `sensitivity-map.js`＋**Gate 23**（38 條，含對抗案例 G） |
 | N6 M8.5 GIS | ⬜ 待做 | 建議先過 P3 Gate ③（PII 隔離裁決） |
 | N7 os-v0.7.0 | ⬜ 待做 | — |
 
