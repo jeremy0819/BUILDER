@@ -12,6 +12,8 @@
 <!-- version.js＝前端版本徽章 SSOT；case-bus 的陳舊快照判斷需要它 -->
 <script src="version.js"></script>
 <script src="case-bus.js"></script>
+<script src="core-runtime.js"></script>
+<script src="sensitivity-map.js"></script>
 <script src="stepnav.js"></script>
 <script src="os-shell.js"></script>
 <meta charset="UTF-8">
@@ -248,6 +250,21 @@
 
 <!-- ===== 健檢 + 敏感度 ===== -->
 <section id="health"><div class="wrap">
+<!-- M8.4 敏感度地圖：掛在「健檢與敏感度」視圖。② 產品要回答的正是「值不值得」，
+     而敏感度地圖回答的是「這個答案禁不禁得起參數變動」。 -->
+<div class="sens-panel" id="sens-panel" hidden>
+  <div class="sens-head">
+    <h3>敏感度地圖</h3>
+    <div>
+      <button type="button" id="sens-run">掃描（49 次真實重算）</button>
+      <button type="button" id="sens-stop" hidden>中止</button>
+    </div>
+  </div>
+  <div class="sens-cap" id="sens-cap">兩軸掃描住宅單價 × 營造單價，每格一次真實 Core 重算。
+    計算量大，故由按鈕明確觸發、不做拖曳即時掃描。</div>
+  <div id="sens-draw"></div>
+  <div class="sens-note" id="sens-note"></div>
+</div>
   <h2>③ 健檢與敏感度 <span class="lab">FRAME · 結構檢核</span></h2>
   <p class="ssub">健檢比對本庫檢核點；敏感度示範「售價／營建」各 ±10% 的連動。<b>敏感度看的是「方向與幅度」，不是精準預測。</b></p>
   <div class="grid2">
@@ -621,3 +638,67 @@ render();
 </script>
 </body>
 </html>
+
+<script>
+/* M8.4 接線：本層零計算——只組軸、呼叫 Core、把結果交給 sensitivity-map 畫。
+   門檻取自 Core 既有的共負比警示線，不在此另定一個數字。 */
+(function () {
+  "use strict";
+  var panel = document.getElementById("sens-panel");
+  if (!panel || !window.SensitivityMap || !window.CaseBus) return;
+  var rec, rt = null, ac = null;
+  var $ = function (id) { return document.getElementById(id); };
+
+  function 現況() {
+    try { rec = window.CaseBus.activeRecord(); } catch (e) { rec = null; }
+    panel.hidden = !(rec && rec.engine && rec.engine.params);
+  }
+  現況();
+  try { window.CaseBus.onChange(現況); } catch (e) {}
+
+  $("sens-run").addEventListener("click", function () {
+    if (!rec) return;
+    var P = rec.engine.params;
+    var 住 = Number(P["住宅單價"]) || 70, 營 = Number(P["營造單價"]) || 20;
+    var spec;
+    try {
+      spec = window.SensitivityMap.plan({
+        x: { param: "營造單價", from: 營 * 0.85, to: 營 * 1.15, steps: 7 },
+        y: { param: "住宅單價", from: 住 * 0.85, to: 住 * 1.15, steps: 7 }
+      });
+    } catch (e) { $("sens-note").textContent = "無法建立掃描：" + e.message; return; }
+
+    if (!window.createCoreRuntime) {
+      $("sens-note").textContent = "計算核心未載入，無法掃描——敏感度地圖不接受估算值。";
+      return;
+    }
+    if (!rt) rt = window.createCoreRuntime({
+      onError: function (m) {
+        $("sens-note").textContent = (window.corePlainError || String)(m.msg)
+          + "——敏感度地圖需要計算核心，無法以估算值代替。";
+      }
+    });
+    if (!rt.ready) { $("sens-note").textContent = "計算核心尚未就緒，請稍候再掃描。"; return; }
+
+    ac = { aborted: false };
+    $("sens-run").disabled = true; $("sens-stop").hidden = false;
+    $("sens-note").textContent = "";
+    window.SensitivityMap.run(function (e) { return rt.recompute(e); }, rec.engine, spec, {
+      metric: "shared_cost_ratio",
+      signal: ac,
+      onProgress: function (d, t) { $("sens-cap").textContent = "掃描中 " + d + " / " + t + " 格…"; }
+    }).then(function (grid) {
+      $("sens-draw").innerHTML = window.SensitivityMap.svg(grid, { threshold: 0.7, cell: 34 });
+      var cap = window.SensitivityMap.caption(grid);
+      $("sens-cap").innerHTML = "<b>" + cap.headline + "</b>";
+      $("sens-note").textContent = cap.notes.join("；") + "。門檻 70% ＝ 融資閘門，"
+        + "跨不跨一律看該格數值，不看顏色深淺。";
+    }).catch(function (err) {
+      $("sens-note").textContent = "掃描失敗：" + (window.corePlainError || String)(err.message);
+    }).then(function () {
+      $("sens-run").disabled = false; $("sens-stop").hidden = true; ac = null;
+    });
+  });
+  $("sens-stop").addEventListener("click", function () { if (ac) ac.aborted = true; });
+})();
+</script>

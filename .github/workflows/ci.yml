@@ -154,3 +154,9 @@ jobs:
           name: browser-verification
           path: tools/browser/artifacts/*.png
           retention-days: 7
+
+      # ── Gate 23：M8.4 敏感度地圖（對抗案例 G）──
+      #   宣告網格數必須等於實際重算次數；不得內插、不得平滑、缺格不得以鄰格頂替；
+      #   結構性參數明確拒答。規格自相矛盾（cells 被抽樣）要在進迴圈前就擋下。
+      - name: "Gate 23 — Sensitivity map honesty (node)"
+        run: node tests/web/test_sensitivity.mjs

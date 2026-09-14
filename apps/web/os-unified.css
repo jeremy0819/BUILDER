@@ -323,3 +323,18 @@ body.uros-unified input:focus-visible{outline:2px solid var(--uros-accent);outli
 }
 .sm-overlay{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--uros-mute,#68707d);margin-bottom:8px}
 @media(max-width:560px){.sm-overlay{min-height:44px}}
+
+/* ── M8.4 敏感度地圖（M8_VIEWFINDER_SPEC §6）──
+   缺格畫斜線不畫顏色：顏色會被讀成「有算過而且是這個值」。 */
+.sm-heat{display:block;max-width:100%}
+.sh-cell{fill:var(--uros-warn,#a86616);stroke:var(--uros-panel,#fff);stroke-width:.5}
+.sh-cell.sh-over{stroke:var(--uros-err,#c33f54);stroke-width:1.6}
+.sh-miss{fill:url(#sh-hatch);fill-opacity:1;stroke:var(--uros-line,#dfe3e8);stroke-width:.5}
+.sh-ax{font:10.5px ui-monospace,"SF Mono",Menlo,Consolas,monospace;fill:var(--uros-mute,#68707d)}
+.sens-panel{border:1px solid var(--uros-line,#dfe3e8);border-radius:8px;background:var(--uros-panel,#fff);padding:14px 16px;margin-top:14px}
+.sens-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.sens-head h3{margin:0;font-size:14px;font-weight:750}
+.sens-cap{margin-top:9px;font-size:11.5px;line-height:1.65;color:var(--uros-mute,#68707d)}
+.sens-cap b{color:var(--uros-ink,#16181d)}
+.sens-note{margin-top:5px;font-size:11px;line-height:1.6;color:var(--uros-mute,#68707d)}
+@media(max-width:560px){.sens-head button{min-height:44px}.sh-ax{font-size:11px}}
