@@ -11,7 +11,7 @@
 > | CORE_VERSION | **0.6.0** | `grep CORE_VERSION core/redcf/_version.py` |
 > | 最新 release tag | **os-v0.6.0** | `git tag -l \| tail -1` |
 > | 凍結 schema | **20 檔** | `python tools/check_schema_freeze.py` |
-> | CI Gate | **25 道** | `grep -c 'name: "Gate' .github/workflows/ci.yml` |
+> | CI Gate | **26 道** | `grep -c 'name: "Gate' .github/workflows/ci.yml` |
 >
 > **已出貨**：M4 決策引擎（三方 EV/verdict/exit）→ M5 THE WORKFLOW → M5.5 傳動軸（Pyodide
 > 在瀏覽器跑同一份 Core）→ M6 THE STRATEGIST（逐型對策）→ **M7 THE CASE OS 全五項**
@@ -20,7 +20,7 @@
 > **os-v0.6.0＝溯源語意升級**：`input_hash` 數值正規化（跨 Python/JS 邊界穩定）
 > ＋**Decision v0.2 二元組綁定**（`input_hash` × `core_version`，三個邊界情形一律從嚴）。
 >
-> **進行中／待裁決**：M8.3 互動量體、M8.4 敏感度地圖、M8.5 GIS（方案 B 本機匯入）；
+> **進行中／待裁決**：**M8.5 GIS**（方案 B 本機匯入）——M8.3 互動量體與 M8.4 敏感度地圖已完成；
 > 施工序見 `docs/architecture/NEXT_PLAN-2026-08.md`（N3 瀏覽器自動化＝Gate 19，M8.4 硬性前置）。
 >
 > **os-v0.6.0 後續已合併**（2026-09）：jsonschema 在 Pyodide 缺席的缺陷已修（worker 補載驗證器
@@ -28,9 +28,10 @@
 > 回報 same-origin／cdn-fallback，僅 404 回退）、四步未校準標示、分案草稿、Gate 編號守衛。
 > **N3 瀏覽器自動化已完成**（Gate 19 真瀏覽器＋Pyodide），M8.4 的硬性前置解除。
 >
-> ⚠️ **仍未完成**：手機未動（① 148 處 <12px 文字、19 個 <44px 觸控目標、導覽列固定 68px）；
-> Workspace 僅深連結、面板本體未搬移；Pyodide **部署設定未變更**（使用者裁決：階段一只做程式與驗證，
-> 正式站仍走 CDN）；`runtime_source` 已可蓋到 `[data-uros-runtime]`，但僅首頁掛了徽章。
+> ⚠️ **仍未完成**：Pyodide 
+> **部署設定未變更**（使用者裁決：階段一只做程式與驗證，正式站仍走 CDN）；
+> Workspace 僅深連結、面板本體未搬移；`runtime_source` 徽章僅首頁掛了一個。
+> 手機規範已落地（觸控目標 37→0 個未達標、導覽列捲動收合 75→41px）。
 >
 > **P3 未開工**——開工 Gate 卡在「stage_tree 存活率僅 n=1 錨定」與「真實清冊 PII 隔離方案未定案」。
 

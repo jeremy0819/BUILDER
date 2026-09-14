@@ -200,5 +200,38 @@ try {
   const fallbackPage=await fallback.newPage();await fallbackPage.goto(origin+'/report.html');
   const fallbackSource=await fallbackPage.evaluate(()=>new Promise((resolve,reject)=>{let rt=createCoreRuntime({onReady:m=>{rt.terminate();resolve(m.runtime_source);},onError:m=>reject(Error(m.msg))});}));
   check(fallbackSource==='cdn-fallback','missing local distribution uses pinned CDN fallback');
+  // ── 手機規範（UI_UX_PLAN-2026-09 §6）──
+  // 這些是 CSS media query 的行為，headless 測不到，只能在真瀏覽器量。
+  // 起因：實測 ① 有 148 處 <12px 文字、19 個 <44px 觸控目標、導覽列固定吃 68px。
+  const phone=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,
+    userAgent:"Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"});
+  const phonePage=await phone.newPage();
+  for(const route of ["index.html","dashboard.html","evaluator.html","os-simulator.html","report.html"]){
+    await phonePage.goto(origin+"/"+route,{waitUntil:"domcontentloaded"});
+    await phonePage.waitForTimeout(900);
+    const m=await phonePage.evaluate(()=>{
+      // 觸控目標只計真正的控制項；句中的行內文字連結由 WCAG 2.5.8 明文豁免
+      let small=0;
+      document.querySelectorAll("button,input:not([type=range]):not([type=checkbox]):not([type=radio]),select")
+        .forEach(e=>{const r=e.getBoundingClientRect();if(r.height>0&&r.height<44)small++;});
+      return {small, overflow:document.documentElement.scrollWidth-window.innerWidth};
+    });
+    check(m.small===0, route+": every control meets the 44px touch target");
+    check(m.overflow<=0, route+": no horizontal overflow at 390px");
+  }
+  // 導覽列捲動收合：68px 在 844px 高的螢幕上佔 8%
+  await phonePage.goto(origin+"/dashboard.html",{waitUntil:"domcontentloaded"});
+  await phonePage.waitForTimeout(900);
+  const navOpen=await phonePage.evaluate(()=>document.getElementById("uros-stepnav").offsetHeight);
+  await phonePage.evaluate(()=>window.scrollTo(0,300));
+  await phonePage.waitForTimeout(350);
+  const navShut=await phonePage.evaluate(()=>document.getElementById("uros-stepnav").offsetHeight);
+  check(navShut<navOpen-20, "step rail collapses on scroll ("+navOpen+"px -> "+navShut+"px)");
+  check(await phonePage.evaluate(()=>{
+    const el=document.querySelector("#uros-stepnav .sn-live");
+    return el ? parseFloat(getComputedStyle(el).fontSize)>=12 : false;
+  }), "step figures stay readable at >=12px on phones");
+  await phone.close();
+
   console.log("BROWSER: "+passed+" passed; screenshots: "+artifacts);
 } finally {if(browser)await browser.close();await new Promise(r=>server.close(r));}

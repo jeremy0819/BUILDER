@@ -139,6 +139,25 @@ details.more>summary:hover{color:var(--strand)}
   padding:14px 17px;font-size:11.5px;color:var(--mute);line-height:1.8}
 .ssot b{color:var(--ink)}
 .ssot .mono{color:var(--dim);font-size:10px}
+/* ── 手機規範（UI_UX_PLAN §6）──
+   本頁是獨立深色頁，不吃 os-unified.css，故規範在此重述一次。
+   實測：首頁原有 95 處 <12px 文字、10 個 <44px 觸控目標。
+   附屬字（單位、標籤）可到 11px；供閱讀的說明文字一律 ≥12px。 */
+@media(max-width:560px){
+  .q .ask{font-size:12px;min-height:0}
+  .q label{font-size:13px}
+  .q .u,.rcell .rl,.rcell .rn,.step dt,.more-grid .rd{font-size:11.5px}
+  .prov,.ssot{font-size:12px}
+  .more-grid .rt .x{font-size:10px}
+  .chip{font-size:11px;padding:5px 11px}
+  /* 觸控目標 44px；輸入框 16px 以免 iOS Safari 自動放大整頁 */
+  .q input{min-height:44px;font-size:16px}
+  .seg button,.cta button.go,.cta .ghost{min-height:44px}
+  details.adv>summary,details.more>summary{min-height:44px;display:flex;align-items:center}
+  .step{padding:15px 16px}
+  /* 其餘按鈕一律 44px；行內文字連結不適用（WCAG 2.5.8 豁免句中連結） */
+  button:not(.ghost):not(.go){min-height:44px}
+}
 footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display:flex;
   justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:10px;color:var(--dim)}
 </style>

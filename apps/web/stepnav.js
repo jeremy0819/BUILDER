@@ -83,7 +83,9 @@
       + '#uros-stepnav .sn-node.on b{color:var(--sn-accent)}'
       + '#uros-stepnav .sn-node.on small{color:var(--sn-accent)}'
       + '#uros-stepnav .sn-arrow{color:var(--sn-mute);font-size:12px;flex:0 0 auto;padding:0 1px}'
-      + '#uros-stepnav .sn-cap{max-width:1080px;margin:2px auto 0;font-size:10.5px;color:var(--sn-mute)}';
+      + '#uros-stepnav .sn-cap{max-width:1080px;margin:2px auto 0;font-size:10.5px;color:var(--sn-mute)}'
+      /* 手機字級由 os-unified.css 的手機規範區塊處理——那裡的規則帶 !important，
+         在此重複只會製造兩處真源。 */;
   }
 
   function build() {
@@ -132,18 +134,40 @@
   /* 重畫（案件一改就重畫，四步的數字才會真的跟著動）。 */
   function refresh() {
     var old = document.getElementById("uros-stepnav");
+    var 收合中 = old && old.classList.contains("sn-collapsed");
     if (old && old.parentNode) old.parentNode.removeChild(old);
     build();
+    /* 重建後要把收合狀態接回去，否則捲到一半重畫會突然展開、頁面跳動 */
+    var neu = document.getElementById("uros-stepnav");
+    if (neu && 收合中) neu.classList.add("sn-collapsed");
   }
 
   function boot() {
     build();
+    綁收合();
     try {
       if (self.CaseBus && self.CaseBus.onChange) self.CaseBus.onChange(refresh);
       else window.addEventListener("storage", function (e) {
         if (!e.key || e.key === "uros.workflow.v1" || e.key === "uros.active_case") refresh();
       });
     } catch (e) {}
+  }
+
+  /* 手機：捲動時收合導覽列（68px → 單列）。
+     只在窄視窗生效；桌機空間夠，收合反而讓人找不到。
+     用 rAF 節流——scroll 是高頻事件，每次都讀 offsetHeight 會強制重排。 */
+  function 綁收合() {
+    var bar = document.getElementById("uros-stepnav");
+    if (!bar || !window.matchMedia || !window.matchMedia("(max-width: 560px)").matches) return;
+    var ticking = false;
+    window.addEventListener("scroll", function () {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(function () {
+        bar.classList.toggle("sn-collapsed", window.scrollY > 80);
+        ticking = false;
+      });
+    }, { passive: true });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);

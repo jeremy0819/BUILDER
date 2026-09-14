@@ -227,3 +227,114 @@ body.uros-unified input:focus-visible{outline:2px solid var(--uros-accent);outli
 .uros-page-people #ovl-chapter .chapter{padding:20px;max-width:100%;overflow-wrap:anywhere}
 .uros-page-people #ovl-chapter h2{font-size:28px}
 .uros-page-people #ovl-title .fadein,.uros-page-people #ovl-plan .fadein{animation:none;opacity:1}
+
+/* ══════════════════════════════════════════════════════════════════
+   手機規範（UI_UX_PLAN-2026-09 §6）
+   實測依據：① 148 處 <12px 文字、19 個 <44px 觸控目標、導覽列固定 68px。
+   紀律：
+     · 供閱讀的文字下限 12px。單位、來源標籤等附屬字可到 11px，
+       但不得承載使用者必須讀懂的資訊。
+     · 觸控目標 44×44（WCAG 2.5.8）。**句中的行內文字連結不適用**——
+       那是文章的一部分，不是按鈕；硬撐高會破壞行距。
+     · 沙盤戶別盤面是密集格線，升到 11px 為止；再大會擠破版面。
+       這是明列的例外，不是遺漏。
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 560px){
+  /* ── 字級下限 ── */
+  body.uros-unified,
+  body.uros-unified p, body.uros-unified li, body.uros-unified td,
+  body.uros-unified dd, body.uros-unified div{font-size:13px}
+  body.uros-unified dt,
+  body.uros-unified th,
+  body.uros-unified b,
+  body.uros-unified em,
+  body.uros-unified small,
+  body.uros-unified .ct, body.uros-unified .flab, body.uros-unified .lbl,
+  body.uros-unified .crumb, body.uros-unified .rd, body.uros-unified .ask{font-size:12px}
+  /* 附屬字：單位、來源標籤——可到 11px，不承載必讀資訊 */
+  body.uros-unified .uros-kpi span,
+  body.uros-unified .src, body.uros-unified .u, body.uros-unified .x{font-size:11px}
+  body.uros-unified .uros-kpi b{font-size:20px}
+
+  /* ── 觸控目標 44px（行內文字連結除外）── */
+  body.uros-unified button,
+  body.uros-unified select,
+  body.uros-unified input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+  body.uros-unified a.uros-icon-btn,
+  body.uros-unified .uros-view-tabs button,
+  body.uros-unified .btn, body.uros-unified .btn-sm{
+    min-height:44px; padding-block:0}
+  body.uros-unified .uros-view-tabs button{font-size:12px;padding-inline:14px}
+  body.uros-unified input:not([type="range"]):not([type="checkbox"]):not([type="radio"]){font-size:16px}
+  /* 16px 是 iOS Safari 不自動放大頁面的門檻——低於它，一點輸入框整頁就跳 */
+
+  /* 導覽列：四步的數字是手機上最該讀懂的東西，10.5px 太小。
+     上方基準規則帶 !important，故此處也需 !important 才壓得過（同一處真源，不另立）。 */
+  #uros-stepnav .sn-node b{font-size:13px!important}
+  #uros-stepnav .sn-live{font-size:13px!important}
+  #uros-stepnav .sn-node small{font-size:11px!important}
+
+  /* 仍承載資訊的小字：一律拉到 11px 以上 */
+  body.uros-unified small,
+  body.uros-unified .nn, body.uros-unified .rk, body.uros-unified .tag,
+  body.uros-unified .lab, body.uros-unified label{font-size:11.5px}
+
+  /* ── 沙盤盤面：密集格線的明列例外 ── */
+  body.uros-page-people .unit,
+  body.uros-page-people .unit span,
+  body.uros-page-people .st{font-size:11px}
+}
+
+/* ── 四步導覽列：捲動時收合（68px → 單列）──
+   68px 在 844px 高的螢幕上佔 8%。收合後只留當前步與它的數字——
+   那正是使用者在工地、在說明會現場要單手看的東西。 */
+@media (max-width: 560px){
+  #uros-stepnav{transition:padding .15s ease}
+  #uros-stepnav.sn-collapsed{padding-top:3px;padding-bottom:3px}
+  #uros-stepnav.sn-collapsed .sn-cap{display:none}
+  #uros-stepnav.sn-collapsed .sn-arrow{display:none}
+  #uros-stepnav.sn-collapsed .sn-node:not(.on){display:none}
+  #uros-stepnav.sn-collapsed .sn-node.on{display:flex;flex-direction:row;align-items:baseline;gap:8px}
+  #uros-stepnav.sn-collapsed .sn-node.on small{display:none}
+}
+
+/* ── M8.3 互動量體（M8_VIEWFINDER_SPEC §5）──
+   這張圖是 Output：唯讀。互動只切換「看哪一層」，不改任何值。
+   游標刻意用 pointer 而非 grab/move——grab 會暗示可以拖，而拖是紅線。 */
+.mv-axon{display:block;max-width:100%}
+.mv-slab{fill:var(--uros-accent,#5a48d6);fill-opacity:.55;stroke:var(--uros-accent,#5a48d6);stroke-width:.5}
+.mv-slab.mv-top{fill-opacity:.3}
+.mv-slab.mv-below{fill:var(--uros-mute,#68707d);stroke:var(--uros-mute,#68707d)}
+.mv-slab.mv-off{fill-opacity:.12;stroke-dasharray:2 2}
+.mv-face{cursor:pointer}
+.mv-face:focus-visible{outline:2px solid var(--uros-accent,#5a48d6);outline-offset:1px}
+.mv-slab.mv-sel{fill-opacity:.92;stroke-width:1.5}
+.mv-ov{fill:var(--uros-warn,#a86616);fill-opacity:.55;pointer-events:none}
+.mv-ov-1{fill:var(--uros-err,#c33f54)}
+.mv-ov-2{fill:var(--uros-ok,#16845b)}
+.mv-lbl{font:10.5px ui-monospace,"SF Mono",Menlo,Consolas,monospace;fill:var(--uros-mute,#68707d)}
+.mv-tbl tr[data-mv-tr]{cursor:pointer}
+.mv-tbl tr[data-mv-tr]:focus-visible{outline:2px solid var(--uros-accent,#5a48d6);outline-offset:-2px}
+.mv-tbl tr.mv-sel{background:var(--uros-accent-soft,#eeebff)}
+@media(max-width:560px){
+  .mv-tbl tr[data-mv-tr]{min-height:44px}
+  .mv-tbl td,.mv-tbl th{padding-block:11px}
+  .mv-lbl{font-size:11px}
+}
+.sm-overlay{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--uros-mute,#68707d);margin-bottom:8px}
+@media(max-width:560px){.sm-overlay{min-height:44px}}
+
+/* ── M8.4 敏感度地圖（M8_VIEWFINDER_SPEC §6）──
+   缺格畫斜線不畫顏色：顏色會被讀成「有算過而且是這個值」。 */
+.sm-heat{display:block;max-width:100%}
+.sh-cell{fill:var(--uros-warn,#a86616);stroke:var(--uros-panel,#fff);stroke-width:.5}
+.sh-cell.sh-over{stroke:var(--uros-err,#c33f54);stroke-width:1.6}
+.sh-miss{fill:url(#sh-hatch);fill-opacity:1;stroke:var(--uros-line,#dfe3e8);stroke-width:.5}
+.sh-ax{font:10.5px ui-monospace,"SF Mono",Menlo,Consolas,monospace;fill:var(--uros-mute,#68707d)}
+.sens-panel{border:1px solid var(--uros-line,#dfe3e8);border-radius:8px;background:var(--uros-panel,#fff);padding:14px 16px;margin-top:14px}
+.sens-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.sens-head h3{margin:0;font-size:14px;font-weight:750}
+.sens-cap{margin-top:9px;font-size:11.5px;line-height:1.65;color:var(--uros-mute,#68707d)}
+.sens-cap b{color:var(--uros-ink,#16181d)}
+.sens-note{margin-top:5px;font-size:11px;line-height:1.6;color:var(--uros-mute,#68707d)}
+@media(max-width:560px){.sens-head button{min-height:44px}.sh-ax{font-size:11px}}

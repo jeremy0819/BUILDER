@@ -117,5 +117,79 @@ MV._FORBIDDEN.forEach(k => {
 // 確認剝註解後仍有實質程式碼（避免剝過頭讓斷言變空洞）
 ok(code.includes("function buildModel") && code.length > 1200, "剝註解後仍涵蓋實際程式碼");
 
+
+// ══════════════════════════════════════════════════════════════════
+// M8.3 互動量體（M8_VIEWFINDER_SPEC §5）
+// 鐵律：可拖曳的只有 Input；Output 永遠唯讀。
+// 這裡的重點是**負面斷言**——不是「拖了沒反應」，是根本沒有那條路徑。
+// ══════════════════════════════════════════════════════════════════
+const m83 = MV.buildModel([
+  { 啟用: true, 樓層: "B1F", 樓板: 1400, 計容積: 0, 梯廳: 0, 安全梯: 0, 陽台: 0 },
+  { 啟用: true, 樓層: "1F", 樓板: 990, 計容積: 990, 梯廳: 49.5, 安全梯: 79.2, 陽台: 99 },
+  { 啟用: true, 樓層: "2F", 樓板: 990, 計容積: 990, 梯廳: 49.5, 安全梯: 79.2, 陽台: 99 },
+  { 啟用: false, 樓層: "R1F", 樓板: 90, 計容積: 0, 梯廳: 0, 安全梯: 0, 陽台: 0 }
+]);
+const axon = MV.axon(m83, { overlay: true });
+
+ok(typeof MV.axon === "function" && typeof MV.bind === "function", "M8.3 匯出 axon 與 bind");
+ok(/<svg[^>]+role="img"/.test(axon), "軸測圖是 img role（呈現，不是控制項容器）");
+ok((axon.match(/data-mv-row/g) || []).length === 4, "每層都有對照錨點（含停用層）");
+ok(/mv-off/.test(axon), "停用層顯示但標記，不隱藏");
+
+// ── 負面斷言：沒有任何拖曳路徑 ──
+["draggable", "dragstart", "dragover", "drop", "pointermove", "mousemove", "onmousedown",
+ "grab", "resize", "cursor:move"].forEach(t => {
+  ok(!new RegExp(t, "i").test(axon), `軸測圖不得出現 ${t}——拖曳＝反算容積，紅線`);
+});
+const mvSrc = readFileSync(join(root, "apps/web/massing-view.js"), "utf8")
+  .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+["dragstart", "pointermove", "pointerdown", "mousemove"].forEach(t => {
+  ok(!new RegExp(`addEventListener\\(["']${t}`).test(mvSrc),
+     `massing-view 不得註冊 ${t}——不是「拖了沒反應」，是沒有那條路徑`);
+});
+
+// ── 免計項疊加：數值 verbatim，不得自行加總 ──
+ok(MV.OVERLAY_COLS.join(",") === "梯廳,安全梯,陽台", "免計項三欄");
+ok(axon.indexOf("49.5") > 0 && axon.indexOf("79.2") > 0,
+   "免計項數值逐字取自 floors[]，不四捨五入也不合計");
+const 無疊加 = MV.axon(m83, {});
+ok(!/mv-ov /.test(無疊加), "未開疊加時不畫免計項");
+ok((axon.match(/mv-ov /g) || []).length === 6, "只畫有值的免計項（B1F 與 R1F 全 0，不補 0 方塊）");
+
+// ── 選取是雙向的，且不寫回任何資料 ──
+function 假host(html) {
+  const 節點 = [];
+  const mk = (attr, val) => ({
+    _cls: new Set(), _attr: { [attr]: String(val) },
+    classList: { toggle(c, on) { on ? this._o._cls.add(c) : this._o._cls.delete(c); } },
+    setAttribute(k, v) { this._attr[k] = v; }, getAttribute(k) { return this._attr[k] ?? null; },
+    scrollIntoView() { this._scrolled = true; }
+  });
+  for (let i = 0; i < 4; i++) {
+    const f = mk("data-mv-row", i); f.classList._o = f; f._kind = "face"; 節點.push(f);
+    const t = mk("data-mv-tr", i); t.classList._o = t; t._kind = "tr"; 節點.push(t);
+  }
+  return {
+    _nodes: 節點, _handlers: {},
+    querySelectorAll(sel) { return 節點.filter(n => sel.includes("data-mv-row") ? n._kind === "face" : n._kind === "tr"); },
+    querySelector(sel) { const m = sel.match(/"(\d+)"/); return 節點.find(n => n._kind === "tr" && n.getAttribute("data-mv-tr") === m[1]); },
+    addEventListener(ev, fn) { this._handlers[ev] = fn; }
+  };
+}
+const host = 假host();
+const api83 = MV.bind(host, m83, {});
+ok(api83.selected() === -1, "初始無選取");
+api83.select(2, "svg");
+ok(api83.selected() === 2, "自軸測圖選取");
+ok(host._nodes.find(n => n._kind === "tr" && n.getAttribute("data-mv-tr") === "2")._scrolled === true,
+   "自圖選取會把對應明細列捲到可視範圍（雙向對照）");
+ok(host._nodes.find(n => n._kind === "face" && n.getAttribute("data-mv-row") === "2").getAttribute("aria-pressed") === "true",
+   "選取狀態以 aria-pressed 宣告（輔助技術可讀）");
+api83.select(2, "svg");
+ok(api83.selected() === -1, "再點一次取消選取");
+const 快照 = JSON.stringify(m83);
+api83.select(1, "table"); api83.select(3, "svg");
+ok(JSON.stringify(m83) === 快照, "選取不得改動 model——互動只換看哪一層，不改任何值");
+
 console.log(`\nM7.5 MASSING VIEW headless：${pass} passed, ${fail} failed`);
 if (fail) process.exit(1);
