@@ -297,3 +297,29 @@ body.uros-unified input:focus-visible{outline:2px solid var(--uros-accent);outli
   #uros-stepnav.sn-collapsed .sn-node.on{display:flex;flex-direction:row;align-items:baseline;gap:8px}
   #uros-stepnav.sn-collapsed .sn-node.on small{display:none}
 }
+
+/* ── M8.3 互動量體（M8_VIEWFINDER_SPEC §5）──
+   這張圖是 Output：唯讀。互動只切換「看哪一層」，不改任何值。
+   游標刻意用 pointer 而非 grab/move——grab 會暗示可以拖，而拖是紅線。 */
+.mv-axon{display:block;max-width:100%}
+.mv-slab{fill:var(--uros-accent,#5a48d6);fill-opacity:.55;stroke:var(--uros-accent,#5a48d6);stroke-width:.5}
+.mv-slab.mv-top{fill-opacity:.3}
+.mv-slab.mv-below{fill:var(--uros-mute,#68707d);stroke:var(--uros-mute,#68707d)}
+.mv-slab.mv-off{fill-opacity:.12;stroke-dasharray:2 2}
+.mv-face{cursor:pointer}
+.mv-face:focus-visible{outline:2px solid var(--uros-accent,#5a48d6);outline-offset:1px}
+.mv-slab.mv-sel{fill-opacity:.92;stroke-width:1.5}
+.mv-ov{fill:var(--uros-warn,#a86616);fill-opacity:.55;pointer-events:none}
+.mv-ov-1{fill:var(--uros-err,#c33f54)}
+.mv-ov-2{fill:var(--uros-ok,#16845b)}
+.mv-lbl{font:10.5px ui-monospace,"SF Mono",Menlo,Consolas,monospace;fill:var(--uros-mute,#68707d)}
+.mv-tbl tr[data-mv-tr]{cursor:pointer}
+.mv-tbl tr[data-mv-tr]:focus-visible{outline:2px solid var(--uros-accent,#5a48d6);outline-offset:-2px}
+.mv-tbl tr.mv-sel{background:var(--uros-accent-soft,#eeebff)}
+@media(max-width:560px){
+  .mv-tbl tr[data-mv-tr]{min-height:44px}
+  .mv-tbl td,.mv-tbl th{padding-block:11px}
+  .mv-lbl{font-size:11px}
+}
+.sm-overlay{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--uros-mute,#68707d);margin-bottom:8px}
+@media(max-width:560px){.sm-overlay{min-height:44px}}

@@ -17,18 +17,28 @@
     host.innerHTML = '<section class="site-massing" aria-label="量體生成與容積模擬"><div class="sm-heading"><div><h2>量體生成與容積模擬</h2><p>本次草案 · 未寫回案件</p></div><div><button type="button" data-sm="reset">還原案件</button> <button type="button" data-sm="run">Core 重算</button></div></div>'
       + '<div class="sm-grid"><div><form class="sm-generate"><label>地上層數<input name="levels" type="number" min="1" max="60" step="1" value="7" required></label><label>標準樓板（㎡）<input name="plate" type="number" min="1" max="10000" step="0.01" value="400" required></label><button type="submit">生成規則量體</button></form>'
       + '<p class="sm-note">規則草案沿用案件基地與財務參數；樓層依既有預設模板生成，改採逐層計容積，含一層地下室。這不是地籍形狀、建築高度或法規核准圖。</p>'
-      + '<div class="sm-floor-editor"></div></div><div><div class="sm-drawing"></div><p class="sm-origin"></p></div></div>'
+      + '<div class="sm-floor-editor"></div></div><div><label class="sm-overlay"><input type="checkbox" data-sm="overlay"> 疊加免計項（梯廳／安全梯／陽台）</label><div class="sm-drawing"></div><p class="sm-origin"></p></div></div>'
       + '<div class="sm-status" role="status" aria-live="polite">既有樓層輸入 · 尚未重算</div><div class="sm-results"></div><div class="sm-warnings"></div></section>';
     var q = function (s) { return host.querySelector(s); }, status = q('.sm-status');
+    var overlay = false;   /* 免計項疊加：預設關，開了才畫（不預設塞資訊） */
     function clear() { seq++; result = null; q('.sm-results').replaceChildren(); q('.sm-warnings').replaceChildren(); status.textContent = "量體輸入已變更，請交由 Core 重算。"; q('[data-sm="run"]').disabled = false; }
     function draw() {
       var model = root.MassingView.buildModel(draft.floors || []);
-      q('.sm-drawing').innerHTML = root.MassingView.svg(model, {width:460, rowH:22});
+      /* M8.3：軸測堆疊取代平面長條。免計項疊加為選填，數值 verbatim 自 floors[]。
+         深度與寬度是版面幾何，不是樓高也不是容積。 */
+      q('.sm-drawing').innerHTML = root.MassingView.axon(model, {width:460, slabH:22, overlay:overlay, selected:selected});
       var svg = q('.sm-drawing svg'); if (svg) svg.setAttribute('role', 'group');
-      host.querySelectorAll('.sm-drawing rect').forEach(function (rect, i) {
-        var row = model.rows[i]; rect.setAttribute('role','button'); rect.setAttribute('tabindex','0'); rect.setAttribute('aria-label', row.label + ' 樓層輸入'); rect.setAttribute('aria-pressed', String(row.index === selected));
-        function choose() { selected = row.index; draw(); edit(); }
-        rect.addEventListener('click', choose); rect.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); } });
+      /* 以 data-mv-row 配對，不用位置索引——疊加開啟後 rect 不只一種，位置配對會錯位。 */
+      host.querySelectorAll('.sm-drawing [data-mv-row]').forEach(function (rect) {
+        var idx = Number(rect.getAttribute('data-mv-row'));
+        var row = model.rows.filter(function (r) { return r.index === idx; })[0];
+        if (!row) return;
+        rect.setAttribute('role','button'); rect.setAttribute('tabindex','0');
+        rect.setAttribute('aria-label', row.label + ' 樓層輸入');
+        rect.setAttribute('aria-pressed', String(idx === selected));
+        function choose() { selected = idx; draw(); edit(); }
+        rect.addEventListener('click', choose);
+        rect.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); } });
       });
       q('.sm-origin').textContent = draft.params.面積表計入容積 > 0 ? "原案採面積表彙總；逐層 0 不代表該層免計容積。" : "長條寬度表示樓板面積比例，不表示真實平面或高度。";
     }
@@ -44,6 +54,7 @@
       e.preventDefault(); var form = e.currentTarget; if (!form.reportValidity()) return;
       try { draft = generate(rec.engine, {levels:form.elements.levels.valueAsNumber, plate:form.elements.plate.valueAsNumber}); selected = 1; clear(); draw(); edit(); } catch (err) { status.textContent = err.message; }
     });
+    q('[data-sm="overlay"]').addEventListener('change', function (e) { overlay = e.target.checked; draw(); });
     q('[data-sm="reset"]').addEventListener('click', function () { draft = JSON.parse(JSON.stringify(rec.engine)); selected = 0; clear(); draw(); edit(); });
     q('[data-sm="run"]').addEventListener('click', async function () {
       if (Array.from(host.querySelectorAll('.sm-floor-editor input')).some(function (x) { return !x.reportValidity(); })) return;
