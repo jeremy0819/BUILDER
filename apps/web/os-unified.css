@@ -227,3 +227,73 @@ body.uros-unified input:focus-visible{outline:2px solid var(--uros-accent);outli
 .uros-page-people #ovl-chapter .chapter{padding:20px;max-width:100%;overflow-wrap:anywhere}
 .uros-page-people #ovl-chapter h2{font-size:28px}
 .uros-page-people #ovl-title .fadein,.uros-page-people #ovl-plan .fadein{animation:none;opacity:1}
+
+/* ══════════════════════════════════════════════════════════════════
+   手機規範（UI_UX_PLAN-2026-09 §6）
+   實測依據：① 148 處 <12px 文字、19 個 <44px 觸控目標、導覽列固定 68px。
+   紀律：
+     · 供閱讀的文字下限 12px。單位、來源標籤等附屬字可到 11px，
+       但不得承載使用者必須讀懂的資訊。
+     · 觸控目標 44×44（WCAG 2.5.8）。**句中的行內文字連結不適用**——
+       那是文章的一部分，不是按鈕；硬撐高會破壞行距。
+     · 沙盤戶別盤面是密集格線，升到 11px 為止；再大會擠破版面。
+       這是明列的例外，不是遺漏。
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 560px){
+  /* ── 字級下限 ── */
+  body.uros-unified,
+  body.uros-unified p, body.uros-unified li, body.uros-unified td,
+  body.uros-unified dd, body.uros-unified div{font-size:13px}
+  body.uros-unified dt,
+  body.uros-unified th,
+  body.uros-unified b,
+  body.uros-unified em,
+  body.uros-unified small,
+  body.uros-unified .ct, body.uros-unified .flab, body.uros-unified .lbl,
+  body.uros-unified .crumb, body.uros-unified .rd, body.uros-unified .ask{font-size:12px}
+  /* 附屬字：單位、來源標籤——可到 11px，不承載必讀資訊 */
+  body.uros-unified .uros-kpi span,
+  body.uros-unified .src, body.uros-unified .u, body.uros-unified .x{font-size:11px}
+  body.uros-unified .uros-kpi b{font-size:20px}
+
+  /* ── 觸控目標 44px（行內文字連結除外）── */
+  body.uros-unified button,
+  body.uros-unified select,
+  body.uros-unified input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+  body.uros-unified a.uros-icon-btn,
+  body.uros-unified .uros-view-tabs button,
+  body.uros-unified .btn, body.uros-unified .btn-sm{
+    min-height:44px; padding-block:0}
+  body.uros-unified .uros-view-tabs button{font-size:12px;padding-inline:14px}
+  body.uros-unified input:not([type="range"]):not([type="checkbox"]):not([type="radio"]){font-size:16px}
+  /* 16px 是 iOS Safari 不自動放大頁面的門檻——低於它，一點輸入框整頁就跳 */
+
+  /* 導覽列：四步的數字是手機上最該讀懂的東西，10.5px 太小。
+     上方基準規則帶 !important，故此處也需 !important 才壓得過（同一處真源，不另立）。 */
+  #uros-stepnav .sn-node b{font-size:13px!important}
+  #uros-stepnav .sn-live{font-size:13px!important}
+  #uros-stepnav .sn-node small{font-size:11px!important}
+
+  /* 仍承載資訊的小字：一律拉到 11px 以上 */
+  body.uros-unified small,
+  body.uros-unified .nn, body.uros-unified .rk, body.uros-unified .tag,
+  body.uros-unified .lab, body.uros-unified label{font-size:11.5px}
+
+  /* ── 沙盤盤面：密集格線的明列例外 ── */
+  body.uros-page-people .unit,
+  body.uros-page-people .unit span,
+  body.uros-page-people .st{font-size:11px}
+}
+
+/* ── 四步導覽列：捲動時收合（68px → 單列）──
+   68px 在 844px 高的螢幕上佔 8%。收合後只留當前步與它的數字——
+   那正是使用者在工地、在說明會現場要單手看的東西。 */
+@media (max-width: 560px){
+  #uros-stepnav{transition:padding .15s ease}
+  #uros-stepnav.sn-collapsed{padding-top:3px;padding-bottom:3px}
+  #uros-stepnav.sn-collapsed .sn-cap{display:none}
+  #uros-stepnav.sn-collapsed .sn-arrow{display:none}
+  #uros-stepnav.sn-collapsed .sn-node:not(.on){display:none}
+  #uros-stepnav.sn-collapsed .sn-node.on{display:flex;flex-direction:row;align-items:baseline;gap:8px}
+  #uros-stepnav.sn-collapsed .sn-node.on small{display:none}
+}
