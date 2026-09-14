@@ -68,7 +68,8 @@
 | 查實體定義／要不要建模 | `docs/architecture/DOMAIN_MODEL.md` |
 | 排優先序／判斷某功能該不該現在做 | `docs/architecture/ROADMAP.md`（P0–P3） |
 | 下一步做什麼／各站順序與驗收 | `docs/architecture/NEXT_PLAN-2026-08.md`（N1–N7 施工序） |
-| 工程師待辦／介面複雜度與技術缺口 | `docs/architecture/ENGINEER_BACKLOG-2026-09.md`（實測稽核，附驗收） |
+| **工程師現在要做什麼**（附驗收指令） | `docs/architecture/ENGINEER_WORKSHEET-2026-09-14.md` |
+| 介面複雜度與技術缺口的稽核與理由 | `docs/architecture/ENGINEER_BACKLOG-2026-09.md` |
 | 遊玩介面 UI/UX 規劃／元件規格／狀態矩陣 | `docs/design/UI_UX_PLAN-2026-09.md`（文字版）＋同名畫布 |
 | 了解已知風險與文件衝突裁決 | `docs/architecture/ARCH_REVIEW.md`、`docs/architecture/FREEZE_REVIEW-2026-07.md` |
 | 版本規則／發布流程／授權 | `governance/VERSION_POLICY.md`、`docs/releases/`（CHECKLIST、LICENSE_ANALYSIS） |
