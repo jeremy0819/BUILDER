@@ -45,14 +45,31 @@
     if (!Number.isFinite(age) || age < 0) return { due: true, text: "尚無有效備份紀錄" };
     return { due: age >= 7, text: "上次確認備份：" + Math.floor(age) + " 天前" };
   }
+  /* 手上有東西才值得吵。空瀏覽器沒有東西可以遺失，就不該拿首屏換一句叮嚀。 */
+  function hasCaseData() {
+    try {
+      var raw = localStorage.getItem("uros.workflow.v1");
+      if (!raw) return false;
+      var store = root.UROSSecurity ? root.UROSSecurity.parseJSON(raw) : JSON.parse(raw);
+      return !!(store && Array.isArray(store.order) && store.order.length);
+    } catch (e) { return false; }
+  }
   async function refresh() {
     var status = document.getElementById("backup-status"); if (!status) return;
+    var chip = document.getElementById("backup-chip");
     try {
       var s = statusText(await root.CaseStore.meta("uros.last_backup_at"), Date.now());
+      var none = s.text === "尚無有效備份紀錄", data = hasCaseData();
       status.textContent = pending ? "下載已開始；請確認檔案已儲存，再按「已確認存檔」" : s.text;
-      document.getElementById("browser-backup").classList.toggle("backup-due", s.due || pending);
+      document.getElementById("browser-backup").classList.toggle("backup-due", (s.due || pending) && data);
       document.getElementById("backup-confirm").hidden = !pending;
-    } catch (e) { status.textContent = "無法讀取備份狀態；請勿清除瀏覽資料"; }
+      if (chip) chip.textContent = pending ? "待確認存檔"
+        : !data ? "尚無案件"
+        : none ? "尚未備份，建議匯出" : s.text.replace("上次確認備份：", "備份於 ");
+    } catch (e) {
+      status.textContent = "無法讀取備份狀態；請勿清除瀏覽資料";
+      if (chip) chip.textContent = "狀態未知";
+    }
   }
   async function confirmed() {
     await root.CaseStore.markBackedUp(); pending = false; await refresh();
@@ -121,14 +138,27 @@
     if (!root.CaseStore || document.getElementById("browser-backup")) return;
     var host = document.createElement("section"); host.id = "browser-backup"; host.className = "data-notice";
     host.setAttribute("aria-label", "本機資料與備份");
-    host.innerHTML = '<div class="backup-row"><strong>資料僅存在此瀏覽器，清除瀏覽資料可能永久遺失。</strong>'
+    /* 收成一行可展開。原本是整塊常駐橫幅，五頁都掛一份，手機上吃掉將近半個首屏——
+       使用者要滑過 600px 的嘮叨才看得到自己的答案（CAUTION）。
+       提醒本身不能拿掉（資料真的只在這台瀏覽器），但排序要倒過來：先給結論，再給叮嚀。
+       緊急程度改由摘要列的狀態字樣（backup-chip）承載，不自動彈開：
+       自動彈開只是換一種方式吃掉首屏，且幾乎每個真實使用者首次進來都會中。 */
+    host.innerHTML = '<details id="backup-fold"><summary class="backup-sum">'
+      + '<span class="backup-dot" aria-hidden="true"></span>本機資料與備份'
+      + '<span id="backup-chip" class="backup-chip"></span></summary>'
+      + '<div class="backup-row"><strong>資料僅存在此瀏覽器，清除瀏覽資料可能永久遺失。</strong>'
       + '<button type="button" id="backup-save">匯出完整備份</button><button type="button" id="backup-confirm" hidden>已確認存檔</button></div>'
       + '<span id="backup-status" role="status" aria-live="polite">讀取備份狀態…</span>'
       + '<details><summary>還原備份</summary><p>備份含案件、歷程、方案及本機草稿，可能包含個人資料，請妥善保管。僅能還原至沒有 BUILDER 資料的瀏覽器設定檔。</p>'
       + '<label>選取完整備份 JSON <input id="backup-restore" type="file" accept=".json,application/json"></label></details>'
-      + '<details><summary>本機診斷</summary><p>僅包含錯誤類別與時間，不含案件名稱、輸入、錯誤原文或堆疊，最多 50 筆。</p><button type="button" id="diagnostics-export">匯出診斷摘要</button></details>';
-    var anchor = document.getElementById("uros-shell") || document.querySelector(".top") || document.querySelector(".hero");
-    if (anchor) anchor.after(host); else document.body.prepend(host);
+      + '<details><summary>本機診斷</summary><p>僅包含錯誤類別與時間，不含案件名稱、輸入、錯誤原文或堆疊，最多 50 筆。</p><button type="button" id="diagnostics-export">匯出診斷摘要</button></details></details>';
+    /* 兩條狀態列的順序固定：可以動手的（備份）在前，只是但書的（可信度）在後。 */
+    var calib = document.getElementById("calibration-notice");
+    if (calib) calib.before(host);
+    else {
+      var anchor = document.getElementById("uros-shell") || document.querySelector(".top") || document.querySelector(".hero");
+      if (anchor) anchor.after(host); else document.body.prepend(host);
+    }
     document.getElementById("backup-save").addEventListener("click", save);
     document.getElementById("diagnostics-export").addEventListener("click", function () {
       var events = root.UROSDiagnostics ? root.UROSDiagnostics.read() : [];

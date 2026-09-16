@@ -68,11 +68,33 @@
       $("profile-save").textContent = "已存本機"; draftError = false;
     } catch (e) { draftError = true; $("profile-save").textContent = "儲存失敗"; status("草稿未儲存，請先釋放瀏覽器儲存空間或檢查權限。", "error"); }
   }
+  /* 已存的快照判定綁不綁得上目前快照（N1 二元組：input_hash × core_version，
+     "unknown" 一律不綁）。綁得上就該顯示——它是這個案子當時真實算出來的結論。 */
+  function boundSnapshotDecision() {
+    if (!record) return null;
+    var d = record.decision;
+    if (!d || !record.snap) return null;
+    if (d.input_hash !== record.snap.input_hash) return null;
+    if (!d.core_version || d.core_version === "unknown") return null;
+    if (d.core_version !== record.snap.core_version) return null;
+    return d;
+  }
+  function mountDecisionVisual() {
+    if (!record) return;
+    var d = boundSnapshotDecision();
+    root.DecisionView.mount($("decision-visual"),
+      d ? Object.assign({}, record, { decision: d }) : Object.assign({}, record, { decision: null }));
+  }
+
   function invalidate(message) {
     guard.invalidate(); busy = false; analysis = null;
     $("action-list").replaceChildren(el("p", "尚無本次分析結果", "analysis-empty-text"));
     $("action-evidence").replaceChildren(); $("strategy-summary").replaceChildren(); $("decision-table").replaceChildren();
-    if (record) root.DecisionView.mount($("decision-visual"), Object.assign({}, record, { decision: null }));
+    /* ⚠️ 只清掉「本次分析」，**不清掉已存的快照判定**。
+       原本這裡一律掛 decision:null，於是 Core 一連線失敗就呼叫 invalidate()，
+       把一個完全有效的已綁定判定從畫面上抹掉——顯示了再拿走，比從沒顯示更傷信任。
+       同一個案子，案件工作區看得到 CAUTION，唯一叫「決策」的頁面卻給四個破折號。 */
+    mountDecisionVisual();
     status(message || "觀察或假設已變更，請重新產生策略分析。", "stale"); buttons();
   }
   function field(label, options, value, change) {
@@ -140,8 +162,7 @@
       profiles = readDraft("uros.profiles." + record.pid); assumptions = readDraft("uros.analysis.inputs." + record.pid);
       $("analysis-context").textContent = record.snap.code_name + " · " + record.wf.project.stage + " · " + owners.length + " 位地主";
       $("profile-save").textContent = "本機草稿"; renderProfiles(); renderInputs(); invalidate("記錄觀察與假設後，即可產生本次分析。");
-      var dec = record.decision;
-      if (dec && dec.input_hash === record.snap.input_hash && dec.core_version === record.snap.core_version && dec.core_version !== "unknown") root.DecisionView.mount($("decision-visual"), record);
+      mountDecisionVisual();
       if (!record.engine) status("此案件缺少完整計算輸入，請在案件工作區匯入可重算的 v2.1 檔案。", "error");
       buttons();
       if (record.engine && !runtime) connect();
@@ -172,6 +193,8 @@
       if (!response.result || !response.decision || !response.strategy || response.input_hash !== response.decision.input_hash || response.input_hash !== response.strategy.input_hash || response.result.core_version !== response.decision.core_version) throw new Error("計算回應的溯源資料不一致");
       analysis = response; busy = false;
       var model = Object.assign({}, snapshot, { view: response.result, snap: Object.assign({}, snapshot.snap, { input_hash: response.input_hash, core_version: response.result.core_version }), decision: response.decision });
+      /* 本次分析的判定標 __fresh，面板才分得出它與快照判定的差別。 */
+      if (model && model.decision) model.decision = Object.assign({}, model.decision, { __fresh: true });
       root.DecisionView.mount($("decision-visual"), model); renderSummary(); renderQueue(); renderDecision();
       status("分析完成 · 本次試算，未寫回案件快照 · core " + response.result.core_version + " · input " + response.input_hash.replace(/^sha256:/, "").slice(0,12), "ready"); buttons();
     } catch (e) {

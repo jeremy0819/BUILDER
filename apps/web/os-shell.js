@@ -9,7 +9,7 @@
     "report.html": { key: "decision", n: "04 / 04", title: "決策與行動" }
   };
   var PRODUCT_VIEWS = [
-    { id: "core", label: "Core 摘要" },
+    { id: "core", label: "核心數字" },
     { id: "l1", label: "量體教學" },
     { id: "l2", label: "財務教學" },
     { id: "health", label: "健檢與敏感度" },
@@ -61,7 +61,7 @@
     hub.id = "uros-product-hub";
     hub.className = "uros-product-hub";
     hub.innerHTML = '<div class="uros-product-title"><div><h1>產品規劃工作區</h1>'
-      + '<p>作用中案件 · Core 權威摘要</p></div>'
+      + '<p>作用中案件 · 計算核心的權威摘要</p></div>'
       + '<a href="dashboard.html" class="uros-icon-btn" title="回基地頁" aria-label="回基地頁">←</a></div>'
       + '<div class="uros-kpis">'
       + kpi("允建容積", fmt(v.allow_floor_area, "㎡"))
@@ -69,9 +69,9 @@
       + kpi("共同負擔比", fmt(v.shared_cost_ratio, "ratio"))
       + kpi("全案投報率", fmt(v.return_rate, "ratio"))
       + '</div>'
-      /* 「Core 摘要」視圖刻意不展開任何教學 section（沒有 <section id="core">），
+      /* 「核心數字」視圖刻意不展開任何教學 section（沒有 <section id="core">），
          結果是四張 KPI 底下一整片空白——玩家讀起來就是壞頁。
-         這裡補一段真內容：說明下面的分頁是什麼，並附這組數字的溯源戳記。
+         這裡補一段真內容：說明下面的分頁是什麼，並附這組數字的輸入指紋。
          零計算：溯源欄位逐字取自案件快照。 */
       + '<div class="uros-core-note" id="uros-core-note"></div>'
       + '<div class="uros-view-tabs" role="tablist" aria-label="產品工作區視圖">'
@@ -95,15 +95,15 @@
           try { pv = (self.CaseBus && self.CaseBus.provenance(self.CaseBus.activeRecord())) || {}; }
           catch (e) {}
           note.innerHTML =
-            '<p>上面四個數字是這個案件的 <b>Core 權威摘要</b>——與其他三步看到的是同一份。</p>'
+            '<p>上面四個數字是這個案件的 <b>核心數字</b>——由計算核心算出，與其他三步看到的是同一份。</p>'
             + '<p>需要細看時，點上面的分頁：<b>量體教學</b>／<b>財務教學</b> 說明數字怎麼來，'
-            + '<b>健檢與敏感度</b> 顯示 Core 的警示，<b>匯入比對</b> 可對照外部 JSON。</p>'
+            + '<b>健檢與敏感度</b> 顯示計算核心的警示，<b>匯入比對</b> 可對照外部 JSON。</p>'
             + (pv.input_hash
-                ? '<p class="uros-core-prov">溯源 input_hash '
-                  + esc(String(pv.input_hash).replace(/^sha256:/, "").slice(0, 12)) + '… · core '
+                ? '<p class="uros-core-prov">輸入指紋 '
+                  + esc(String(pv.input_hash).replace(/^sha256:/, "").slice(0, 12)) + '… · 計算核心 '
                   + esc(pv.core_version || "—")
                   + (pv.stale ? ' <b>⚠️ ' + esc(pv.stale_note) + '</b>' : '') + '</p>'
-                : '<p class="uros-core-prov">尚無作用中案件的溯源戳記。</p>');
+                : '<p class="uros-core-prov">尚無作用中案件的輸入指紋。</p>');
         }
       }
       Array.prototype.forEach.call(buttons, function (b) {
@@ -155,7 +155,7 @@
       + '<a class="uros-icon-btn" href="workspace.html" title="案件工作區" aria-label="案件工作區">▦</a>'
       + '<button class="uros-icon-btn" id="uros-theme" type="button" title="切換主題" aria-label="切換主題">◐</button></div>'
       + '<div class="uros-shell-prov"><span>案件快照</span><b>' + esc(snap.code_name || "尚無案件") + "</b><span>" + esc(snap.case_type === "danger_building" ? "危老重建" : "都市更新")
-      + '</span><span>input ' + esc(shortHash(snap.input_hash) || "—") + '</span><span>core ' + esc(snap.core_version || "—") + "</span></div></div>";
+      + '</span><span title="同一份輸入算出來的數字會有同一個指紋；輸入一改，指紋就跟著變">輸入指紋 ' + esc(shortHash(snap.input_hash) || "—") + '</span><span title="算出這些數字的計算核心版本">計算核心 ' + esc(snap.core_version || "—") + "</span></div></div>";
     var stepnav = document.getElementById("uros-stepnav");
     if (stepnav && stepnav.nextSibling) stepnav.parentNode.insertBefore(shell, stepnav.nextSibling);
     else if (stepnav) stepnav.parentNode.appendChild(shell);

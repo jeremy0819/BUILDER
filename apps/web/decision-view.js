@@ -7,14 +7,14 @@
     var view = (rec && rec.view) || {}, snap = (rec && rec.snap) || {}, decision = (rec && rec.decision) || null;
     return {
       center: {
-        label: "Decision Engine",
+        label: "決策引擎",
         value: decision ? raw(decision, "verdict") : "待判讀",
         completion_probability: decision ? raw(decision, "completion_probability") : null,
-        source: decision ? "Decision Engine" : "等待權威輸出"
+        source: decision ? "決策引擎" : "等待權威輸出"
       },
       nodes: [
         {
-          id: "site", title: "量體", source: "Core",
+          id: "site", title: "量體", source: "計算核心 Core",
           primary: { label: "容積餘量", value: raw(view, "remaining_floor_area"), unit: "㎡" },
           evidence: [
             { label: "允建容積", value: raw(view, "allow_floor_area"), unit: "㎡" },
@@ -23,7 +23,7 @@
           ]
         },
         {
-          id: "product", title: "財務", source: "Core",
+          id: "product", title: "財務", source: "計算核心 Core",
           primary: { label: "全案投報率", value: raw(view, "return_rate"), unit: "ratio" },
           evidence: [
             { label: "銷售坪數", value: raw(view, "saleable_area"), unit: "坪" },
@@ -33,7 +33,7 @@
           ]
         },
         {
-          id: "people", title: "人心", source: "Workflow",
+          id: "people", title: "人心", source: "你的輸入",
           primary: { label: "同意戶數", value: [raw(snap, "agreed"), raw(snap, "total")], unit: "fraction" },
           evidence: [
             { label: "已同意", value: raw(snap, "agreed"), unit: "戶" },
@@ -42,7 +42,11 @@
           ]
         },
         {
-          id: "decision", title: "判讀", source: "Decision Engine",
+          /* 標明這個判定是哪一種：已存的快照判定，還是本次剛跑出來的分析。
+             兩者都合法，但使用者必須分得出來——導覽列說 CAUTION、面板說「待判讀」，
+             同畫面兩個答案，那是最快摧毀信任的方式。 */
+          id: "decision", title: "判讀",
+          source: decision ? (decision.__fresh ? "決策引擎 · 本次分析" : "決策引擎 · 快照判定") : "Decision Engine",
           primary: { label: "判定", value: decision ? raw(decision, "verdict") : null, unit: "text" },
           evidence: [
             { label: "判定", value: decision ? raw(decision, "verdict") : null, unit: "text" },
@@ -84,8 +88,8 @@
       + node.evidence.map(function (item) {
         return '<div class="decision-evidence-row"><span>' + esc(item.label) + '</span><b>' + esc(format(item)) + "</b></div>";
       }).join("")
-      + '<div class="decision-evidence-note">互動只切換證據，不修改或反算任何結果。<br>input '
-      + esc(String(provenance.input_hash || "").replace(/^sha256:/, "").slice(0, 10) || "—") + " · core "
+      + '<div class="decision-evidence-note">互動只切換證據，不修改或反算任何結果。<br>輸入指紋 '
+      + esc(String(provenance.input_hash || "").replace(/^sha256:/, "").slice(0, 10) || "—") + " · 計算核心 "
       + esc(provenance.core_version || "—") + "</div>";
   }
   function mount(container, rec) {

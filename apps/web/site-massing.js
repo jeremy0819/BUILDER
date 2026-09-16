@@ -14,14 +14,14 @@
   function mount(host, rec, getRuntime) {
     var draft = JSON.parse(JSON.stringify(rec.engine)), result = null, seq = 0, disposed = false, selected = 0;
     var fmt = function (v) { return typeof v === "number" && Number.isFinite(v) ? v.toLocaleString("zh-TW", {maximumFractionDigits:2}) : "—"; };
-    host.innerHTML = '<section class="site-massing" aria-label="量體生成與容積模擬"><div class="sm-heading"><div><h2>量體生成與容積模擬</h2><p>本次草案 · 未寫回案件</p></div><div><button type="button" data-sm="reset">還原案件</button> <button type="button" data-sm="run">Core 重算</button></div></div>'
+    host.innerHTML = '<section class="site-massing" aria-label="量體生成與容積模擬"><div class="sm-heading"><div><h2>量體生成與容積模擬</h2><p>本次草案 · 未寫回案件</p></div><div><button type="button" data-sm="reset">還原案件</button> <button type="button" data-sm="run">重新計算</button></div></div>'
       + '<div class="sm-grid"><div><form class="sm-generate"><label>地上層數<input name="levels" type="number" min="1" max="60" step="1" value="7" required></label><label>標準樓板（㎡）<input name="plate" type="number" min="1" max="10000" step="0.01" value="400" required></label><button type="submit">生成規則量體</button></form>'
       + '<p class="sm-note">規則草案沿用案件基地與財務參數；樓層依既有預設模板生成，改採逐層計容積，含一層地下室。這不是地籍形狀、建築高度或法規核准圖。</p>'
       + '<div class="sm-floor-editor"></div></div><div><label class="sm-overlay"><input type="checkbox" data-sm="overlay"> 疊加免計項（梯廳／安全梯／陽台）</label><div class="sm-drawing"></div><p class="sm-origin"></p></div></div>'
       + '<div class="sm-status" role="status" aria-live="polite">既有樓層輸入 · 尚未重算</div><div class="sm-results"></div><div class="sm-warnings"></div></section>';
     var q = function (s) { return host.querySelector(s); }, status = q('.sm-status');
     var overlay = false;   /* 免計項疊加：預設關，開了才畫（不預設塞資訊） */
-    function clear() { seq++; result = null; q('.sm-results').replaceChildren(); q('.sm-warnings').replaceChildren(); status.textContent = "量體輸入已變更，請交由 Core 重算。"; q('[data-sm="run"]').disabled = false; }
+    function clear() { seq++; result = null; q('.sm-results').replaceChildren(); q('.sm-warnings').replaceChildren(); status.textContent = "量體輸入已變更，請交由 重新計算。"; q('[data-sm="run"]').disabled = false; }
     function draw() {
       var model = root.MassingView.buildModel(draft.floors || []);
       /* M8.3：軸測堆疊取代平面長條。免計項疊加為選填，數值 verbatim 自 floors[]。

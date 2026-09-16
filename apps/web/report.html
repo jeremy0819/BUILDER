@@ -28,7 +28,9 @@
   <main class="strategy-workspace" id="strategy-workspace">
     <div class="strategy-heading"><div><h1>策略分析</h1><p id="analysis-context">讀取案件中</p></div>
       <div class="strategy-commands"><button type="button" id="runtime-retry" hidden>重新連線</button>
-        <button type="button" id="analysis-run" class="primary" disabled>產生策略分析</button></div></div>
+        <button type="button" id="analysis-run" class="primary" disabled
+          title="需先：① 計算核心就緒 ② 記錄地主觀察與財務假設">產生策略分析</button>
+        <span class="why-disabled" id="analysis-why">需計算核心就緒並記錄觀察後才能產生</span></div></div>
     <div class="analysis-status" id="analysis-status" role="status" aria-live="polite">準備中</div>
     <div class="analysis-caveat">方向性建議。完工機率尚未校準；同意計數採案件快照，不等同最新簽署或法定同意比例；地主分型以實際接觸紀錄為準。</div>
     <div id="analysis-empty" hidden></div>

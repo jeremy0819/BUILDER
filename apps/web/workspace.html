@@ -11,7 +11,7 @@
 :root{
   --accent:#5A3FE0; --accent-2:#8A6BF5; --accent-soft:#eeeafb;
   --bg:#f5f4f9; --panel:#ffffff; --ink:#171529; --mute:#67637d; --line:#e7e4f0;
-  --err:#d1394b; --warn:#b7791f; --info:#2563eb; --ok:#0f9d6a;
+  --err:#c33f54; --warn:#a86616; --info:#2766b1; --ok:#16845b;
   --ok-bg:#e6f7f0; --warn-bg:#fbf2e1;
   --shadow:0 1px 2px rgba(23,21,41,.05),0 12px 30px rgba(23,21,41,.07);
   --r:16px; --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
@@ -19,12 +19,12 @@
 @media (prefers-color-scheme:dark){:root{
   --accent:#9a86ff; --accent-2:#b9abff; --accent-soft:#221d3c;
   --bg:#0d0c15; --panel:#181626; --ink:#edeafb; --mute:#a6a2c0; --line:#2a2740;
-  --err:#f4788a; --warn:#e0aa55; --info:#82a8f8; --ok:#4fd3a4;
+  --err:#ef7889; --warn:#e2a44e; --info:#79a9ed; --ok:#54c99a;
   --ok-bg:#10261e; --warn-bg:#2a2112;
   --shadow:0 1px 2px rgba(0,0,0,.35),0 12px 30px rgba(0,0,0,.4);
 }}
-:root[data-theme="light"]{--accent:#5A3FE0;--accent-2:#8A6BF5;--accent-soft:#eeeafb;--bg:#f5f4f9;--panel:#fff;--ink:#171529;--mute:#67637d;--line:#e7e4f0;--err:#d1394b;--warn:#b7791f;--info:#2563eb;--ok:#0f9d6a;--ok-bg:#e6f7f0;--warn-bg:#fbf2e1;--shadow:0 1px 2px rgba(23,21,41,.05),0 12px 30px rgba(23,21,41,.07)}
-:root[data-theme="dark"]{--accent:#9a86ff;--accent-2:#b9abff;--accent-soft:#221d3c;--bg:#0d0c15;--panel:#181626;--ink:#edeafb;--mute:#a6a2c0;--line:#2a2740;--err:#f4788a;--warn:#e0aa55;--info:#82a8f8;--ok:#4fd3a4;--ok-bg:#10261e;--warn-bg:#2a2112;--shadow:0 1px 2px rgba(0,0,0,.35),0 12px 30px rgba(0,0,0,.4)}
+:root[data-theme="light"]{--accent:#5A3FE0;--accent-2:#8A6BF5;--accent-soft:#eeeafb;--bg:#f5f4f9;--panel:#fff;--ink:#171529;--mute:#67637d;--line:#e7e4f0;--err:#c33f54;--warn:#a86616;--info:#2766b1;--ok:#16845b;--ok-bg:#e6f7f0;--warn-bg:#fbf2e1;--shadow:0 1px 2px rgba(23,21,41,.05),0 12px 30px rgba(23,21,41,.07)}
+:root[data-theme="dark"]{--accent:#9a86ff;--accent-2:#b9abff;--accent-soft:#221d3c;--bg:#0d0c15;--panel:#181626;--ink:#edeafb;--mute:#a6a2c0;--line:#2a2740;--err:#ef7889;--warn:#e2a44e;--info:#79a9ed;--ok:#54c99a;--ok-bg:#10261e;--warn-bg:#2a2112;--shadow:0 1px 2px rgba(0,0,0,.35),0 12px 30px rgba(0,0,0,.4)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
@@ -250,7 +250,7 @@ footer{margin-top:30px;border-top:1px solid var(--line);padding-top:13px;font-si
   <header class="top">
     <div class="brand">
       <div class="logo">UR<br>OS</div>
-      <div><h1>案件工作區 · WORKSPACE</h1><div class="sub">案件管理層（M3-C）· 本地儲存 · 零計算</div></div>
+      <div><h1>案件工作區 · WORKSPACE</h1><div class="sub">管理你的案件 · 只存在這台電腦 · 本頁不做計算</div></div>
     </div>
     <div class="navr">
       <a class="pill" href="index.html">⌂ OS 主選單</a>
@@ -261,7 +261,7 @@ footer{margin-top:30px;border-top:1px solid var(--line);padding-top:13px;font-si
   </header>
 
   <div class="ssot"><span>🔒</span><div>本頁<b>不做任何計算</b>：案件卡顯示的財務數字（共負/投報）逐欄來自匯入 v2.1 檔的
-  <b>result</b>（SSOT）；同意進度為<b>計數</b>。案件存於瀏覽器 <b>localStorage</b>——真實資料僅在本機、不上傳、不進版控。</div></div>
+  <b>計算結果</b>；同意進度為<b>計數</b>。案件只存在這台瀏覽器——真實資料不上傳、不進版控。</div></div>
 
   <div class="import" id="drop">
     <h2>案件檔案匯入</h2>
@@ -280,7 +280,7 @@ footer{margin-top:30px;border-top:1px solid var(--line);padding-top:13px;font-si
   <div id="case-view" style="display:none"></div>
 
   <footer>
-    <span>URBAN RENEWAL OS · WORKSPACE（M3-C 閉環）— 匯入→同意看板→任務→決策→時間軸→wf 匯出入</span>
+    <span>URBAN RENEWAL OS · 案件工作區 — 匯入→同意看板→任務→決策→時間軸→匯出入</span>
     <span><a href="index.html">OS 主選單</a> · <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">BUILDER</a></span>
   </footer>
 </div>
@@ -448,8 +448,8 @@ const WORKLOGIC = (() => {
   const MISMATCH_REASONS = {
     ok: "相符",
     hash_mismatch: "輸入不同（input_hash 不符）",
-    core_version_unknown: "decision 未記錄 Core 版本（v0.1 舊檔）——請以現行 Core 重算",
-    core_version_mismatch: "跨 Core 版本（公式可能已變）——請以現行 Core 重算",
+    core_version_unknown: "這份判定沒有記錄計算核心版本（v0.1 舊檔）——請用現行版本重算",
+    core_version_mismatch: "判定與快照來自不同的計算核心版本（公式可能已變）——請用現行版本重算",
     snapshot_core_version_missing: "快照未記錄 Core 版本——無法構成二元組身分"
   };
   function snapshotMatches(decision, snapshot){
@@ -566,13 +566,13 @@ function caseCard(pid, rec){
     <div class="ct">${typ}${wf.project.mode?" · "+esc(wf.project.mode):""}</div>
     <div class="cn">${esc(snap.code_name)}</div>
     ${dslotHTML(rec.decision)}
-    <div class="sgrp">Core Output · 逐欄自 result</div>
+    <div class="sgrp">計算核心輸出 · 逐欄取自結果</div>
     <div class="kpis">
       <div class="kpi"><div class="k">共負比</div><div class="v">${pct(snap.shared_cost_ratio)}</div></div>
       <div class="kpi"><div class="k">投報率</div><div class="v">${pct(snap.return_rate)}</div></div>
       <div class="kpi"><div class="k">健檢</div><div class="v">${esc(snap.warnings_n)}</div></div>
     </div>
-    <div class="sgrp">Workflow State · 事實</div>
+    <div class="sgrp">案件流程狀態 · 事實</div>
     <div class="progress"><span style="width:${Math.min(100,ar*100)}%"></span><div class="thr" style="left:${thr*100}%"></div></div>
     <div class="plab"><span>${esc(wf.project.stage)} · 同意 ${esc(snap.agreed)}/${esc(snap.total)}（計數）</span><span>門檻 ${(thr*100)|0}%</span></div>
     <div class="meta" style="margin-top:8px">Snapshot ${esc(shortHash(snap.input_hash))}…@${esc(snap.core_version)} · ${esc(snap.stakeholders_n)} 利害關係人</div>
@@ -734,7 +734,7 @@ function attrBodyHTML(){
   }
   if(ATTR.stale && !ATTR.report) return `<div class="wip">方案已變更，請按「計算歸因」重新執行。</div>`;
   if(!ATTR.report) return `<div class="wip">選好兩個方案後按「計算歸因」。
-    <span class="at-note">精確 Shapley 可能執行上千次 Core 重算，故採<b>明確按鈕</b>而非自動執行。</span></div>`;
+    <span class="at-note">精確 Shapley 可能執行上千次重新計算，故採<b>明確按鈕</b>而非自動執行。</span></div>`;
   return reportHTML(ATTR.report);
 }
 

@@ -192,7 +192,7 @@
   function caption(grid) {
     var s = grid.spec;
     var 主 = s.rows + " × " + s.cols + " ＝ " + grid.declared_cells + " 格，"
-      + "每格一次真實 Core 重算（實際重算 " + grid.recompute_count + " 次）";
+      + "每格一次真正的重新計算（實際重算 " + grid.recompute_count + " 次）";
     var 附 = [];
     if (grid.missing.length) 附.push(grid.missing.length + " 格未取得，以斜線標示、不以鄰格頂替");
     if (grid.aborted) 附.push("已中止，未算的格保留為缺格");

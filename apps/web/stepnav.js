@@ -147,8 +147,8 @@
        不必在每個數字旁重複——那會把導覽列變成噪音。
        沒有圖例，色邊只是裝飾；有圖例，它才是語言。 */
     var 圖例 = 有連動
-      ? '<span class="sn-key" aria-label="數字來源圖例">'
-        + '<i class="src-core"></i>Core<i class="src-input"></i>輸入<i class="src-decision"></i>決策引擎</span>'
+      ? '<span class="sn-key" aria-label="導覽列數字的來源圖例">'
+        + '<i class="src-core"></i>' + SOURCE_NAME.core + '<i class="src-input"></i>' + SOURCE_NAME.input + '<i class="src-decision"></i>' + SOURCE_NAME.decision + '</span>'
       : "";
     inner += '<div class="sn-cap' + (陳舊 ? ' sn-stale' : '') + '">' + 圖例
       + (self.UROSSecurity ? self.UROSSecurity.esc(陳舊) : "") + "</div>";

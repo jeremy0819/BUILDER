@@ -20,7 +20,7 @@
   --bg:#0a0d12; --panel:#11161d; --panel2:#0d1117; --line:#1f2833; --line2:#2a3644;
   --ink:#dce6ec; --mute:#6d7c88; --dim:#43505a;
   --strand:#4fd8e8; --strand-dim:#1d5a64; --amber:#ff8a4a;
-  --ok:#59d8a2; --warn:#ffcf5a;
+  --ok:#54c99a; --warn:#e2a44e;
   --mono:"SF Mono",ui-monospace,"Cascadia Mono",Menlo,Consolas,monospace;
   --serif:"Noto Serif TC","Songti TC",serif;
   --sans:-apple-system,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
@@ -270,10 +270,10 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
   </details>
 
   <div class="ssot">
-    <b>數字紀律（SSOT）</b>：全 OS 只有一個計算來源 <span class="mono">core/redcf</span>——
-    本頁的數字是瀏覽器內以 Pyodide 執行的**同一份** Core 算出來的，不是另寫一套。
-    每組結果帶 <span class="mono">input_hash × core_version</span> 溯源二元組。
-    合約 schema 凍結中（Gate 6 位元組守衛）。零真實案件資料。
+    <b>數字只有一個出處</b>：整個系統只有一套算式，放在 <span class="mono">core/redcf</span>——
+    你在這頁看到的數字，是瀏覽器直接跑那一套算出來的，介面不會自己另算一份。
+    每組結果都帶「輸入指紋 × 計算核心版本」，可以回頭核對是哪一份輸入、哪一版算式算的。
+    資料格式凍結、由自動檢查逐位元看守。本站不含任何真實案件資料。
   </div>
 
   <footer>

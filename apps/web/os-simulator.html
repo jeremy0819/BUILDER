@@ -22,7 +22,7 @@
      ②「進度脊」＝把 S1–S11 都更流程 與 整合旅程軌 併成一體（原本兩條進度條互相打架）
      ③地主矩陣復位為主舞台（hero）；Core 試算與行動日誌收為右側「情報欄」
    保留原有 Kojima/codec 世界觀（深藍黑＋strand 青＋掃描線）。SIMCORE 邏輯零改動。
-   紅線：本頁零財務/法規公式——方案財務皆 Core 預算結果（見 SCEN 註記）。
+   紅線：本頁零財務/法規公式——方案財務皆由計算核心算出（見 SCEN 註記）。
    命名：2026-07-13 移除小島秀夫簽名元素（STRAND/羈絆/CODEC/FREQ 141.12/presents 卡）
    ——trade dress 歸零；遊戲機制與測試不變，「羈絆」機制改稱「鄰里效應」。
 ———————————————————————————————————————————————— */
@@ -30,7 +30,7 @@
   --bg:#0a0d12; --panel:#11161d; --panel2:#0d1117; --line:#1f2833; --line2:#2a3644;
   --ink:#dce6ec; --mute:#6d7c88; --dim:#43505a;
   --strand:#4fd8e8; --strand-dim:#1d5a64; --amber:#ff8a4a; --amber-dim:#66351d;
-  --ok:#59d8a2; --err:#ef6a7a;
+  --ok:#54c99a; --err:#ef7889;
   --mono:"SF Mono",ui-monospace,"Cascadia Mono",Menlo,Consolas,monospace;
   --serif:"Noto Serif TC","Songti TC",serif;
   --sans:-apple-system,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
@@ -307,7 +307,7 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
     這條街有 <b>48 戶</b>。34 戶已同意重建，<b class="hi">剩下 14 戶</b>。
     在按下門鈴之前，你要先做一個建築人的決定：<b class="hi">蓋多大、用什麼模式</b>。
     規劃會決定財務，財務會決定人心——Core 會把每個方案的真話算給你看。
-    <div class="src">AUTHORITATIVE DATA · 快照 core 0.3.0（本局財務為當時算好的快照）· schema v2.1 · 人物皆為虛構原型</div>
+    <div class="src">權威資料 · 快照於計算核心 0.3.0（本局財務為當時算好的快照）· schema v2.1 · 人物皆為虛構原型</div>
   </div>
   <button class="btn" id="btn-start">▶ 開始整合</button>
   <div style="margin-top:14px"><a href="index.html" style="font-family:var(--mono);font-size:10.5px;color:var(--dim)">← 回 OS 主選單</a></div>
@@ -316,11 +316,11 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
 <!-- ═══ PLAN PHASE（建築規劃 → 整合難度）═══ -->
 <div class="ovl" id="ovl-plan"><div class="plan-box fadein">
   <h2>PLAN PHASE — 建築規劃</h2>
-  <div class="sub">同一塊基地、同一套 Core 公式：你的規模與模式決定共負比，共負比決定這場整合有多難。</div>
+  <div class="sub">同一塊基地、同一套計算核心公式：你的規模與模式決定共負比，共負比決定這場整合有多難。</div>
   <div id="bridge-banner" style="display:none"></div>
   <div class="plan-lab">① 開發模式</div>
   <div class="optrow two" id="opt-mode"></div>
-  <div class="plan-lab">② 建築規模（獎勵率＝輸入參數；各方案財務為 Core 重算結果）</div>
+  <div class="plan-lab">② 建築規模（獎勵率＝輸入參數；各方案財務由計算核心重算）</div>
   <div class="optrow three" id="opt-scale"></div>
   <div class="plan-lab">③ 基地文理（B 系列 · 三滑桿＝這條街的長相；係數表＝coefficients.json 核准權重）</div>
   <div class="fabric" id="fabric">
@@ -331,8 +331,8 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
       <button class="btn ghost sm-seed" id="btn-seed">🎲</button></span>
   </div>
   <div class="plan-src" id="fabric-note">預設＝經典局（48 戶・34 同意・固定家族）。動任一滑桿＝程序生成新街區（同 seed 可重現）；每戶更新前價值＝基準單價×路寬×分區×型態×樓層×面積（合成示意，非估價值）。</div>
-  <div class="plan-src">SCEN 資料＝core/redcf recompute（engine 輸入變更 → result），schema v2.1 · law_db builtin-2026-07。
-  沙盤效果（信任修正/週數）為遊戲規則，依 Core 共負比對應，非財務計算。</div>
+  <div class="plan-src">方案資料由 core/redcf 重算（輸入一變就重算），schema v2.1 · 法規庫 builtin-2026-07。
+  沙盤效果（信任修正/週數）為遊戲規則，依計算核心算出的共負比對應，非財務計算。</div>
   <div class="plan-go"><button class="btn" id="btn-plan-go" disabled>▶ 定案，開始整合</button></div>
 </div></div>
 
@@ -376,7 +376,7 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
     <div><div class="rep-sect">這一局的故事</div><div class="rep-story" id="end-story"></div></div>
     <div><div class="rep-sect">逐戶結局</div><div class="rep-houses" id="end-houses"></div></div>
   </div>
-  <div class="rep-sect">本方案 Core 財務結算（唯讀）</div>
+  <div class="rep-sect">本方案財務結算 · 由計算核心算出（唯讀）</div>
   <div class="rep-core" id="end-core"></div>
   <div class="rep-actions">
     <button class="btn" onclick="location.reload()">↻ 再來一局</button>
@@ -449,7 +449,7 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
         <div class="flow" id="flowbars"></div>
         <div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:7px">
           累計 <b class="tnum" id="flow-total" style="color:var(--amber)">0</b> 萬 ·
-          說明會 20／客製方案 50（案件財務見上方 Core 卡）</div>
+          說明會 20／客製方案 50（案件財務見上方的計算核心卡）</div>
       </section>
       <section class="card" id="logcard">
         <div class="card-head"><span class="lbl">Field Log · 行動日誌</span></div>
@@ -459,7 +459,7 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
   </div>
 
   <footer class="pg">
-    <span>《整合人》v3 — 沙盤機制為示意；方案財務皆 Core 預算結果。人物皆為虛構原型，零真實資料。</span>
+    <span>《整合人》v3 — 沙盤機制為示意；方案財務皆由計算核心算出。人物皆為虛構原型，零真實資料。</span>
     <span><a href="index.html">OS 主選單</a> · <a href="dashboard.html">DASHBOARD</a> · <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">BUILDER</a></span>
   </footer>
 </div>
@@ -841,8 +841,8 @@ function renderCore(){
   const sc=S.scen;
   $("hud-scen").textContent=`· ${S.cfg.mode==="weilao"?"危老":"都更"} × ${sc.label}`;
   $("corebox").innerHTML=`
-    <div class="card-head"><span class="lbl">RE-DCF Core · 本方案財務</span><span class="chip">${
-      sc._fromCase?`本案實算 · ${UROSSecurity.esc(sc._case)}`:"快照 core 0.3.0"} · 只讀</span></div>
+    <div class="card-head"><span class="lbl">計算核心 · 本方案財務</span><span class="chip">${
+      sc._fromCase?`本案實算 · ${UROSSecurity.esc(sc._case)}`:"快照於計算核心 0.3.0"} · 只讀</span></div>
     ${sc._fromCase?`<div class="row" style="border:0;padding-top:0"><span style="font-size:10.5px;color:var(--dim)">
       承接 ①基地×②產品 的規劃：基地面積・容積率・獎勵・公設比改變，這裡與下方人心反應一起變。</span></div>`:""}
     <div class="row"><span>允建容積 / 餘量</span><b class="tnum">${n0(sc.allow)} m² / ${sc.remaining>0?'+':''}${UROSSecurity.esc(sc.remaining)}</b></div>
@@ -851,7 +851,7 @@ function renderCore(){
     <div class="row"><span>地主分回比</span><b class="tnum">${pct(sc.ratio)}</b></div>
     <div class="row"><span>投報率</span><b class="tnum">${pct(sc.rr)}</b></div>
     ${sc.warn.map(w=>`<div class="warn ${w==="SHARED_COST_HIGH"||w==="VOLUME_EXCEEDED"?"err":"warn"}">${UROSSecurity.esc(w)}${w==="SHARED_COST_HIGH"?` — 共負比 ${pct(sc.scr)} 偏高，地主接受度下降（＝難度來源）`:w==="VOLUME_EXCEEDED"?` — 超容 ${Math.abs(sc.remaining)} m²，需調整設計`:""}</div>`).join("")}
-    <div class="src">recompute(engine) 預算結果 · schema v2.1 · 遊戲層零財務公式</div>`;
+    <div class="src">由計算核心重算的預算結果 · schema v2.1 · 沙盤層不含任何財務公式</div>`;
 }
 /* v3 呈現層記帳：每週支出快照（UI 紀錄，非 SIMCORE 狀態、非財務公式） */
 const FLOW={hist:{}};
@@ -1213,6 +1213,6 @@ if(introRec&&intro){
   const snap=introRec.snap||{};
   intro.innerHTML=`<b>任務簡報 · ${UROSSecurity.esc(snap.code_name||introRec.pid)}</b>`+
     `<p>案件同意紀錄 ${UROSSecurity.esc(snap.agreed??"—")} / ${UROSSecurity.esc(snap.total??"—")} 戶。推演結果不會改寫案件紀錄。</p>`+
-    `<div class="src">案件快照 core ${UROSSecurity.esc(snap.core_version||"—")} · 戶別資料不足時以示意盤面呈現。</div>`;
+    `<div class="src">案件快照 · 計算核心 ${UROSSecurity.esc(snap.core_version||"—")} · 戶別資料不足時以示意盤面呈現。</div>`;
 }
 </script>

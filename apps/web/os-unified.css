@@ -136,7 +136,7 @@ body.uros-unified input:focus-visible{outline:2px solid var(--uros-accent);outli
 .uros-view-tabs button{height:32px;border:1px solid var(--uros-line);border-radius:6px;padding:0 11px;background:var(--uros-panel);
   color:var(--uros-mute);cursor:pointer;white-space:nowrap;font-size:11.5px}
 .uros-view-tabs button[aria-pressed="true"]{background:var(--uros-accent-soft);border-color:var(--uros-accent);color:var(--uros-accent);font-weight:700}
-.uros-page-product section{padding:12px 0 24px!important;border:0!important;background:transparent!important}
+.uros-page-product section:not(.data-notice){padding:12px 0 24px!important;border:0!important;background:transparent!important}
 .uros-page-product section[hidden]{display:none!important}
 .uros-page-product section>.wrap{padding-top:0!important;padding-bottom:0!important}
 .uros-page-product section h2{font-family:inherit!important;font-size:16px!important;font-weight:750!important;line-height:1.3!important;color:var(--uros-ink)}
@@ -204,7 +204,10 @@ body.uros-unified input:focus-visible{outline:2px solid var(--uros-accent);outli
 @media(max-width:560px){
   body.uros-unified .wrap{padding-inline:12px}.uros-shell-inner{padding:9px 12px;gap:9px}.uros-shell-title{font-size:14px}
   .uros-shell-actions{gap:4px}.uros-shell-prov{display:none}
-  #uros-stepnav{padding-inline:7px!important}#uros-stepnav .sn-node{min-width:118px!important}#uros-stepnav .sn-arrow{display:none!important}
+  #uros-stepnav{padding-inline:7px!important}#uros-stepnav .sn-arrow{display:none!important}
+  #uros-stepnav .sn-wrap{display:grid!important;grid-template-columns:1fr 1fr;gap:4px!important;overflow-x:visible!important}
+  #uros-stepnav .sn-node{min-width:0!important}
+  #uros-stepnav.sn-collapsed .sn-wrap{display:flex!important}
   .uros-land-head{display:block}.uros-land-status{justify-content:flex-start;margin-top:8px}.uros-land-row{grid-template-columns:65px 1fr}.uros-land-row>*:nth-child(n+3){display:none}
   .uros-kpis{grid-template-columns:1fr 1fr}.uros-kpi b{font-size:16px}
   .uros-view-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}.uros-view-tabs button{white-space:normal;text-align:center}.uros-view-tabs button:last-child{grid-column:1/-1}
@@ -356,3 +359,10 @@ body.uros-unified input:focus-visible{outline:2px solid var(--uros-accent);outli
 .uros-kpi.src-core{border-left-color:var(--uros-accent)}
 .uros-kpi.src-input{border-left-color:var(--uros-mute)}
 .uros-kpi.src-decision{border-left-color:var(--uros-warn)}
+
+/* 停用的主要按鈕不該長成全頁最強的視覺焦點——使用者會一直按它，
+   然後以為是自己不會用。降級為外框樣式，並在旁邊說明缺什麼。 */
+button.primary:disabled{background:transparent!important;color:var(--uros-mute)!important;
+  border:1px solid var(--uros-line)!important;cursor:not-allowed}
+.why-disabled{display:inline-block;margin-left:8px;font-size:11px;color:var(--uros-mute);vertical-align:middle}
+button.primary:not(:disabled)+.why-disabled{display:none}

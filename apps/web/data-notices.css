@@ -1,3 +1,30 @@
 .data-notice{box-sizing:border-box;width:100%;max-width:1180px;margin:12px auto;padding:12px 16px;background:var(--panel,#f4f7f6);color:var(--ink,#182922);border-block:1px solid var(--line,#cad8d0);font:13px/1.6 system-ui,sans-serif;overflow-wrap:anywhere;letter-spacing:0}
-.data-notice p{margin:8px 0;max-width:90ch}.data-notice summary{cursor:pointer}.data-notice button{font:inherit;padding:6px 12px;cursor:pointer;border:1px solid currentColor;border-radius:4px;color:inherit;background:transparent}.data-notice [hidden]{display:none!important}.data-notice input{max-width:100%}.backup-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px}.backup-row strong{flex:1 1 300px}.backup-due{border-inline-start:4px solid #b76e13}#backup-status{display:block;margin-block:8px}#calibration-notice summary{font-weight:650;color:var(--warn,#88520c)}
+.data-notice p{margin:8px 0;max-width:90ch}.data-notice summary{cursor:pointer}.data-notice button{font:inherit;padding:6px 12px;cursor:pointer;border:1px solid currentColor;border-radius:4px;color:inherit;background:transparent}.data-notice [hidden]{display:none!important}.data-notice input{max-width:100%}.backup-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px}.backup-row strong{flex:1 1 300px}.backup-due{border-inline-start:3px solid var(--info,#2766b1)}#backup-status{display:block;margin-block:8px}
 @media(max-width:600px){.data-notice{padding:10px 12px;margin-block:8px}.backup-row{gap:8px}}
+
+/* 備份橫幅收成一行。橘色是「對案子的判斷」專用（CAUTION），
+   備份是家務事，改走 info 藍，不跟結論搶同一個顏色。 */
+#browser-backup{padding:0}
+#browser-backup .backup-sum,#calibration-notice .calib-sum{display:flex;align-items:center;gap:8px;padding:7px 16px;list-style:none;font-size:12px;color:var(--mute,#68707d);user-select:none}
+#browser-backup .backup-sum::-webkit-details-marker,#calibration-notice .calib-sum::-webkit-details-marker{display:none}
+#browser-backup .backup-sum::after,#calibration-notice .calib-sum::after{content:"展開";margin-inline-start:auto;font-size:11px;padding:1px 7px;border:1px solid var(--line,#dfe3e8);border-radius:999px;color:var(--mute,#68707d)}
+#backup-fold[open] .backup-sum::after,#calibration-notice[open] .calib-sum::after{content:"收起"}
+#browser-backup .backup-sum:hover::after,#browser-backup .backup-sum:focus-visible::after,#calibration-notice .calib-sum:hover::after,#calibration-notice .calib-sum:focus-visible::after{border-color:currentColor;color:var(--ink,#182922)}
+#browser-backup .backup-dot,#calibration-notice .calib-dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:var(--line,#dfe3e8);border:1px solid var(--mute,#68707d)}
+#browser-backup.backup-due .backup-dot{background:var(--info,#2766b1);border-color:var(--info,#2766b1)}
+#browser-backup .backup-chip,#calibration-notice .calib-chip{font-variant-numeric:tabular-nums;color:var(--mute,#68707d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#browser-backup.backup-due .backup-chip{color:var(--info,#2766b1);font-weight:650}
+#backup-fold>:not(.backup-sum){margin-inline:16px}
+#backup-fold[open]>:not(.backup-sum):last-child{margin-bottom:12px}
+@media(max-width:600px){#browser-backup .backup-sum,#calibration-notice .calib-sum{padding:6px 12px}#backup-fold>:not(.backup-sum){margin-inline:12px}}
+/* 判定可信度：同一個 warn 橘，但只給一顆小點跟一行小字。
+   大而粗的橘色是 verdict 的；這裡只是它的但書。 */
+#calibration-notice{padding:0}
+#calibration-notice .calib-dot{background:var(--warn,#a86616);border-color:var(--warn,#a86616)}
+#calibration-notice .calib-chip{color:var(--warn,#a86616)}
+#calibration-notice[open]{border-inline-start:3px solid var(--warn,#a86616)}
+#calibration-notice>:not(.calib-sum){margin-inline:16px}
+#calibration-notice[open]>:not(.calib-sum):last-child{margin-bottom:12px}
+@media(max-width:600px){#calibration-notice>:not(.calib-sum){margin-inline:12px}}
+/* 兩條狀態列相鄰時收成同一帶，不各自做一塊橫幅。 */
+.data-notice+.data-notice{margin-top:0;border-block-start:0}

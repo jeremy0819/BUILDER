@@ -5,7 +5,7 @@
 :root{
   --accent:#5A3FE0; --accent-2:#8A6BF5; --accent-soft:#eeeafb;
   --bg:#f5f4f9; --panel:#ffffff; --ink:#171529; --mute:#67637d; --line:#e7e4f0;
-  --err:#d1394b; --warn:#b7791f; --info:#2563eb; --ok:#0f9d6a;
+  --err:#c33f54; --warn:#a86616; --info:#2766b1; --ok:#16845b;
   --err-bg:#fcebed; --warn-bg:#fbf2e1; --info-bg:#e9f0fe; --ok-bg:#e6f7f0;
   --shadow:0 1px 2px rgba(23,21,41,.05),0 12px 30px rgba(23,21,41,.07);
   --r:18px; --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
@@ -13,12 +13,12 @@
 @media (prefers-color-scheme:dark){:root{
   --accent:#9a86ff; --accent-2:#b9abff; --accent-soft:#221d3c;
   --bg:#0d0c15; --panel:#181626; --ink:#edeafb; --mute:#a6a2c0; --line:#2a2740;
-  --err:#f4788a; --warn:#e0aa55; --info:#82a8f8; --ok:#4fd3a4;
+  --err:#ef7889; --warn:#e2a44e; --info:#79a9ed; --ok:#54c99a;
   --err-bg:#2b1519; --warn-bg:#2a2112; --info-bg:#151f31; --ok-bg:#10261e;
   --shadow:0 1px 2px rgba(0,0,0,.35),0 12px 30px rgba(0,0,0,.4);
 }}
-:root[data-theme="light"]{--accent:#5A3FE0;--accent-2:#8A6BF5;--accent-soft:#eeeafb;--bg:#f5f4f9;--panel:#fff;--ink:#171529;--mute:#67637d;--line:#e7e4f0;--err:#d1394b;--warn:#b7791f;--info:#2563eb;--ok:#0f9d6a;--err-bg:#fcebed;--warn-bg:#fbf2e1;--info-bg:#e9f0fe;--ok-bg:#e6f7f0;--shadow:0 1px 2px rgba(23,21,41,.05),0 12px 30px rgba(23,21,41,.07)}
-:root[data-theme="dark"]{--accent:#9a86ff;--accent-2:#b9abff;--accent-soft:#221d3c;--bg:#0d0c15;--panel:#181626;--ink:#edeafb;--mute:#a6a2c0;--line:#2a2740;--err:#f4788a;--warn:#e0aa55;--info:#82a8f8;--ok:#4fd3a4;--err-bg:#2b1519;--warn-bg:#2a2112;--info-bg:#151f31;--ok-bg:#10261e;--shadow:0 1px 2px rgba(0,0,0,.35),0 12px 30px rgba(0,0,0,.4)}
+:root[data-theme="light"]{--accent:#5A3FE0;--accent-2:#8A6BF5;--accent-soft:#eeeafb;--bg:#f5f4f9;--panel:#fff;--ink:#171529;--mute:#67637d;--line:#e7e4f0;--err:#c33f54;--warn:#a86616;--info:#2766b1;--ok:#16845b;--err-bg:#fcebed;--warn-bg:#fbf2e1;--info-bg:#e9f0fe;--ok-bg:#e6f7f0;--shadow:0 1px 2px rgba(23,21,41,.05),0 12px 30px rgba(23,21,41,.07)}
+:root[data-theme="dark"]{--accent:#9a86ff;--accent-2:#b9abff;--accent-soft:#221d3c;--bg:#0d0c15;--panel:#181626;--ink:#edeafb;--mute:#a6a2c0;--line:#2a2740;--err:#ef7889;--warn:#e2a44e;--info:#79a9ed;--ok:#54c99a;--err-bg:#2b1519;--warn-bg:#2a2112;--info-bg:#151f31;--ok-bg:#10261e;--shadow:0 1px 2px rgba(0,0,0,.35),0 12px 30px rgba(0,0,0,.4)}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif}
@@ -166,9 +166,9 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
     </div>
   </header>
 
-  <div class="ssot"><span>🔒</span><div>所有數字皆由 <b>RE-DCF Core</b> 計算（Result JSON）；儀表板<b>只讀渲染、不重算</b>（SSOT）。
+  <div class="ssot"><span>🔒</span><div>所有數字都由 <b>計算核心</b> 算好後送進來；儀表板<b>只負責顯示，不自己重算</b>。
   v2.0 合約含<b>逐層樓板</b>與<b>可重算驗證</b>：給 Core 這份輸入即可回放出同一組 result。
-  主畫面＝上方<b>作用中案件</b>（Case Workspace）。沒有案件時請先到 <a href="index.html">起始頁</a>填四個數字建案；
+  主畫面＝上方的<b>作用中案件</b>。沒有案件時請先到 <a href="index.html">起始頁</a>填四個數字建案；
   下方「三案對照」是 Core 0.2.0 時期的靜態快照，供型態比較，零真實資料。</div></div>
 
   <!-- M5-P1 Case Workspace（單案容器；純呈現，資料全部 verbatim 自 store）-->
@@ -178,8 +178,8 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
   <!-- 示範案例庫已併入上方 Case Workspace（容積坪效／現金流／逐戶權變／產權清冊皆掛在作用中案件）。
        保留三案對照做為跨案比較，其餘不再重複一份。 -->
   <details class="pack" id="demo-pack">
-    <summary><b>三案對照</b> · 跨案比較（合成 Baked Core <b>0.2.0</b> 靜態快照）
-      <span class="pack-hint">當時算出的數字，不隨現行 Core 0.6.0 重算——只作型態對照，不是可選的起手範本</span></summary>
+    <summary><b>三案對照</b> · 跨案比較（合成的既有快照 <b>0.2.0</b> 靜態快照）
+      <span class="pack-hint">當時算出的數字，不隨現行計算核心 0.6.0 重算——只作型態對照，不是可選的起手範本</span></summary>
     <div class="pack-body">
       <div class="cases" id="cases"></div>
       <div class="detail" id="detail"></div>
@@ -200,7 +200,7 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
         <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener"><div class="t">📦 程式庫 <span class="ext">↗ GitHub</span></div><div class="d">Urban Renewal OS monorepo</div></a>
       </div>
       <div class="src" style="margin-top:8px">「坪效×投報試算」已併入 <b>② Product 產品</b>（承接①基地條件）；
-        「RE-DCF 精確計算」的權威計算已由瀏覽器內 Core（傳動軸即時運算）取代，不再需要外部 Streamlit。</div>
+        「RE-DCF 精確計算」的權威計算已由瀏覽器內的計算核心即時運算取代，不再需要外部 Streamlit。</div>
     </div>
   </details>
 
@@ -257,7 +257,7 @@ function detail(c){
     <span class="chip">core <b>${c.core_version}</b></span>
     <span class="chip">law_db <b>${c.law_db}</b></span>
     <span class="chip">computed <b>${c.computed_at}</b></span>
-    <span class="chip">input_hash <b class="mono">${c.input_hash}…</b></span>
+    <span class="chip">輸入指紋 <b class="mono">${c.input_hash}…</b></span>
   </div>
   <div class="grid4">
     <div class="kpi"><div class="k">允建容積</div><div class="v tnum">${n0(c.allow)}<span class="u">m²</span></div><div class="n ${over?'bad':'good'}">餘量 ${n2(c.remaining)} m²${over?'（超出）':''}</div></div>
@@ -272,24 +272,24 @@ function detail(c){
     <div class="blk"><h3>共同負擔比（L6）</h3><div class="donut">${ring(c.scr)}<div class="band">合理帶依案型：
       <span class="tag" style="background:var(--info-bg);color:var(--info)">危老 25–45%</span>
       <span class="tag" style="background:var(--ok-bg);color:var(--ok)">都更全管 30–50%</span>
-      <span class="tag" style="background:var(--warn-bg);color:var(--warn)">合建 35–55%</span><br>門檻由 Core 判斷</div></div></div>
+      <span class="tag" style="background:var(--warn-bg);color:var(--warn)">合建 35–55%</span><br>門檻由計算核心判斷</div></div></div>
   </div>
   ${consent}
   <div class="floors"><button class="fbtn" id="fbtn">▸ 展開逐層樓板表（${c.floors_n} 層，v2.0 合約新增）</button>
     <table class="ftbl" id="ftbl"><thead><tr><th>樓層</th><th>樓板 m²</th><th>計容積</th><th>梯廳</th><th>安全梯</th><th>陽台</th></tr></thead><tbody>${frows}</tbody></table></div>
-  <div class="warns"><div class="slab" style="margin:8px 0 2px">Core 權威健檢 warnings[]</div>${warns}</div>`;
+  <div class="warns"><div class="slab" style="margin:8px 0 2px">計算核心的權威健檢</div>${warns}</div>`;
 }
 function compareTable(){
   const rows=[["允建容積 m²",c=>n0(c.allow)],["計入容積 m²",c=>n2(c.used)],["容積餘量 m²",c=>n2(c.remaining)],
     ["銷售坪數 坪",c=>n0(c.saleable)],["銷坪比",c=>n2(c.eff)],["總銷 萬",c=>n0(c.total_sales)],
     ["共負比",c=>pct(c.scr)],["地主分回比",c=>pct(c.owner_ratio)],["投報率",c=>pct(c.return_rate)],
     ["增值倍率",c=>c.vmult==null?"—":n2(c.vmult)+"×"],["健檢 warnings",c=>c.warnings.length+" 項"],["逐層資料",c=>c.floors_n+" 層"]];
-  const head=`<tr><th style="text-align:left;padding:7px 10px;color:var(--mute);font-size:11px;border-bottom:1px solid var(--line)">指標（皆為 Core result）</th>`+
+  const head=`<tr><th style="text-align:left;padding:7px 10px;color:var(--mute);font-size:11px;border-bottom:1px solid var(--line)">指標（皆為計算核心的結果）</th>`+
     CASES.map(c=>`<th style="text-align:right;padding:7px 10px;font-size:12px;border-bottom:1px solid var(--line)">案例 ${c.id}<br><span style="font-weight:500;color:var(--mute);font-size:10.5px">${c.type}</span></th>`).join("")+"</tr>";
   const body=rows.map(([lab,f])=>`<tr><td style="padding:6px 10px;color:var(--mute);font-size:12px;border-bottom:1px solid var(--line)">${lab}</td>`+
     CASES.map(c=>`<td class="tnum" style="text-align:right;padding:6px 10px;font-size:12.5px;border-bottom:1px solid var(--line)">${f(c)}</td>`).join("")+"</tr>").join("");
   return `<table style="width:100%;border-collapse:collapse;min-width:520px">${head}${body}</table>
-  <div style="font-size:11px;color:var(--mute);margin-top:9px">示範數字為 2026-07-01 的<b>快照</b>（以 core 0.2.0 預算，可比較）；現行 core 0.4.0 僅新增權變/現金流/決策引擎/選配映射，容積・坪效・財務公式未變，故示範仍一致。你自己的案件請走上方 <b>傳動軸駕駛艙</b>（即時真 Core）。</div>`;
+  <div style="font-size:11px;color:var(--mute);margin-top:9px">示範數字為 2026-07-01 的<b>快照</b>（以 core 0.2.0 預算，可比較）；現行 core 0.4.0 僅新增權變/現金流/決策引擎/選配映射，容積・坪效・財務公式未變，故示範仍一致。你自己的案件請走上方 <b>傳動軸駕駛艙</b>（瀏覽器內即時執行真正的計算核心）。</div>`;
 }
 let active="C";
 function render(){
@@ -332,7 +332,7 @@ function cashflowView(id){
       <div style="display:flex;align-items:flex-end;gap:3px;height:${maxH+34}px;border-bottom:1px solid var(--line)">${bars}</div>
     </div>
   </div>
-  <div style="font-size:11px;color:var(--mute);margin-top:12px">科目金額＝Core <b>calc_投報全案</b> 實額；分期＝<b>calc_現金流分期</b>（均勻分佈，<b>structural 示意</b>）。
+  <div style="font-size:11px;color:var(--mute);margin-top:12px">科目金額＝計算核心 <b>calc_投報全案</b> 實額；分期＝<b>calc_現金流分期</b>（均勻分佈，<b>structural 示意</b>）。
   實案 S 曲線、IRR/NPV、貸款攤還排程屬 <b>M4 校準範圍</b>（需使用者核准費率/曲線後實作）——本區先把「錢何時進場」的結構立起來。前端零計算。</div>
   <style>@media(max-width:760px){.cfgrid{grid-template-columns:1fr!important}}</style>`;
 }
@@ -366,7 +366,7 @@ function allocTable(){
     <td style="${td};text-align:right" class="tnum">${eqCell(r.eq)}</td></tr>`).join("");
   return `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:11px;font-size:11px;color:var(--mute)">
       <span class="chip">✓ 可重算驗證通過</span><span class="chip">core <b>${ALLOC.core}</b></span>
-      <span class="chip">schema <b>v${ALLOC.schema}</b></span><span class="chip">input_hash <b class="mono">${ALLOC.hash}…</b></span>
+      <span class="chip">schema <b>v${ALLOC.schema}</b></span><span class="chip">輸入指紋 <b class="mono">${ALLOC.hash}…</b></span>
       <span class="chip">§56 權利變換</span></div>
     <table style="width:100%;border-collapse:collapse;min-width:560px">
       <thead><tr>
@@ -609,7 +609,7 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
       <div class="cw-head">
         <div><div class="cw-name">🗂️ ${esc(snap.code_name)}
           <span style="font-size:11px;color:var(--accent);font-weight:700">${snap.case_type==="danger_building"?"危老重建":"都市更新"}${wf.project.mode?" · "+esc(wf.project.mode):""}</span></div>
-          <div class="cw-sub">Case Workspace · ${esc(wf.project.project_id)} · snap ${esc((snap.input_hash||"").replace(/^sha256:/,"").slice(0,10))}…@${esc(snap.core_version)}</div>
+          <div class="cw-sub" title="案件編號、輸入指紋與算出它的計算核心版本">案件編號 ${esc(wf.project.project_id)} · 輸入指紋 ${esc((snap.input_hash||"").replace(/^sha256:/,"").slice(0,10))}… · 計算核心 ${esc(snap.core_version)}</div>
           <div class="cw-switch">
             <span>作用中案件</span><select id="cw-switch">${caseOpts}</select>
             ${rec.demo?`<span class="cw-demo-tag">合成示範</span>`:""}
@@ -618,25 +618,25 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
             <a href="#" onclick="reloadDemoCases();return false" title="重新載入 A/B/C/D 四個合成示範案（不會刪除你自己匯入的案件）">↻ 重載示範案</a></div></div>
         <div style="text-align:right">
           ${dec?`<div class="cw-verdict" style="color:${VC[dec.verdict]||'var(--mute)'};font-size:22px">${esc(dec.verdict)}</div>
-                 <div style="font-size:10.5px;color:var(--mute)">Decision Engine ${esc(dec.decision_engine_version)}${dec.breakpoint_stakeholder?` · 引爆點 ${esc(dec.breakpoint_stakeholder)}`:""}<br>
+                 <div style="font-size:10.5px;color:var(--mute)">決策引擎 ${esc(dec.decision_engine_version)}${dec.breakpoint_stakeholder?` · 引爆點 ${esc(dec.breakpoint_stakeholder)}`:""}<br>
                  <b style="color:var(--warn)">⚠ 方向性判斷（存活率未校準）· 非投資結論</b></div>`
                :`<div style="font-size:11px;color:var(--mute);border:1px dashed var(--line);border-radius:9px;padding:6px 10px">決策狀態：待 Decision Engine<br>（Workspace 匯入 decision JSON）</div>`}
         </div></div>
       ${self.LandInformation?self.LandInformation.render(rec):""}
       ${rec.engine?'<div id="site-massing-host"></div>':''}
       <div class="cw-grid">
-        <div class="cw-card"><h4>案件狀態 · Workflow 事實</h4>
+        <div class="cw-card"><h4>案件狀態 · 流程上的事實</h4>
           <div class="cw-row"><span>階段</span><b>${esc(wf.project.stage)}</b></div>
           <div class="cw-row"><span>同意（計數）</span><b>${esc(snap.agreed)}/${esc(snap.total)} · 門檻 ${(snap.threshold*100)|0}%</b></div>
-          <div class="cw-row"><span>健檢 warnings</span><b>${esc(snap.warnings_n)} 項</b></div>
+          <div class="cw-row"><span>健檢警示</span><b>${esc(snap.warnings_n)} 項</b></div>
           <div class="cw-row"><span>利害關係人</span><b>${esc(snap.stakeholders_n)}</b></div></div>
-        <div class="cw-card"><h4>Site Facts ·（input.site 逐欄）</h4>
+        <div class="cw-card"><h4>基地事實 · 逐欄取自你的輸入</h4>
           <div class="cw-row"><span>基地面積</span><b>${fmt(st.site_area_sqm)} m²</b></div>
-          <div class="cw-row"><span>容積率</span><b>${st.far!=null?esc(st.far):"—"}</b></div>
+          <div class="cw-row"><span>容積率</span><b>${pc(st.far)}</b></div>
           <div class="cw-row"><span>獎勵率</span><b>${pc(st.bonus_ratio)}</b></div>
           <div class="cw-row"><span>容積移轉</span><b>${fmt(st.tdr_transfer_sqm)} m²</b></div>
           <div class="cw-row"><span>公設比</span><b>${pc(snap.public_ratio)}</b></div></div>
-        <div class="cw-card"><h4>即時規劃結果 ·（result 逐欄）</h4>
+        <div class="cw-card"><h4>即時規劃結果 · 逐欄取自計算核心</h4>
           <div class="cw-row"><span>共同負擔比</span><b>${pc(snap.shared_cost_ratio)}</b></div>
           <div class="cw-row"><span>投報率</span><b>${pc(snap.return_rate)}</b></div>
           <div class="cw-row"><span>重算/改配置</span><b><a href="evaluator.html">→ Product Planning</a></b></div></div>
@@ -651,14 +651,14 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
         <div class="drv-body" id="drv-body" style="display:none">
           <div class="drv-cols">
             <div class="drv-side"><div class="drv-lab">產品輸入 · 改這裡（拖動即時反映）</div><div id="drv-in"></div></div>
-            <div class="drv-side"><div class="drv-lab">即時結果 · RE-DCF Core 算（唯讀·可溯源）</div>
+            <div class="drv-side"><div class="drv-lab">即時結果 · 由計算核心算出（唯讀·可溯源）</div>
               <div id="drv-out"></div><div class="drv-warn" id="drv-warn" style="display:none"></div></div>
           </div>
-          <div class="drv-src">改左邊產品 → 瀏覽器內 Python 即時重算右邊 · 帶 input_hash · UI 零計算。衍生欄（灰）滑鼠移上顯示公式來源。</div>
+          <div class="drv-src">改左邊產品 → 瀏覽器內即時重算右邊 · 附輸入指紋 · 介面不做計算。衍生欄（灰）滑鼠移上顯示公式來源。</div>
         </div>
         <div class="drv-fail" id="drv-fail" style="display:none"></div></div>`:``}
       <div class="cw-assets" id="cw-assets"></div>
-      <div class="cw-note">影像僅存本機瀏覽器（縮圖 ≤800px）·零上傳、零進版控 ·「值不值得」由 Decision Engine 判讀，本頁只呈現。</div>
+      <div class="cw-note">影像僅存本機瀏覽器（縮圖 ≤800px）·零上傳、零進版控 ·「值不值得」由決策引擎判讀，本頁只呈現。</div>
     </div>`;
     ensureRuntime();                      // 沒有傳動軸的案件也要有 Core（今天要做什麼／案件歷程）
     if(window._siteMassing) window._siteMassing.dispose();
@@ -709,7 +709,7 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
   }
   // ── M5.5 B2/B3 傳動軸駕駛艙：即時 Core（Pyodide, Web Worker）——UI 零計算，只呼叫 core/redcf ──
   const DRV_IN=[
-    {k:"容積率",l:"容積率",min:1,max:4,step:0.05},
+    {k:"容積率",l:"容積率",min:1,max:4,step:0.05,pct:1},
     {k:"獎勵率",l:"獎勵率",min:0,max:1.2,step:0.02,pct:1},
     {k:"公設比",l:"公設比",min:0.28,max:0.42,step:0.005,pct:1},
     {k:"住宅單價",l:"住宅單價",u:"萬/坪",min:40,max:120,step:1},
@@ -788,7 +788,7 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
         // Core warnings 為物件 {code,level,message,field}；逐欄取訊息呈現（不自算，只挑既有欄位）
         const wtext=w.map(x=>typeof x==="string"?x:(x.message||x.msg||x.code||"")).filter(Boolean);
         wl.style.display=wtext.length?"block":"none";
-        wl.textContent=wtext.length?`⚠ Core 健檢：${wtext.join("、")}`:"";
+        wl.textContent=wtext.length?`⚠ 計算核心健檢：${wtext.join("、")}`:"";
         stat.textContent=`✓ 即時（${Math.round(performance.now()-t0)}ms）· ${RTVER} · hash ${(r.input_hash||"").replace(/^sha256:/,"").slice(0,8)}…`;
       }).catch(e=>showFail(e.message));
     },250);
@@ -839,7 +839,7 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
         <button class="btn-sm" onclick="addMilestone()">＋ 新增期限</button>
         <button class="btn-sm" onclick="toggleMsEdit()">✎ 編輯期限清單</button></div>
       <div id="ms-edit" style="display:none"></div>
-      <div class="src" style="margin-top:6px">判準（逾期／風險窗／快到期）由 Core 決定，本頁只呈現。
+      <div class="src" style="margin-top:6px">判準（逾期／風險窗／快到期）由計算核心決定，本頁只呈現。
         風險窗為<b>經驗啟發</b>、非法律規定，允許被真實案例推翻。</div></details>`;
     if(!ms.length){
       box.innerHTML = shell(`<div class="wip" style="margin-top:8px">尚未設定任何期限。
@@ -959,7 +959,7 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
         <button class="btn-sm" onclick="backupAll()"><b>⤓ 完整備份（全部案件＋歷程）</b></button></div>
       <div class="src" style="margin-top:6px">紀錄為 <b>append-only</b>：寫進去就不能改、不能刪——
         能被事後修改的歷程不是證據。只記事實與意圖，<b>不記推論</b>（EV／GO-STOP／投報率一律不寫入，
-        永遠即時向 Core 索取）。歷程只存在你的瀏覽器，零上傳。</div></details>`;
+        永遠即時向計算核心索取）。歷程只存在你的瀏覽器，零上傳。</div></details>`;
   }
   function renderHistory(pid){
     const box=document.getElementById("history-panel"); if(!box) return;
@@ -1061,7 +1061,7 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
     const 用=v.used_floor_area, 允=v.allow_floor_area, 餘=v.remaining_floor_area;
     const 超=餘!=null&&餘<0, 使用率=允?(用/允*100):0;
     const effOK=v.efficiency_ratio!=null&&v.efficiency_ratio>=1.58&&v.efficiency_ratio<=1.68;
-    return `<details class="cw-roster" open><summary>容積與坪效（Core 逐欄）</summary>
+    return `<details class="cw-roster" open><summary>容積與坪效（逐欄取自計算核心）</summary>
       <div class="cw-grid" style="margin-top:10px">
         <div class="cw-card"><h4>容積查核</h4>
           <div class="cw-row"><span>法定容積</span><b>${fmt(v.baseline_far)} ㎡</b></div>
@@ -1073,7 +1073,7 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
         <div class="cw-card"><h4>坪效</h4>
           <div class="cw-row"><span>銷售坪</span><b>${fmt(v.saleable_area)} 坪</b></div>
           <div class="cw-row"><span>銷坪比</span><b style="color:${effOK?"var(--ok)":"var(--warn)"}">${v.efficiency_ratio!=null?v.efficiency_ratio.toFixed(3):"—"}</b></div>
-          <div class="src">正常帶 1.58–1.68${effOK?"（在帶內）":"（不在帶內，Core 已示警）"}</div>
+          <div class="src">正常帶 1.58–1.68${effOK?"（在帶內）":"（不在帶內，計算核心已示警）"}</div>
           <div class="cw-row" style="margin-top:6px"><span>更新前總值</span><b>${fmt(v.pre_renewal_value)} 萬</b></div>
           <div class="cw-row"><span>價值倍數</span><b>${v.value_multiple!=null?v.value_multiple.toFixed(2)+"×":"—"}</b></div></div>
         <div class="cw-card"><h4>財務</h4>
@@ -1084,8 +1084,8 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
           <div class="cw-row" style="margin-top:6px"><span>地主分回</span><b>${pc(v.owner_return_ratio)}</b></div>
           <div class="cw-row"><span>投報率</span><b>${pc(v.return_rate)}</b></div></div>
       </div>
-      ${(v.warnings&&v.warnings.length)?`<div class="src" style="margin-top:8px;color:var(--warn)">⚠ Core 健檢：${v.warnings.join("、")}</div>`:""}
-      <div class="src">數字逐欄自 Core result（SSOT）；本面板零計算。</div></details>`;
+      ${(v.warnings&&v.warnings.length)?`<div class="src" style="margin-top:8px;color:var(--warn)">⚠ 計算核心健檢：${v.warnings.join("、")}</div>`:""}
+      <div class="src">每個數字逐欄取自計算核心的結果，本面板不做任何計算。</div></details>`;
   }
 
   /* 現金流面板（共同負擔 A–G 科目 → 分期出資；Core 結構性分期，示意分期已標記）*/
