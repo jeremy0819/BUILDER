@@ -76,7 +76,17 @@ body.uros-unified input:focus-visible{outline:2px solid var(--uros-accent);outli
 #uros-stepnav .sn-node b{font-size:12px!important}
 #uros-stepnav .sn-live{font-size:10.5px!important}
 #uros-stepnav .sn-node small{font-size:9.5px!important}
-#uros-stepnav .sn-cap{display:none!important}
+/* 說明列在四步頁預設收起（版面已緊），但來源圖例要留著——
+   色邊沒有圖例就只是裝飾，有圖例才是語言。 */
+#uros-stepnav .sn-cap{display:block!important;font-size:10px!important;margin-top:4px!important;
+  color:var(--uros-mute)!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#uros-stepnav .sn-live{border-left:2px solid transparent;padding-left:6px;margin-left:-8px}
+#uros-stepnav .sn-live.src-core{border-left-color:var(--uros-accent)!important}
+#uros-stepnav .sn-live.src-input{border-left-color:var(--uros-mute)!important}
+#uros-stepnav .sn-live.src-decision{border-left-color:var(--uros-warn)!important}
+#uros-stepnav .sn-key i.src-core{background:var(--uros-accent)!important}
+#uros-stepnav .sn-key i.src-input{background:var(--uros-mute)!important}
+#uros-stepnav .sn-key i.src-decision{background:var(--uros-warn)!important}
 #uros-stepnav .sn-cap.sn-stale{display:block!important;white-space:normal;overflow-wrap:anywhere;color:var(--uros-warn);margin-top:6px}
 
 /* Site */
@@ -338,3 +348,11 @@ body.uros-unified input:focus-visible{outline:2px solid var(--uros-accent);outli
 .sens-cap b{color:var(--uros-ink,#16181d)}
 .sens-note{margin-top:5px;font-size:11px;line-height:1.6;color:var(--uros-mute,#68707d)}
 @media(max-width:560px){.sens-head button{min-height:44px}.sh-ax{font-size:11px}}
+
+/* 來源語意（UI_UX_PLAN §3）：CORE／INPUT／DECISION 三種，沒有第四種。
+   用 2px 色邊而非文字標籤——每個數字旁寫來源名會把儀表板變成噪音。
+   學一次就全站通用；完整名稱在 title 與 aria-label。 */
+.uros-kpi{border-left:2px solid transparent}
+.uros-kpi.src-core{border-left-color:var(--uros-accent)}
+.uros-kpi.src-input{border-left-color:var(--uros-mute)}
+.uros-kpi.src-decision{border-left-color:var(--uros-warn)}

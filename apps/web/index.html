@@ -92,6 +92,11 @@ details.adv .q input{font-size:14px}
 .rcell .rv.pending{color:var(--dim);font-size:14px;font-weight:400}
 .rcell .rv.pos{color:var(--ok)} .rcell .rv.neg{color:var(--amber)}
 .rcell .rn{font-size:10px;color:var(--dim);margin-top:2px}
+.rcell{border-left:2px solid transparent}
+.rcell.src-core{border-left-color:var(--strand)}
+/* 圖例：每頁一次。沒有圖例，色邊只是裝飾；有圖例，它才是語言。 */
+.ro-key{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9.5px;color:var(--dim)}
+.ro-key i{display:inline-block;width:2px;height:9px;border-radius:1px;background:var(--strand)}
 .cta{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px;align-items:center}
 .cta button.go{background:var(--strand);border:0;color:#04252b;font-weight:800;font-size:14px;
   border-radius:8px;padding:11px 26px;cursor:pointer;font-family:var(--sans)}
@@ -201,7 +206,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
 
     <!-- Core 即時讀數：這一區的每個數字都由 core/redcf 產出 -->
     <div class="readout">
-      <div class="rhead"><span>Core 即時試算</span><span class="st" id="ro-status">計算核心啟動中…</span></div>
+      <div class="rhead"><span class="ro-key"><i></i>以下四格皆由計算核心產出</span><span class="st" id="ro-status">計算核心啟動中…</span></div>
       <div class="rgrid" id="ro-grid"></div>
     </div>
 
@@ -351,7 +356,8 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
               : (c.fmt==="pct" ? fmtPct(v) : c.fmt==="x" ? fmtX(v) : fmtNum(v));
       var cls = "rv" + (有 ? "" : " pending")
               + (有 && c.sign ? (v >= 0 ? " pos" : " neg") : "");
-      return '<div class="rcell"><div class="rl">'+c.l+'</div>'
+      /* 來源語意：這四格全部由 Core 算出，用色邊標示（與四步導覽列同一套語言）。 */
+      return '<div class="rcell src-core" title="來源：計算核心 Core"><div class="rl">'+c.l+'</div>'
         + '<div class="'+cls+'">'+txt+(有&&c.u?' <span style="font-size:11px;color:var(--mute)">'+c.u+'</span>':'')+'</div>'
         + '<div class="rn">'+c.note+'</div></div>';
     }).join("");

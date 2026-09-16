@@ -124,8 +124,15 @@
     var requested = location.hash ? location.hash.slice(1) : "core";
     show(PRODUCT_VIEWS.some(function (x) { return x.id === requested; }) ? requested : "core");
   }
-  function kpi(label, value) {
-    return '<div class="uros-kpi"><span>' + label + '</span><b>' + esc(value) + "</b></div>";
+  /* 來源語意（UI_UX_PLAN §3）：色邊而非文字標籤。
+     這四格全部來自 Core，故色邊一致；完整名稱在 title／aria-label。
+     不在每格寫「CORE」——四張並排的 KPI 寫四次只是噪音。 */
+  function kpi(label, value, source) {
+    var src = source || "core";
+    var 名 = { core: "計算核心 Core", input: "你的輸入", decision: "決策引擎" }[src] || src;
+    return '<div class="uros-kpi src-' + src + '" title="來源：' + 名 + '">'
+      + '<span>' + label + '</span><b aria-label="' + esc(label) + " " + esc(value)
+      + "，來源：" + 名 + '">' + esc(value) + "</b></div>";
   }
 
   function build() {

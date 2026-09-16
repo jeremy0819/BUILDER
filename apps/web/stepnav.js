@@ -17,6 +17,9 @@
     { n: "④", label: "Decision 決策", href: "report.html", hand: "逐型對策", key: "decision", pick: "判定" }
   ];
 
+  /* 來源只有三種，沒有第四種（UI_UX_PLAN §3）。 */
+  var SOURCE_NAME = { core: "計算核心 Core", input: "你的輸入", decision: "決策引擎" };
+
   /* 取該步的代表數字。零計算：只格式化，不換算、不推導。 */
   function liveOf(step) {
     var B = self.CaseBus;
@@ -34,16 +37,16 @@
       var 全 = (group.items || []).filter(function (x) { return x.label === "權變戶數"; })[0];
       var 同 = (group.items || []).filter(function (x) { return x.label === "已同意"; })[0];
       if (全 && 全.value != null && 同 && 同.value != null)
-        return { label: "同意戶數", text: 同.value + "/" + 全.value, na: false };
-      if (全 && 全.value != null) return { label: "權變戶數", text: 全.value + " 戶", na: false };
-      return { label: "同意進度", text: "—", na: true };
+        return { label: "同意戶數", text: 同.value + "/" + 全.value, na: false, source: 同.source };
+      if (全 && 全.value != null) return { label: "權變戶數", text: 全.value + " 戶", na: false, source: 全.source };
+      return { label: "同意進度", text: "—", na: true, source: "input" };
     }
     var it = (group.items || []).filter(function (x) { return x.label === step.pick; })[0];
     if (!it || it.value == null) {
       /* 決策那格：說出「為什麼沒有值」。一個沉默的「—」會讓人以為系統壞了，
          而「需重算」是可行動的——這正是 N1 從嚴裁決要傳達給使用者的訊息。 */
       var 註 = (group.bound === false && group.bind_note) ? group.bind_note : step.pick;
-      return { label: 註, text: "—", na: true };
+      return { label: 註, text: "—", na: true, source: it ? it.source : null };
     }
     var t;
     if (it.unit === "ratio") t = (it.value * 100).toFixed(1) + "%";
@@ -52,7 +55,7 @@
     else if (typeof it.value === "number") t = Number(it.value).toLocaleString("en-US", { maximumFractionDigits: 0 })
       + (it.unit && it.unit !== "text" ? " " + it.unit : "");
     else t = String(it.value);
-    return { label: (step.key === "decision" ? "快照判定" : step.pick) + (step.key === "decision" && self.UROSCalibration ? " · " + self.UROSCalibration.label : ""), text: t, na: false };
+    return { label: (step.key === "decision" ? "快照判定" : step.pick) + (step.key === "decision" && self.UROSCalibration ? " · " + self.UROSCalibration.label : ""), text: t, na: false, source: it.source };
   }
   var MAP = { "dashboard.html": 0, "evaluator.html": 1, "os-simulator.html": 2, "report.html": 3 };
 
@@ -77,6 +80,10 @@
       + '#uros-stepnav .sn-live{display:block;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;'
       + 'font-size:11px;font-weight:700;color:var(--sn-ink);letter-spacing:.01em}'
       + '#uros-stepnav .sn-live.na{color:var(--sn-mute);font-weight:400}'
+      + '#uros-stepnav .sn-live{border-left:2px solid transparent;padding-left:6px;margin-left:-8px}'
+      + '#uros-stepnav .sn-live.src-core{border-left-color:var(--sn-accent)}'
+      + '#uros-stepnav .sn-live.src-input{border-left-color:var(--sn-mute)}'
+      + '#uros-stepnav .sn-live.src-decision{border-left-color:#a86616}'
       + '#uros-stepnav .sn-node.on .sn-live{color:var(--sn-accent)}'
       + '#uros-stepnav a.sn-node:hover{background:var(--sn-soft)}'
       + '#uros-stepnav .sn-node.on{background:var(--sn-soft)}'
@@ -84,6 +91,12 @@
       + '#uros-stepnav .sn-node.on small{color:var(--sn-accent)}'
       + '#uros-stepnav .sn-arrow{color:var(--sn-mute);font-size:12px;flex:0 0 auto;padding:0 1px}'
       + '#uros-stepnav .sn-cap{max-width:1080px;margin:2px auto 0;font-size:10.5px;color:var(--sn-mute)}'
+      + '#uros-stepnav .sn-key{display:inline-flex;align-items:center;gap:3px;margin-right:9px}'
+      + '#uros-stepnav .sn-key i{display:inline-block;width:2px;height:9px;margin-left:7px;border-radius:1px}'
+      + '#uros-stepnav .sn-key i:first-child{margin-left:0}'
+      + '#uros-stepnav .sn-key i.src-core{background:var(--sn-accent)}'
+      + '#uros-stepnav .sn-key i.src-input{background:var(--sn-mute)}'
+      + '#uros-stepnav .sn-key i.src-decision{background:#a86616}'
       /* 手機字級由 os-unified.css 的手機規範區塊處理——那裡的規則帶 !important，
          在此重複只會製造兩處真源。 */;
   }
@@ -105,12 +118,19 @@
       var on = i === cur ? " on" : "";
       var live = liveOf(s);
       if (live) 有連動 = true;
+      /* 來源語意：用 2px 色邊而非文字標籤。
+         每個數字旁加「CORE」三個字會把導覽列變成噪音；色邊學一次就全站通用，
+         完整名稱放在 title 與 aria-label，滑鼠與輔助技術都取得到。 */
+      var 源 = live && live.source ? live.source : "";
+      var 源名 = SOURCE_NAME[源] || "";
       var body = "<b>" + s.n + " " + s.label + "</b>"
-        + (live ? '<span class="sn-live' + (live.na ? " na" : "") + '">' + String(live.text).replace(/[&<>"']/g, function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}) + "</span>"
+        + (live ? '<span class="sn-live' + (live.na ? " na" : "") + (源 ? " src-" + 源 : "")
+            + '"' + (源名 ? ' title="來源：' + 源名 + '" aria-label="' + s.label + " "
+              + String(live.text) + "，來源：" + 源名 + '"' : "") + ">" + String(live.text).replace(/[&<>"']/g, function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}) + "</span>"
                   + "<small>" + live.label + "</small>"
                 : "<small>" + (i === cur ? "交棒：" : "") + s.hand + "</small>");
       inner += (i === cur)
-        ? '<span class="sn-node' + on + '">' + body + "</span>"
+        ? '<span class="sn-node' + on + '" tabindex="0" aria-current="step">' + body + "</span>"
         : '<a class="sn-node' + on + '" href="' + s.href + '">' + body + "</a>";
     });
     inner += "</div>";
@@ -123,7 +143,14 @@
         if (pv && pv.stale) 陳舊 = "　⚠️ " + pv.stale_note;
       }
     } catch (e) {}
-    inner += '<div class="sn-cap' + (陳舊 ? ' sn-stale' : '') + '">'
+    /* 來源圖例：每頁只出現一次。色邊的意思講一遍就夠，
+       不必在每個數字旁重複——那會把導覽列變成噪音。
+       沒有圖例，色邊只是裝飾；有圖例，它才是語言。 */
+    var 圖例 = 有連動
+      ? '<span class="sn-key" aria-label="數字來源圖例">'
+        + '<i class="src-core"></i>Core<i class="src-input"></i>輸入<i class="src-decision"></i>決策引擎</span>'
+      : "";
+    inner += '<div class="sn-cap' + (陳舊 ? ' sn-stale' : '') + '">' + 圖例
       + (self.UROSSecurity ? self.UROSSecurity.esc(陳舊) : "") + "</div>";
     bar.innerHTML = inner;
     var mount = document.getElementById("stepnav-mount");
@@ -140,11 +167,33 @@
     /* 重建後要把收合狀態接回去，否則捲到一半重畫會突然展開、頁面跳動 */
     var neu = document.getElementById("uros-stepnav");
     if (neu && 收合中) neu.classList.add("sn-collapsed");
+    if (neu) 綁鍵盤(neu);
+  }
+
+  /* 鍵盤操作：四步是整個產品的脊椎，卻只能用滑鼠點。
+     ←／→ 在步驟間移動，Home／End 跳頭尾——與 WAI-ARIA 的 tablist 慣例一致。
+     不攔截其他按鍵，也不搶 Tab：使用者仍能用 Tab 離開導覽列去操作頁面內容。 */
+  function 綁鍵盤(bar) {
+    bar.addEventListener("keydown", function (e) {
+      if (["ArrowLeft", "ArrowRight", "Home", "End"].indexOf(e.key) < 0) return;
+      var nodes = [].slice.call(bar.querySelectorAll(".sn-node"));
+      var here = nodes.indexOf(document.activeElement);
+      if (here < 0) return;                       // 焦點不在導覽列上就不接管
+      e.preventDefault();
+      var next = e.key === "Home" ? 0
+        : e.key === "End" ? nodes.length - 1
+        : (here + (e.key === "ArrowRight" ? 1 : nodes.length - 1)) % nodes.length;
+      var t = nodes[next];
+      if (t.focus) t.focus();
+      /* 當前步是 <span>（不可點），移到它就停在那；其餘是 <a>，Enter 由瀏覽器處理。 */
+    });
   }
 
   function boot() {
     build();
     綁收合();
+    var bar = document.getElementById("uros-stepnav");
+    if (bar) 綁鍵盤(bar);
     try {
       if (self.CaseBus && self.CaseBus.onChange) self.CaseBus.onChange(refresh);
       else window.addEventListener("storage", function (e) {
