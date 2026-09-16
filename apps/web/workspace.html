@@ -1041,7 +1041,11 @@ const drop=$("drop");
 ["dragover","dragenter"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("drag");}));
 ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("drag");}));
 drop.addEventListener("drop",e=>{ const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
-$("tgl").onclick=()=>{const root=document.documentElement;const cur=root.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");root.setAttribute("data-theme",cur==="dark"?"light":"dark");};
+/* 與其他頁共用 uros.theme——主題是跨頁偏好，不是單頁狀態。 */
+const THEME_KEY="uros.theme";
+(()=>{let saved=null;try{saved=localStorage.getItem(THEME_KEY);}catch(e){}
+  if(saved==="light"||saved==="dark")document.documentElement.setAttribute("data-theme",saved);})();
+$("tgl").onclick=()=>{const root=document.documentElement;const cur=root.getAttribute("data-theme")||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");const next=cur==="dark"?"light":"dark";root.setAttribute("data-theme",next);try{localStorage.setItem(THEME_KEY,next);}catch(e){}};
 document.addEventListener("click",e=>{
   const button=e.target.closest("button[data-case-action]"); if(!button)return;
   const actions={open:openCase,export:exportCase,remove:removeCase,sandbox:toSandbox};

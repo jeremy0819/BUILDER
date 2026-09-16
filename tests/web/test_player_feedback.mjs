@@ -100,4 +100,47 @@ test("floor area ratio shown as a percentage everywhere", () => {
   assert.ok(!/<span>\u5bb9\u7a4d\u7387<\/span><b>\$\{st\.far/.test(s), "案件資訊卡的容積率不得直接輸出比值");
 });
 
+
+/* ── 深色模式與預設視圖（2026-09 主題／互動實測）─────────────────────── */
+
+test("theme tokens fall back theme-aware, never to a light hex", () => {
+  const s = read("apps/web/data-notices.css");
+  /* 實測：evaluator／os-simulator／report 沒有自己定義 --warn/--info，
+     於是「淺色 hex 當 fallback」在深底上被用掉，對比只剩 3.13／3.79（AA 要 4.5）。
+     中間必須先退到會跟主題換的 --uros-*。 */
+  for (const m of s.matchAll(/var\(--(warn|info|ok|err),\s*(#[0-9a-f]{3,8})\)/gi))
+    assert.fail("data-notices.css 的 --" + m[1] + " 直接退到硬碼色 " + m[2]
+      + "；深色頁面會拿淺色值。請先退到 var(--uros-" + m[1] + ", …)");
+  assert.match(s, /var\(--warn,\s*var\(--uros-warn,/);
+  assert.match(s, /var\(--info,\s*var\(--uros-info,/);
+});
+
+test("every surface declares all four semantic colours it uses", () => {
+  /* 起始頁是硬編的深色，不吃主題系統；沒在它自己的 :root 宣告的語意色
+     會退成淺色值（備份字樣就是這樣掉到 3.13 對比）。 */
+  const s = read("apps/web/index.html");
+  for (const name of ["ok", "warn", "err", "info"])
+    assert.match(s, new RegExp("--" + name + ": *#"), "index.html 缺 --" + name + " 宣告");
+});
+
+test("theme preference is shared, not per-page", () => {
+  const s = read("apps/web/workspace.html");
+  assert.match(s, /localStorage\.getItem\(THEME_KEY\)/, "工作區必須沿用共用的主題偏好");
+  assert.match(s, /localStorage\.setItem\(THEME_KEY,\s*next\)/, "工作區切換主題後必須存回");
+  assert.match(s, /THEME_KEY\s*=\s*"uros\.theme"/);
+});
+
+test("core health warnings surface on the default view, verbatim", () => {
+  const s = read("apps/web/os-shell.js");
+  /* 「允建容積 4,368㎡」旁邊不說「設計已超出 2,352㎡」，那不是簡潔，是讓人誤會。
+     警示必須出現在預設視圖，而且逐字搬運——不得改寫、不得判讀、不得排序。 */
+  assert.match(s, /rec\.view\.warnings/);
+  assert.match(s, /uros-core-warn/);
+  const block = /var \u8b66 = [\s\S]*?\+ '<p>\u4e0a\u9762\u56db\u500b\u6578\u5b57/.exec(s);
+  assert.ok(block, "找不到警示區塊");
+  for (const banned of [".sort(", ".filter(", ".slice(", "verdict", "GO", "STOP"])
+    assert.ok(!block[0].includes(banned), "警示區塊不得出現 " + banned + "——只准逐字搬運");
+  assert.match(block[0], /esc\(String\(w\)\)/, "警示文字必須逐字輸出並轉義");
+});
+
 console.log(`PLAYER FEEDBACK: ${count} passed`);

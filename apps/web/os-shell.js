@@ -94,10 +94,20 @@
           var pv = {};
           try { pv = (self.CaseBus && self.CaseBus.provenance(self.CaseBus.activeRecord())) || {}; }
           catch (e) {}
+          /* 預設畫面本來只有四張 KPI 跟一段說明，桌機下留白近 290px；
+             而真正該站到面前的東西——計算核心的健檢警示——却藏在分頁後面。
+             「允建容積 4,368㎡」旁邊不說「設計已超出 2,352㎡」，那不是簡潔，是讓人誤會。
+             警示文字逐條 verbatim 取自 Core result，本處不判讀、不改寫、不排序。 */
+          var 警 = (rec && rec.view && rec.view.warnings) || [];
           note.innerHTML =
-            '<p>上面四個數字是這個案件的 <b>核心數字</b>——由計算核心算出，與其他三步看到的是同一份。</p>'
+            (警.length
+              ? '<div class="uros-core-warn"><b>計算核心的健檢警示（' + 警.length + ' 項）</b><ul>'
+                + 警.map(function (w) { return '<li>' + esc(String(w)) + '</li>'; }).join("")
+                + '</ul><span>逐條取自計算核心，本頁不自行判讀。要看改什麼會怎樣，點「健檢與敏感度」。</span></div>'
+              : '<p class="uros-core-ok">計算核心未提出健檢警示。</p>')
+            + '<p>上面四個數字是這個案件的 <b>核心數字</b>——由計算核心算出，與其他三步看到的是同一份。</p>'
             + '<p>需要細看時，點上面的分頁：<b>量體教學</b>／<b>財務教學</b> 說明數字怎麼來，'
-            + '<b>健檢與敏感度</b> 顯示計算核心的警示，<b>匯入比對</b> 可對照外部 JSON。</p>'
+            + '<b>健檢與敏感度</b> 顯示完整的警示與敏感度，<b>匯入比對</b> 可對照外部 JSON。</p>'
             + (pv.input_hash
                 ? '<p class="uros-core-prov">輸入指紋 '
                   + esc(String(pv.input_hash).replace(/^sha256:/, "").slice(0, 12)) + '… · 計算核心 '

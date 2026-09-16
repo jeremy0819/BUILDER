@@ -217,11 +217,23 @@ body.uros-unified input:focus-visible{outline:2px solid var(--uros-accent);outli
   .decision-node[data-node="people"]{left:8px;bottom:12px}.decision-node[data-node="decision"]{right:8px;bottom:12px}
 }
 
-/* 「Core 摘要」視圖的說明區（補掉原本四張 KPI 底下的整片空白） */
+/* 「核心數字」視圖的說明區（補掉原本四張 KPI 底下的整片空白） */
 .uros-core-note{margin:14px 0 0;padding:14px 16px;border:1px solid var(--line,#e2e6ee);
   border-radius:12px;background:var(--card,#fff);font-size:13px;line-height:1.75;color:var(--mute,#5a6478)}
 .uros-core-note p{margin:0 0 6px}
 .uros-core-note p:last-child{margin-bottom:0}
+/* 計算核心的健檢警示。橘色留給「對這個案子的警示與判斷」——
+   verdict 是大而粗的那個，這裡是它底下的事實清單，同色系、正常字重。
+   （備份那種家務事走 info 藍，不進這一族。） */
+.uros-core-warn{margin:0 0 10px;padding:10px 12px;border-radius:8px;
+  border-inline-start:3px solid var(--warn,var(--uros-warn,#a86616));
+  background:var(--warn-bg,transparent);
+  background:color-mix(in srgb, var(--warn,var(--uros-warn,#a86616)) 12%, transparent)}
+.uros-core-warn>b{display:block;color:var(--warn,var(--uros-warn,#a86616));font-size:12.5px;margin-bottom:5px}
+.uros-core-warn ul{margin:0;padding-inline-start:18px}
+.uros-core-warn li{margin:2px 0;color:var(--ink,#16203a);line-height:1.6}
+.uros-core-warn>span{display:block;margin-top:6px;font-size:11.5px;color:var(--mute,#5a6478)}
+.uros-core-ok{margin:0 0 8px;color:var(--ok,var(--uros-ok,#16845b));font-size:12.5px}
 .uros-core-note b{color:var(--ink,#16203a)}
 .uros-core-note .uros-core-prov{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   font-size:11px;color:var(--dim,#8a93a6)}
