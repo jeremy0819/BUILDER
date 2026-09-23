@@ -182,6 +182,9 @@
     next.snap.shared_cost_ratio = R.shared_cost_ratio != null ? R.shared_cost_ratio : null;
     next.snap.return_rate = R.return_rate != null ? R.return_rate : null;
     next.snap.warnings_n = (R.warnings || []).length;
+    next.snap.allocations = JSON.parse(JSON.stringify(R.owner_allocations || []));
+    // A new input/version cannot inherit an older, separately computed cashflow.
+    if (ih !== (rec.snap && rec.snap.input_hash) || (R.core_version || "") !== (rec.snap && rec.snap.core_version)) next.cashflow = null;
     next.snap.total = eng.params.戶數;
     next.snap.threshold = eng.case_type === "危老" ? 1 : 0.8;
     next.snap.site = { site_area_sqm: eng.params.基地面積, plaza_area_sqm: eng.params.人行廣場,
@@ -195,9 +198,11 @@
     next.wf.project.case_type = ct;
     next.wf.project.mode = eng.mode;
     next.wf.project.snapshots = next.wf.project.snapshots || [];
-    var sn = next.wf.project.snapshots[0] || {};
+    var activeIndex = next.wf.project.snapshots.findIndex(function (s) { return s.id === next.wf.project.active_snapshot; });
+    if (activeIndex < 0) activeIndex = 0;
+    var sn = next.wf.project.snapshots[activeIndex] || {};
     sn.input_hash = ih; sn.core_version = R.core_version || ""; sn.computed_at = R.computed_at || "";
-    next.wf.project.snapshots[0] = sn;
+    next.wf.project.snapshots[activeIndex] = sn;
     /* 輸入變了，舊 decision 就不再對應這份快照。 */
     /* 依 N1 二元組規則，留著它只會在下游顯示「不相符」；此處直接卸下，理由記在 detached_decision。 */
     if (next.decision && (next.decision.input_hash !== ih ||

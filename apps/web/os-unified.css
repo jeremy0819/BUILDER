@@ -54,6 +54,7 @@ body.uros-unified input:focus-visible{outline:2px solid var(--uros-accent);outli
 .uros-mark{width:34px;height:34px;display:grid;place-items:center;border-radius:7px;background:var(--uros-accent);
   color:#fff;font:800 11px/1 var(--uros-mono);flex:none}
 .uros-step-id{font-size:10px;color:var(--uros-accent);font-weight:800;text-transform:uppercase}
+.uros-step-id [data-uros-runtime]{margin-left:10px;font-size:11px;color:var(--uros-mute);font-weight:500}
 .uros-shell-title{font-size:16px;font-weight:780;color:var(--uros-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .uros-shell-case{min-width:0}
 .uros-shell-case label{display:block;font-size:10px;color:var(--uros-mute);margin-bottom:3px}
@@ -144,6 +145,8 @@ body.uros-unified input:focus-visible{outline:2px solid var(--uros-accent);outli
 .uros-page-people .spine{padding:14px!important;background:var(--uros-panel)!important}
 .uros-page-people .card{background:var(--uros-panel)!important}
 .uros-page-people .stage{gap:10px!important}
+.uros-page-people .stage>*{min-width:0}
+.uros-page-people .grid{grid-template-columns:repeat(var(--gcols,8),minmax(0,1fr))}
 .uros-page-people .cell{border-radius:5px!important;background:var(--uros-panel-2)!important}
 .uros-page-people .btn{border-radius:6px!important;letter-spacing:0!important;text-transform:none!important;padding:9px 14px!important}
 .uros-page-people .logo-strand{color:var(--uros-ink);font-size:42px!important}
@@ -199,6 +202,9 @@ body.uros-unified input:focus-visible{outline:2px solid var(--uros-accent);outli
   .uros-kpis{grid-template-columns:1fr 1fr}.uros-kpi b{font-size:16px}
   .uros-view-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}.uros-view-tabs button{white-space:normal;text-align:center}.uros-view-tabs button:last-child{grid-column:1/-1}
   .uros-page-people .cmd-res{grid-template-columns:1fr}.uros-page-people .spine-head{display:block!important}.uros-page-people .spine-head>div:last-child{text-align:left!important;margin-top:10px}
+  .uros-page-people .grid{grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
+  .uros-page-people .cell{min-height:44px;min-width:0}
+  .uros-page-people .card .chip{white-space:normal;overflow-wrap:anywhere}
   .decision-map{min-height:500px}.decision-map-lines{display:none}.decision-hub{top:50%;width:112px;height:112px}
   .decision-node{width:calc(50% - 18px);min-height:82px}.decision-node[data-node="site"]{left:8px;top:12px}.decision-node[data-node="product"]{right:8px;top:12px}
   .decision-node[data-node="people"]{left:8px;bottom:12px}.decision-node[data-node="decision"]{right:8px;bottom:12px}

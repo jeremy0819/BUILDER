@@ -130,7 +130,9 @@ jobs:
         run: node tests/web/test_unified_ui.mjs
 
       - name: "Gate 21 — Strategy / security / site massing boundaries"
-        run: node tests/web/test_strategy_security.mjs
+        run: |
+          node tests/web/test_strategy_security.mjs
+          node tests/web/test_planning_session.mjs
 
       - name: "Install browser verification tools"
         run: |

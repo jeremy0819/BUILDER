@@ -3,13 +3,13 @@
   "use strict";
 
   var PAGES = {
-    "dashboard.html": { key: "site", n: "01 / 04", title: "基地與地政" },
+    "dashboard.html": { key: "site", n: "01 / 04", title: "基地與量體" },
     "evaluator.html": { key: "product", n: "02 / 04", title: "產品與財務" },
     "os-simulator.html": { key: "people", n: "03 / 04", title: "地主整合" },
     "report.html": { key: "decision", n: "04 / 04", title: "決策與行動" }
   };
   var PRODUCT_VIEWS = [
-    { id: "core", label: "Core 摘要" },
+    { id: "core", label: "產品規劃" },
     { id: "l1", label: "量體教學" },
     { id: "l2", label: "財務教學" },
     { id: "health", label: "健檢與敏感度" },
@@ -60,8 +60,8 @@
     var hub = document.createElement("main");
     hub.id = "uros-product-hub";
     hub.className = "uros-product-hub";
-    hub.innerHTML = '<div class="uros-product-title"><div><h1>產品規劃工作區</h1>'
-      + '<p>作用中案件 · Core 權威摘要</p></div>'
+    hub.innerHTML = '<div class="uros-product-title"><div><h1>蓋出來值不值得？</h1>'
+      + '<p>產品規劃 <span class="sm-source">INPUT / CORE</span></p></div>'
       + '<a href="dashboard.html" class="uros-icon-btn" title="回基地頁" aria-label="回基地頁">←</a></div>'
       + '<div class="uros-kpis">'
       + kpi("允建容積", fmt(v.allow_floor_area, "㎡"))
@@ -73,31 +73,34 @@
          結果是四張 KPI 底下一整片空白——玩家讀起來就是壞頁。
          這裡補一段真內容：說明下面的分頁是什麼，並附這組數字的溯源戳記。
          零計算：溯源欄位逐字取自案件快照。 */
-      + '<div class="uros-core-note" id="uros-core-note"></div>'
-      + '<div class="uros-view-tabs" role="tablist" aria-label="產品工作區視圖">'
+      + '<div id="product-planning-host"></div><div class="uros-core-note" id="uros-core-note"></div>'
+      + '<details class="uros-product-reference"><summary>參考資料、教學與匯入</summary><div class="uros-view-tabs" role="tablist" aria-label="產品工作區視圖">'
       + PRODUCT_VIEWS.map(function (x) {
         return '<button type="button" role="tab" data-view="' + x.id + '" aria-selected="' + (x.id === "core")
           + '" tabindex="' + (x.id === "core" ? "0" : "-1") + '">' + x.label + "</button>";
-      }).join("") + "</div>";
+      }).join("") + "</div></details>";
     var firstSection = document.querySelector("section");
     document.body.insertBefore(hub, firstSection || document.body.firstChild);
+    if (root._productPlanning) root._productPlanning.dispose();
+    if (root.ProductPlanning) root._productPlanning=root.ProductPlanning.mount(document.getElementById("product-planning-host"),rec);
     var buttons = hub.querySelectorAll("[data-view]");
     function show(id) {
+      var planning=document.getElementById("product-planning-host"); if(planning) planning.hidden=id!=="core";
+      hub.querySelector(".uros-kpis").hidden=id==="core";
+      if(id!=="core") hub.querySelector(".uros-product-reference").open=true;
       PRODUCT_VIEWS.forEach(function (x) {
         var section = document.getElementById(x.id);
         if (section) section.hidden = id === "core" || x.id !== id;
       });
       var note = document.getElementById("uros-core-note");
       if (note) {
-        note.hidden = id !== "core";
+        note.hidden = true;
         if (id === "core") {
           var pv = {};
           try { pv = (self.CaseBus && self.CaseBus.provenance(self.CaseBus.activeRecord())) || {}; }
           catch (e) {}
           note.innerHTML =
-            '<p>上面四個數字是這個案件的 <b>Core 權威摘要</b>——與其他三步看到的是同一份。</p>'
-            + '<p>需要細看時，點上面的分頁：<b>量體教學</b>／<b>財務教學</b> 說明數字怎麼來，'
-            + '<b>健檢與敏感度</b> 顯示 Core 的警示，<b>匯入比對</b> 可對照外部 JSON。</p>'
+            '<p>案件快照 · 尚未採用的本次試算不會改動其他步驟。</p>'
             + (pv.input_hash
                 ? '<p class="uros-core-prov">溯源 input_hash '
                   + esc(String(pv.input_hash).replace(/^sha256:/, "").slice(0, 12)) + '… · core '
@@ -149,10 +152,12 @@
       + '<button class="uros-icon-btn" id="uros-theme" type="button" title="切換主題" aria-label="切換主題">◐</button></div>'
       + '<div class="uros-shell-prov"><span>案件快照</span><b>' + esc(snap.code_name || "尚無案件") + "</b><span>" + esc(snap.case_type === "danger_building" ? "危老重建" : "都市更新")
       + '</span><span>input ' + esc(shortHash(snap.input_hash) || "—") + '</span><span>core ' + esc(snap.core_version || "—") + "</span></div></div>";
+    var source=document.createElement("span");source.setAttribute("data-uros-runtime","");source.textContent=page.key==="people"?"快照模式":"核心未啟動";shell.querySelector(".uros-step-id").appendChild(source);
     var stepnav = document.getElementById("uros-stepnav");
     if (stepnav && stepnav.nextSibling) stepnav.parentNode.insertBefore(shell, stepnav.nextSibling);
     else if (stepnav) stepnav.parentNode.appendChild(shell);
     else document.body.insertBefore(shell, document.body.firstChild);
+    if(root.coreStampRuntimeSource)root.coreStampRuntimeSource(root.UROS_RUNTIME_SOURCE);
 
     var selector = document.getElementById("uros-shell-case");
     if (selector) selector.addEventListener("change", function () {

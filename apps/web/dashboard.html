@@ -150,6 +150,7 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
 <link rel="stylesheet" href="site-massing.css">
 <script src="massing-view.js"></script>
 <script src="site-massing.js"></script>
+<script src="planning-session.js"></script>
 
 <div class="wrap">
   <header class="top">
@@ -622,8 +623,9 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
                  <b style="color:var(--warn)">⚠ 方向性判斷（存活率未校準）· 非投資結論</b></div>`
                :`<div style="font-size:11px;color:var(--mute);border:1px dashed var(--line);border-radius:9px;padding:6px 10px">決策狀態：待 Decision Engine<br>（Workspace 匯入 decision JSON）</div>`}
         </div></div>
-      ${self.LandInformation?self.LandInformation.render(rec):""}
       ${rec.engine?'<div id="site-massing-host"></div>':''}
+      <details class="uros-site-extra" id="site-records"><summary>基地資料、地籍與產權清冊</summary>
+      ${self.LandInformation?self.LandInformation.render(rec):""}
       <div class="cw-grid">
         <div class="cw-card"><h4>案件狀態 · Workflow 事實</h4>
           <div class="cw-row"><span>階段</span><b>${esc(wf.project.stage)}</b></div>
@@ -641,24 +643,19 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
           <div class="cw-row"><span>投報率</span><b>${pc(snap.return_rate)}</b></div>
           <div class="cw-row"><span>重算/改配置</span><b><a href="evaluator.html">→ Product Planning</a></b></div></div>
       </div>
+      ${rosterPanel(rec)}
+      </details>
+      <details class="uros-site-extra" id="site-history"><summary>案件任務與歷程</summary>
       <div id="today-panel"></div>
       <div id="history-panel"></div>
+      </details>
+      <details class="uros-site-extra" id="site-evidence"><summary>已存快照明細與附圖</summary>
       ${planPanel(rec)}
       ${cashPanel(rec)}
-      ${rosterPanel(rec)}
-      ${rec.engine?`<div class="cw-drive" id="cw-drive">
-        <h4>傳動軸即時預覽 · <b>STEP 2 Product 的財務即時試算</b>（拖滑桿看結果；正式規劃在 ② Product 頁）<span class="drv-stat" id="drv-stat">載入計算核心…</span></h4>
-        <div class="drv-body" id="drv-body" style="display:none">
-          <div class="drv-cols">
-            <div class="drv-side"><div class="drv-lab">產品輸入 · 改這裡（拖動即時反映）</div><div id="drv-in"></div></div>
-            <div class="drv-side"><div class="drv-lab">即時結果 · RE-DCF Core 算（唯讀·可溯源）</div>
-              <div id="drv-out"></div><div class="drv-warn" id="drv-warn" style="display:none"></div></div>
-          </div>
-          <div class="drv-src">改左邊產品 → 瀏覽器內 Python 即時重算右邊 · 帶 input_hash · UI 零計算。衍生欄（灰）滑鼠移上顯示公式來源。</div>
-        </div>
-        <div class="drv-fail" id="drv-fail" style="display:none"></div></div>`:``}
       <div class="cw-assets" id="cw-assets"></div>
       <div class="cw-note">影像僅存本機瀏覽器（縮圖 ≤800px）·零上傳、零進版控 ·「值不值得」由 Decision Engine 判讀，本頁只呈現。</div>
+      </details>
+      <nav class="uros-next-step" aria-label="下一階段"><span>② 產品與財務</span><a href="evaluator.html">查看已存產品方案 →</a></nav>
     </div>`;
     ensureRuntime();                      // 沒有傳動軸的案件也要有 Core（今天要做什麼／案件歷程）
     if(window._siteMassing) window._siteMassing.dispose();
@@ -666,8 +663,7 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
     try{ renderToday(pid); }catch(e){}
     try{ renderHistory(pid); }catch(e){}
     // 傳動軸掛載失敗不得拖垮整頁（案件切換器、附圖槽在其後綁定）；但也不吞——留在 console
-    if(rec.engine){ try{ mountDrivetrain(rec.engine); }catch(e){ console.error("傳動軸掛載失敗", e); } }
-    else RTCB={};
+    RTCB={}; // 財務輸入已移至②；①僅保留量體規劃。
     const sw=document.getElementById("cw-switch");
     if(sw) sw.onchange=()=>{ try{localStorage.setItem("uros.active_case",sw.value);}catch(e){} render(); };
     const ah=document.getElementById("cw-assets");
@@ -1090,7 +1086,7 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
 
   /* 現金流面板（共同負擔 A–G 科目 → 分期出資；Core 結構性分期，示意分期已標記）*/
   function cashPanel(rec){
-    const c=rec&&rec.cashflow; if(!c||!c.期別出資) return "";
+    const c=rec&&rec.cashflow; if(!c||!c.期別出資) return '<p class="sm-note">目前快照尚無現金流分期；新輸入需另行交由 Core 重算，不沿用舊分期。</p>';
     const mx=Math.max.apply(null,c.累積||[1])||1;
     const bars=(c.期別出資||[]).map((x,i)=>{
       const h=Math.max(3,(c.累積[i]/mx)*54);

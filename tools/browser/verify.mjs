@@ -88,21 +88,56 @@ try {
   await page.screenshot({path:resolve(artifacts,"strategy-mobile.png"),fullPage:true});
   await page.setViewportSize({width:1440,height:1000});
   await page.goto(origin+"/dashboard.html");await page.locator("#site-massing-host").waitFor();
-  await page.locator('.sm-generate [name="levels"]').fill("10");await page.locator('.sm-generate [name="plate"]').fill("320");await page.locator(".sm-generate button").click();
-  check(await page.locator(".sm-drawing rect").count()===11,"site generates ten floors plus basement");
-  await page.waitForFunction(()=>document.querySelector("#drv-stat")?.textContent.includes("core"),{},{timeout:150000});
+  await page.locator('.sm-generate [name="levels"]').fill("10");await page.locator('.sm-generate [name="plate"]').fill("320");
+  check(await page.locator(".sm-drawing [data-mv-row]").count()===11,"site generates ten floors plus basement");
+  await page.waitForFunction(()=>document.querySelector(".sm-status")?.textContent.includes("草案已重算"),{},{timeout:150000});
   await page.locator('[data-sm="run"]').click();
   await page.waitForFunction(()=>document.querySelector(".sm-status").textContent.startsWith("草案已重算"),{},{timeout:120000});
   check(await page.locator(".sm-results tbody tr").count()===4,"massing presents Core capacity comparison");
   const before=await page.locator(".sm-results tbody tr").nth(1).locator("td").last().innerText();
+  check(await page.locator('.sm-floor-detail').getAttribute('open')===null,'floor details are progressively disclosed');
+  await page.locator('.sm-floor-detail > summary').click();
   const plate=page.locator(".sm-floor-editor input").nth(1);await plate.fill("100");
-  check(await page.locator(".sm-results tr").count()===0,"floor edit immediately clears prior Core results");
+  check((await page.locator(".sm-results tbody td:last-child").allTextContents()).every(v=>v==='—'),"floor edit immediately clears prior Core results");
   await page.locator('[data-sm="run"]').click();await page.waitForFunction(()=>document.querySelector(".sm-status").textContent.startsWith("草案已重算"),{},{timeout:120000});
   check((await page.locator(".sm-results tbody tr").nth(1).locator("td").last().innerText())!==before,"floor edit actually changes Core counted area");
-  await page.locator("#site-massing-host").screenshot({path:resolve(artifacts,"massing-desktop.png")});
+  await page.locator('.sm-floor-detail > summary').click();
+  await page.evaluate(()=>scrollTo(0,0));
+  await page.screenshot({path:resolve(artifacts,"massing-desktop.png"),fullPage:true});
   await page.setViewportSize({width:390,height:844});
-  await page.locator("#site-massing-host").screenshot({path:resolve(artifacts,"massing-mobile.png")});
+  await page.evaluate(()=>scrollTo(0,0));
+  await page.screenshot({path:resolve(artifacts,"massing-mobile.png"),fullPage:true});
   check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),"site mobile no horizontal overflow");
+  check(await page.locator('[data-uros-runtime]').isVisible() && (await page.locator('[data-uros-runtime]').innerText())==='本機','Site runtime source visible on mobile');
+  check(await page.locator('#site-records').getAttribute('open')===null,'land records initially collapsed');
+  check(await page.locator('#cw-drive').count()===0,'financial controls no longer compete with Site massing');
+  const priorEngine=await page.evaluate(()=>JSON.stringify(CaseBus.activeRecord().engine));
+  const figure=await page.locator('.sm-drawing').innerHTML();
+  const faceBox=await page.locator('.sm-drawing [data-mv-row]').first().boundingBox();
+  await page.mouse.move(faceBox.x+5,faceBox.y+5);await page.mouse.down();await page.mouse.move(faceBox.x+75,faceBox.y+20);await page.mouse.up();
+  check(await page.evaluate(()=>JSON.stringify(CaseBus.activeRecord().engine))===priorEngine,'dragging massing never edits case inputs');
+  check(await page.locator('.sm-drawing').innerHTML()===figure,'diagram has no output resizing path');
+  await page.locator('[data-sm="apply"]').click();await page.waitForURL('**/evaluator.html');
+  await page.waitForFunction(()=>document.querySelector('.pp-status')?.textContent.startsWith('草案已重算'),{},{timeout:150000});
+  const adoptedSite=await page.evaluate(()=>CaseBus.activeRecord());
+  check(adoptedSite.pid===rec.pid && adoptedSite.engine.floors.length===11,'adopt massing retains project identity and passes floors to Product');
+  check(adoptedSite.snap.core_version==='0.6.0' && /^sha256:/.test(adoptedSite.snap.input_hash),'adopted Site retains verified Core provenance');
+  check(adoptedSite.decision===null,'changed input detaches prior snapshot decision');
+  check(await page.locator('.product-planning').isVisible(),'Product default view contains real Core controls');
+  const initialFinancial=await page.locator('.pp-results tbody tr').last().locator('td').last().innerText();
+  await page.locator('.pp-inputs input[type=number]').first().fill('90');
+  check((await page.locator('.pp-results tbody td:last-child').allTextContents()).every(x=>x==='—'),'Product edits immediately invalidate old results');
+  await page.waitForFunction(()=>document.querySelector('.pp-status')?.textContent.startsWith('草案已重算'),{},{timeout:120000});
+  check((await page.locator('.pp-results tbody tr').last().locator('td').last().innerText())!==initialFinancial,'Product input uses real Core finance recomputation');
+  check(await page.evaluate(()=>JSON.stringify(CaseBus.activeRecord().engine))===JSON.stringify(adoptedSite.engine),'unadopted Product preview never mutates the case');
+  await page.setViewportSize({width:1440,height:1000});await page.evaluate(()=>scrollTo(0,0));
+  await page.screenshot({path:resolve(artifacts,'product-desktop.png'),fullPage:true});
+  await page.setViewportSize({width:390,height:844});await page.evaluate(()=>scrollTo(0,0));
+  await page.screenshot({path:resolve(artifacts,'product-mobile.png'),fullPage:true});
+  check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Product mobile no horizontal overflow');
+  await page.locator('[data-pp="apply"]').click();await page.waitForURL('**/os-simulator.html');
+  check(await page.evaluate(()=>CaseBus.activeRecord().engine.params.住宅單價)===90,'adopted Product is carried into People');
+  check(await page.evaluate(()=>CaseBus.activePid())===rec.pid,'Site to Product to People remains the same case');
   // Stored injection stays text in every major surface.
   await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem("uros.workflow.v1")),p=s.order[0];s.projects[p].snap.code_name='<img src=x onerror="window.__injected=1">';localStorage.setItem("uros.workflow.v1",JSON.stringify(s));});
   for(const file of ["dashboard.html","evaluator.html","workspace.html","report.html"]){
@@ -124,6 +159,11 @@ try {
   const row=off.locator(".profile-row").first();await row.locator("summary").first().click();await row.locator("select").first().selectOption("anchored");
   check(await off.locator("#profile-save").innerText()==="已存本機","unavailable Core does not lose observations");
   check(await off.locator("#analysis-run").isDisabled(),"unavailable Core cannot fabricate results");
+  await off.goto(origin+'/dashboard.html');
+  await off.waitForFunction(()=>document.querySelector('.sm-status')?.dataset.phase==='error');
+  check(await off.locator('[data-sm="apply"]').isDisabled(),'unavailable Core cannot adopt a massing draft');
+  check((await off.locator('.sm-results tbody td:last-child').allTextContents()).every(x=>x==='—'),'unavailable Core keeps unknown results blank');
+  check(!/importScripts|WorkerGlobalScope/.test(await off.locator('.sm-status').innerText()),'Site Core failure uses human-readable text');
   const blocked=await browser.newContext();
   await blocked.addInitScript(({rec})=>{localStorage.setItem('uros.workflow.v1',JSON.stringify({order:[rec.pid],projects:{[rec.pid]:rec}}));localStorage.setItem('uros.active_case',rec.pid);},{rec});
   await blocked.route('**/*jsonschema*.whl',route=>route.abort());
@@ -220,17 +260,21 @@ try {
     check(m.overflow<=0, route+": no horizontal overflow at 390px");
   }
   // 導覽列捲動收合：68px 在 844px 高的螢幕上佔 8%
+  await phonePage.evaluate(rec=>CaseBus.upsert({...rec,demo:false}),adoptedSite);
   await phonePage.goto(origin+"/dashboard.html",{waitUntil:"domcontentloaded"});
   await phonePage.waitForTimeout(900);
   const navOpen=await phonePage.evaluate(()=>document.getElementById("uros-stepnav").offsetHeight);
   await phonePage.evaluate(()=>window.scrollTo(0,300));
   await phonePage.waitForTimeout(350);
   const navShut=await phonePage.evaluate(()=>document.getElementById("uros-stepnav").offsetHeight);
-  check(navShut<navOpen-20, "step rail collapses on scroll ("+navOpen+"px -> "+navShut+"px)");
+  check(navShut<navOpen && navShut<=44 && await phonePage.locator('#uros-stepnav').evaluate(e=>e.classList.contains('sn-collapsed')), "step rail collapses to one compact row ("+navOpen+"px -> "+navShut+"px)");
   check(await phonePage.evaluate(()=>{
     const el=document.querySelector("#uros-stepnav .sn-live");
     return el ? parseFloat(getComputedStyle(el).fontSize)>=12 : false;
   }), "step figures stay readable at >=12px on phones");
+  await phonePage.evaluate(rec=>CaseBus.replace(rec.pid,rec),rec);
+  await phonePage.reload();await phonePage.evaluate(()=>scrollTo(0,300));await phonePage.waitForTimeout(350);
+  check(await phonePage.locator('.sn-cap.sn-stale').isVisible(),'stale-snapshot warning remains visible even with compact navigation');
   await phone.close();
 
   console.log("BROWSER: "+passed+" passed; screenshots: "+artifacts);
