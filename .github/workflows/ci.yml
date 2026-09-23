@@ -133,15 +133,19 @@ jobs:
         run: |
           node tests/web/test_strategy_security.mjs
           node tests/web/test_planning_session.mjs
+          node tests/web/test_spatial_prototype.mjs
 
       - name: "Install browser verification tools"
         run: |
           npm ci --prefix tools/browser --ignore-scripts --no-fund
           node tools/browser/node_modules/playwright/cli.js install --with-deps chromium
           python tools/prepare_pyodide.py
+          python tools/prepare_spatial_prototype.py
 
       - name: "Gate 19 — Real browser / Pyodide / responsive / stored-XSS regression"
-        run: node tools/browser/verify.mjs
+        run: |
+          node tools/browser/verify.mjs
+          node tools/browser/verify_spatial.mjs
 
       - name: "Gate 22 — Player feedback / backup / calibration / CI identity"
         run: |

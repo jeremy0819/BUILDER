@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BUILDER · Spatial Lab</title>
+  <link rel="stylesheet" href="/os-unified.css"><link rel="stylesheet" href="/prototype/lab.css">
+  <script type="importmap">{"imports":{"three":"/vendor/three.module.min.js"}}</script>
+  <script src="/core-runtime.js" defer></script><script type="module" src="/prototype/lab.mjs"></script>
+</head>
+<body class="uros-unified">
+  <header><strong>BUILDER <span>Spatial Lab</span></strong><span class="label">Synthetic / Demo Geometry</span></header>
+  <main>
+    <section class="viewer" aria-label="合成量體檢視">
+      <div class="toolbar" role="toolbar" aria-label="視角">
+        <div class="modes"><button id="iso" aria-pressed="true">立體</button><button id="top" aria-pressed="false">俯視</button></div>
+        <button id="pan" aria-label="平移模式" aria-pressed="false" title="平移模式">↔</button>
+        <button id="zoom-in" aria-label="放大" title="放大">＋</button><button id="zoom-out" aria-label="縮小" title="縮小">−</button>
+        <button id="reset" aria-label="重設視角" title="重設視角">↺</button>
+      </div>
+      <div id="scene" tabindex="0" aria-label="合成基地與量體"></div>
+      <div id="fallback" hidden role="status">無法使用 3D 檢視，合成資料仍列於下方。</div>
+      <div class="caption"><span id="viewer-status" role="status">載入中</span><span>規劃量體示意 · 非真實基地／核定圖說</span></div>
+    </section>
+    <aside aria-label="物件資料">
+      <h1>空間資料</h1>
+      <div class="objects"><button data-object="demo-site">合成基地</button><button data-object="demo-building">合成量體 A</button></div>
+      <h2 id="selection">尚未選取</h2>
+      <dl><dt>高度</dt><dd id="height">—</dd><dt>資料來源</dt><dd>Synthetic / Demo Geometry</dd><dt>單位</dt><dd>m</dd><dt>座標</dt><dd>LOCAL_DEMO_XZ_Y_UP</dd><dt>正式案件</dt><dd>未綁定</dd></dl>
+      <details><summary>幾何溯源</summary><dl><dt>來源版本</dt><dd>demo-1</dd><dt>產生時間</dt><dd>2026-09-23T00:00:00Z</dd><dt>geometry_hash</dt><dd id="geometry-hash">—</dd><dt>input_hash</dt><dd>—</dd></dl></details>
+      <details id="runtime"><summary>Runtime 共存驗證</summary><button id="core-check">執行合成 Core 檢查</button><p id="core-status" role="status">尚未啟動</p></details>
+      <p class="boundary">隔離原型；不寫入案件、地主分配或操作歷程。</p>
+    </aside>
+  </main>
+</body></html>
