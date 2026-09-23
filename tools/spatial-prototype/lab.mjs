@@ -1,6 +1,7 @@
 import {fixture, geometryHash, validateDemo} from "./fixture.mjs";
 
 const $ = id => document.getElementById(id);
+$("runtime").hidden = !(["127.0.0.1","localhost"].includes(location.hostname) && !location.pathname.endsWith("spatial-prototype.html"));
 let runtime, cleanup = () => {};
 function fallback(message) {
   $("fallback").hidden = false;
@@ -19,7 +20,7 @@ try {
   validateDemo(fixture);
   $("geometry-hash").textContent = await geometryHash(fixture);
   const THREE = await import("three");
-  const {OrbitControls} = await import("/vendor/OrbitControls.js");
+  const {OrbitControls} = await import("./vendor/OrbitControls.js");
   const host = $("scene"), renderer = new THREE.WebGLRenderer({antialias:true,alpha:false});
   renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
   renderer.setClearColor(0xf1f4f5);
@@ -91,7 +92,7 @@ try {
   controls.addEventListener("change",schedule);
   const observer=new ResizeObserver(resize);observer.observe(host);setView("iso");resize();
   renderer.domElement.addEventListener("webglcontextlost",e=>{e.preventDefault();cleanup();fallback("3D 顯示已中斷；合成資料保留，重新載入後可重試。");});
-  $("viewer-status").textContent="合成模型 · 本機載入";
+  $("viewer-status").textContent="合成模型 · 同源載入";
   cleanup=()=>{if(disposed)return;disposed=true;observer.disconnect();controls.dispose();resources.forEach(r=>r.dispose());renderer.dispose();};
   // Read-only lab diagnostics. Never exposed by the production four-step UI.
   window.spatialDiagnostics=()=>({mode,selected,renders,zoom:camera.zoom,position:camera.position.toArray(),target:controls.target.toArray(),drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,pixelRatio:renderer.getPixelRatio(),geometries:renderer.info.memory.geometries});
@@ -109,7 +110,7 @@ $("core-check").onclick=async()=>{
   $("core-check").disabled=true;$("core-status").textContent="Core 載入中";
   try {
     const message=await new Promise((resolve,reject)=>{runtime=window.createCoreRuntime({onReady:resolve,onError:()=>reject(Error("runtime"))});});
-    const response=await fetch("/prototype/core-fixture.json"),engine=await response.json();
+    const response=await fetch(new URL("./core-fixture.json",import.meta.url)),engine=await response.json();
     const result=await runtime.recompute(engine);
     if(!result.input_hash?.startsWith("sha256:")||!result.result)throw Error("result");
     $("core-status").textContent="Core 檢查通過 · "+message.runtime_source+" · "+result.core_version;

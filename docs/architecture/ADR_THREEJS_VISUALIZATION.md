@@ -3,10 +3,14 @@
 日期：2026-09-23。狀態：隔離原型已驗證；正式 Viewer 導入待核准。
 這不是對 `ARCHITECTURE.md` D6「零依賴」的自行改寫。
 
+發布補充（同日使用者授權）：允許將合成原型部署於獨立 Pages 路徑 `spatial-prototype.html`。
+公開版與正式頁面同源，不宣稱獨立網域／安全沙箱隔離；原型仍不讀寫案件、不接正式導覽。
+套件只在部署產物中組裝，正式頁面不引用。公開版隱藏本機 Core 診斷面板；正式 Viewer 的依賴例外仍待核准。
+
 ## 決策範圍
 
 允許在 `tools/spatial-prototype/` 建立 synthetic-only 測試頁，以獨立 loopback origin 運行。
-不放進 `apps/web/`、不加入正式導覽、不改 Pages，不讓 Three.js 成為 Core 或四步流程的必要依賴。
+原始碼不放進 `apps/web/`、不加入正式導覽，不讓 Three.js 成為 Core 或四步流程的必要依賴。
 原型用既有 Core Worker 做一次合成運算共存測試，但不把該運算結果綁到展示幾何。
 
 ## 依賴與供應鏈
@@ -33,7 +37,8 @@
 隔離 server 綁 `127.0.0.1`；禁目錄列表、路徑逃逸、外部連線、iframe 與表單送出。
 CSP `script-src 'self'` 搭配固定 import-map hash；`wasm-unsafe-eval` 只為既有 Pyodide 共存。
 不開放 `unsafe-eval`、通配遠端網域或動態搜尋代理。
-正式 CSP、部署和 runtime 供應方式本輪未更動，正式導入不得直接搬用測試 server。
+公開合成頁以 CSP meta 保留限制與固定 import-map hash；Pages 不部署測試 server。
+正式四步 CSP 與 Pyodide runtime 供應方式不變；Pages 僅增加原型組裝步驟。
 
 ## Mobile／資源釋放
 

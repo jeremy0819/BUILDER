@@ -3,9 +3,11 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>BUILDER · Spatial Lab</title>
-  <link rel="stylesheet" href="/os-unified.css"><link rel="stylesheet" href="/prototype/lab.css">
-  <script type="importmap">{"imports":{"three":"/vendor/three.module.min.js"}}</script>
-  <script src="/core-runtime.js" defer></script><script type="module" src="/prototype/lab.mjs"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'sha256-rovx5uCdtBEdbmVxYkxFce0tx9pg/ZvU4PvUeeh3zh8='; style-src 'self'; connect-src 'self'; worker-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <link rel="stylesheet" href="./os-unified.css"><link rel="stylesheet" href="./spatial-prototype/lab.css">
+  <script type="importmap">{"imports":{"three":"./spatial-prototype/vendor/three.module.min.js"}}</script>
+  <script src="./core-runtime.js" defer></script><script type="module" src="./spatial-prototype/lab.mjs"></script>
 </head>
 <body class="uros-unified">
   <header><strong>BUILDER <span>Spatial Lab</span></strong><span class="label">Synthetic / Demo Geometry</span></header>
@@ -27,7 +29,7 @@
       <h2 id="selection">尚未選取</h2>
       <dl><dt>高度</dt><dd id="height">—</dd><dt>資料來源</dt><dd>Synthetic / Demo Geometry</dd><dt>單位</dt><dd>m</dd><dt>座標</dt><dd>LOCAL_DEMO_XZ_Y_UP</dd><dt>正式案件</dt><dd>未綁定</dd></dl>
       <details><summary>幾何溯源</summary><dl><dt>來源版本</dt><dd>demo-1</dd><dt>產生時間</dt><dd>2026-09-23T00:00:00Z</dd><dt>geometry_hash</dt><dd id="geometry-hash">—</dd><dt>input_hash</dt><dd>—</dd></dl></details>
-      <details id="runtime"><summary>Runtime 共存驗證</summary><button id="core-check">執行合成 Core 檢查</button><p id="core-status" role="status">尚未啟動</p></details>
+      <details id="runtime" hidden><summary>Runtime 共存驗證</summary><button id="core-check">執行合成 Core 檢查</button><p id="core-status" role="status">尚未啟動</p></details>
       <p class="boundary">隔離原型；不寫入案件、地主分配或操作歷程。</p>
     </aside>
   </main>

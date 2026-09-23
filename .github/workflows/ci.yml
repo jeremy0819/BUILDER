@@ -146,6 +146,7 @@ jobs:
         run: |
           node tools/browser/verify.mjs
           node tools/browser/verify_spatial.mjs
+          node tools/browser/verify_pages.mjs
 
       - name: "Gate 22 — Player feedback / backup / calibration / CI identity"
         run: |

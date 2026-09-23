@@ -13,6 +13,9 @@ on:
     paths:
       - "apps/web/**"
       - ".github/workflows/pages.yml"
+      - "tools/spatial-prototype/**"
+      - "tools/build_pages.py"
+      - "tools/prepare_spatial_prototype.py"
 
 permissions:
   contents: read
@@ -32,10 +35,17 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Prepare pinned synthetic-viewer assets
+        run: python tools/prepare_spatial_prototype.py
+      - name: Assemble public site and independent synthetic prototype
+        run: python tools/build_pages.py --output "${{ runner.temp }}/builder-pages"
       - uses: actions/configure-pages@v5
-      - name: Upload apps/web as Pages artifact
+      - name: Upload assembled Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: apps/web        # 以 apps/web 為網站根，index.html 即首頁；.nojekyll 已在其中
+          path: ${{ runner.temp }}/builder-pages
       - id: deployment
         uses: actions/deploy-pages@v4

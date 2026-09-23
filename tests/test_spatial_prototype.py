@@ -76,6 +76,6 @@ def test_lab_routes_cannot_escape(monkeypatch):
     import serve_spatial_prototype as server
     handler = object.__new__(server.Handler)
     assert Path(handler.translate_path("/")) == server.LAB / "index.html"
-    for path in ("/prototype/../../LICENSE", "/vendor/%2e%2e/%2e%2e/LICENSE", "/prototype/"):
+    for path in ("/spatial-prototype/../../LICENSE", "/spatial-prototype/vendor/%2e%2e/%2e%2e/LICENSE", "/spatial-prototype/"):
         assert Path(handler.translate_path(path)) == server.LAB / "__missing__"
     assert handler.translate_path("/core-runtime.worker.js") == str(server.WEB / "core-runtime.worker.js")

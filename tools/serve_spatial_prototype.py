@@ -11,17 +11,17 @@ from prepare_spatial_prototype import check
 
 LAB = ROOT / "tools/spatial-prototype"
 VENDOR = ROOT / "tools/browser/artifacts/spatial-vendor"
-IMPORT_MAP = '{"imports":{"three":"/vendor/three.module.min.js"}}'
+IMPORT_MAP = '{"imports":{"three":"./spatial-prototype/vendor/three.module.min.js"}}'
 MAP_HASH = base64.b64encode(hashlib.sha256(IMPORT_MAP.encode()).digest()).decode()
 
 
 class Handler(WebHandler):
     def translate_path(self, path):
         decoded = unquote(urlsplit(path).path)
-        if decoded in ("/", "/index.html"):
+        if decoded in ("/", "/index.html", "/spatial-prototype.html"):
             return str(LAB / "index.html")
-        if decoded.startswith("/prototype/") or decoded.startswith("/vendor/"):
-            prefix, base = ("/vendor/", VENDOR) if decoded.startswith("/vendor/") else ("/prototype/", LAB)
+        if decoded.startswith("/spatial-prototype/"):
+            prefix, base = ("/spatial-prototype/vendor/", VENDOR) if decoded.startswith("/spatial-prototype/vendor/") else ("/spatial-prototype/", LAB)
             target = (base / decoded[len(prefix):]).resolve()
             if target.is_relative_to(base.resolve()) and target.is_file():
                 return str(target)

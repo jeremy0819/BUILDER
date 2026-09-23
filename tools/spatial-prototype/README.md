@@ -3,6 +3,11 @@
 Synthetic-only Three.js lab for Visualization Foundation 0.7.0.
 Not a production Viewer, not a Case Truth source, and not a release tag.
 
+The authorized Pages artifact also publishes `spatial-prototype.html` as a
+standalone synthetic demo. It shares the site's origin but never reads or writes
+case storage. Local Core diagnostics are hidden on the published route.
+Dependencies are assembled by `tools/build_pages.py`, not committed to Git.
+
 ## Run
 
 From the repository root:

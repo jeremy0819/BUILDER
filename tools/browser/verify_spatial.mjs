@@ -28,7 +28,10 @@ try{
   check(response.headers()["content-security-policy"].includes("connect-src 'self'"),"same-origin CSP");
   check((await page.locator(".label").innerText()).includes("Synthetic"),"synthetic label persistent");
   check(await page.locator("#geometry-hash").innerText()!=="—","geometry hash present");
+  // GPU initialization and the first resize may settle after the JS module is ready.
+  await page.waitForFunction(()=>{const p=spatialPixelCheck();return p.different>p.total*.025;},{},{timeout:10000});
   const pixels=await page.evaluate(()=>spatialPixelCheck());
+  if(pixels.different<=pixels.total*.025){await page.screenshot({path:resolve(artifacts,"spatial-failure.png"),fullPage:true});console.log(JSON.stringify({pixels,state:await state(page),errors,box:await page.locator("canvas").boundingBox()}));}
   check(pixels.different>pixels.total*.025,"desktop WebGL canvas contains visible geometry");
   const initial=await state(page);await page.locator("#top").click();
   check((await state(page)).mode==="top","top camera");
@@ -58,6 +61,7 @@ try{
   check(errors.length===0,"no desktop page errors");
   const mobile=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:2}),mp=await mobile.newPage();
   await mp.goto(origin+"/");await mp.waitForFunction(()=>!!window.spatialDiagnostics);
+  await mp.waitForFunction(()=>{const p=spatialPixelCheck();return p.different>p.total*.025;},{},{timeout:10000});
   const mPixels=await mp.evaluate(()=>spatialPixelCheck());check(mPixels.different>mPixels.total*.025,"mobile canvas nonblank");
   check(await mp.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),"mobile no horizontal overflow");
   check(await mp.locator("button").evaluateAll(nodes=>nodes.filter(n=>n.getClientRects().length).every(n=>n.getBoundingClientRect().height>=44)),"mobile touch targets");
@@ -76,7 +80,7 @@ try{
   await fp.locator('[data-object="demo-building"]').click();check(await fp.locator("#height").innerText()==="26 m","WebGL fallback retains source data");
   await page.evaluate(()=>document.querySelector("canvas").getContext("webgl2").getExtension("WEBGL_lose_context").loseContext());
   await page.locator("#fallback").waitFor();check(await page.locator("#scene").isHidden(),"context loss has visible fallback");
-  const missing=await browser.newContext();await missing.route("**/vendor/three.module.min.js",r=>r.fulfill({status:404,body:"missing"}));
+  const missing=await browser.newContext();await missing.route("**/spatial-prototype/vendor/three.module.min.js",r=>r.fulfill({status:404,body:"missing"}));
   const np=await missing.newPage();await np.goto(origin+"/");await np.locator("#fallback").waitFor();check(await np.locator("#scene").isHidden(),"missing local dependency never falls back to CDN");
   console.log(`SPATIAL BROWSER: ${passed} passed`);
 }finally{await browser?.close();server.kill();}
