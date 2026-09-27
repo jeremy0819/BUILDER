@@ -228,7 +228,7 @@ body.uros-unified input:focus-visible{outline:2px solid var(--uros-accent);outli
 .decision-calibration{font-size:12px;color:var(--uros-warn,#88520c);margin:8px 0}
 .uros-workflow-links{max-width:1120px;margin:auto;padding:8px 16px;display:flex;gap:20px;flex-wrap:wrap;border-top:1px solid var(--uros-line);font-size:12px}
 .uros-workflow-links a{color:var(--uros-accent);text-decoration:underline;text-underline-offset:3px}
-.uros-page-people:has(#ovl-title.show)>.wrap,.uros-page-people:has(#ovl-plan.show)>.wrap{display:none}
+.uros-page-people #integration-play:has(#ovl-title.show)>.wrap,.uros-page-people #integration-play:has(#ovl-plan.show)>.wrap{display:none}
 .uros-page-people #ovl-chapter{background:var(--uros-panel);color:var(--uros-ink);z-index:80}
 .uros-page-people #ovl-chapter .chapter{padding:20px;max-width:100%;overflow-wrap:anywhere}
 .uros-page-people #ovl-chapter h2{font-size:28px}
