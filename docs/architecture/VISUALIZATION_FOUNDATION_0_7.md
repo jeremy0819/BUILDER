@@ -101,7 +101,14 @@ timestamp 不是 hash，也不拿渲染時間冒充幾何來源或 Core 計算�
 ## 7. 儲存與資料量預算
 
 本輪：合成 fixture、小型原始碼與文件進 repo；Three.js、Pyodide、截圖與瀏覽器只在既有 ignored artifacts。
-正式 apps/web 沒有引用 prototype，沒有新增預載、Service Worker、localStorage、IndexedDB 或 Activity。
+2026-09-26 的 0.7.0 實作在①的「空間與樓層」提供明示為合成展示的次要連結。
+四步頁面不載入 Three.js、不預載或嵌入原型；只有使用者開啟獨立展示頁才載入套件。
+原型沒有 localStorage、IndexedDB、Activity 或正式案件綁定；同源路徑不是安全隔離邊界。
+
+Workflow 工具已抽成 `workflow-logic.js`、`workflow-panels.js` 與作用域樣式：
+③整合概況／同意／任務，④決策紀錄／時間軸／歸因；①保留樓層面積示意，②保留財務快照。
+Workspace 回到案件選取、匯入與匯出；舊 `?view=` 連結轉到原有四步。
+旋轉、聚焦、物件顯示與選取皆為暫態，不寫入案件；任務及決策仍寫入原有 Workflow 事實欄位。
 
 下一階段建議預算（待正式契約核准，非現有能力）：
 
@@ -115,7 +122,7 @@ timestamp 不是 hash，也不拿渲染時間冒充幾何來源或 Core 計算�
 
 | OS Release | 交付方向 | 前置門檻 |
 |---|---|---|
-| 0.7.0 | 本 audit、三種 provenance 提案、Three.js ADR、隔離原型、沿用已完成 UX 收斂 | 正式案件不受影響；完整測試；未等同已發布 tag |
+| 0.7.0 | 本 audit、三種 provenance 提案、Three.js ADR、隔離原型、四步共用案件面板 | 缺正式幾何維持面積示意；回歸測試；未等同已發布 tag |
 | 0.8.0 | Traceable Massing Viewer | 幾何契約核准、來源可用、依賴 ADR 核准；沒有資料的案件留在 Diagram |
 | 0.9.0 | Spatial Inspection | floor geometry 完整才切片；GIS 採 capability gate，不強制納入 |
 | 0.10.0 | Decision Integration | 方案／歸因／敏感度／逐戶結果／紀錄／報告有效綁定；不承諾 LOD 2 |

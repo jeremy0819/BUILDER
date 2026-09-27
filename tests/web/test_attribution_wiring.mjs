@@ -15,7 +15,9 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 let pass = 0, fail = 0;
 const ok = (c, n) => { if (c) { pass++; } else { fail++; console.error("❌", n); } };
 
-const ws = readFileSync(join(root, "apps/web/workspace.html"), "utf8");
+const ws = readFileSync(join(root, "apps/web/workflow-panels.js"), "utf8");
+const decision = readFileSync(join(root, "apps/web/report.html"), "utf8");
+const mount = readFileSync(join(root, "apps/web/workflow-mount.js"), "utf8");
 const rt = readFileSync(join(root, "apps/web/core-runtime.js"), "utf8");
 const wk = readFileSync(join(root, "apps/web/core-runtime.worker.js"), "utf8");
 
@@ -24,9 +26,9 @@ const strip = s => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "
 const wsCode = strip(ws);
 
 // ── 接線存在 ────────────────────────────────────────────────
-ok(/<script src="core-runtime\.js"><\/script>/.test(ws), "workspace 載入 core-runtime");
-ok(/<script src="case-store\.js"><\/script>/.test(ws), "workspace 載入 case-store（方案來源）");
-ok(/data-t="attr"/.test(ws), "有『歸因比較』分頁");
+ok(/<script[^>]*src="core-runtime\.js"[^>]*><\/script>/.test(decision), "決策步驟載入 core-runtime");
+ok(/<script[^>]*src="case-store\.js"[^>]*><\/script>/.test(decision), "決策步驟載入 case-store（方案來源）");
+ok(/"report\.html":\["dec","time","attr"\]/.test(mount), "決策步驟有『歸因比較』面板");
 ok(/attr:renderAttribution/.test(ws), "分頁綁定 renderAttribution");
 ok(/function renderAttribution/.test(ws), "renderAttribution 已定義");
 
@@ -41,7 +43,7 @@ ok(/_redcf\.attribute\(/.test(wk), "worker 直接呼叫 Core attribute");
 // ── 送出的是完整 engine，不是 diff／UI 自算值 ───────────────
 ok(/rt\.attribute\(b\.engine, c\.engine/.test(wsCode), "送出兩份完整 engine");
 ok(!/diff|delta\s*=|impact\s*=\s*[^=]/.test(
-     wsCode.split("function runAttr")[1] || ""), "runAttr 不自行組 diff 或算 delta");
+     (wsCode.split("function runAttr")[1] || "").split("function renderMassing")[0]), "runAttr 不自行組 diff 或算 delta");
 
 // ── UI 零計算：不得自行推導任何歸因數值 ─────────────────────
 // 只掃**歸因區塊**——workspace 他處（進度條、完工機率）本來就有百分比換算，

@@ -144,10 +144,11 @@ try {
     await page.goto(origin+"/"+file);await page.waitForTimeout(350);
     check(await page.evaluate(()=>!window.__injected&&!document.querySelector('img[onerror]')),"stored XSS inert: "+file);
   }
-  await page.goto(origin+'/workspace.html');await page.locator('[data-case-action="open"]').first().click();
-  await page.locator('[data-t="task"]').click();await page.locator('#ttitle').fill('<img src=x onerror="window.__injected=1">');await page.locator('#taddbtn').click();
+  await page.goto(origin+'/workspace.html?view=task');await page.waitForURL('**/os-simulator.html#workflow-task');
+  await page.locator('#ttitle').fill('<img src=x onerror="window.__injected=1">');await page.locator('#taddbtn').click();
   check(await page.evaluate(()=>!window.__injected&&!document.querySelector('img[onerror]')),'task text remains inert after save and rerender');
-  await page.locator('[data-t="dec"]').click();await page.locator('#dttl').fill('<svg onload="window.__injected=1">');await page.locator('#daddbtn').click();
+  await page.goto(origin+'/workspace.html?view=dec');await page.waitForURL('**/report.html#workflow-dec');
+  await page.locator('#dttl').fill('<svg onload="window.__injected=1">');await page.locator('#daddbtn').click();
   check(await page.evaluate(()=>!window.__injected&&!document.querySelector('svg[onload]')),'decision log remains inert after save and rerender');
   check(external.length===0,'same-origin runtime: zero external requests or case payloads');
   check(errors.length===0,"no unhandled browser errors: "+errors.join(";"));
@@ -198,6 +199,16 @@ try {
   await restorePage.waitForFunction(()=>document.querySelector('#backup-status')?.textContent==='尚無有效備份紀錄');
   restorePage.on('dialog',dialog=>dialog.accept());
   await restorePage.locator('#browser-backup details summary').first().click();
+  const invalidBackup={format:'uros-browser-backup',version:1,
+    local_storage:{'uros.workflow.v1':JSON.stringify({order:[],projects:'broken'})},
+    idb:{format:'uros-backup',version:1,cases:[],activity:[],meta:[]}};
+  const beforeInvalid=await restorePage.evaluate(async()=>({workflow:localStorage.getItem('uros.workflow.v1'),idb:await CaseStore.exportAll()}));
+  await restorePage.locator('#backup-restore').setInputFiles({name:'invalid-backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(invalidBackup))});
+  await restorePage.waitForFunction(()=>document.querySelector('#backup-status').textContent==='還原未完成：案件索引無效');
+  const afterInvalid=await restorePage.evaluate(async()=>({workflow:localStorage.getItem('uros.workflow.v1'),idb:await CaseStore.exportAll()}));
+  assert.equal(afterInvalid.workflow,beforeInvalid.workflow);
+  for(const name of ['cases','activity','meta']) assert.deepEqual(afterInvalid.idb[name],beforeInvalid.idb[name]);
+  check(true,'malformed workflow backup rejected through file input without changing either store');
   const restoredNavigation=restorePage.waitForEvent('framenavigated',frame=>frame===restorePage.mainFrame());
   await restorePage.locator('#backup-restore').setInputFiles(backupPath);
   await restoredNavigation;await restorePage.waitForLoadState('domcontentloaded');
@@ -212,9 +223,11 @@ try {
   check(await savePage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'onboarding backup mobile no overflow');
 
   await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('uros.workflow.v1')),pid=localStorage.getItem('uros.active_case');s.projects[pid].snap.code_name='<img src=x onerror="window.__injected=1">';localStorage.setItem('uros.workflow.v1',JSON.stringify(s));localStorage.removeItem('uros.bridge.case');});
-  await page.goto(origin+'/os-simulator.html');await page.locator('#btn-start').waitFor();
+  await page.goto(origin+'/os-simulator.html');
+  check(await page.locator('#workflow-tools').isVisible()&&await page.locator('#integration-play').isHidden(),'People defaults to factual case records');
+  await page.locator('[data-mode="play"]').click();await page.locator('#btn-start').waitFor();
   await page.screenshot({path:resolve(artifacts,'people-title-mobile.png'),fullPage:true});
-  check(await page.locator('body > .wrap').isHidden(),'unstarted sandbox does not expose an unrelated background board');
+  check(await page.locator('#integration-play > .wrap').isHidden(),'unstarted sandbox does not expose an unrelated background board');
   check(await page.evaluate(()=>!window.__injected&&!document.querySelector('img[onerror]')),'People briefing safely displays stored hostile case name');
   await page.locator('#btn-start').click();
   await page.locator('#ovl-chapter').waitFor({state:'hidden'});
@@ -222,9 +235,10 @@ try {
   check((await page.locator('#bridge-banner').textContent()).includes('<img')&&await page.evaluate(()=>!window.__injected&&!document.querySelector('img[onerror]')),'People planning bridge safely displays stored hostile case name');
   check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'People planning mobile no overflow');
   await page.evaluate(()=>{const s=CaseBus.readStore(),pid=CaseBus.activePid();s.projects[pid].wf.stakeholders=Array.from({length:81},(_,i)=>({stakeholder_id:'O'+i,role:'owner'}));s.projects[pid].snap.total=81;s.projects[pid].snap.agreed=0;CaseBus.writeStore(s);localStorage.removeItem('uros.bridge.case');});
-  await page.reload();await page.locator('#btn-start').click();await page.locator('#ovl-chapter').waitFor({state:'hidden'});
+  await page.reload();await page.locator('[data-mode="play"]').click();await page.locator('#btn-start').click();await page.locator('#ovl-chapter').waitFor({state:'hidden'});
   check(await page.locator('#owners-cap-notice').isVisible()&&(await page.locator('#owners-cap-notice').innerText()).includes('81 戶超過沙盤上限 80'),'owner limit remains visible after entering the sandbox');
   await page.goto(origin+'/workspace.html?view=task');
+  await page.waitForURL('**/os-simulator.html#workflow-task');
   check(await page.locator('#ttitle').isVisible(),'step deep-link opens active case task panel');
 
   const rollback=await browser.newContext(),rollbackPage=await rollback.newPage();await rollbackPage.goto(origin+'/index.html');

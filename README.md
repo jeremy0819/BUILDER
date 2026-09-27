@@ -7,6 +7,8 @@
 
 **線上試用**：https://jeremy0819.github.io/BUILDER/ ｜ 打開就有四個合成示範案，免安裝、免匯入。
 
+**0.7.0 開發批次（尚未建立正式版本標籤）**：四步共用案件面板與合成 3D 操作展示已實作；範圍、資料門檻與測試結果見 [實作紀錄](docs/releases/OS_0_7_LOCAL-2026-09-27.md)。
+
 ---
 
 ## What is BUILDER?
@@ -126,6 +128,7 @@ Core（計算・唯一真源）→ Workflow（案件狀態）→ Decision Engine
 | 想做的事 | 讀哪份 |
 |---|---|
 | 本機跑起來、跑測試、CI 全部 Gate | [`docs/DEVELOPING.md`](docs/DEVELOPING.md) |
+| 驗證機制、請求流程與憑證邊界 | [`docs/architecture/AUTHENTICATION.md`](docs/architecture/AUTHENTICATION.md) |
 | 架構裁決與資料流 | [`ARCHITECTURE.md`](ARCHITECTURE.md) |
 | 產品第一性原理 | [`knowledge/00_FIRST_PRINCIPLES.md`](knowledge/00_FIRST_PRINCIPLES.md) |
 | 決策引擎規格 | [`docs/architecture/DECISION_ENGINE_SPEC.md`](docs/architecture/DECISION_ENGINE_SPEC.md) |

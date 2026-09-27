@@ -17,6 +17,22 @@ class Handler(SimpleHTTPRequestHandler):
 
     def translate_path(self, path):
         decoded = unquote(urlsplit(path).path)
+        # Mirror the public build's isolated, synthetic-only viewer entry.
+        if decoded == "/spatial-prototype.html":
+            return str(ROOT / "tools/spatial-prototype/index.html")
+        if decoded.startswith("/spatial-prototype/"):
+            if decoded.startswith("/spatial-prototype/vendor/"):
+                base = ARTIFACTS / "spatial-vendor"
+                relative = decoded.removeprefix("/spatial-prototype/vendor/")
+                allowed = {"three.module.min.js", "three.core.min.js", "OrbitControls.js", "LICENSE"}
+            else:
+                base = ROOT / "tools/spatial-prototype"
+                relative = decoded.removeprefix("/spatial-prototype/")
+                allowed = {"lab.css", "lab.mjs", "fixture.mjs", "core-fixture.json"}
+            target = (base / relative).resolve()
+            if relative in allowed and target.is_relative_to(base.resolve()):
+                return str(target)
+            return str(WEB / "__invalid_path__")
         base = ARTIFACTS if decoded.startswith("/runtime/") else WEB
         target = (base / decoded.lstrip("/")).resolve()
         if not target.is_relative_to(base.resolve()):

@@ -19,10 +19,19 @@
     Object.keys(doc.local_storage).forEach(function (key) {
       if (!/^uros\./.test(key) || typeof doc.local_storage[key] !== "string") throw new Error("備份含非 BUILDER 儲存鍵");
     });
-    if (doc.local_storage["uros.workflow.v1"]) {
+    if (Object.prototype.hasOwnProperty.call(doc.local_storage, "uros.workflow.v1")) {
       var store = root.UROSSecurity.parseJSON(doc.local_storage["uros.workflow.v1"]);
-      if (!Array.isArray(store.order) || !store.projects || Array.isArray(store.projects)) throw new Error("案件索引無效");
-      store.order.forEach(function (pid) { if (typeof pid !== "string" || !store.projects[pid]) throw new Error("案件索引不完整"); });
+      var isObject = function (value) { return value !== null && typeof value === "object" && !Array.isArray(value); };
+      if (!isObject(store) || !Array.isArray(store.order) || !isObject(store.projects)) throw new Error("案件索引無效");
+      Object.keys(store.projects).forEach(function (pid) {
+        if (!pid || !isObject(store.projects[pid])) throw new Error("案件紀錄無效");
+      });
+      var indexed = new Set();
+      store.order.forEach(function (pid) {
+        if (typeof pid !== "string" || !pid || indexed.has(pid) || !Object.prototype.hasOwnProperty.call(store.projects, pid))
+          throw new Error("案件索引不完整或重複");
+        indexed.add(pid);
+      });
     }
     [[doc.idb.cases, "pid"], [doc.idb.activity, "key"], [doc.idb.meta, "k"]].forEach(function (pair) {
       var seen = new Set();

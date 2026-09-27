@@ -5,8 +5,8 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const html = readFileSync(join(root, "apps/web/workspace.html"), "utf8");
-const m = html.match(/\/\*WORKLOGIC-BEGIN\*\/([\s\S]*?)\/\*WORKLOGIC-END\*\//);
+const logic = readFileSync(join(root, "apps/web/workflow-logic.js"), "utf8");
+const m = logic.match(/\/\*WORKLOGIC-BEGIN\*\/([\s\S]*?)\/\*WORKLOGIC-END\*\//);
 if (!m) { console.error("❌ 找不到 WORKLOGIC 區塊"); process.exit(1); }
 const src = m[1];
 const WL = new Function(src + "; return WORKLOGIC;")();

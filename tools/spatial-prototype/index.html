@@ -10,27 +10,34 @@
   <script src="./core-runtime.js" defer></script><script type="module" src="./spatial-prototype/lab.mjs"></script>
 </head>
 <body class="uros-unified">
-  <header><strong>BUILDER <span>Spatial Lab</span></strong><span class="label">Synthetic / Demo Geometry</span></header>
+  <header><strong>BUILDER <span>Spatial Lab</span></strong><span class="label">Synthetic / Demo Geometry · 未綁定案件</span><a href="./dashboard.html">返回①基地</a></header>
+  <div class="intro"><h1>理解資料，從空間開始</h1><p>這是 0.7 的合成幾何操作原型。輪廓與高度來自明示的示範資料，不能代表您的案件，也不代表案件已具備正式 LOD 0。</p></div>
   <main>
     <section class="viewer" aria-label="合成量體檢視">
       <div class="toolbar" role="toolbar" aria-label="視角">
         <div class="modes"><button id="iso" aria-pressed="true">立體</button><button id="top" aria-pressed="false">俯視</button></div>
         <button id="pan" aria-label="平移模式" aria-pressed="false" title="平移模式">↔</button>
         <button id="zoom-in" aria-label="放大" title="放大">＋</button><button id="zoom-out" aria-label="縮小" title="縮小">−</button>
-        <button id="reset" aria-label="重設視角" title="重設視角">↺</button>
+        <button id="focus" disabled title="先選取物件，再聚焦其範圍">聚焦選取</button><button id="overview" title="回到整體範圍，保留物件顯示設定">總覽</button>
+        <button id="reset" aria-label="重設全部" title="恢復視角、顯示全部物件並清除選取">重設</button>
       </div>
-      <div id="scene" tabindex="0" aria-label="合成基地與量體"></div>
+      <div id="scene" tabindex="0" aria-label="合成基地與量體" aria-describedby="interaction-help"></div>
       <div id="fallback" hidden role="status">無法使用 3D 檢視，合成資料仍列於下方。</div>
+      <div id="interaction-help" class="interaction-help"><span>拖曳旋轉 · 滾輪縮放 · 點物件看資料</span><span>觸控：單指旋轉、雙指平移／縮放；開啟 ↔ 後單指平移。</span><span>鍵盤：Tab 選工具與物件；聚焦畫布後用方向鍵平移。</span></div>
       <div class="caption"><span id="viewer-status" role="status">載入中</span><span>規劃量體示意 · 非真實基地／核定圖說</span></div>
     </section>
     <aside aria-label="物件資料">
-      <h1>空間資料</h1>
-      <div class="objects"><button data-object="demo-site">合成基地</button><button data-object="demo-building">合成量體 A</button></div>
+      <h2 class="aside-title">物件與來源</h2>
+      <div class="objects">
+        <div class="object-row"><button data-object="demo-site" aria-pressed="false" title="顯示並選取合成基地">合成基地</button><label><input type="checkbox" data-visibility="demo-site" checked>顯示基地</label></div>
+        <div class="object-row"><button data-object="demo-building" aria-pressed="false" title="顯示並選取合成量體 A">合成量體 A</button><label><input type="checkbox" data-visibility="demo-building" checked>顯示量體</label></div>
+      </div>
       <h2 id="selection">尚未選取</h2>
-      <dl><dt>高度</dt><dd id="height">—</dd><dt>資料來源</dt><dd>Synthetic / Demo Geometry</dd><dt>單位</dt><dd>m</dd><dt>座標</dt><dd>LOCAL_DEMO_XZ_Y_UP</dd><dt>正式案件</dt><dd>未綁定</dd></dl>
-      <details><summary>幾何溯源</summary><dl><dt>來源版本</dt><dd>demo-1</dd><dt>產生時間</dt><dd>2026-09-23T00:00:00Z</dd><dt>geometry_hash</dt><dd id="geometry-hash">—</dd><dt>input_hash</dt><dd>—</dd></dl></details>
+      <dl><dt>物件 ID</dt><dd id="object-id">—</dd><dt>高度</dt><dd id="height">—</dd><dt>資料來源</dt><dd>Synthetic / Demo Geometry</dd><dt>單位</dt><dd>m</dd><dt>座標</dt><dd id="coordinate-system">—</dd><dt>正式案件</dt><dd>未綁定</dd></dl>
+      <details open><summary>幾何溯源</summary><dl><dt>來源版本</dt><dd id="source-version">—</dd><dt>產生時間</dt><dd id="generated-at">—</dd><dt>geometry_hash</dt><dd id="geometry-hash">—</dd><dt>input_hash</dt><dd>未綁定</dd></dl></details>
+      <details open><summary>合成幾何原始資料</summary><table><caption>平面頂點為 (X, Z)，Y 為向上軸；所有數值的單位為 m。基地沒有建築高度。</caption><thead><tr><th scope="col">物件 ID</th><th scope="col">輪廓頂點</th><th scope="col">高度</th></tr></thead><tbody id="geometry-rows"></tbody></table></details>
       <details id="runtime" hidden><summary>Runtime 共存驗證</summary><button id="core-check">執行合成 Core 檢查</button><p id="core-status" role="status">尚未啟動</p></details>
-      <p class="boundary">隔離原型；不寫入案件、地主分配或操作歷程。</p>
+      <p class="boundary">缺少有來源的輪廓與高度時，案件維持面積與樓層示意。此原型不產生樓層、住宅或地主配置；檢視操作不寫入案件或操作歷程。</p>
     </aside>
   </main>
 </body></html>
