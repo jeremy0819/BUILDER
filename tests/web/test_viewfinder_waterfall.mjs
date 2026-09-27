@@ -22,7 +22,9 @@ const waterfallBundle = loadCommonJs(join(root, "apps/web/attribution-waterfall.
 const contracts = registryBundle.api;
 const waterfall = waterfallBundle.api;
 const source = waterfallBundle.source;
-const workspace = readFileSync(join(root, "apps/web/workspace.html"), "utf8");
+const workspace = readFileSync(join(root, "apps/web/workflow-panels.js"), "utf8");
+const decision = readFileSync(join(root, "apps/web/report.html"), "utf8");
+const panelStyles = readFileSync(join(root, "apps/web/workflow-panels.css"), "utf8");
 const contract = contracts.get("attribution-waterfall");
 
 const hashA = "sha256:" + "a".repeat(64);
@@ -109,13 +111,13 @@ ok(/attribution-0\.1 未提供法源欄位/.test(source), "evidence explicitly r
 ok(/pointerenter/.test(source) && /addEventListener\("focus"/.test(source), "hover and focus select the same evidence");
 
 // Workspace wiring and responsive states.
-ok(workspace.indexOf('src="chart-contracts.js"') < workspace.indexOf('src="attribution-waterfall.js"'), "contract loads before the chart module");
+ok(decision.includes('src="chart-contracts.js"') && decision.indexOf('src="chart-contracts.js"') < decision.indexOf('src="attribution-waterfall.js"'), "decision step loads the contract before the chart module");
 ok(/AttributionWaterfall\.render\(r, contract\)/.test(workspace), "workspace renders through the governed module");
 ok(/AttributionWaterfall\.bind\(\$\("atBody"\), ATTR\.report, contract\)/.test(workspace), "workspace binds chart interaction after paint");
 const attributionBlock = workspace.slice(workspace.indexOf("var ATTR ="), workspace.indexOf("function renderMassing"));
 ok(!/\.toFixed\(/.test(attributionBlock), "attribution UI never rounds Core presentation again");
 ok(/p\.display_ok/.test(attributionBlock) && /r\.conservation\.raw_ok/.test(attributionBlock), "visible reconciliation status uses both Core flags");
-ok(/@media\(max-width:600px\)/.test(workspace) && /wf-layout\{grid-template-columns:1fr\}/.test(workspace), "narrow layout has explicit constraints");
+ok(/@media\(max-width:600px\)/.test(panelStyles) && /wf-layout\{grid-template-columns:1fr\}/.test(panelStyles), "shared panel narrow layout has explicit constraints");
 ok(/方案已變更，請按「計算歸因」重新執行/.test(workspace), "stale state remains visible");
 ok(/Core 正在執行反事實重算/.test(workspace), "computing state remains visible");
 ok(/正在載入計算核心/.test(workspace) && /!ATTR\.coreReady/.test(workspace), "Core readiness is a visible disabled state");

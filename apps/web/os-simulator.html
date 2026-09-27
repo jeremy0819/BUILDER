@@ -295,8 +295,16 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
 .rep-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 </style>
 <link rel="stylesheet" href="os-unified.css">
+<link rel="stylesheet" href="workflow-panels.css">
+<script src="workflow-logic.js" defer></script>
+<script src="chart-contracts.js" defer></script>
+<script src="attribution-waterfall.js" defer></script>
+<script src="massing-view.js" defer></script>
+<script src="workflow-panels.js" defer></script>
+<script src="workflow-mount.js" defer></script>
 <script src="os-shell.js"></script>
 
+<div id="integration-play" hidden>
 <!-- ═══ TITLE ═══ -->
 <div class="ovl show" id="ovl-title"><div class="title-box fadein">
   <div class="eyebrow">URBAN RENEWAL OS · RE-DCF CORE</div>
@@ -464,6 +472,7 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
   </footer>
 </div>
 
+</div>
 <script>
 /*SIMCORE-BEGIN*/
 /* SIMCORE v2 — 純遊戲邏輯（零 DOM、零財務公式；node headless 可測）。

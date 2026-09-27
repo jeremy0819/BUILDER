@@ -8,6 +8,7 @@ new Function("self","localStorage", read("apps/web/case-drafts.js"))(root,storag
 new Function("self","document","localStorage",read("apps/web/browser-backup.js"))(root,doc,storage);
 let count=0;
 function test(name,fn){fn();count++;console.log("PASS",name);}
+async function testAsync(name,fn){await fn();count++;console.log("PASS",name);}
 const D=root.CaseDrafts, B=root.BrowserBackup;
 test("intent isolated by project",()=>{D.set("A","intent","alpha");D.set("B","intent","beta");assert.equal(D.get("A","intent"),"alpha");assert.equal(D.get("B","intent"),"beta");});
 test("visited flags isolated",()=>{D.set("A","site_visited",true);assert.equal(D.get("B","site_visited"),undefined);});
@@ -25,6 +26,24 @@ test("unknown backup version refused",()=>assert.throws(()=>B.validate({...envel
 test("non-app storage keys refused",()=>assert.throws(()=>B.validate({...envelope,local_storage:{token:"secret"}})));
 test("duplicate event keys refused",()=>assert.throws(()=>B.validate({...envelope,idb:{...envelope.idb,activity:[{key:1},{key:1}]}})));
 test("missing case index refused",()=>assert.throws(()=>B.validate({...envelope,local_storage:{"uros.workflow.v1":JSON.stringify({order:["missing"],projects:{}})}})));
+for (const workflow of [null, [], {order:[],projects:"broken"}, {order:[],projects:1},
+  {order:["A","A"],projects:{A:{}}}, {order:[""],projects:{"":{}}},
+  {order:["toString"],projects:{}}, {order:["A"],projects:{A:"broken"}},
+  {order:[],projects:{A:null}}, {order:["A"],projects:{A:[]}}]) {
+  test("malformed workflow backup refused: "+JSON.stringify(workflow),()=>assert.throws(()=>B.validate({
+    ...envelope,local_storage:{"uros.workflow.v1":JSON.stringify(workflow)}
+  })));
+}
+test("empty serialized workflow refused",()=>assert.throws(()=>B.validate({...envelope,local_storage:{"uros.workflow.v1":""}})));
+test("valid populated workflow backup accepted",()=>{
+  const backup={...envelope,local_storage:{"uros.workflow.v1":JSON.stringify({order:["A"],projects:{A:{pid:"A"}}})}};
+  assert.equal(B.validate(backup),backup);
+});
+await testAsync("malformed restore preserves existing storage before opening IndexedDB",async()=>{
+  const before=[...values.entries()];
+  await assert.rejects(B.restore({...envelope,local_storage:{"uros.workflow.v1":JSON.stringify({order:[],projects:"broken"})}}),/案件索引無效/);
+  assert.deepEqual([...values.entries()],before);
+});
 test("all six entry surfaces expose backup and calibration",()=>{for(const file of ["index","dashboard","evaluator","os-simulator","report","workspace"]){const s=read("apps/web/"+file+".html");assert.ok(s.includes('src="browser-backup.js"'));assert.ok(s.includes('src="calibration-data.js"'));}});
 new Function("self","module",read("apps/web/case-bus.js"))(root,{exports:{}});
 test("owner cap explicitly reported and original roster retained",()=>{const rec={wf:{project:{project_id:"A"},stakeholders:Array.from({length:81},(_,i)=>({role:"owner",stakeholder_id:"O"+i}))},snap:{total:81}};const bridge=root.CaseBus.buildSandboxBridge(rec);assert.equal(bridge.owners,null);assert.equal(bridge.owners_count,81);assert.match(bridge.owners_notice,/81.*80/);assert.equal(rec.wf.stakeholders.length,81);});

@@ -172,12 +172,19 @@
       applyTheme(current === "dark" ? "light" : "dark");
     });
     if (page.key === "product") productHub(rec);
-    var routes = page.key === "people" ? [["board","同意看板"],["task","時程任務"]]
+    var routes = page.key === "site" ? [["mass","空間與樓層"]] : page.key === "people" ? [["board","同意看板"],["task","時程任務"]]
       : page.key === "decision" ? [["dec","決策紀錄"],["time","時間軸"],["attr","歸因比較"]] : [];
     if (routes.length) {
       var links = document.createElement("nav"); links.className = "uros-workflow-links";
       links.setAttribute("aria-label", "本步案件工具");
-      routes.forEach(function (route) { var a=document.createElement("a"); a.href="workspace.html?view="+route[0]; a.textContent=route[1]; links.appendChild(a); });
+      routes.forEach(function (route) {
+        var a=document.createElement("a"); a.href="#workflow-"+route[0];
+        a.onclick=function(event){
+          event.preventDefault();history.replaceState(null,"",a.hash);
+          root.dispatchEvent(new CustomEvent("uros:workflow-open",{detail:route[0]}));
+        };
+        a.textContent=route[1]; links.appendChild(a);
+      });
       shell.appendChild(links);
     }
   }

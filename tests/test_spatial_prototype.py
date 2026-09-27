@@ -79,3 +79,14 @@ def test_lab_routes_cannot_escape(monkeypatch):
     for path in ("/spatial-prototype/../../LICENSE", "/spatial-prototype/vendor/%2e%2e/%2e%2e/LICENSE", "/spatial-prototype/"):
         assert Path(handler.translate_path(path)) == server.LAB / "__missing__"
     assert handler.translate_path("/core-runtime.worker.js") == str(server.WEB / "core-runtime.worker.js")
+
+
+def test_web_preview_only_exposes_public_spatial_files(monkeypatch):
+    monkeypatch.syspath_prepend(str(ROOT / "tools"))
+    import serve_web as server
+    handler = object.__new__(server.Handler)
+    assert Path(handler.translate_path("/spatial-prototype.html")) == ROOT / "tools/spatial-prototype/index.html"
+    assert Path(handler.translate_path("/spatial-prototype/fixture.mjs")) == ROOT / "tools/spatial-prototype/fixture.mjs"
+    assert Path(handler.translate_path("/spatial-prototype/vendor/LICENSE")) == server.ARTIFACTS / "spatial-vendor/LICENSE"
+    for path in ("/spatial-prototype/three.lock.json", "/spatial-prototype/", "/spatial-prototype/%2e%2e/LICENSE", "/spatial-prototype/vendor/%2e%2e/LICENSE"):
+        assert Path(handler.translate_path(path)) == server.WEB / "__invalid_path__"
