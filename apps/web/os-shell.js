@@ -60,7 +60,7 @@
     var hub = document.createElement("main");
     hub.id = "uros-product-hub";
     hub.className = "uros-product-hub";
-    hub.innerHTML = '<div class="uros-product-title"><div><h1>蓋出來值不值得？</h1>'
+    hub.innerHTML = '<div class="uros-product-title"><div><h1>產品與財務</h1>'
       + '<p>產品規劃 <span class="sm-source">INPUT / CORE</span></p></div>'
       + '<a href="dashboard.html" class="uros-icon-btn" title="回基地頁" aria-label="回基地頁">←</a></div>'
       + '<div class="uros-kpis">'
@@ -143,7 +143,7 @@
     shell.id = "uros-shell";
     shell.className = "uros-shell";
     shell.innerHTML = '<div class="uros-shell-inner">'
-      + '<div class="uros-shell-id"><span class="uros-mark">UR</span><div><div class="uros-step-id">' + page.n
+      + '<div class="uros-shell-id"><span class="uros-mark">B.</span><div><div class="uros-step-id">' + page.n
       + '</div><div class="uros-shell-title">' + page.title + "</div></div></div>"
       + '<div class="uros-shell-case"><label for="uros-shell-case">作用中案件</label><select id="uros-shell-case">'
       + optionsHtml(pid) + "</select></div>"

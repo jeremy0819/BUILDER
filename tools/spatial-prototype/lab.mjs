@@ -1,6 +1,12 @@
 import {fixture, geometryHash, validateDemo} from "./fixture.mjs";
 
 const $ = id => document.getElementById(id);
+const embedded=new URLSearchParams(location.search).get("embed")==="1";
+document.documentElement.classList.toggle("is-embedded",embedded);
+$("inspect").hidden=!embedded;
+$("object-inspector").hidden=embedded;
+$("inspect").onclick=()=>inspect($("object-inspector").hidden);
+$("object-inspector").addEventListener("keydown",event=>{if(embedded&&event.key==="Escape"){inspect(false);$("inspect").focus();}});
 $("runtime").hidden = !(["127.0.0.1","localhost"].includes(location.hostname) && !location.pathname.endsWith("spatial-prototype.html"));
 let runtime, cleanup = () => {}, resume = () => {};
 function select(id) {
@@ -10,6 +16,10 @@ function select(id) {
   $("height").textContent = building ? building.height + " m" : "—";
   document.querySelectorAll("[data-object]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.object === id)));
 }
+function inspect(open){
+  $("object-inspector").hidden=!open;
+  $("inspect").setAttribute("aria-expanded",String(open));
+}
 function fallback(message) {
   $("fallback").hidden = false;
   $("fallback").textContent = message;
@@ -17,6 +27,8 @@ function fallback(message) {
   document.querySelectorAll(".toolbar button, [data-visibility]").forEach(b => {b.disabled = true;});
   document.querySelectorAll("[data-object]").forEach(b => {b.onclick = () => select(b.dataset.object);});
   $("scene").hidden = true;
+  inspect(true);
+  $("inspect").disabled=false;
 }
 function showSourceData() {
   $("source-version").textContent = fixture.geometry_source_version;
@@ -41,7 +53,7 @@ try {
   const {OrbitControls} = await import("./vendor/OrbitControls.js");
   const host = $("scene"), renderer = new THREE.WebGLRenderer({antialias:true,alpha:false});
   renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
-  renderer.setClearColor(0xf1f4f5);
+  renderer.setClearColor(0xf1f3ed);
   host.append(renderer.domElement);
   const scene = new THREE.Scene(), camera = new THREE.OrthographicCamera(-50,50,50,-50,0.1,600);
   const controls = new OrbitControls(camera,renderer.domElement);
@@ -54,6 +66,9 @@ try {
   controls.listenToKeyEvents(host);
   scene.add(new THREE.HemisphereLight(0xffffff,0x84908b,2));
   const sun = new THREE.DirectionalLight(0xffffff,2);sun.position.set(30,60,40);scene.add(sun);
+  // A local drawing grid, not cadastral boundaries or additional project geometry.
+  const grid=new THREE.GridHelper(80,16,0xc0cec0,0xe0e6db);grid.position.y=-.12;scene.add(grid);
+  resources.push(grid.geometry,grid.material);
   function meshFor(points,height,color,id) {
     const shape = new THREE.Shape(points.map(([x,z]) => new THREE.Vector2(x,-z)));
     const geometry = height ? new THREE.ExtrudeGeometry(shape,{depth:height,bevelEnabled:false,steps:1}) : new THREE.ShapeGeometry(shape);
@@ -89,7 +104,8 @@ try {
   }
   function highlight(id) {
     selected=id;select(id);$("focus").disabled=!id;
-    objects.forEach(o=>o.material.color.set(o.userData.id===id?0xe1b34b:o===site?0xdce3e2:0x58ac86));
+    if(embedded&&id)inspect(true);
+    objects.forEach(o=>o.material.color.set(o.userData.id===id?0xe8823d:o===site?0xdce3e2:0x58ac86));
     schedule();
   }
   function setVisible(id, visible) {

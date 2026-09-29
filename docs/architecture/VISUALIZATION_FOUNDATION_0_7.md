@@ -102,7 +102,7 @@ timestamp 不是 hash，也不拿渲染時間冒充幾何來源或 Core 計算�
 
 本輪：合成 fixture、小型原始碼與文件進 repo；Three.js、Pyodide、截圖與瀏覽器只在既有 ignored artifacts。
 2026-09-26 的 0.7.0 實作在①的「空間與樓層」提供明示為合成展示的次要連結。
-四步頁面不載入 Three.js、不預載或嵌入原型；只有使用者開啟獨立展示頁才載入套件。
+2026-09-27 使用者要求工作區內直接呈現後，首頁、案件工作室與①可嵌入標示清楚的合成展示子文件。父頁不 import Three.js、不傳遞案件或選配資料；②③④維持原有資料流程。嵌入模式與獨立頁共用固定 fixture，幾何不隨選案變更，正式案件仍須通過來源與契約門檻。
 原型沒有 localStorage、IndexedDB、Activity 或正式案件綁定；同源路徑不是安全隔離邊界。
 
 Workflow 工具已抽成 `workflow-logic.js`、`workflow-panels.js` 與作用域樣式：

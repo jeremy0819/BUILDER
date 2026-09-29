@@ -11,7 +11,7 @@
 </head>
 <body class="uros-unified">
   <header><strong>BUILDER <span>Spatial Lab</span></strong><span class="label">Synthetic / Demo Geometry · 未綁定案件</span><a href="./dashboard.html">返回①基地</a></header>
-  <div class="intro"><h1>理解資料，從空間開始</h1><p>這是 0.7 的合成幾何操作原型。輪廓與高度來自明示的示範資料，不能代表您的案件，也不代表案件已具備正式 LOD 0。</p></div>
+  <div class="intro"><h1>3D 空間工作台</h1><p>旋轉、俯視或選取量體，對照其輪廓與高度。此合成場景未綁定案件，不代表正式 LOD 0。</p></div>
   <main>
     <section class="viewer" aria-label="合成量體檢視">
       <div class="toolbar" role="toolbar" aria-label="視角">
@@ -20,13 +20,14 @@
         <button id="zoom-in" aria-label="放大" title="放大">＋</button><button id="zoom-out" aria-label="縮小" title="縮小">−</button>
         <button id="focus" disabled title="先選取物件，再聚焦其範圍">聚焦選取</button><button id="overview" title="回到整體範圍，保留物件顯示設定">總覽</button>
         <button id="reset" aria-label="重設全部" title="恢復視角、顯示全部物件並清除選取">重設</button>
+        <button id="inspect" hidden aria-expanded="false" aria-controls="object-inspector">物件資料</button>
       </div>
       <div id="scene" tabindex="0" aria-label="合成基地與量體" aria-describedby="interaction-help"></div>
       <div id="fallback" hidden role="status">無法使用 3D 檢視，合成資料仍列於下方。</div>
       <div id="interaction-help" class="interaction-help"><span>拖曳旋轉 · 滾輪縮放 · 點物件看資料</span><span>觸控：單指旋轉、雙指平移／縮放；開啟 ↔ 後單指平移。</span><span>鍵盤：Tab 選工具與物件；聚焦畫布後用方向鍵平移。</span></div>
       <div class="caption"><span id="viewer-status" role="status">載入中</span><span>規劃量體示意 · 非真實基地／核定圖說</span></div>
     </section>
-    <aside aria-label="物件資料">
+    <aside id="object-inspector" aria-label="物件資料">
       <h2 class="aside-title">物件與來源</h2>
       <div class="objects">
         <div class="object-row"><button data-object="demo-site" aria-pressed="false" title="顯示並選取合成基地">合成基地</button><label><input type="checkbox" data-visibility="demo-site" checked>顯示基地</label></div>

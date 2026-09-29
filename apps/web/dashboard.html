@@ -221,8 +221,10 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
 <script src="browser-backup.js"></script>
 <script src="case-drafts.js"></script>
 <script src="case-bus.js"></script>
+<script src="spatial-stage.js"></script>
 <script src="stepnav.js"></script>
 <link rel="stylesheet" href="workflow-panels.css">
+<link rel="stylesheet" href="builder-studio.css">
 <script src="workflow-logic.js" defer></script>
 <script src="chart-contracts.js" defer></script>
 <script src="attribution-waterfall.js" defer></script>
@@ -630,6 +632,7 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
                  <b style="color:var(--warn)">⚠ 方向性判斷（存活率未校準）· 非投資結論</b></div>`
                :`<div style="font-size:11px;color:var(--mute);border:1px dashed var(--line);border-radius:9px;padding:6px 10px">決策狀態：待 Decision Engine<br>（Workspace 匯入 decision JSON）</div>`}
         </div></div>
+      <section id="case-spatial-stage"></section>
       ${rec.engine?'<div id="site-massing-host"></div>':''}
       <details class="uros-site-extra" id="site-records"><summary>基地資料、地籍與產權清冊</summary>
       ${self.LandInformation?self.LandInformation.render(rec):""}
@@ -664,6 +667,7 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
       </details>
       <nav class="uros-next-step" aria-label="下一階段"><span>② 產品與財務</span><a href="evaluator.html">查看已存產品方案 →</a></nav>
     </div>`;
+    if(self.SpatialStage) self.SpatialStage.mount(document.getElementById("case-spatial-stage"),rec);
     ensureRuntime();                      // 沒有傳動軸的案件也要有 Core（今天要做什麼／案件歷程）
     if(window._siteMassing) window._siteMassing.dispose();
     if(rec.engine && self.SiteMassing) window._siteMassing=self.SiteMassing.mount(document.getElementById("site-massing-host"),rec,ensureRuntime);
