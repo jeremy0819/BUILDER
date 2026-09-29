@@ -56,9 +56,12 @@ try{
   check(await page.evaluate(()=>JSON.stringify(Object.entries(localStorage)))===storage,"embedded viewing never changes case storage");
   check(await page.locator('.stage-view-title').innerText().then(t=>t.includes('非本案量體')),"embedded model cannot be mistaken for the case geometry");
   await frame.locator('#inspect').click();
+  await frame.locator('#iso').click();
+  await page.screenshot({path:resolve(root,'tools/browser/artifacts/studio-desktop.png'),fullPage:false});
   await page.setViewportSize({width:390,height:844});
   check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),"embedded workspace mobile no overflow");
   await frame.locator('#top').click();
   check(await frame.locator('#top').getAttribute('aria-pressed')==='true',"embedded mobile camera control remains reachable");
+  await page.screenshot({path:resolve(root,'tools/browser/artifacts/studio-mobile.png'),fullPage:false});
   console.log(`PAGES: ${passed} passed; commit=${build.commit}`);
 }finally{await browser?.close();if(server)await new Promise(r=>server.close(r));}

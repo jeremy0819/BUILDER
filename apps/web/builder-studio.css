@@ -120,6 +120,7 @@ body .people-mode{max-width:1176px;margin:18px auto}.people-mode button{border-r
   .uros-shell-inner{padding:14px 16px 8px;grid-template-columns:1fr auto;gap:10px}.uros-shell-case{grid-row:2;grid-column:1/-1}.uros-shell-prov{gap:7px;flex-wrap:wrap;white-space:normal;font-size:10px}
   body #uros-stepnav{padding:6px 8px!important}body #uros-stepnav .sn-wrap{gap:2px!important}body #uros-stepnav .sn-node{padding:5px!important;min-height:52px}
   body #uros-stepnav .sn-node b{font-size:11px!important}body #uros-stepnav .sn-live{font-size:11px!important}body #uros-stepnav .sn-node small{font-size:10px!important}
+  body #uros-stepnav .sn-node b,body #uros-stepnav .sn-node small{white-space:normal!important;overflow-wrap:anywhere}
   body #uros-stepnav.sn-collapsed .sn-wrap{display:flex!important}body #uros-stepnav.sn-collapsed .sn-node.on{min-height:28px;padding:2px 6px!important}
   body .data-notice{margin:4px 12px;width:calc(100% - 24px);font-size:11px}body .data-notice button,body .data-notice summary{min-height:44px}
   body #browser-backup{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px}body #browser-backup .backup-row{display:contents}body #browser-backup .backup-row strong{grid-column:1/-1}body #browser-backup #backup-status{align-self:center}body #browser-backup details[open]{grid-column:1/-1}
