@@ -44,7 +44,9 @@ try{
   const build=await (await context.request.get(base+"build-info.json")).json();
   check(/^[0-9a-f]{40}$/.test(build.commit),"published build has commit provenance");
   await page.setViewportSize({width:1440,height:1000});
-  await page.goto(base+"dashboard.html",{waitUntil:"networkidle"});await page.locator("body.uros-unified").waitFor();
+  // A fresh browser has no case: enter through the visible synthetic-demo action.
+  await page.goto(base+"index.html");await page.locator('#btn-demo').click();
+  await page.waitForURL(base+'dashboard.html');await page.locator("body.uros-unified").waitFor();
   const frame=page.frameLocator('.spatial-stage iframe');
   await frame.locator('canvas').waitFor();
   check(await page.evaluate(()=>typeof window.spatialDiagnostics==='undefined'),"Three runtime remains in the child document");
