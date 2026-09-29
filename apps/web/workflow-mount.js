@@ -17,11 +17,7 @@ function init(){
   if(location.hash.startsWith("#workflow-"))host.scrollIntoView();
   root.addEventListener("uros:workflow-open",event=>{if(groups[file].includes(event.detail)){panel.show(event.detail);host.scrollIntoView();}});
   root.addEventListener("pagehide",event=>{if(!event.persisted)panel.destroy();});
-  if(file==="dashboard.html"){
-    const entry=document.createElement("div");entry.className="spatial-entry";
-    entry.innerHTML='<strong>空間檢視 · 資料成熟度</strong><p>本案可檢視樓層面積；正式基地邊界、建築輪廓與高度尚無契約。3D 展示使用獨立合成資料。</p><a href="spatial-prototype.html">開啟 3D 操作展示 ↗</a>';
-    host.prepend(entry);
-  }
+
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })(window);

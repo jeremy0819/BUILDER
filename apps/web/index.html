@@ -161,10 +161,12 @@ details.more>summary:hover{color:var(--strand)}
 footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display:flex;
   justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:10px;color:var(--dim)}
 </style>
+<link rel="stylesheet" href="builder-studio.css">
 
+<body class="studio-home">
 <div class="wrap">
   <header>
-    <span class="brand">URBAN <b>RENEWAL</b> OS</span>
+    <span class="brand"><b>BUILDER</b> / 工作室</span>
     <span class="stats">
       <span class="chip hot">core <span data-uros-ver="core">—</span></span>
       <span class="chip">schema <span data-uros-ver="schema">—</span></span>
@@ -174,20 +176,18 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
     </span>
   </header>
 
-  <div class="hero">
-    <div class="logo">URBAN <b>RENEWAL</b><span class="os">OS</span></div>
-    <div class="tagline">一塊地，一群人，一個真源。</div>
-  </div>
+  <div class="hero"><div><span class="stage-eyebrow">都市更新工作台</span><h1>專案工作室。</h1><p>基地、財務、地主整合。從上次停下的地方繼續。</p></div><a href="#entry">建立／調整案件 ↓</a></div>
+  <section data-spatial-stage></section>
 
   <!-- ① 開場：問四個你一定知道的數字 -->
   <section class="start" id="entry">
-    <h2 id="start-title">先講你的地</h2>
-    <p class="sub" id="start-sub">四個數字就好。填完下面的數字會自己動——那些數字之後每一步看到的都是同一份。</p>
+    <h2 id="start-title">建立案件</h2>
+    <p class="sub" id="start-sub">填入基地條件，計算後即可進入四步工作區。</p>
 
     <div class="qgrid" id="q-basic"></div>
 
     <details class="adv">
-      <summary>其他條件（都給了預設值，先不用管）</summary>
+      <summary>其他條件與預設值</summary>
       <div class="seg" role="group" aria-label="案件類型">
         <button type="button" data-seg="case_type" data-val="urban_renewal" aria-pressed="true">都市更新</button>
         <button type="button" data-seg="case_type" data-val="danger_building" aria-pressed="false">危老重建</button>
@@ -287,6 +287,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
 <script src="case-store.js"></script>
 <script src="browser-backup.js"></script>
 <script src="case-bus.js"></script>
+<script src="spatial-stage.js"></script>
 <script src="core-runtime.js"></script>
 <script src="demo-cases.js"></script>
 <script src="demo-case.js"></script>
@@ -489,7 +490,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
       mode: rec.engine.mode || "全案管理"
     };
     $("start-title").textContent = "繼續：" + ((rec.snap && rec.snap.code_name) || "你的案件");
-    $("start-sub").textContent = "已經有一份案件了。改下面任何一個數字，四步的數字會一起變——因為它們讀的是同一份輸入。";
+    $("start-sub").textContent = "調整條件後，按「更新」採用這次計算。未採用前保留原案件。";
     $("btn-go").textContent = "更新並回到駕駛艙 →";
     return true;
   }

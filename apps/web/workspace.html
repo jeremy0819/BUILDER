@@ -86,12 +86,14 @@ h1{font-size:21px;margin:0;letter-spacing:-.01em;font-weight:800}
 
 footer{margin-top:30px;padding-top:13px;font-size:11px;color:var(--mute)}
 </style>
+<link rel="stylesheet" href="builder-studio.css">
 
+<body class="studio-shelf">
 <div class="wrap">
   <header class="top">
     <div class="brand">
       <div class="logo">UR<br>OS</div>
-      <div><h1>案件資料夾</h1><div class="sub">選擇、匯入與匯出案件；操作回到四步介面</div></div>
+      <div><h1>專案工作室</h1><div class="sub">選擇計畫，接著推進。</div></div>
     </div>
     <div class="navr">
       <a class="pill" href="index.html">⌂ OS 主選單</a>
@@ -100,9 +102,9 @@ footer{margin-top:30px;padding-top:13px;font-size:11px;color:var(--mute)}
       <span class="pill" id="tgl">◐ 主題</span>
     </div>
   </header>
+<section data-spatial-stage></section>
 
-  <div class="ssot"><span>🔒</span><div>本頁<b>不做任何計算</b>：案件卡顯示的財務數字（共負/投報）逐欄來自匯入 v2.1 檔的
-  <b>result</b>（SSOT）；同意進度為<b>計數</b>。案件存於瀏覽器 <b>localStorage</b>——真實資料僅在本機、不上傳、不進版控。</div></div>
+  <div class="ssot">案件保存在此瀏覽器。匯入檔案開始，或繼續下方已有的計畫。</div>
 
   <div class="import" id="drop">
     <h2>案件檔案匯入</h2>
@@ -137,6 +139,7 @@ footer{margin-top:30px;padding-top:13px;font-size:11px;color:var(--mute)}
 <script src="calibration-notice.js"></script>
 <script src="browser-backup.js"></script>
 <script src="case-bus.js"></script>
+<script src="spatial-stage.js"></script>
 <script src="workflow-logic.js"></script>
 <script src="workflow-panels.js"></script>
 <script>

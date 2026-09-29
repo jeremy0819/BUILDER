@@ -50,12 +50,12 @@
     var draft = JSON.parse(JSON.stringify(rec.engine)), selected = 0, overlay = false, session, disposed = false;
     var above = draft.floors.findIndex(function (f) { return /^1F$/.test(f.樓層); }); if (above >= 0) selected = above;
     host.innerHTML = '<section class="site-massing" aria-label="量體生成與容積模擬">'
-      + '<div class="sm-heading"><div><h1>這塊地能蓋多少？</h1><p>量體規劃 <span class="sm-source">INPUT</span></p></div>'
+      + '<div class="sm-heading"><div><h1>本案樓層方案</h1><p>量體規劃 <span class="sm-source">INPUT</span></p></div>'
       + '<button type="button" data-sm="reset" title="還原案件樓層">還原案件</button></div>'
       + '<div class="sm-grid"><div class="sm-visual"><div class="sm-visual-toolbar"><b>樓層比較</b><label class="sm-overlay"><input type="checkbox" data-sm="overlay">梯廳／安全梯／陽台</label></div>'
       + '<div class="sm-drawing"></div><p class="sm-origin"></p>'
       + '<div class="sm-legend"><span>灰：案件快照</span><span>綠：本次草案</span><span>框線：選取樓層</span><span>虛線：地下層</span></div></div>'
-      + '<div class="sm-controls"><form class="sm-generate"><h2>規則量體</h2><label>地上層數<input name="levels" type="number" min="1" max="60" step="1" required></label>'
+      + '<div class="sm-controls"><form class="sm-generate"><h2>樓層設定</h2><label>地上層數<input name="levels" type="number" min="1" max="60" step="1" required></label>'
       + '<label>標準樓板（㎡）<input name="plate" type="number" min="0.01" max="10000" step="0.01" required></label>'
       + '<p class="sm-note">重新生成會替換本次草案的逐層配置，含一層地下室；原案不變。</p></form>'
       + '<details class="sm-floor-detail"><summary>逐層微調</summary><div class="sm-floor-select"><label>編輯樓層<select aria-label="編輯樓層"></select></label></div><div class="sm-floor-editor"></div></details>'

@@ -136,7 +136,7 @@
       + '<details><summary>還原備份</summary><p>備份含案件、歷程、方案及本機草稿，可能包含個人資料，請妥善保管。僅能還原至沒有 BUILDER 資料的瀏覽器設定檔。</p>'
       + '<label>選取完整備份 JSON <input id="backup-restore" type="file" accept=".json,application/json"></label></details>'
       + '<details><summary>本機診斷</summary><p>僅包含錯誤類別與時間，不含案件名稱、輸入、錯誤原文或堆疊，最多 50 筆。</p><button type="button" id="diagnostics-export">匯出診斷摘要</button></details>';
-    var anchor = document.getElementById("uros-shell") || document.querySelector(".top") || document.querySelector(".hero");
+    var anchor = document.querySelector("[data-spatial-stage]") || document.getElementById("uros-shell") || document.querySelector(".top") || document.querySelector(".hero");
     if (anchor) anchor.after(host); else document.body.prepend(host);
     document.getElementById("backup-save").addEventListener("click", save);
     document.getElementById("diagnostics-export").addEventListener("click", function () {

@@ -43,7 +43,22 @@ try{
   await page.screenshot({path:resolve(root,"tools/browser/artifacts/pages-mobile.png"),fullPage:true});
   const build=await (await context.request.get(base+"build-info.json")).json();
   check(/^[0-9a-f]{40}$/.test(build.commit),"published build has commit provenance");
-  const before=requests.length;await page.goto(base+"dashboard.html",{waitUntil:"networkidle"});await page.locator("body.uros-unified").waitFor();
-  check(requests.slice(before).every(r=>!r.includes("spatial-prototype")),"production workflow does not download Three.js");
+  await page.setViewportSize({width:1440,height:1000});
+  await page.goto(base+"dashboard.html",{waitUntil:"networkidle"});await page.locator("body.uros-unified").waitFor();
+  const frame=page.frameLocator('.spatial-stage iframe');
+  await frame.locator('canvas').waitFor();
+  check(await page.evaluate(()=>typeof window.spatialDiagnostics==='undefined'),"Three runtime remains in the child document");
+  const storage=await page.evaluate(()=>JSON.stringify(Object.entries(localStorage)));
+  await frame.locator('#top').click();
+  check(await frame.locator('#top').getAttribute('aria-pressed')==='true',"in-workspace top view works");
+  await frame.locator('#inspect').click();await frame.locator('[data-object="demo-building"]').click();
+  check(await frame.locator('#height').innerText()==='26 m',"embedded source inspector retains explicit height");
+  check(await page.evaluate(()=>JSON.stringify(Object.entries(localStorage)))===storage,"embedded viewing never changes case storage");
+  check(await page.locator('.stage-view-title').innerText().then(t=>t.includes('非本案量體')),"embedded model cannot be mistaken for the case geometry");
+  await frame.locator('#inspect').click();
+  await page.setViewportSize({width:390,height:844});
+  check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),"embedded workspace mobile no overflow");
+  await frame.locator('#top').click();
+  check(await frame.locator('#top').getAttribute('aria-pressed')==='true',"embedded mobile camera control remains reachable");
   console.log(`PAGES: ${passed} passed; commit=${build.commit}`);
 }finally{await browser?.close();if(server)await new Promise(r=>server.close(r));}

@@ -9,11 +9,19 @@ const root = fileURLToPath(new URL("../../",import.meta.url)), web=resolve(root,
 mkdirSync(artifacts,{recursive:true});
 const data={};new Function("self",readFileSync(resolve(web,"demo-cases.js"),"utf8"))(data);
 const rec=structuredClone(data.DEMO_CASES[0]);rec.pid=rec.wf.project.project_id;
-const types={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".css":"text/css; charset=utf-8",".json":"application/json",".wasm":"application/wasm"};
+const types={".html":"text/html; charset=utf-8",".js":"text/javascript; charset=utf-8",".mjs":"text/javascript; charset=utf-8",".css":"text/css; charset=utf-8",".json":"application/json",".wasm":"application/wasm"};
 const server=createServer((req,res)=>{
   const pathname=decodeURIComponent(new URL(req.url,"http://localhost").pathname);
-  const base=pathname.startsWith('/runtime/')?artifacts:web;
-  const path=resolve(base,"."+pathname);
+  let base=pathname.startsWith('/runtime/')?artifacts:web, relative="."+pathname;
+  // Mirror the preview/public entry so embedded viewers are exercised too.
+  if(pathname==='/spatial-prototype.html'){
+    base=resolve(root,'tools/spatial-prototype');relative='index.html';
+  }else if(pathname.startsWith('/spatial-prototype/vendor/')){
+    base=resolve(artifacts,'spatial-vendor');relative=pathname.slice('/spatial-prototype/vendor/'.length);
+  }else if(pathname.startsWith('/spatial-prototype/')){
+    base=resolve(root,'tools/spatial-prototype');relative=pathname.slice('/spatial-prototype/'.length);
+  }
+  const path=resolve(base,relative);
   if(!path.startsWith(base+sep)||!existsSync(path)){res.writeHead(404);res.end();return;}
   res.writeHead(200,{"Content-Type":types[extname(path)]||"application/octet-stream","X-Content-Type-Options":"nosniff"});
   res.end(readFileSync(path));

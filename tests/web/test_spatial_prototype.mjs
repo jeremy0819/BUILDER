@@ -32,11 +32,30 @@ check("no continuous animation loop",()=>assert.ok(!/setAnimationLoop|setInterva
 check("no remote scene assets",()=>assert.ok(!/https?:\/\/|TextureLoader|GLTFLoader/.test(source)));
 check("prototype source below 64 KiB",()=>assert.ok(readdirSync(lab).reduce((n,f)=>n+statSync(resolve(lab,f)).size,0)<65536));
 const prod=readdirSync(resolve(root,"apps/web")).filter(f=>/\.(js|html)$/.test(f)).map(f=>readFileSync(resolve(root,"apps/web",f),"utf8")).join("\n");
-// A secondary navigation link is allowed; the case UI must never load the lab runtime.
-const prodWithoutNavigation=prod.replace(/\b(?:href|data-href)\s*=\s*(["'])[^"']*\1/g,"");
-check("production does not load spatial runtime",()=>assert.ok(!/spatial-prototype|three\.module|spatial-vendor/.test(prodWithoutNavigation)));
-check("prototype is not embedded in a production frame",()=>assert.ok(!/<iframe\b[^>]*spatial-prototype/i.test(prod)));
+// The requested in-workspace display uses a fixed, synthetic-only child document.
+check("parent pages never import Three runtime",()=>assert.ok(!/three\.module|spatial-vendor|import\(["']three/.test(prod)));
+const stage=readFileSync(resolve(root,"apps/web/spatial-stage.js"),"utf8");
+check("embedded scene has a fixed URL without project bindings",()=>{
+  assert.match(stage,/const frameURL="spatial-prototype.html\?embed=1"/);
+  assert.match(stage,/<iframe src="\$\{frameURL\}"/);
+  assert.ok(!/postMessage|contentWindow|\.src\s*=|setItem\(|CaseBus\.(upsert|replace|writeStore)/.test(stage));
+  assert.match(stage,/合成場景 · 非本案量體/);
+});
 check("WebGL fallback provided",()=>assert.ok(source.includes("webglcontextlost")&&source.includes("fallback(")));
+check("workspace summary preserves snapshot values and only links to available case tools",()=>{
+  const fields=new Map(),host={querySelector(selector){if(!fields.has(selector))fields.set(selector,{});return fields.get(selector);}};
+  const fill=new Function(stage.slice(stage.indexOf("  function fill("),stage.indexOf("  function mount("))+";return fill;")();
+  const rec={snap:{code_name:'<img src=x>',site:{site_area_sqm:1500},input_hash:'sha256:fixture',core_version:'0.6.0'},engine:{}};
+  fill(host,rec);
+  assert.equal(host.querySelector('[data-stage="name"]').textContent,rec.snap.code_name);
+  assert.equal(host.querySelector('[data-stage="hash"]').textContent,rec.snap.input_hash);
+  assert.equal(host.querySelector('[data-stage="resume"]').href,'dashboard.html#site-massing-host');
+  delete rec.engine;fill(host,rec);
+  assert.equal(host.querySelector('[data-stage="resume"]').href,'dashboard.html');
+  fill(host,null);
+  assert.equal(host.querySelector('[data-stage="resume"]').href,'index.html#entry');
+  assert.equal(host.querySelector('[data-stage="area"]').textContent,'—');
+});
 
 // Exercise source inspection independently of Three/WebGL, including dependency failure.
 const nodes=new Map();
