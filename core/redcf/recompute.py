@@ -26,6 +26,7 @@ from core.redcf.finance import calc_投報全案, 財務率預設
 from core.redcf.valuation import calc_更新前價值
 from core.redcf.contract import build_result_json
 from core.redcf.rights import calc_權利變換, calc_找補
+from core.redcf.cashflow import calc_現金流分期
 
 # verify 逐欄位容差：面積/金額用絕對值 0.5；比率用 1e-6
 _容差_絕對 = 0.5
@@ -44,6 +45,29 @@ def _組p(params: dict) -> dict:
     return p
 
 
+def _analysis(engine: dict):
+    """Shared existing calculation chain for result and cost disbursement views."""
+    P = dict(engine["params"])
+    容 = calc_容積查核(P, engine["floors"])
+    坪 = calc_坪效(容["允建容積"], 容["陽台免計面積"], P["公設比"])
+    投 = calc_投報全案(坪["銷售坪數"], 容["總樓地板面積"] / 平方米換坪,
+                       _組p(P), engine.get("mode", "全案管理"))
+    return P, 容, 坪, 投
+
+
+def recompute_cashflow(engine: dict) -> dict:
+    """Existing A-G disbursement model, not net cashflow or an IRR model.
+
+    Independent transport envelope; no change to the frozen project result.
+    Both identity fields must match the case before displaying this view.
+    """
+    from core.redcf._version import CORE_VERSION
+    _, _, _, 投 = _analysis(engine)
+    return {"schema_version": "cashflow-view-0.1", "input_hash": input_hash(engine),
+            "core_version": CORE_VERSION, "basis": "cost-disbursement-only",
+            **calc_現金流分期(投)}
+
+
 def recompute(engine: dict, computed_at: str = None) -> dict:
     """從 v2 輸入快照 engine 重算出 result（英文 key，對齊 build_result_json）。
 
@@ -53,15 +77,10 @@ def recompute(engine: dict, computed_at: str = None) -> dict:
       case_type — "都更" | "危老"
       mode    — 投報模式："全案管理" | "合建" | "買賣"
     """
-    P = dict(engine["params"])
-    floors = engine["floors"]
+    P, 容, 坪, 投 = _analysis(engine)
     案件類型 = engine.get("case_type", "都更")
     模式 = engine.get("mode", "全案管理")
 
-    容 = calc_容積查核(P, floors)
-    坪 = calc_坪效(容["允建容積"], 容["陽台免計面積"], P["公設比"])
-    p = _組p(P)
-    投 = calc_投報全案(坪["銷售坪數"], 容["總樓地板面積"] / 平方米換坪, p, 模式)
     前 = (calc_更新前價值(P["基地面積"], P["地價"], P.get("既有建物面積", 0.0),
                         P.get("建物單價", 0.0), int(P.get("屋齡", 45)))
           if P.get("地價", 0) > 0 else None)

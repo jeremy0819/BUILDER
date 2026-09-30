@@ -381,6 +381,7 @@ function addConsentEvent(pid,sid,kind,note){
   rec.wf.consent_events=rec.wf.consent_events||[];
   rec.wf.consent_events.push({event_id:"ev-"+crypto.randomUUID(),stakeholder_id:sid,
     ts:new Date().toISOString(),kind,...(note?{note}:{}),by:"local"});
+  if(rec.decision){rec.detached_decision=rec.decision;rec.decision=null;}
   saveStore(s);
 }
 

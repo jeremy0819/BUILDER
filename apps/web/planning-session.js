@@ -48,7 +48,7 @@
       if (disposed || phase !== "ready" || !response) throw new Error("草案尚未完成 Core 重算，不能採用。");
       var current = root.CaseBus.activeRecord();
       if (!current || key(current) !== key(base)) throw new Error("案件已在其他頁面變更，請重新載入後再規劃；草案未覆蓋原案。");
-      var next = root.CaseBus.applyResult(current, {engine:clone(engine), result:response.result, input_hash:response.input_hash});
+      var next = root.CaseBus.applyResult(current, {engine:clone(engine), result:response.result, input_hash:response.input_hash, cashflow:response.cashflow||null});
       root.CaseBus.replace(current.pid, next);
       base = clone(next); dirty = false; message = "已採用至案件，四步數值已同步。"; publish();
       return next;

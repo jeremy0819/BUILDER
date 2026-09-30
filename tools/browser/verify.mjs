@@ -95,7 +95,28 @@ try {
   check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),"strategy mobile no horizontal overflow");
   await page.screenshot({path:resolve(artifacts,"strategy-mobile.png"),fullPage:true});
   await page.setViewportSize({width:1440,height:1000});
+  await page.evaluate(()=>{const r=CaseBus.activeRecord(),canvas=document.createElement('canvas');canvas.width=320;canvas.height=180;const c=canvas.getContext('2d');c.fillStyle='#eeeeee';c.fillRect(0,0,320,180);c.strokeStyle='#b934aa';c.strokeRect(30,30,200,120);r.assets={...(r.assets||{}),cadastral:canvas.toDataURL('image/png')};CaseBus.replace(r.pid,r);});
   await page.goto(origin+"/dashboard.html");await page.locator("#site-massing-host").waitFor();
+  check(await page.locator('.si-canvas image').count()===1,'local cadastral attachment is reused as a tracing background');
+  await page.locator('.si-background input').uncheck();
+  check(await page.locator('.si-canvas image').count()===0,'background visibility does not alter parcel coordinates');
+  await page.locator('.si-background input').check();
+  await page.locator('[data-si="add"]').click();
+  const sketch=page.locator('.si-canvas');
+  for(const position of [{x:65,y:40},{x:260,y:40},{x:260,y:160},{x:65,y:160}])await sketch.click({position});
+  check(await page.evaluate(()=>CaseBus.activeRecord().site_intake.parcels[0].points.length)===4,'manual parcel vertices persist in the active case');
+  const sketchEngine=await page.evaluate(()=>JSON.stringify(CaseBus.activeRecord().engine));
+  await page.locator('[data-si="undo"]').click();
+  check(await page.evaluate(()=>CaseBus.activeRecord().site_intake.parcels[0].points.length)===3,'parcel undo restores the previous vertices');
+  check(await page.evaluate(()=>JSON.stringify(CaseBus.activeRecord().engine))===sketchEngine,'sketch cannot invent measured area or modify Core inputs');
+  await page.locator('.si-fields details').first().locator('summary').click();
+  await page.locator('[data-land="zoning"]').fill('synthetic zone');await page.locator('[data-land="zoning"]').press('Tab');
+  await page.locator('[data-land="coverage_percent"]').fill('40');await page.locator('[data-land="coverage_percent"]').press('Tab');
+  await page.locator('[data-si="coverage"]').click();
+  check(await page.locator('.sm-generate [name="plate"]').inputValue()!=='','coverage creates an editable floor input');
+  await page.locator('.si-fields details').first().locator('summary').click();
+  await page.locator('.site-intake').evaluate(el=>el.scrollIntoView({block:'center'}));
+  await page.locator('.site-intake').screenshot({path:resolve(artifacts,'site-intake-desktop.png')});
   await page.locator('.sm-generate [name="levels"]').fill("10");await page.locator('.sm-generate [name="plate"]').fill("320");
   check(await page.locator(".sm-drawing [data-mv-row]").count()===11,"site generates ten floors plus basement");
   await page.waitForFunction(()=>document.querySelector(".sm-status")?.textContent.includes("草案已重算"),{},{timeout:150000});
@@ -131,10 +152,13 @@ try {
   check(adoptedSite.pid===rec.pid && adoptedSite.engine.floors.length===11,'adopt massing retains project identity and passes floors to Product');
   check(adoptedSite.snap.core_version==='0.6.0' && /^sha256:/.test(adoptedSite.snap.input_hash),'adopted Site retains verified Core provenance');
   check(adoptedSite.decision===null,'changed input detaches prior snapshot decision');
+  check(adoptedSite.site_intake.parcels[0].points.length===3&&adoptedSite.site_intake.land.zoning==='synthetic zone','adopting Site preserves parcel facts across steps');
+  check(adoptedSite.cashflow.input_hash===adoptedSite.snap.input_hash&&adoptedSite.cashflow.core_version===adoptedSite.snap.core_version,'adopted cost disbursement binds to the exact Site result');
   check(await page.locator('.product-planning').isVisible(),'Product default view contains real Core controls');
   const initialFinancial=await page.locator('.pp-results tbody tr').last().locator('td').last().innerText();
   await page.locator('.pp-inputs input[type=number]').first().fill('90');
   check((await page.locator('.pp-results tbody td:last-child').allTextContents()).every(x=>x==='—'),'Product edits immediately invalidate old results');
+  check(await page.locator('.pp-cashflow table').count()===0,'Product edit also clears the old cost disbursement view');
   await page.waitForFunction(()=>document.querySelector('.pp-status')?.textContent.startsWith('草案已重算'),{},{timeout:120000});
   check((await page.locator('.pp-results tbody tr').last().locator('td').last().innerText())!==initialFinancial,'Product input uses real Core finance recomputation');
   check(await page.evaluate(()=>JSON.stringify(CaseBus.activeRecord().engine))===JSON.stringify(adoptedSite.engine),'unadopted Product preview never mutates the case');
@@ -146,6 +170,7 @@ try {
   await page.locator('[data-pp="apply"]').click();await page.waitForURL('**/os-simulator.html');
   check(await page.evaluate(()=>CaseBus.activeRecord().engine.params.住宅單價)===90,'adopted Product is carried into People');
   check(await page.evaluate(()=>CaseBus.activePid())===rec.pid,'Site to Product to People remains the same case');
+  check(await page.evaluate(()=>CaseBus.activeRecord().cashflow.input_hash===CaseBus.activeRecord().snap.input_hash),'Product cost disbursement stays bound after adoption');
   // Stored injection stays text in every major surface.
   await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem("uros.workflow.v1")),p=s.order[0];s.projects[p].snap.code_name='<img src=x onerror="window.__injected=1">';localStorage.setItem("uros.workflow.v1",JSON.stringify(s));});
   for(const file of ["dashboard.html","evaluator.html","workspace.html","report.html"]){
@@ -242,8 +267,18 @@ try {
   await page.screenshot({path:resolve(artifacts,'people-entry-mobile.png'),fullPage:true});
   check((await page.locator('#bridge-banner').textContent()).includes('<img')&&await page.evaluate(()=>!window.__injected&&!document.querySelector('img[onerror]')),'People planning bridge safely displays stored hostile case name');
   check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'People planning mobile no overflow');
+  check(await page.locator('#m-ap').innerText()==='8'&&await page.locator('#m-ap-max').innerText()==='/8','People interface displays eight weekly actions');
+  const doorIds=await page.evaluate(()=>Object.values(S.units).filter(u=>u.consent!=='agreed').slice(0,2).map(u=>u.id));
+  await page.evaluate(id=>openCodec(id),doorIds[0]);
+  await page.waitForTimeout(1800);const say1=await page.locator('#cd-say').innerText();
+  check((await page.locator('#cd-freq').innerText()).includes('非訪談紀錄'),'dialogue is explicitly a simulated conversation');
+  await page.locator('#cd-close').click();await page.evaluate(id=>openCodec(id),doorIds[1]);
+  await page.waitForTimeout(1800);
+  check((await page.locator('#cd-say').innerText())!==say1,'different simulated households have different dialogue');
+  await page.locator('#cd-close').click();
   await page.evaluate(()=>{const s=CaseBus.readStore(),pid=CaseBus.activePid();s.projects[pid].wf.stakeholders=Array.from({length:81},(_,i)=>({stakeholder_id:'O'+i,role:'owner'}));s.projects[pid].snap.total=81;s.projects[pid].snap.agreed=0;CaseBus.writeStore(s);localStorage.removeItem('uros.bridge.case');});
   await page.reload();await page.locator('[data-mode="play"]').click();await page.locator('#btn-start').click();await page.locator('#ovl-chapter').waitFor({state:'hidden'});
+  check(await page.locator('#ovl-title').isHidden(),'short mobile page has a stable, clickable start button after reload');
   check(await page.locator('#owners-cap-notice').isVisible()&&(await page.locator('#owners-cap-notice').innerText()).includes('81 戶超過沙盤上限 80'),'owner limit remains visible after entering the sandbox');
   await page.goto(origin+'/workspace.html?view=task');
   await page.waitForURL('**/os-simulator.html#workflow-task');
@@ -300,4 +335,11 @@ try {
   await phone.close();
 
   console.log("BROWSER: "+passed+" passed; screenshots: "+artifacts);
+} catch(error) {
+  const page=browser?.contexts()[0]?.pages()[0];
+  if(page){
+    await page.screenshot({path:resolve(artifacts,'browser-failure.png'),fullPage:true}).catch(()=>{});
+    console.error('Failure layout',await page.evaluate(()=>({url:location.pathname,scrollY,viewport:[innerWidth,innerHeight],start:document.querySelector('#btn-start')?.getBoundingClientRect().toJSON(),title:document.querySelector('#ovl-title')?.getBoundingClientRect().toJSON()})).catch(()=>null));
+  }
+  throw error;
 } finally {if(browser)await browser.close();await new Promise(r=>server.close(r));}

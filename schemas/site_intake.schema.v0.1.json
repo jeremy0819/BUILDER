@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://builder.local/schemas/site_intake.schema.v0.1.json",
+  "title": "Local unlocated site sketch and manually checked land facts",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "project_id", "coordinate_space", "parcels", "land"],
+  "properties": {
+    "schema_version": {"const": "site-intake-0.1"},
+    "project_id": {"type": "string", "minLength": 1, "maxLength": 160},
+    "coordinate_space": {"const": "normalized-unlocated"},
+    "parcels": {"type": "array", "maxItems": 8, "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "label", "points"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9-]{1,48}$"},
+        "label": {"type": "string", "maxLength": 40},
+        "points": {"type": "array", "maxItems": 64, "items": {
+          "type": "array", "minItems": 2, "maxItems": 2,
+          "items": {"type": "number", "minimum": 0, "maximum": 1}
+        }}
+      }
+    }},
+    "land": {"type": "object", "additionalProperties": false, "properties": {
+      "city": {"enum": [null, "", "臺北市", "新北市", "桃園市", "其他"]},
+      "zoning": {"type": ["string", "null"], "maxLength": 80},
+      "coverage_percent": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+      "road_width_m": {"type": ["number", "null"], "minimum": 0, "maximum": 200},
+      "reference": {"type": ["string", "null"], "maxLength": 160},
+      "checked_on": {"type": ["string", "null"], "pattern": "^(|[0-9]{4}-[0-9]{2}-[0-9]{2})$"}
+    }}
+  }
+}

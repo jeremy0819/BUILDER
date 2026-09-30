@@ -25,7 +25,7 @@
   }
   function sourceKey(rec) {
     return JSON.stringify([rec.pid, rec.engine, rec.wf && rec.wf.project && rec.wf.project.stage,
-      rec.wf && rec.wf.stakeholders, rec.snap && rec.snap.input_hash, rec.snap && rec.snap.core_version,
+      rec.wf && rec.wf.stakeholders, rec.wf && rec.wf.consent_events, rec.snap && rec.snap.input_hash, rec.snap && rec.snap.core_version,
       rec.snap && rec.snap.agreed, rec.snap && rec.snap.total, rec.snap && rec.snap.threshold]);
   }
   function buildProfiles(owners, saved) {
@@ -163,8 +163,9 @@
     try { prof = buildProfiles(owners, profiles); } catch (e) { status(e.message, "error"); return; }
     var snapshot = root.CaseBus.activeRecord(), key = sourceKey(snapshot), token = guard.invalidate();
     busy = true; analysis = null; buttons(); status("計算財務、三方期望值與逐戶策略中", "computing");
+    var consent=root.CaseBus.consentFacts(snapshot);
     var workflow = { stage: snapshot.wf.project.stage, stakeholders: snapshot.wf.stakeholders || [],
-      consent: { agreed: snapshot.snap.agreed, total: snapshot.snap.total, threshold: snapshot.snap.threshold } };
+      consent: { agreed: consent.agreed, total: consent.total, threshold: snapshot.snap.threshold } };
     function current() { var now = root.CaseBus.activeRecord(); return guard.current(token) && now && sourceKey(now) === key; }
     try {
       var response = await runtime.analyze(snapshot.engine, workflow, Object.assign({}, assumptions), prof);

@@ -123,6 +123,15 @@
     return "prj-" + String(input_hash || "").replace(/^sha256:/, "").slice(0, 8);
   }
 
+  function boundCashflow(cashflow, inputHash, coreVersion) {
+    if (!cashflow || cashflow.schema_version !== "cashflow-view-0.1" || cashflow.basis !== "cost-disbursement-only" ||
+        !inputHash || !coreVersion || cashflow.input_hash !== inputHash || cashflow.core_version !== coreVersion) return null;
+    var finite=function(n){return typeof n==="number"&&Number.isFinite(n);};
+    if(cashflow.structural!==true||cashflow.期數!==8||!finite(cashflow.峰值資金)||!cashflow.科目||typeof cashflow.科目!=="object"||Array.isArray(cashflow.科目)||!Object.values(cashflow.科目).every(finite)||
+        ![cashflow.期別出資,cashflow.累積].every(function(a){return Array.isArray(a)&&a.length===8&&a.every(finite);}))return null;
+    return JSON.parse(JSON.stringify(cashflow));
+  }
+
   function buildRecord(o) {
     var eng = o.engine, R = o.result || {}, ih = o.input_hash || "";
     var ct = o.case_type || (eng.case_type === "危老" ? "danger_building" : "urban_renewal");
@@ -149,12 +158,12 @@
               warnings_n: (R.warnings || []).length,
               agreed: 0, total: eng.params.戶數,
               threshold: eng.case_type === "危老" ? 1 : 0.8,
-              allocations: [],
+              allocations: JSON.parse(JSON.stringify(R.owner_allocations || [])),
               site: { site_area_sqm: eng.params.基地面積, plaza_area_sqm: eng.params.人行廣場,
                       far: eng.params.容積率, bonus_ratio: eng.params.獎勵率,
                       tdr_transfer_sqm: eng.params.容積移轉 },
               public_ratio: eng.params.公設比 },
-      engine: eng, decision: null, roster: [], view: view, cashflow: null,
+      engine: eng, decision: null, roster: [], view: view, cashflow: boundCashflow(o.cashflow,ih,R.core_version),
       demo: false, dirty: true
     };
   }
@@ -185,6 +194,7 @@
     next.snap.allocations = JSON.parse(JSON.stringify(R.owner_allocations || []));
     // A new input/version cannot inherit an older, separately computed cashflow.
     if (ih !== (rec.snap && rec.snap.input_hash) || (R.core_version || "") !== (rec.snap && rec.snap.core_version)) next.cashflow = null;
+    if (Object.prototype.hasOwnProperty.call(o,"cashflow")) next.cashflow=boundCashflow(o.cashflow,ih,R.core_version);
     next.snap.total = eng.params.戶數;
     next.snap.threshold = eng.case_type === "危老" ? 1 : 0.8;
     next.snap.site = { site_area_sqm: eng.params.基地面積, plaza_area_sqm: eng.params.人行廣場,
@@ -221,6 +231,23 @@
      取不到一律 value:null，由呈現層顯示「—」。**沒有第四種 source。** */
   function 取(o, k) { return (o && o[k] != null) ? o[k] : null; }
 
+  function consentFacts(rec) {
+    var wf=(rec&&rec.wf)||{}, snap=(rec&&rec.snap)||{}, events=wf.consent_events||[];
+    var owners=(wf.stakeholders||[]).filter(function(s){return s.role==="owner";});
+    var order={untouched:0,contacted:1,negotiating:2,agreed_unselected:3,agreed_selected:4,declined:1};
+    var kinds={contacted:"contacted",visited:"negotiating",briefed:"contacted",verbal_ok:"agreed_unselected",signed:"agreed_unselected",selected_unit:"agreed_selected",declined:"declined",withdrawn:"negotiating"};
+    var rows=owners.map(function(owner){
+      var tag=(owner.tags||[]).find(function(t){return t.indexOf("consent:")===0;});
+      var consent=tag?tag.slice(8):"pending", state=consent==="agreed"?"agreed_unselected":/opposed|declined/.test(consent)?"declined":"untouched";
+      events.filter(function(e){return e.stakeholder_id===owner.stakeholder_id;}).slice().sort(function(a,b){return String(a.ts||"").localeCompare(String(b.ts||""));}).forEach(function(e){
+        var next=kinds[e.kind];if(next&&(e.kind==="withdrawn"||e.kind==="declined"||order[next]>=order[state]))state=next;
+      });
+      return {owner_id:owner.stakeholder_id,consent:state.indexOf("agreed_")===0?"agreed":state==="declined"?"declined":"pending"};
+    });
+    return {agreed:events.length?rows.filter(function(r){return r.consent==="agreed";}).length:取(snap,"agreed"),
+      total:取(snap,"total")!=null?snap.total:owners.length,source:events.length?"recorded-events":"snapshot",rows:rows};
+  }
+
   function stepValues(rec) {
     var v = (rec && rec.view) || {}, sn = (rec && rec.snap) || {},
         d = (rec && rec.decision) || null, P = ((rec && rec.engine) || {}).params || {};
@@ -247,7 +274,7 @@
         title: "人心", href: "os-simulator.html",
         items: [
           { label: "權變戶數", value: 取(sn, "total"), unit: "戶", source: "input" },
-          { label: "已同意", value: 取(sn, "agreed"), unit: "戶", source: "input" },
+          { label: "已同意", value: consentFacts(rec).agreed, unit: "戶", source: "input" },
           { label: "同意門檻", value: 取(sn, "threshold"), unit: "ratio", source: "input" },
           { label: "地主分回比", value: 取(v, "owner_return_ratio"), unit: "ratio", source: "core" }
         ]
@@ -370,7 +397,7 @@
      並以 consent_known=false 明白告訴沙盤「彙總已知、逐戶未知」，由沙盤決定怎麼講。 */
   function buildSandboxBridge(rec) {
     if (!rec || !rec.wf || !rec.wf.project) return null;
-    var wf = rec.wf, snap = rec.snap || {};
+    var wf = rec.wf, snap = rec.snap || {}, consent=consentFacts(rec);
     var allocById = {};
     (snap.allocations || []).forEach(function (a) { allocById[a.owner_id] = a; });
     var owners = (wf.stakeholders || [])
@@ -379,7 +406,7 @@
         var tag = (x.tags || []).filter(function (t) { return t.indexOf("consent:") === 0; })[0];
         var a = allocById[x.stakeholder_id] || null;
         return { owner_id: x.stakeholder_id,
-                 consent: tag ? tag.slice(8) : "pending",
+                 consent: (consent.rows.find(function(r){return r.owner_id===x.stakeholder_id;})||{}).consent || "pending",
                  pre_value: a ? a.pre_value : (x.pre_value != null ? x.pre_value : null),
                  value_share: a ? a.value_share : null, alloc: a };
       });
@@ -387,7 +414,7 @@
     return {
       source: "case-bus", project_id: wf.project.project_id,
       code_name: snap.code_name, case_type: snap.case_type,
-      owners_n: snap.stakeholders_n, agreed: snap.agreed, total: snap.total,
+      owners_n: snap.stakeholders_n, agreed: consent.agreed, total: consent.total,
       stage: wf.project.stage, ts: new Date().toISOString(),
       /* 逐戶同意未知時仍傳 owners（身分與價值是事實），但明示同意面不可信 */
       consent_known: 有逐戶同意,
@@ -492,7 +519,7 @@
     decisionBinds: decisionBinds, BIND_NOTE: BIND_NOTE,
     buildSandboxBridge: buildSandboxBridge, syncSandboxBridge: syncSandboxBridge,
     BRIDGE_KEY: BRIDGE_KEY, BRIDGE_OPTOUT_KEY: BRIDGE_OPTOUT,
-    applyResult: applyResult, stepValues: stepValues, provenance: provenance,
+    applyResult: applyResult, boundCashflow: boundCashflow, consentFacts: consentFacts, stepValues: stepValues, provenance: provenance,
     projectId: projectId, assertNoDerivedOutput: assertNoDerivedOutput,
     readStore: readStore, writeStore: writeStore, activePid: activePid, setActive: setActive,
     activeRecord: activeRecord, upsert: upsert, replace: replace, onChange: onChange,

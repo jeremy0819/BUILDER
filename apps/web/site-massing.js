@@ -52,7 +52,7 @@
     host.innerHTML = '<section class="site-massing" aria-label="量體生成與容積模擬">'
       + '<div class="sm-heading"><div><h1>本案樓層方案</h1><p>量體規劃 <span class="sm-source">INPUT</span></p></div>'
       + '<button type="button" data-sm="reset" title="還原案件樓層">還原案件</button></div>'
-      + '<div class="sm-grid"><div class="sm-visual"><div class="sm-visual-toolbar"><b>樓層比較</b><label class="sm-overlay"><input type="checkbox" data-sm="overlay">梯廳／安全梯／陽台</label></div>'
+      + '<div class="sm-intake"></div><div class="sm-grid"><div class="sm-visual"><div class="sm-visual-toolbar"><b>樓層比較</b><label class="sm-overlay"><input type="checkbox" data-sm="overlay">梯廳／安全梯／陽台</label></div>'
       + '<div class="sm-drawing"></div><p class="sm-origin"></p>'
       + '<div class="sm-legend"><span>灰：案件快照</span><span>綠：本次草案</span><span>框線：選取樓層</span><span>虛線：地下層</span></div></div>'
       + '<div class="sm-controls"><form class="sm-generate"><h2>樓層設定</h2><label>地上層數<input name="levels" type="number" min="1" max="60" step="1" required></label>'
@@ -66,6 +66,11 @@
       + '<div class="sm-next"><span data-sm="saved">本次草案尚未採用</span><button type="button" data-sm="apply" disabled>採用草案，前往②產品</button>'
       + '<a href="evaluator.html" data-sm="skip">沿用案件快照，前往②</a></div></section>';
     var q = function (s) { return host.querySelector(s); };
+    var intake = root.SiteIntake ? root.SiteIntake.mount(q('.sm-intake'),rec,function(coverage){
+      var inputs=root.CaseBus.defaults();inputs.基地面積=draft.params.基地面積;inputs.人行廣場=draft.params.人行廣場;inputs.建蔽率=coverage;
+      q('[name="plate"]').value=root.CaseBus.buildEngine(inputs).floors.find(function(f){return f.樓層==='1F';}).樓板;
+      generateDraft();
+    }) : null;
     function show(s) {
       q(".sm-status").textContent = s.message;
       q(".sm-status").dataset.phase = s.phase;
@@ -141,8 +146,9 @@
       var label = document.createElement("label"); label.textContent = field[1]; var input = document.createElement("input");
       input.type="number"; input.min=field[2]; input.max=field[3]; input.step="any"; input.required=true; input.value=draft.params[field[0]] == null ? "" : draft.params[field[0]];
       input.dataset.param=field[0]; input.addEventListener("input",function () { if(input.validity.valid) draft.params[field[0]]=input.valueAsNumber; changed(valid()); });
-      label.appendChild(input); q(".sm-site-inputs div").appendChild(label);
+      label.appendChild(input); (intake ? intake.fields : q(".sm-site-inputs div")).appendChild(label);
     });
+    if(intake) q('.sm-site-inputs').hidden=true;
     q('[data-sm="overlay"]').addEventListener("change",function (e) { overlay=e.target.checked; draw(); });
     q('[data-sm="auto"]').addEventListener("change",function (e) { if (e.target.checked) session.schedule(0); else session.cancelScheduled(); });
     q('[data-sm="run"]').addEventListener("click",function () { if(valid()) session.retry(); });
@@ -161,7 +167,7 @@
     });
     syncForm(); draw(); edit(); show(session.state()); session.schedule(0);
     root.addEventListener("resize",draw);
-    return {dispose:function () { if (!disposed) { disposed=true; session.dispose(); root.removeEventListener("resize",draw); } }};
+    return {dispose:function () { if (!disposed) { disposed=true; session.dispose(); if(intake)intake.dispose(); root.removeEventListener("resize",draw); } }};
   }
   root.SiteMassing = {generate:generate, comparison:comparison, mount:mount};
 })(typeof self !== "undefined" ? self : this);

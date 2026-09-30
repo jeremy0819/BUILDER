@@ -328,7 +328,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
     $("q-adv").innerHTML = B.ADVANCED.map(欄位).join("");
     B.FIELDS.forEach(function(f){
       var el = $("f-"+f.k); if(!el) return;
-      el.addEventListener("input", function(){ 表單[f.k] = el.value; 排程試算(); });
+      el.addEventListener("input", function(){ 表單[f.k] = el.value; 輸入失效(); 排程試算(); });
     });
     document.querySelectorAll("[data-seg]").forEach(function(btn){
       btn.addEventListener("click", function(){
@@ -336,6 +336,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
         document.querySelectorAll('[data-seg="'+g+'"]').forEach(function(b){ b.setAttribute("aria-pressed","false"); });
         btn.setAttribute("aria-pressed","true");
         表單[g] = btn.getAttribute("data-val");
+        輸入失效();
         排程試算();
       });
     });
@@ -373,14 +374,18 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
   }
 
   var 排程試算 = window.coreDebounce(function(){ 試算(); }, 260);
+  var 輸入序 = 0;
+  function 輸入失效(){ 輸入序++; 最新=null; 畫讀數(null); 畫四步(); $("prov").textContent="輸入已變更，尚未取得本次 Core 結果。"; }
 
   function 試算(){
     if(!RT || !就緒){ 畫讀數(null); return; }
     if(忙){ 等待 = true; return; }
     忙 = true;
     var eng = B.buildEngine(表單);
+    var token=輸入序;
     RT.recompute(eng).then(function(r){
-      最新 = {engine: eng, result: r.result || {}, input_hash: r.input_hash || ""};
+      if(token!==輸入序){等待=true;return;}
+      最新 = {engine: eng, result: r.result || {}, input_hash: r.input_hash || "", cashflow:r.cashflow||null};
       畫讀數(最新.result);
       $("btn-go").disabled = false;
       $("prov").innerHTML = '<b>溯源</b> input_hash '
@@ -450,7 +455,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
   });
 
   $("btn-reset").addEventListener("click", function(){
-    表單 = B.defaults(); 畫表單(); 試算();
+    表單 = B.defaults(); 輸入失效(); 畫表單(); 試算();
   });
 
   /* 示範案：降級為次要入口。點了才植入，不再開頁就塞四個案子。 */

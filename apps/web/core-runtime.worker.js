@@ -63,6 +63,7 @@ self.onmessage = (e) => {
       pyodide.globals.set("_engine_json", JSON.stringify(m.engine));
       const out = pyodide.runPython(
         "json.dumps({'result': _redcf.recompute(json.loads(_engine_json)), " +
+        "'cashflow': _redcf.recompute_cashflow(json.loads(_engine_json)), " +
         "'input_hash': _redcf.input_hash(json.loads(_engine_json))})"
       );
       post("result", Object.assign({ id: m.id }, JSON.parse(out)));

@@ -164,7 +164,9 @@
       if (ticking) return;
       ticking = true;
       window.requestAnimationFrame(function () {
-        bar.classList.toggle("sn-collapsed", window.scrollY > 80);
+        bar = document.getElementById("uros-stepnav");
+        // Separate thresholds prevent scroll anchoring from toggling short pages forever.
+        if (bar) bar.classList.toggle("sn-collapsed", window.scrollY > (bar.classList.contains("sn-collapsed") ? 8 : 120));
         ticking = false;
       });
     }, { passive: true });

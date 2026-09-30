@@ -10,7 +10,8 @@
     schema: "v2.1",
     release: "os-v0.6.0",   // ← 對齊 os-v0.6.0 release tag
     engine: "0.2.0",        // Decision Engine（core.redcf.decision.ENGINE_VERSION，Gate 10 守衛）
-    strategy: "0.2.0"       // Strategy Engine（core.redcf.strategy.STRATEGY_ENGINE_VERSION，Gate 10 守衛）
+    strategy: "0.2.0",      // Strategy Engine（core.redcf.strategy.STRATEGY_ENGINE_VERSION，Gate 10 守衛）
+    intake: "0.1.0"         // Local intake UI; independent of Core / OS release
   };
   window.UROS_VERSION = V;
   // 自動填入帶 data-uros-ver 的元素：<span data-uros-ver="core"></span>

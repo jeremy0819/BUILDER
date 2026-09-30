@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://builder.local/schemas/cashflow_view.schema.v0.1.json",
+  "title": "Core cost-disbursement view; not net cashflow",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "input_hash", "core_version", "basis", "科目", "期別出資", "累積", "峰值資金", "期數", "structural"],
+  "properties": {
+    "schema_version": {"const": "cashflow-view-0.1"},
+    "input_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "core_version": {"type": "string", "minLength": 1},
+    "basis": {"const": "cost-disbursement-only"},
+    "科目": {"type": "object", "additionalProperties": {"type": "number"}},
+    "期別出資": {"type": "array", "minItems": 8, "maxItems": 8, "items": {"type": "number"}},
+    "累積": {"type": "array", "minItems": 8, "maxItems": 8, "items": {"type": "number"}},
+    "峰值資金": {"type": "number"},
+    "期數": {"const": 8},
+    "structural": {"const": true}
+  }
+}

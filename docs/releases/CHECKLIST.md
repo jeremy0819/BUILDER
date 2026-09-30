@@ -36,6 +36,8 @@
       - chart contract v0.1 `schemas/chart_contract.schema.v0.1.json` = `13c5d7cb066c17918af42648fb25bbccc8cd1f655c4efcef413f16277a4bdf95`（M8.1 視覺契約）
       - decision v0.2 `schemas/decision.schema.v0.2.json` = `16a1a995db88c1d003d386d917c6378b62ef8b53ee4c1c829e6ed99813a3db69`（N1 溯源二元組；v0.1 續凍）
       要改凍結檔＝走版本升級流程（新版本＋遷移器＋更新 FROZEN 基準），不得直接改檔。
+      - site intake v0.1 `schemas/site_intake.schema.v0.1.json` = `e08a9aa40d41d35fa2a631c88c8308e67f6266b420d1fe87169145ec66357f5d`
+      - cashflow view v0.1 `schemas/cashflow_view.schema.v0.1.json` = `3264a5c05d71e5b6284d62ed81cc43a26f851fcf9da0a1311a9f8ce1e7e54e41`
 - [ ] **Version Updated**：依 `governance/VERSION_POLICY.md` 確認 CORE_VERSION / schema_version /
       APP_VERSION 該動的已動、不該動的沒動；本次 release 對應版本已填入下方發布紀錄。
 - [ ] **Migration Updated**：若 schema major 變更，`core/redcf/migrations.py` 的 `migrate()`
