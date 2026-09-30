@@ -405,7 +405,7 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
         <div class="rbar" id="m-weekbar"><span style="width:4%"></span></div></div>
       <div class="res ap"><span class="rk">AP 本週行動點</span>
         <div class="ap-row">
-          <span class="ap-num"><span class="tnum" id="m-ap">4</span><small>/4</small></span>
+          <span class="ap-num"><span class="tnum" id="m-ap">8</span><small id="m-ap-max">/8</small></span>
           <div class="pips" id="m-ap-pips"><i></i><i></i><i></i><i></i></div>
         </div></div>
       <div class="res"><span class="rk">整合預算（沙盤）</span>
@@ -480,7 +480,7 @@ footer.pg{margin-top:26px;border-top:1px solid var(--line);padding-top:12px;disp
    SCEN＝Core recompute 預算的 6 方案權威數字（案例D 基地，獎勵率×模式變化）——
    前端只讀；沙盤效果（trustOff/weeks）為遊戲規則表，非財務計算。 */
 const SIMCORE = (() => {
-  const AP_MAX = 4, BUDGET0 = 300, AGREE_AT = 75, BRIEF_CEIL = 60, TICKETS0 = 3;
+  const AP_MAX = 8, BUDGET0 = 300, AGREE_AT = 75, BRIEF_CEIL = 60, TICKETS0 = 3;
   const COLS = 8, ROWS = 6, N = 48, BOSS = 47;      // 經典局常數（N=48·seed=1412 時完全重現）
   const FAMILY = [[36,39,44],[38,42],[40,43,46]];   // 經典局家族（其餘參數→程序生成）
 
@@ -512,6 +512,32 @@ const SIMCORE = (() => {
     ["二代接手的診所","診所停業成本高"]];
   const PERSONAS_O=[["投資置產客","只談報酬率"],["前任里長伯","被上一次都更傷過"],
     ["獨居的阿嬤","兒女都在國外"],["守著祖厝的伯伯","「這是阿公起的厝。」"]];
+
+  const VOICES = {
+    "頂樓加蓋的房東":["現在出租的空間，哪些有登記、哪些沒有，要先分清楚。","我在意的是租金中斷，不只是總坪數。","分配依據和搬遷安排可以分開列給我嗎？"],
+    "夜市麵店老闆":["店搬走後，老客人找不到我怎麼辦？","能不能先談搬遷期間在哪裡繼續營業？","補助之外，我還要確認新店面的動線。"],
+    "剛結婚的年輕夫妻":["房貸還在繳，過渡期再付租金會很吃緊。","每個階段要付多少錢，能不能列成時間表？","我想先確認可分配的房型，再跟家人討論。"],
+    "退休的國中老師":["同一個坪數，為什麼登記面積和室內面積不同？","這次的數字跟上次差在哪？請把輸入條件列出來。","請留下資料來源，我會逐項看過再回覆。"],
+    "二代接手的診所":["病人不能因為我們搬家就中斷療程。","臨時診所的許可和設備搬遷，誰來協調？","進出動線和無障礙設施，比漂亮外觀更重要。"],
+    "投資置產客":["先把收益、成本和風險分開，不要只報一個投報率。","工期延長時，資金成本會怎麼變？","我需要同一組假設下的方案比較，不是保證獲利。"],
+    "前任里長伯":["上次留下來的承諾，至今沒人說明。","今天談的內容能不能留下紀錄和負責人？","這次先做一件答應的小事，再談簽名。"],
+    "獨居的阿嬤":["我平常看病、買菜都在這裡，搬出去誰幫我？","請讓我和家人一起聽，不要急著今天決定。","新家的電梯和附近生活機能，我想先了解。"],
+    "守著祖厝的伯伯":["這裡有家裡幾代人的記憶，不是一張價目表。","舊屋拆除之前，有沒有保存記憶的安排？","我想把家人的顧慮講完，再聽你的方案。"],
+    "住戶":["我同意方向，但後續安排也需要持續通知。","家人會問進度，請把下一步的時間講清楚。","文件有更新時，麻煩留一份給我們核對。"]
+  };
+  function dialogue(s,id,action="open") {
+    const u=s.units[id];if(!u)return "尚未選取住戶。";
+    const voice=VOICES[u.persona]||VOICES.住戶;
+    const turn=action==="listen"?Math.max(0,u.listens-1):u.listens+u.offers;
+    const line=voice[(turn+id)%voice.length];
+    if(u.boss&&action==="offer")return "你還沒聽完我的顧慮，現在談加碼沒有用。";
+    if(action==="offer")return (u.offers>1?"這個條件上次談過了，我還需要具體答覆。":"方案我收到了，但我還想確認一件事。")+line;
+    if(action==="ticket")return "優先選屋我記下了，承諾和適用條件請寫清楚。"+line;
+    if(action==="listen")return (u.listens>1?"上次談過之後，我又想到：":"謝謝你願意先聽。")+line;
+    const phase=u.consent==="agreed"?"我已表達同意，後續仍請保持聯絡。":u.consent==="opposed"?"我目前還不能接受。":"我還在評估。";
+    const history=u.listens?"我們已談過 "+u.listens+" 次，" : "";
+    return phase+history+line;
+  }
 
   function create(cfg){
     // B1 參數化：N（12–80）/consent（開局同意比%）/fam（家族密度%）/seed；
@@ -762,7 +788,7 @@ const SIMCORE = (() => {
     rows.forEach(x=>x.weight=Math.round(x.pre_value/tot*1e6)/1e6);
     return rows;
   }
-  return{create,listen,offer,briefing,ticket,settle,endWeek,agreedCount,neighbors,code,pendingMilestone,
+  return{create,listen,offer,briefing,ticket,settle,endWeek,agreedCount,neighbors,code,pendingMilestone,dialogue,
          buildOwnerMatrix,willingnessDelta,willingnessBase,WILLING_DEFAULT,
          SCEN,TRUST_OFF,FAMILY,AP_MAX,BUDGET0,AGREE_AT,BRIEF_CEIL,BOSS,N,TICKETS0};
 })();
@@ -775,15 +801,6 @@ const n0=x=>x==null?"—":Math.round(x).toLocaleString();
 let S=null, sel=null, plan={mode:null,scale:null};
 let CASE_SCEN=null;   // 承接案件的 Core 實算財務（非預算快照）——供 UI 標示來源
 
-const DOOR_SAY={
-  pending:["「我不是反對……我是怕。你們的數字，我看不懂。」",
-    "「隔壁的都簽了？……他們真的懂自己簽了什麼嗎？」",
-    "「你再說一次，分回是怎麼算的？慢慢說。」"],
-  opposed:["「上一次也是這樣說的。然後呢？」","「我這個年紀，搬去哪裡？」","「數字很漂亮。人呢？」"],
-  boss:["「這是阿公起的厝。你坐下，我泡茶。」","「你是第一個沒有急著拿合約出來的。」",
-    "「……好。你聽完了。換我問你：你會住進來嗎？」"],
-  offerOk:"「……方案我收下。讓我想想。」", offerBoss:"「你以為錢能解決？」"
-};
 /* 都更 S1–S11 主流程（本局在「整合」關；抵達目標＝推進到「事業計畫」） */
 const PHASES=["前期評估","整合","事業計畫","審議","權利變換","拆除開工"];
 const PHASE_NOW=1;   // 目前關卡索引（整合）
@@ -883,6 +900,7 @@ function render(){
   $("m-week").textContent=wk; $("m-weeks").textContent=S.weeksMax;
   $("m-weekbar").firstElementChild.style.width=Math.min(100,wk/S.weeksMax*100)+"%";
   $("m-weekbar").classList.toggle("low",S.weeksMax-wk<=4);
+  $("m-ap-max").textContent="/"+SIMCORE.AP_MAX;
   $("m-ap-pips").innerHTML=[...Array(SIMCORE.AP_MAX)].map((_,i)=>`<i class="${i<S.ap?'':'off'}"></i>`).join("");
   $("m-budget").textContent=S.budget; $("m-spent").textContent=S.spent;
   $("m-budgetbar").firstElementChild.style.width=Math.max(0,S.budget/SIMCORE.BUDGET0*100)+"%";
@@ -933,11 +951,10 @@ function chapter(no,title,sub,ms){
 }
 function openCodec(id){
   sel=id;const u=S.units[id];
-  $("cd-freq").textContent="門前對話 · 門牌 "+SIMCORE.code(id);
+  $("cd-freq").textContent="模擬對話 · "+SIMCORE.code(id)+" · 非訪談紀錄";
   $("cd-who").textContent=SIMCORE.code(id)+" · "+u.persona;
   $("cd-role").textContent=(u.boss?"KEY HOLDOUT ▲":u.consent.toUpperCase())+" · "+u.trait+(u.family>=0?" · ⌂家族":"");
-  const pool=u.boss?DOOR_SAY.boss:DOOR_SAY[u.consent]||DOOR_SAY.pending;
-  type(pool[Math.min(u.listens,pool.length-1)]);
+  type(SIMCORE.dialogue(S,id));
   // 逐戶歸因（傳動軸）：他為什麼是這個態度——把「更新前價值→權值→開局信任」攤開，數字說故事
   let 歸因="";
   if(u.pre_value!=null){
@@ -960,20 +977,19 @@ $("cd-listen").onclick=()=>{const r=SIMCORE.listen(S,sel);
   if(!r.ok){type("（AP 不足——本週的腳程用完了。）");return;}
   const u=S.units[sel];
   if(u.consent==="agreed"){$("ovl-codec").classList.remove("show");render();return;}
-  const pool=u.boss?DOOR_SAY.boss:DOOR_SAY[u.consent];
-  type(pool[Math.min(u.listens-1,pool.length-1)]+`　（信任 +${r.d}）`);
+  type(SIMCORE.dialogue(S,sel,"listen")+`　（信任 +${r.d}）`);
   $("cd-stat").innerHTML=`信任 <b>${u.stance}</b>/100`;render();};
 $("cd-offer").onclick=()=>{const r=SIMCORE.offer(S,sel);
   if(!r.ok){type("（AP 或預算不足。）");return;}
   const u=S.units[sel];
   if(u.consent==="agreed"){$("ovl-codec").classList.remove("show");render();return;}
-  type((u.boss?DOOR_SAY.offerBoss:DOOR_SAY.offerOk)+`　（${r.d>0?"+":""}${r.d}，同招遞減）`);
+  type(SIMCORE.dialogue(S,sel,"offer")+`　（${r.d>0?"+":""}${r.d}，同招遞減）`);
   $("cd-stat").innerHTML=`信任 <b>${u.stance}</b>/100`;render();};
 $("cd-ticket").onclick=()=>{const r=SIMCORE.ticket(S,sel);
   if(!r.ok){type(r.boss?"「我要的不是先挑哪一戶。你先聽懂我要什麼。」":"（AP 不足，或順位券用完了。）");return;}
   const u=S.units[sel];
   if(u.consent==="agreed"){$("ovl-codec").classList.remove("show");render();return;}
-  type(`「……先選？我可以先挑樓層？」他第一次探頭看了圖。　（信任 +${r.d}）`);
+  type(SIMCORE.dialogue(S,sel,"ticket")+`　（信任 +${r.d}）`);
   $("cd-stat").innerHTML=`信任 <b>${u.stance}</b>/100`;
   $("cd-ticket").disabled=true;$("cd-ticket").textContent="🎫 已承諾選屋順位";render();};
 $("btn-brief").onclick=()=>{SIMCORE.briefing(S);render();};

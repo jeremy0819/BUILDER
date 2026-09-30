@@ -30,6 +30,11 @@
 > N1 Decision v0.2 新增契約：`decision.schema.v0.2` `16a1a995…`（溯源二元組 `input_hash` × `core_version`；
 > **新增檔**，v0.1 續凍。`DECISION_ENGINE_VERSION` 0.1.0→**0.2.0**；比對規則由 Core
 > `decision.snapshot_matches()` 擁有，三個邊界情形一律從嚴，見 `P1-decision_core_version_binding.md`）。
+> 2026-09-29 新增獨立模組契約（既有 20 檔基準不變，合計 22 檔）：
+> `site_intake.schema.v0.1` `e08a9aa40d41d35fa2a631c88c8308e67f6266b420d1fe87169145ec66357f5d`
+> （本機未定位草圖與人工土地事實）；`cashflow_view.schema.v0.1`
+> `3264a5c05d71e5b6284d62ed81cc43a26f851fcf9da0a1311a9f8ce1e7e54e41`
+> （既有成本分期的溯源信封，不改 Project Result、計算公式或費率；Core 維持 0.6.0）。
 > 要改凍結檔＝走版本升級流程（新 `schema_version`＋遷移器＋更新 FROZEN），不得直接改檔。
 
 ## 2. 三層關係（誰依賴誰）

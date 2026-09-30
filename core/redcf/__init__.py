@@ -49,7 +49,7 @@ from core.redcf.contract import (
 from core.redcf._version import CORE_VERSION
 # M2 Core Interface：對外統一四動詞門面（不含公式，見 api.py）
 from core.redcf.api import calculate, validate, serialize, deserialize
-from core.redcf.recompute import recompute, verify, input_hash
+from core.redcf.recompute import recompute, recompute_cashflow, verify, input_hash
 from core.redcf.migrations import migrate
 
 # ── 延遲匯入：templates / io 依賴 pandas（Excel/DataFrame 範本）。──────────────
@@ -106,7 +106,7 @@ __all__ = [
     "SCHEMA_VERSION", "CORE_VERSION", "build_result_json", "build_project_json",
     # M2 Core Interface（四動詞 + 可重算/遷移）
     "calculate", "validate", "serialize", "deserialize",
-    "recompute", "verify", "input_hash", "migrate",
+    "recompute", "recompute_cashflow", "verify", "input_hash", "migrate",
     # 範本 + I/O
     "範本參數", "範本案件類型", "範本獎勵拆解", "範本樓層表", "範本模式",
     "解析上傳", "產生報告",

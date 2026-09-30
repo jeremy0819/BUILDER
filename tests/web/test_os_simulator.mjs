@@ -18,7 +18,7 @@ let s = SIMCORE.create();
 ok(Object.keys(s.units).length === 48, "48 戶");
 ok(SIMCORE.agreedCount(s) === 34 && s.target === 48 && s.weeksMax === 24, "危老×基準：目標48、24週");
 ok(s.units[47].boss === true, "W47 BOSS");
-ok(s.budget === 300 && s.ap === 4 && s.week === 1, "初始資源");
+ok(s.budget === 300 && s.ap === 8 && s.week === 1, "初始資源（每週 8 AP）");
 
 // ── 2. 規劃設定改變沙盤參數（建築設計 ↔ 整合的宇宙關聯）──
 const sd = SIMCORE.create({mode:"duegeng",scale:"M"});
@@ -69,7 +69,7 @@ s.units[fam[0]].stance = 74; SIMCORE.listen(s, fam[0]);   // 推過門檻 → fl
 ok(s.units[fam[0]].consent === "agreed", "家族成員翻轉");
 ok(s.units[sib].consent === "agreed" || s.units[sib].stance >= sibBefore + 8, "家族其他成員 +8");
 
-// ── 7. 可贏性（危老全體）：策略在 8–24 週內達成 ──
+// ── 7. 可贏性（危老全體）：8 AP 後策略在 6–24 週內達成 ──
 function greedy(cfg){
   const st = SIMCORE.create(cfg);
   let g = 0;
@@ -88,7 +88,7 @@ function greedy(cfg){
 }
 s = greedy();
 ok(s.won === true, `危老全體可贏（${s.won ? "第 " + s.week + " 週" : "未達成"}）`);
-ok(s.week >= 8 && s.week <= 24, `節奏帶 8–24 週（實測第 ${s.week} 週）`);
+ok(s.week >= 6 && s.week <= 24, `8 AP 節奏帶 6–24 週（實測第 ${s.week} 週）`);
 const w1 = s.week;
 
 // ── 8. 都更 80% 路線：不碰 BOSS 也能贏、且更快 ──

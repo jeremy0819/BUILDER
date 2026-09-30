@@ -149,6 +149,8 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
 <link rel="stylesheet" href="os-unified.css">
 <link rel="stylesheet" href="site-massing.css">
 <script src="massing-view.js"></script>
+<script src="site-intake.js"></script>
+<link rel="stylesheet" href="site-intake.css">
 <script src="site-massing.js"></script>
 <script src="planning-session.js"></script>
 
@@ -1222,7 +1224,7 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
   // 四案 A/B/C/D 全部植入工作區（A/B/C 來自 demo-cases.js＝合成產權清冊，謄本欄位結構；
   // D 為既有權變示範）。領域回饋：產權名冊是「一開始就該有的輸入」，故開頁即備妥。
   // 只在「完全沒有案件」時植入；一旦使用者匯入自己的案件即不再覆蓋。零真實資料（全合成）。
-  // 示範案版本：改動示範案集合時 +1；回訪者的舊示範資料會被升級（不動使用者自己的案件）
+  // 示範案版本：改動集合時 +1；自動只補缺案，已有紀錄可能含使用者附圖，禁止覆蓋。
   const DEMO_SEED_V="3";
   function demoRecords(){
     const list=[].concat(self.DEMO_CASES||[], self.DEMO_CASE?[self.DEMO_CASE]:[]);
@@ -1241,9 +1243,9 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
      新增的 A/B/C 永遠不會出現（同業複測看不到案例的真因）。
      修正：以 DEMO_SEED_V 判斷示範集合是否更新；
        · 全新使用者 → 植入全部示範案
-       · 只有示範案（沒自己的案件）→ 版本落後即整批升級
-       · 有自己的案件 → **只補上缺少的示範案，絕不覆蓋或刪除使用者資料** */
-  function seedDemoIfEmpty(){
+       · 已有案件 → 只補缺案，包含示範案上的使用者修改也保留
+       · 使用者確認重載 → 才清除示範案並重建 */
+  function seedDemoIfEmpty(explicitReload){
     try{
       const recs=demoRecords();
       if(!recs.length) return;
@@ -1254,20 +1256,12 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
          舊行為讓每個新使用者一開頁就被四個陌生案子擋在自己的地前面——順序反了。
          示範案改為明示索取：起始頁的「先看一個示範案」或本頁的 reloadDemoCases()。
          已經有示範案的回訪者仍照舊升級（下方分支），不會突然少東西。 */
-      if(!has) return;
+      if(!has && !explicitReload) return;
       if(seedV===DEMO_SEED_V) return;                  // 已是最新示範集合
-      const 全為示範=Object.keys(s.projects).every(k=>s.projects[k]&&s.projects[k].demo);
       let 變動=false;
-      if(全為示範){                                     // 只有示範案 → 整批換新（無使用者資料可失）
-        const order=[],projects={};
-        recs.forEach(d=>{order.push(d.pid);projects[d.pid]=asRecord(d);});
-        s.order=order; s.projects=projects; 變動=true;
-        localStorage.setItem("uros.active_case",order[0]);
-      } else {                                          // 有使用者案件 → 只補缺，不動既有
-        recs.forEach(d=>{
-          if(!s.projects[d.pid]){ s.projects[d.pid]=asRecord(d); s.order.push(d.pid); 變動=true; }
-        });
-      }
+      recs.forEach(d=>{
+        if(!s.projects[d.pid]){ s.projects[d.pid]=asRecord(d); s.order.push(d.pid); 變動=true; }
+      });
       if(變動) save(s);
       localStorage.setItem("uros.demo_seed_v",DEMO_SEED_V);
     }catch(e){}
@@ -1282,13 +1276,14 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
 
   // 手動重載示範案（顧問端救援：清掉示範資料重新植入，使用者自有案件保留）
   function reloadDemoCases(){
+    if(!confirm("重載會清除示範案上的修改、附圖與紀錄。請先匯出備份；自建案件不受影響。確定重載？"))return;
     try{
       const s=load()||{order:[],projects:{}};
       Object.keys(s.projects||{}).forEach(k=>{ if(s.projects[k]&&s.projects[k].demo){
         delete s.projects[k]; s.order=(s.order||[]).filter(x=>x!==k); } });
       save(s);
       localStorage.removeItem("uros.demo_seed_v");
-      seedDemoIfEmpty();
+      seedDemoIfEmpty(true);
       location.reload();
     }catch(e){ alert("重載失敗："+e.message); }
   }

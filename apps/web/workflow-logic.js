@@ -72,8 +72,8 @@ const WORKLOGIC = (() => {
   const _KIND2STATE = {contacted:"contacted", visited:"negotiating", briefed:"contacted",
     verbal_ok:"agreed_unselected", signed:"agreed_unselected", selected_unit:"agreed_selected",
     declined:"declined", withdrawn:"negotiating"};
-  function deriveConsentState(events){
-    let state = "untouched";
+  function deriveConsentState(events, initialState){
+    let state = CONSENT_STATES.includes(initialState) ? initialState : "untouched";
     const evs = [...(events || [])].sort((a,b) => String(a.ts||"").localeCompare(String(b.ts||"")));
     for(const ev of evs){
       const nxt = _KIND2STATE[ev.kind]; if(nxt == null) continue;
@@ -85,12 +85,16 @@ const WORKLOGIC = (() => {
   function consentBoard(wf){
     const byId = {};
     for(const ev of (wf.consent_events || [])){ (byId[ev.stakeholder_id] = byId[ev.stakeholder_id] || []).push(ev); }
-    const rows = (wf.stakeholders || []).filter(s => s.role === "owner").map(s => ({
+    const rows = (wf.stakeholders || []).filter(s => s.role === "owner").map(s => {
+      const tag=(s.tags||[]).find(t=>t.indexOf("consent:")===0);
+      const consent=tag?tag.slice(8):"pending";
+      const initial=consent==="agreed"?"agreed_unselected":/opposed|declined/.test(consent)?"declined":"untouched";
+      return {
       stakeholder_id: s.stakeholder_id, family_group: s.family_group || null,
-      state: deriveConsentState(byId[s.stakeholder_id] || []),
+      state: deriveConsentState(byId[s.stakeholder_id] || [],initial),
       events_n: (byId[s.stakeholder_id] || []).length,
       willingness_source: "recorded",   // A1.4：實戰意願＝事件記錄的事實，非模擬值
-    }));
+    };});
     const tally = {}; CONSENT_STATES.forEach(k => tally[k] = 0);
     rows.forEach(r => tally[r.state] = (tally[r.state]||0) + 1);
     return {rows, tally, total: rows.length};

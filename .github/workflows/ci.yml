@@ -135,6 +135,7 @@ jobs:
         run: |
           node tests/web/test_strategy_security.mjs
           node tests/web/test_planning_session.mjs
+          node tests/web/test_development_intake.mjs
           node tests/web/test_spatial_prototype.mjs
 
       - name: "Install browser verification tools"
