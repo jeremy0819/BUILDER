@@ -50,6 +50,11 @@ try{
   check(await page.locator('html').getAttribute('data-theme')==='dark','new workspace defaults to dark');
   check(await page.locator('.stage-viewport [data-stage="name"]').count()===0,'case name stays outside the synthetic viewport');
   check(await page.locator('.stage-preview').innerText()==='0.7 Preview','prototype maturity is explicit without changing release');
+  check(await page.locator('.stage-demo-label').evaluate(el=>{
+    const luminance=color=>{const rgb=color.match(/[\d.]+/g).slice(0,3).map(v=>Number(v)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;};
+    const fg=luminance(getComputedStyle(el).color),bg=luminance(getComputedStyle(el.closest('.stage-viewport')).backgroundColor);
+    return (Math.max(fg,bg)+.05)/(Math.min(fg,bg)+.05)>=4.5;
+  }),'non-case label maintains readable contrast');
   const frame=page.frameLocator('.spatial-stage iframe');
   await frame.locator('canvas').waitFor();
   check(await page.evaluate(()=>typeof window.spatialDiagnostics==='undefined'),"Three runtime remains in the child document");
