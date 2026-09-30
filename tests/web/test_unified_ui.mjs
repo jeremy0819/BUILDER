@@ -2,6 +2,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { runInNewContext } from "node:vm";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 let pass = 0, fail = 0;
@@ -81,6 +82,35 @@ ok(report.includes('src="decision-view.js"') && report.includes('src="strategy-w
 const shell = readFileSync(join(root, "apps/web/os-shell.js"), "utf8");
 ok(shell.includes('aria-selected=') && !shell.includes('aria-pressed='),
    "產品視圖使用標準 tab 選中狀態");
+
+const themeSrc = readFileSync(join(root, "apps/web/studio-theme.js"), "utf8");
+for (const [saved, expected] of [[null,"dark"],["light","light"],["dark","dark"],["invalid","dark"]]) {
+  let applied;
+  runInNewContext(themeSrc, {
+    document: { documentElement: { setAttribute: (key,value) => { applied=value; } } },
+    localStorage: { getItem: () => saved, setItem: () => { throw Error("theme bootstrap must be read-only"); } }
+  });
+  ok(applied===expected, `first-paint theme ${saved} → ${expected}`);
+}
+let blockedTheme;
+runInNewContext(themeSrc, {
+  document: { documentElement: { setAttribute: (key,value) => { blockedTheme=value; } } },
+  localStorage: { getItem: () => { throw Error("storage disabled"); } }
+});
+ok(blockedTheme==="dark", "blocked storage still renders dark");
+for (const page of ["index.html","workspace.html",...pages]) {
+  const html=readFileSync(join(root,"apps/web",page),"utf8");
+  ok(html.indexOf('src="studio-theme.js"') < html.search(/<style|<link[^>]+stylesheet/) && html.includes('src="studio-theme.js"'), page+" applies preference before styling");
+}
+const panelSrc=dashboard.slice(dashboard.indexOf('  function planPanel(rec){'),dashboard.indexOf('  function cashPanel(rec){'));
+const panel=runInNewContext('('+panelSrc.slice(0,panelSrc.lastIndexOf('}')+1)+')', {
+  fmt: value=>value==null?"—":String(value), pc:value=>value==null?"—":String(value),
+  esc:value=>String(value).replaceAll('<','&lt;').replaceAll('>','&gt;')
+});
+const panelHtml=panel({view:{used_floor_area:900,allow_floor_area:100,remaining_floor_area:37,efficiency_ratio:7.1234,warnings:['<img src=x>',{msg:'Core warning'}]}});
+ok(panelHtml.includes('37 ㎡') && panelHtml.includes('7.123'), "panel displays Core values even when inputs appear inconsistent");
+ok(!/900%|一般帶|超用|1\.58|1\.68/.test(panelHtml), "panel adds no independent usage or efficiency judgment");
+ok(panelHtml.includes('&lt;img src=x&gt;') && panelHtml.includes('Core warning'), "Core warnings remain escaped and readable");
 
 console.log(`\nUNIFIED UI / DECISION / LAND：${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

@@ -168,10 +168,34 @@
     var theme = document.getElementById("uros-theme");
     if (theme) theme.addEventListener("click", function () {
       var current = document.documentElement.getAttribute("data-theme");
-      if (!current) current = matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light";
+      if (!current) current = "dark";
       applyTheme(current === "dark" ? "light" : "dark");
     });
     if (page.key === "product") productHub(rec);
+    var steps={
+      site:["整理基地與樓層草案。重算後採用，才會更新案件。","#site-massing-host","調整本案條件"],
+      product:["比較案件快照與本次試算。採用後，再前往地主整合。","#product-planning-host","調整產品條件"],
+      people:["先整理同意與接觸紀錄，再選擇是否進入示意推演。","#workflow-board","查看同意看板"],
+      decision:["核對輸入與觀察，再產生本次判讀。推演不等於實際承諾。","#strategy-workspace","檢視判讀資料"]
+    };
+    var next=rec?steps[page.key]:["尚無作用中案件。建立或匯入後，四步會共用同一份資料。","index.html#entry","建立案件"];
+    if(rec&&!rec.engine&&(page.key==="site"||page.key==="product"))next=["目前只有已存快照；補齊輸入後才能重新試算。","index.html#entry","補齊案件輸入"];
+    var action=document.createElement("div");action.className="uros-action";
+    action.innerHTML='<p><strong>目前這一步</strong>'+next[0]+'</p><a href="'+next[1]+'">'+next[2]+' →</a>';
+    shell.appendChild(action);
+    if(page.key==="decision"){
+      var content=document.getElementById("analysis-content"),oldChecklist=document.getElementById("decision-readiness");
+      if(oldChecklist)oldChecklist.remove();
+      if(content){
+        var provenance=root.CaseBus&&root.CaseBus.provenance?root.CaseBus.provenance(rec):{};
+        var checklist=document.createElement("details");checklist.id="decision-readiness";checklist.className="studio-readiness";
+        checklist.innerHTML='<summary>判讀前確認 · 資料與來源</summary><ul>'
+          +'<li><span>案件輸入：'+(rec&&rec.engine?'已保存，仍須核對條件':'尚待補齊')+'</span><a href="dashboard.html">核對基地 →</a></li>'
+          +'<li><span>Core 快照：'+(!snap.input_hash?'尚未計算':provenance.stale?'舊版本，請重算':'已保存，請確認本次條件已採用')+'</span><a href="evaluator.html">核對產品 →</a></li>'
+          +'<li><span>地主觀察：請核對最新接觸與同意紀錄</span><a href="os-simulator.html#workflow-board">核對紀錄 →</a></li></ul>';
+        content.parentNode.insertBefore(checklist,content);
+      }
+    }
     var routes = page.key === "site" ? [["mass","空間與樓層"]] : page.key === "people" ? [["board","同意看板"],["task","時程任務"]]
       : page.key === "decision" ? [["dec","決策紀錄"],["time","時間軸"],["attr","歸因比較"]] : [];
     if (routes.length) {

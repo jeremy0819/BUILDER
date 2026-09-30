@@ -6,6 +6,13 @@ document.documentElement.classList.toggle("is-embedded",embedded);
 $("inspect").hidden=!embedded;
 $("object-inspector").hidden=embedded;
 $("inspect").onclick=()=>inspect($("object-inspector").hidden);
+$("close-inspector").hidden=!embedded;
+$("close-inspector").onclick=()=>{inspect(false);$("inspect").focus();};
+if(embedded){
+  const options=$("view-options");options.hidden=false;
+  for(const id of ["pan","focus","overview"])options.querySelector(".view-options-body").append($(id));
+  options.addEventListener("keydown",event=>{if(event.key==="Escape"){options.open=false;options.querySelector("summary").focus();}});
+}
 $("object-inspector").addEventListener("keydown",event=>{if(embedded&&event.key==="Escape"){inspect(false);$("inspect").focus();}});
 $("runtime").hidden = !(["127.0.0.1","localhost"].includes(location.hostname) && !location.pathname.endsWith("spatial-prototype.html"));
 let runtime, cleanup = () => {}, resume = () => {};
@@ -53,7 +60,7 @@ try {
   const {OrbitControls} = await import("./vendor/OrbitControls.js");
   const host = $("scene"), renderer = new THREE.WebGLRenderer({antialias:true,alpha:false});
   renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));
-  renderer.setClearColor(0xf1f3ed);
+  renderer.setClearColor(0x111b1a);
   host.append(renderer.domElement);
   const scene = new THREE.Scene(), camera = new THREE.OrthographicCamera(-50,50,50,-50,0.1,600);
   const controls = new OrbitControls(camera,renderer.domElement);
@@ -67,7 +74,7 @@ try {
   scene.add(new THREE.HemisphereLight(0xffffff,0x84908b,2));
   const sun = new THREE.DirectionalLight(0xffffff,2);sun.position.set(30,60,40);scene.add(sun);
   // A local drawing grid, not cadastral boundaries or additional project geometry.
-  const grid=new THREE.GridHelper(80,16,0xc0cec0,0xe0e6db);grid.position.y=-.12;scene.add(grid);
+  const grid=new THREE.GridHelper(80,16,0x39504a,0x22342f);grid.position.y=-.12;scene.add(grid);
   resources.push(grid.geometry,grid.material);
   function meshFor(points,height,color,id) {
     const shape = new THREE.Shape(points.map(([x,z]) => new THREE.Vector2(x,-z)));
