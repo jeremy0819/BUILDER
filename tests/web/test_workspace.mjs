@@ -82,7 +82,8 @@ ok(board.total === wf2.stakeholders.filter(s=>s.role==="owner").length, "board.t
 ok(WL.CONSENT_STATES.reduce((a,k)=>a+board.tally[k],0) === board.total, "tally 各態加總＝總數");
 ok(board.rows.find(r=>r.stakeholder_id===wf2.stakeholders[0].stakeholder_id).state === "agreed_unselected", "第1戶 signed→agreed_unselected");
 ok(board.rows.find(r=>r.stakeholder_id===wf2.stakeholders[1].stakeholder_id).state === "declined", "第2戶 declined→declined");
-ok(WL.consentBoard(WL.importV21ToWorkflow(v21)).tally.untouched === wf2.stakeholders.filter(s=>s.role==="owner").length, "無事件時全員 untouched（不繼承匯入計數）");
+ok(WL.consentBoard(WL.importV21ToWorkflow(v21)).tally.agreed_unselected === v21.input.owners.filter(o=>o.consent==="agreed").length, "逐戶匯入同意事實保留，不以彙總計數分派戶別");
+ok(WL.consentBoard({stakeholders:[{stakeholder_id:"unknown",role:"owner"}],consent_events:[]}).tally.untouched===1,"無逐戶事實時仍為 untouched，不臆造同意");
 
 // ── 8. C4 時程任務 ──
 const tmpl = WL.stageTemplate();

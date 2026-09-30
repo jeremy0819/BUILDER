@@ -57,4 +57,6 @@ test('offers differ from listening',()=>assert.notEqual(sim.dialogue(s,pending[0
 test('turn resets eight actions',()=>{sim.endWeek(s);assert.equal(s.ap,8);});
 test('dialogue disclosed as simulation',()=>assert.match(html,/模擬對話.*非訪談紀錄/));
 test('home discards late Core responses',()=>assert.match(read('apps/web/index.html'),/if\(token!==輸入序\)/));
+test('Product studio stylesheet wins over the legacy shell',()=>{const p=read('apps/web/evaluator.html');assert.ok(p.indexOf('href="builder-studio.css"')>p.indexOf('href="os-unified.css"'));});
+test('mobile navigation uses separate collapse and expand thresholds',()=>assert.match(read('apps/web/stepnav.js'),/\? 8 : 120/));
 console.log(`Development intake: ${passed} passed`);

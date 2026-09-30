@@ -97,7 +97,9 @@ try {
   await page.setViewportSize({width:1440,height:1000});
   await page.evaluate(()=>{const r=CaseBus.activeRecord(),canvas=document.createElement('canvas');canvas.width=320;canvas.height=180;const c=canvas.getContext('2d');c.fillStyle='#eeeeee';c.fillRect(0,0,320,180);c.strokeStyle='#b934aa';c.strokeRect(30,30,200,120);r.assets={...(r.assets||{}),cadastral:canvas.toDataURL('image/png')};CaseBus.replace(r.pid,r);});
   await page.goto(origin+"/dashboard.html");await page.locator("#site-massing-host").waitFor();
+  const studioAccent=await page.evaluate(()=>getComputedStyle(document.body).getPropertyValue('--uros-accent').trim());
   check(await page.locator('.si-canvas image').count()===1,'local cadastral attachment is reused as a tracing background');
+  check(await page.evaluate(()=>!!CaseBus.activeRecord().assets.cadastral),'demo collection upgrades preserve user attachments');
   await page.locator('.si-background input').uncheck();
   check(await page.locator('.si-canvas image').count()===0,'background visibility does not alter parcel coordinates');
   await page.locator('.si-background input').check();
@@ -155,6 +157,7 @@ try {
   check(adoptedSite.site_intake.parcels[0].points.length===3&&adoptedSite.site_intake.land.zoning==='synthetic zone','adopting Site preserves parcel facts across steps');
   check(adoptedSite.cashflow.input_hash===adoptedSite.snap.input_hash&&adoptedSite.cashflow.core_version===adoptedSite.snap.core_version,'adopted cost disbursement binds to the exact Site result');
   check(await page.locator('.product-planning').isVisible(),'Product default view contains real Core controls');
+  check(await page.evaluate(()=>getComputedStyle(document.body).getPropertyValue('--uros-accent').trim())===studioAccent,'Site and Product use the same studio theme');
   const initialFinancial=await page.locator('.pp-results tbody tr').last().locator('td').last().innerText();
   await page.locator('.pp-inputs input[type=number]').first().fill('90');
   check((await page.locator('.pp-results tbody td:last-child').allTextContents()).every(x=>x==='—'),'Product edits immediately invalidate old results');
