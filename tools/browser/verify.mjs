@@ -48,7 +48,12 @@ try {
   check(await page.locator("#runtime-retry").isHidden(),"real Pyodide initialized with jsonschema");
   check(await page.locator('#calibration-notice summary').innerText()==='存活率未校準 · 判定僅供方向性比較','calibration warning visible with CDN blocked');
   check(await page.locator('#backup-status').innerText()==='尚無有效備份紀錄','first-use backup warning visible');
+  check(await page.locator('#household-observations').getAttribute('open')===null,'Decision household observations start collapsed');
+  await page.locator('#household-observations > summary').click();
   const first=page.locator(".profile-row").first();await first.locator("summary").first().click();
+  const second=page.locator('.profile-row').nth(1);await second.locator('summary').first().click();
+  check(await first.getAttribute('open')===null,'Decision opens only one household editor');
+  await first.locator('summary').first().click();
   await first.locator("select").first().selectOption("anchored");
   check(await page.locator("#profile-save").innerText()==="已存本機","observation saved before analysis");
   const originalStore=await page.evaluate(()=>localStorage.getItem("uros.workflow.v1"));
@@ -193,6 +198,7 @@ try {
   await offline.route("**/core-runtime.worker.js",route=>route.abort());
   const off=await offline.newPage();await off.goto(origin+"/report.html");
   await off.locator("#runtime-retry").waitFor({state:"visible"});
+  await off.locator('#household-observations > summary').click();
   const row=off.locator(".profile-row").first();await row.locator("summary").first().click();await row.locator("select").first().selectOption("anchored");
   check(await off.locator("#profile-save").innerText()==="已存本機","unavailable Core does not lose observations");
   check(await off.locator("#analysis-run").isDisabled(),"unavailable Core cannot fabricate results");
@@ -261,6 +267,18 @@ try {
   await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem('uros.workflow.v1')),pid=localStorage.getItem('uros.active_case');s.projects[pid].snap.code_name='<img src=x onerror="window.__injected=1">';localStorage.setItem('uros.workflow.v1',JSON.stringify(s));localStorage.removeItem('uros.bridge.case');});
   await page.goto(origin+'/os-simulator.html');
   check(await page.locator('#workflow-tools').isVisible()&&await page.locator('#integration-play').isHidden(),'People defaults to factual case records');
+  check(await page.locator('.household-list').getAttribute('open')===null,'People household list starts collapsed');
+  await page.locator('.household-list > summary').click();
+  const contact=page.locator('.household-row').first(),contactId=await contact.getAttribute('data-owner');
+  await contact.locator('summary').click();await contact.locator('select').selectOption('visited');await contact.locator('button').click();
+  check(await page.locator('.household-list').getAttribute('open')!==null&&await page.locator('.household-row[open]').getAttribute('data-owner')===contactId,'contact save preserves the open household');
+  check(await page.evaluate(sid=>CaseBus.activeRecord().wf.consent_events.some(e=>e.stakeholder_id===sid&&e.kind==='visited'),contactId),'contact editor records the selected real event');
+  await page.locator('.household-search').fill('no-matching-household');
+  check(await page.locator('.household-empty').isVisible(),'People empty search gives visible feedback');
+  await page.locator('.household-search').fill(contactId);
+  check(await page.locator('.household-row:visible').count()===1,'People search narrows the resident list');
+  await page.locator('.household-list > summary').click();
+  check(await page.locator('.household-search').isHidden(),'People collapses the entire household editor');
   await page.locator('[data-mode="play"]').click();await page.locator('#btn-start').waitFor();
   await page.screenshot({path:resolve(artifacts,'people-title-mobile.png'),fullPage:true});
   check(await page.locator('#integration-play > .wrap').isHidden(),'unstarted sandbox does not expose an unrelated background board');
@@ -336,6 +354,39 @@ try {
   await phonePage.reload();await phonePage.evaluate(()=>scrollTo(0,300));await phonePage.waitForTimeout(350);
   check(await phonePage.locator('.sn-cap.sn-stale').isVisible(),'stale-snapshot warning remains visible even with compact navigation');
   await phone.close();
+
+  // Complete a separate four-step journey and play the sandbox through settlement.
+  await page.setViewportSize({width:1440,height:1000});
+  await page.evaluate(rec=>CaseBus.replace(rec.pid,rec),adoptedSite);
+  await page.goto(origin+'/dashboard.html');
+  await page.locator('#uros-stepnav a[href="evaluator.html"]').click();
+  await page.locator('#uros-stepnav a[href="os-simulator.html"]').click();
+  await page.locator('[data-mode="play"]').click();await page.locator('#btn-start').click();
+  await page.locator('#ovl-chapter').waitFor({state:'hidden'});
+  const factualBefore=await page.evaluate(()=>localStorage.getItem('uros.workflow.v1'));
+  let turns=0;
+  while(!(await page.evaluate(()=>S.over))&&turns++<300){
+    await page.locator('#ovl-chapter').waitFor({state:'hidden'});
+    const next=await page.evaluate(()=>{if(!S.ap)return null;const rows=Object.values(S.units).filter(u=>u.consent!=='agreed').sort((a,b)=>Number(b.boss)-Number(a.boss)||b.stance-a.stance);return rows[0]?SIMCORE.code(rows[0].id):null;});
+    if(!next){await page.locator('#btn-week').click();continue;}
+    await page.locator('.cell[role="button"]').filter({has:page.locator('span').filter({hasText:new RegExp('^'+next+'$')})}).click();
+    await page.locator('#cd-listen').click();
+    if(await page.locator('#ovl-codec').isVisible())await page.locator('#cd-close').click();
+  }
+  check(await page.evaluate(()=>S.over),'full sandbox journey reaches settlement through visible controls');
+  check(await page.evaluate(()=>localStorage.getItem('uros.workflow.v1'))===factualBefore,'complete sandbox play preserves factual consent records');
+  await page.waitForTimeout(450);
+  await page.screenshot({path:resolve(artifacts,'people-settlement-desktop.png'),fullPage:true});
+  await page.locator('#uros-stepnav a[href="report.html"]').click();
+  await page.waitForFunction(()=>!document.getElementById('analysis-run').disabled,{},{timeout:150000});
+  await page.locator('#analysis-run').click();
+  await page.waitForFunction(()=>document.getElementById('analysis-status').textContent.startsWith('分析完成'),{},{timeout:120000});
+  check(await page.locator('#export-strategy').isEnabled(),'four-step journey ends with a current Core strategy');
+  check(await page.locator('#household-observations').getAttribute('open')===null,'return to Decision keeps household details collapsed');
+  await page.waitForTimeout(450);await page.screenshot({path:resolve(artifacts,'decision-finished-desktop.png'),fullPage:true});
+  await page.setViewportSize({width:390,height:844});await page.screenshot({path:resolve(artifacts,'decision-finished-mobile.png'),fullPage:true});
+  check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'finished Decision fits a narrow viewport');
+  check(await page.locator('.decision-hub').evaluate(hub=>{const a=hub.getBoundingClientRect(),b=hub.firstElementChild.getBoundingClientRect();return b.left>=a.left&&b.right<=a.right&&b.top>=a.top&&b.bottom<=a.bottom;}),'Decision center text fits inside its circle');
 
   console.log("BROWSER: "+passed+" passed; screenshots: "+artifacts);
 } catch(error) {

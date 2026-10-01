@@ -235,13 +235,6 @@ function renderBench(pid){
   const nextHTML=db.next.length
     ? db.next.map(t=>`<div class="cw-t"><span class="bid mono">${esc(t.stage)}</span><span style="flex:1">${esc(t.title)}</span><span class="cpill" style="color:${t.status==="doing"?"var(--info)":"var(--mute)"};border-color:currentColor">${t.status==="doing"?"進行":"待辦"}</span></div>`).join("")
     : `<div class="wip">無待辦——到「時程任務」帶入 S1–S11 範本或新增。</div>`;
-  const rowsHTML=db.rows.map(r=>`<div class="brow">
-      <span class="bid mono">${esc(r.stakeholder_id)}${r.family_group?` <span class="fam">${esc(r.family_group)}</span>`:""}</span>
-      <span class="cpill" style="color:${CS_COLOR[r.state]};border-color:${CS_COLOR[r.state]}">${CS_LABEL[r.state]}</span>
-      <span class="bev">${r.events_n} 次接觸${r.last_kind?` · 最後 ${esc(EV_LABEL[r.last_kind]||r.last_kind)} ${esc((r.last_ts||"").slice(0,10))}`:""}</span>
-      <select class="evk" data-sid="${esc(r.stakeholder_id)}">${EV_KINDS.map(([v,l])=>`<option value="${v}">${l}</option>`).join("")}</select>
-      <button class="btn sm" data-sid="${esc(r.stakeholder_id)}">記錄</button>
-    </div>`).join("");
   $("pane").innerHTML=`<div class="board">
     <div class="btally">
       <span class="cstat">整合率（重放計數）<b>${已}/${db.total}</b> · 門檻 ${(snap.threshold*100)|0}%</span>
@@ -253,13 +246,10 @@ function renderBench(pid){
       <div class="cw2"><h4>下一步 · 時程任務（Workflow 事實）</h4>${nextHTML}
         <div class="src">「先談誰」逐型建議＝M6 Strategy Engine，本頁不代為建議。</div></div>
     </div>
-    <div class="sgrp" style="margin-top:14px">戶別 · 接觸紀錄（事件重放；記錄即更新）</div>
-    <div class="brows">${rowsHTML}</div>
+    ${householdListHTML(db.rows)}
+    <div class="workflow-next"><a href="report.html">前往第 4 步 · 決策分析 →</a></div>
   </div>`;
-  $("pane").querySelectorAll(".brow .btn").forEach(btn=>btn.onclick=()=>{
-    const sid=btn.dataset.sid, sel=btn.closest(".brow").querySelector(".evk");
-    addConsentEvent(pid,sid,sel.value); renderBench(pid);
-  });
+  bindHouseholds(pid,renderBench);
 }
 // ── C4 時程任務（事實層：S1–S11 里程碑；狀態＝事實，不推論）──
 const TASK_ST=[["todo","待辦"],["doing","進行"],["done","完成"],["blocked","卡住"]];
@@ -355,26 +345,45 @@ const CS_LABEL={untouched:"未接觸",contacted:"已接觸",negotiating:"協商�
 const CS_COLOR={untouched:"var(--mute)",contacted:"var(--info)",negotiating:"var(--warn)",agreed_unselected:"var(--ok)",agreed_selected:"var(--ok)",declined:"var(--err)"};
 const EV_KINDS=[["contacted","接觸"],["visited","拜訪"],["briefed","說明"],["verbal_ok","口頭同意"],["signed","簽署"],["selected_unit","選屋"],["withdrawn","撤回"],["declined","反對"]];
 const EV_LABEL=Object.fromEntries(EV_KINDS);
+function householdListHTML(rows){
+  return `<details class="household-list"><summary>住戶狀態與接觸紀錄 <span>${rows.length} 戶</span></summary>
+    <div class="household-tools"><input type="search" class="household-search" placeholder="搜尋戶別或家族" aria-label="搜尋戶別或家族">
+      <select class="household-filter" aria-label="篩選住戶狀態"><option value="all">全部狀態</option>${WORKLOGIC.CONSENT_STATES.map(k=>`<option value="${k}">${CS_LABEL[k]}</option>`).join("")}</select></div>
+    <div class="brows household-rows">${rows.map(r=>`<details name="household-contact" class="brow household-row" data-owner="${esc(r.stakeholder_id)}" data-state="${r.state}" data-search="${esc(r.stakeholder_id+' '+(r.family_group||''))}">
+      <summary><span class="bid mono">${esc(r.stakeholder_id)}${r.family_group?` <span class="fam">${esc(r.family_group)}</span>`:""}</span>
+        <span class="cpill" style="color:${CS_COLOR[r.state]};border-color:${CS_COLOR[r.state]}">${CS_LABEL[r.state]}</span><span class="bev">${r.events_n} 事件</span></summary>
+      <div class="household-edit"><label>新增接觸事件<select class="evk" data-sid="${esc(r.stakeholder_id)}">${EV_KINDS.map(([v,l])=>`<option value="${v}">${l}</option>`).join("")}</select></label>
+        <button type="button" class="btn sm" data-sid="${esc(r.stakeholder_id)}">記錄事件</button></div>
+      ${r.last_kind?`<p class="household-last">最後紀錄：${esc(EV_LABEL[r.last_kind]||r.last_kind)} · ${esc((r.last_ts||'').slice(0,10))}</p>`:''}
+    </details>`).join('')}</div><p class="household-empty" ${rows.length?'hidden':''}>沒有符合條件的住戶</p></details>`;
+}
+function bindHouseholds(pid,render){
+  const list=pane.querySelector('.household-list');if(!list)return;
+  const search=list.querySelector('.household-search'),filter=list.querySelector('.household-filter');
+  function apply(){let visible=0;list.querySelectorAll('.household-row').forEach(row=>{
+    row.hidden=!row.dataset.search.toLowerCase().includes(search.value.trim().toLowerCase())||(filter.value!=='all'&&row.dataset.state!==filter.value);if(!row.hidden)visible++;
+  });list.querySelector('.household-empty').hidden=visible>0;}
+  search.oninput=apply;filter.onchange=apply;
+  list.querySelectorAll('.brow .btn').forEach(btn=>btn.onclick=()=>{
+    const sid=btn.dataset.sid,term=search.value,state=filter.value;
+    addConsentEvent(pid,sid,btn.closest('.brow').querySelector('.evk').value);render(pid);
+    const next=pane.querySelector('.household-list');next.open=true;
+    next.querySelector('.household-search').value=term;next.querySelector('.household-filter').value=state;next.querySelector('.household-filter').onchange();
+    const row=Array.from(next.querySelectorAll('.household-row')).find(r=>r.dataset.owner===sid);
+    const focusTarget=row&&!row.hidden?row.querySelector('summary'):next.querySelector('summary');
+    if(row&&!row.hidden)row.open=true;if(focusTarget.focus)focusTarget.focus();
+  });
+}
 function renderBoard(pid){
   const rec=loadStore().projects[pid]; if(!rec) return;
   const {wf,snap}=rec, bd=WORKLOGIC.consentBoard(wf);
   const tallyHTML=WORKLOGIC.CONSENT_STATES.map(k=>`<span class="cstat"><i style="background:${CS_COLOR[k]}"></i>${CS_LABEL[k]} <b>${bd.tally[k]}</b></span>`).join("");
-  const rowsHTML=bd.rows.map(r=>`<div class="brow">
-      <span class="bid mono">${esc(r.stakeholder_id)}${r.family_group?` <span class="fam">${esc(r.family_group)}</span>`:""}</span>
-      <span class="cpill" style="color:${CS_COLOR[r.state]};border-color:${CS_COLOR[r.state]}">${CS_LABEL[r.state]}</span>
-      <span class="bev">${r.events_n} 事件</span>
-      <select class="evk" data-sid="${esc(r.stakeholder_id)}">${EV_KINDS.map(([v,l])=>`<option value="${v}">${l}</option>`).join("")}</select>
-      <button class="btn sm" data-sid="${esc(r.stakeholder_id)}">記錄</button>
-    </div>`).join("");
   $("pane").innerHTML=`<div class="board">
     <div class="btally">${tallyHTML}<span class="cstat" style="margin-left:auto">共 <b>${bd.total}</b> 位地主</span></div>
     <div class="bnote">狀態由 append-only <b>事件重放</b>推導（純邏輯，鏡像 core workflow.py）。此為<b>現場整合事實</b>——與卡片上匯入計算快照的同意計數 ${esc(snap.agreed)}/${esc(snap.total)} 分屬不同層。選屋事件是人工紀錄，不代表已取得可定位的戶別幾何。</div>
-    <div class="brows">${rowsHTML||'<div class="wip">此案無 owner 關係人。</div>'}</div>
+    ${householdListHTML(bd.rows)}
   </div>`;
-  $("pane").querySelectorAll(".brow .btn").forEach(btn=>btn.onclick=()=>{
-    const sid=btn.dataset.sid, sel=btn.closest(".brow").querySelector(".evk");
-    addConsentEvent(pid,sid,sel.value); renderBoard(pid);
-  });
+  bindHouseholds(pid,renderBoard);
 }
 function addConsentEvent(pid,sid,kind,note){
   const s=loadStore(), rec=s.projects[pid]; if(!rec) return;
