@@ -37,11 +37,13 @@
   <main class="strategy-workspace" id="strategy-workspace">
     <div class="strategy-heading"><div><h1>策略分析</h1><p id="analysis-context">讀取案件中</p></div>
       <div class="strategy-commands"><button type="button" id="runtime-retry" hidden>重新連線</button>
-        <button type="button" id="analysis-run" class="primary" disabled>產生策略分析</button></div></div>
+        <button type="button" id="analysis-run" class="primary" aria-describedby="readiness-next" disabled>產生策略分析</button></div></div>
+    <section class="analysis-readiness" aria-labelledby="readiness-title"><h2 id="readiness-title">策略分析準備狀態</h2><ul id="readiness-list"></ul><p id="readiness-next"></p></section>
     <div class="analysis-status" id="analysis-status" role="status" aria-live="polite">準備中</div>
     <div class="analysis-caveat">方向性建議。完工機率尚未校準；同意計數採案件快照，不等同最新簽署或法定同意比例；地主分型以實際接觸紀錄為準。</div>
     <div id="analysis-empty" hidden></div>
     <div id="analysis-content" hidden>
+      <section class="decision-brief" id="decision-brief" hidden aria-label="本次判定與下一步"><span class="brief-kicker">CURRENT STATE</span><h2 id="brief-verdict"></h2><p id="brief-limits"></p><h3>下一步行動</h3><ol id="brief-actions"></ol><p class="brief-source">來源：本次 Decision 與 Strategy 計算。未填負責人與期限，不會推定。</p></section>
       <section class="analysis-top" aria-label="判讀與財務"><div id="decision-visual"></div></section>
       <div class="strategy-columns">
         <section class="strategy-inputs" aria-labelledby="profiles-title">

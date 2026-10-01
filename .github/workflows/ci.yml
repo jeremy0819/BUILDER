@@ -120,7 +120,9 @@ jobs:
       #   取不到＝null（顯示「—」），不得由 UI 補算；buildEngine 只組輸入，
       #   不得抄 Core 的允建容積公式（面積表計入容積 必須缺席）。
       - name: "Gate 18 — Case bus / four-step linkage (node)"
-        run: node tests/web/test_case_bus.mjs
+        run: |
+          node tests/web/test_case_bus.mjs
+          node tests/web/test_pm_workflow.mjs
 
       # ── Gate 20：四步共用 UI／Decision 圖／本機地政邊界 ──────────────
       #   共用 shell 必須載入四頁；Decision 互動只換證據，不可拖曳或反算；

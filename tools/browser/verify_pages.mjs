@@ -24,7 +24,7 @@ if(!base){
 }
 const check=(value,name)=>{assert.ok(value,name);passed++;console.log("PASS",name);};
 try{
-  browser=await chromium.launch({headless:true});
+  browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHROMIUM_PATH?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_PATH}:{})});
   const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage(),requests=[],errors=[];
   context.on("request",r=>requests.push(r.url()));page.on("pageerror",e=>errors.push(e.message));
   await context.route("**/*",r=>r.request().url().startsWith(base)?r.continue():r.abort());
@@ -45,7 +45,14 @@ try{
   check(/^[0-9a-f]{40}$/.test(build.commit),"published build has commit provenance");
   await page.setViewportSize({width:1440,height:1000});
   // A fresh browser has no case: enter through the visible synthetic-demo action.
-  await page.goto(base+"index.html");await page.locator('#btn-demo').click();
+  await page.goto(base+"index.html");
+  check(await page.locator('#entry').isVisible()&&await page.locator('#pm-resume').isHidden(),'first visit starts with quick evaluation');
+  await page.waitForFunction(()=>!document.getElementById('btn-go').disabled,{},{timeout:120000});
+  if((await page.locator('#btn-go').innerText()).includes('快速評估')){
+    await page.locator('#btn-go').click();
+    check(await page.locator('#btn-go').innerText()==='儲存為案件 →'&&await page.evaluate(()=>!localStorage.getItem('uros.workflow.v1')),'quick evaluation shows Core result before creating a case');
+  }else check((await page.locator('#btn-go').innerText()).includes('先儲存輸入'),'offline first visit explains input-only save');
+  await page.locator('#btn-demo').click();
   await page.waitForURL(base+'dashboard.html');await page.locator("body.uros-unified").waitFor();
   check(await page.locator('html').getAttribute('data-theme')==='dark','new workspace defaults to dark');
   check(await page.locator('.stage-viewport [data-stage="name"]').count()===0,'case name stays outside the synthetic viewport');
@@ -77,5 +84,8 @@ try{
   await frame.locator('#top').click();
   check(await frame.locator('#top').getAttribute('aria-pressed')==='true',"embedded mobile camera control remains reachable");
   await page.screenshot({path:resolve(root,'tools/browser/artifacts/studio-mobile.png'),fullPage:false});
+  await page.goto(base+'overview.html');
+  check(await page.locator('#overview-case').isVisible()&&await page.locator('#overview-go').isVisible(),'published daily overview leads to the saved case next action');
+  check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'published daily overview mobile no overflow');
   console.log(`PAGES: ${passed} passed; commit=${build.commit}`);
 }finally{await browser?.close();if(server)await new Promise(r=>server.close(r));}

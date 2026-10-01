@@ -253,7 +253,7 @@
         d = (rec && rec.decision) || null, P = ((rec && rec.engine) || {}).params || {};
     return {
       site: {
-        title: "基地", href: "dashboard.html",
+        title: "基地與法規", href: "dashboard.html",
         items: [
           { label: "基地面積", value: 取(P, "基地面積"), unit: "㎡", source: "input" },
           { label: "法定容積率", value: 取(P, "容積率"), unit: "ratio", source: "input" },
@@ -262,7 +262,7 @@
         ]
       },
       product: {
-        title: "產品", href: "evaluator.html",
+        title: "產品與財務", href: "evaluator.html",
         items: [
           { label: "銷售坪數", value: 取(v, "saleable_area"), unit: "坪", source: "core" },
           { label: "坪效", value: 取(v, "efficiency_ratio"), unit: "x", source: "core" },
@@ -271,7 +271,7 @@
         ]
       },
       people: {
-        title: "人心", href: "os-simulator.html",
+        title: "地主整合", href: "os-simulator.html",
         items: [
           { label: "權變戶數", value: 取(sn, "total"), unit: "戶", source: "input" },
           { label: "已同意", value: consentFacts(rec).agreed, unit: "戶", source: "input" },
@@ -285,7 +285,7 @@
         var 綁 = decisionBinds(rec);
         var 取D = function (k) { return 綁.bound ? 取(d, k) : null; };
         return {
-          title: "決策", href: "report.html",
+          title: "策略決策", href: "report.html",
           bound: 綁.bound, bind_reason: 綁.reason, bind_note: BIND_NOTE[綁.reason] || 綁.reason,
           items: [
             { label: "判定", value: 取D("verdict"), unit: "text", source: "decision" },

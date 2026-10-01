@@ -17,7 +17,7 @@ const origin=await new Promise((resolve,reject)=>{
 function check(value,name){assert.ok(value,name);passed++;console.log("PASS",name);}
 const state=page=>page.evaluate(()=>window.spatialDiagnostics());
 try{
-  browser=await chromium.launch({headless:true});
+  browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHROMIUM_PATH?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_PATH}:{})});
   const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage(),external=[],errors=[];
   context.on("request",req=>{if(!req.url().startsWith(origin))external.push(req.url());});
   await context.route("**/*",route=>route.request().url().startsWith(origin)?route.continue():route.abort());

@@ -163,27 +163,33 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
   justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:10px;color:var(--dim)}
 </style>
 <link rel="stylesheet" href="builder-studio.css">
+<link rel="stylesheet" href="pm-workflow.css">
 
 <body class="studio-home">
 <div class="wrap">
   <header>
     <span class="brand"><b>BUILDER</b> / 工作室</span>
-    <span class="stats">
+    <details class="pm-model-info" id="model-info"><summary><span id="model-status">模型啟動中</span> · <span id="save-status">尚未儲存案件</span></summary><div class="stats">
       <span class="chip hot">core <span data-uros-ver="core">—</span></span>
       <span class="chip">schema <span data-uros-ver="schema">—</span></span>
       <span class="chip"><span data-uros-ver="release">—</span> 已發布</span>
       <span class="chip hot" id="chip-engine">計算核心啟動中…</span>
       <span class="chip" title="計算核心來源">runtime <span data-uros-runtime>—</span></span>
-    </span>
+    </div></details>
   </header>
 
-  <div class="hero"><div><span class="stage-eyebrow">都市更新工作台</span><h1>專案工作室。</h1><p>基地、財務、地主整合。從上次停下的地方繼續。</p></div><a href="#entry">建立／調整案件 ↓</a></div>
-  <section data-spatial-stage></section>
+  <div class="hero"><div><span class="stage-eyebrow">都市更新決策工作台</span><h1>把資料變成下一個決策。</h1><p>基地、財務與地主資訊，從上次停下的地方繼續。</p></div><a id="hero-overview" href="overview.html" hidden>案件總覽 ↗</a></div>
+  <section class="pm-resume" id="pm-resume" hidden aria-label="繼續案件">
+    <span class="pm-kicker">繼續上次工作</span><h2 id="pm-case-name"></h2><div class="pm-meta" id="pm-case-stage"></div>
+    <div class="pm-facts"><div><small>同意進度</small><strong id="pm-consent"></strong><span id="pm-consent-source"></span></div><div><small>全案投報率 · Core 快照</small><strong id="pm-return"></strong></div><div><small>共同負擔比 · Core 快照</small><strong id="pm-cost"></strong></div></div>
+    <div class="pm-next"><div><span class="pm-kicker">NEXT ACTION</span><p id="pm-next-text"></p></div><a class="pm-primary" id="pm-next-link" href="dashboard.html">繼續處理 →</a></div>
+    <ul class="pm-issues" id="pm-issues"></ul><div class="pm-actions"><a class="pm-secondary" href="overview.html">查看案件總覽 →</a><a class="pm-secondary" href="workspace.html#cases">其他案件 →</a><button class="pm-secondary-button" type="button" id="new-case">＋ 建立新案件</button><button class="pm-secondary-button" type="button" id="edit-case">調整目前案件輸入</button></div>
+  </section>
 
   <!-- ① 開場：問四個你一定知道的數字 -->
   <section class="start" id="entry">
-    <h2 id="start-title">建立案件</h2>
-    <p class="sub" id="start-sub">填入基地條件，計算後即可進入四步工作區。</p>
+    <h2 id="start-title">先快速判斷這塊地值不值得研究</h2>
+    <p class="sub" id="start-sub">填四個已知條件，先看 Core 的初步結果；決定保留時再儲存為案件。</p>
 
     <div class="qgrid" id="q-basic"></div>
 
@@ -207,7 +213,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
     </div>
 
     <div class="cta">
-      <button class="go" id="btn-go" disabled>建立案件並開始 →</button>
+      <button class="go" id="btn-go" disabled>快速評估 →</button>
       <button class="ghost" id="btn-demo">先看一個示範案</button>
       <button class="ghost" id="btn-reset">回到預設值</button>
     </div>
@@ -221,6 +227,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
     每一格都標了來源：<b>Core</b>＝計算核心產出、<b>輸入</b>＝你填的事實、<b>決策引擎</b>＝Decision Engine 判定。
     取不到就顯示「—」，介面不會自己算一個給你看。
   </div>
+  <details class="pm-spatial-tool"><summary>3D 操作展示 · 合成場景，非本案量體</summary><section data-spatial-stage></section></details>
 
   <details class="more">
     <summary>案件檔案與進階工具</summary>
@@ -229,7 +236,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
         <div class="rt">🗂️ 案件工作區 WORKSPACE <span class="x">多案管理</span></div>
         <div class="rd">匯入 v2.1 案件 JSON、多案列表、同意看板／任務／決策日誌／時間軸、wf 匯出入。</div></a>
       <a href="dashboard.html">
-        <div class="rt">🚗 駕駛艙 <span class="x">滑桿即時重算</span></div>
+        <div class="rt">基地與法規工作區 <span class="x">樓層與條件</span></div>
         <div class="rd">逐層樓板表、產權清冊、傳動軸滑桿——要細調就到這裡。</div></a>
       <a href="evaluator.html">
         <div class="rt">🧮 坪效×投報試算 <span class="x">教學·示意</span></div>
@@ -274,7 +281,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
 
   <footer>
     <span>URBAN RENEWAL OS — 先講你的地 → 四步同步 → 決策</span>
-    <span><a href="dashboard.html">駕駛艙</a> · <a href="workspace.html">工作區</a> ·
+    <span><a href="overview.html">案件總覽</a> · <a href="dashboard.html">基地工作區</a> · <a href="workspace.html">案件列表</a> ·
           <a href="https://github.com/jeremy0819/BUILDER" target="_blank" rel="noopener">BUILDER</a></span>
   </footer>
 </div>
@@ -288,6 +295,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
 <script src="case-store.js"></script>
 <script src="browser-backup.js"></script>
 <script src="case-bus.js"></script>
+<script src="pm-workflow.js"></script>
 <script src="spatial-stage.js"></script>
 <script src="core-runtime.js"></script>
 <script src="demo-cases.js"></script>
@@ -309,18 +317,19 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
   ];
 
   var 表單 = B.defaults();
-  var RT = null, 就緒 = false, 失敗 = false, 最新 = null, 目前pid = null, 忙 = false, 等待 = false;
+  var RT = null, 就緒 = false, 失敗 = false, 最新 = null, 目前pid = null, 忙 = false, 等待 = false, 快速已看 = false;
 
   function fmtNum(v){ return v==null ? null : Number(v).toLocaleString("en-US",{maximumFractionDigits:0}); }
   function fmtPct(v){ return v==null ? null : (v*100).toFixed(1)+"%"; }
   function fmtX(v){ return v==null ? null : Number(v).toFixed(3); }
+  function esc(v){return String(v==null?"":v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 
   /* ── 表單 ── */
   function 欄位(f){
     var v = 表單[f.k] != null ? 表單[f.k] : (f.def != null ? f.def : "");
     return '<div class="q"><label for="f-'+f.k+'">'+f.label+'</label>'
       + '<div class="ask">'+f.ask+'</div>'
-      + '<div class="row"><input id="f-'+f.k+'" type="number" step="'+(f.step||1)+'" value="'+v+'" '
+      + '<div class="row"><input id="f-'+f.k+'" type="number" step="'+(f.step||1)+'" value="'+esc(v)+'" '
       + 'aria-label="'+f.label+(f.unit?("（"+f.unit+"）"):"")+'">'
       + (f.unit ? '<span class="u">'+f.unit+'</span>' : '') + '</div></div>';
   }
@@ -372,11 +381,12 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
     el.title = 原文 || "";
     $("chip-engine").textContent = 好 ? "Core 就緒" : txt;
     $("chip-engine").title = 原文 || "";
+    $("model-status").textContent = 好 ? "模型就緒" : 失敗 ? "模型暫時無法使用" : "模型啟動中";
   }
 
   var 排程試算 = window.coreDebounce(function(){ 試算(); }, 260);
   var 輸入序 = 0;
-  function 輸入失效(){ 輸入序++; 最新=null; 畫讀數(null); 畫四步(); $("prov").textContent="輸入已變更，尚未取得本次 Core 結果。"; }
+  function 輸入失效(){ 輸入序++; 最新=null; 快速已看=false; if(就緒)$("btn-go").disabled=true; if(!目前pid)$("btn-go").textContent="快速評估 →"; 畫讀數(null); 畫四步(); $("prov").textContent="輸入已變更，尚未取得本次 Core 結果。"; }
 
   function 試算(){
     if(!RT || !就緒){ 畫讀數(null); return; }
@@ -397,7 +407,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
       畫四步();
     }).catch(function(e){
       狀態("試算失敗：" + 人話(e.message), false, e.message);
-      畫讀數(null);
+      畫讀數(null);$("btn-go").disabled=false;$("btn-go").textContent="先儲存輸入（數字稍後補算）→";
     }).then(function(){
       忙 = false;
       if(等待){ 等待 = false; 試算(); }
@@ -424,10 +434,10 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
     if(最新) rec = rec ? B.applyResult(rec, 最新) : B.buildRecord(最新);
     var sv = rec ? B.stepValues(rec) : null;
     $("steps").innerHTML = B.STEP_ORDER.map(function(key, i){
-      var s = sv ? sv[key] : {title:["基地","產品","人心","決策"][i], href:"#", items:[]};
+      var s = sv ? sv[key] : {title:["基地與法規","產品與財務","地主整合","策略決策"][i], href:"#", items:[]};
       var rows = (s.items||[]).map(function(it){
         var d = 顯示(it);
-        return '<dt>'+it.label+'</dt><dd class="'+(d.na?"na":"")+'">'+d.t+'</dd>';
+        return '<dt>'+it.label+'</dt><dd class="'+(d.na?"na":"")+'">'+esc(d.t)+'</dd>';
       }).join("");
       var 來源 = [].concat.apply([], (s.items||[]).map(function(it){ return 來源名[it.source]; }))
         .filter(function(x,j,a){ return a.indexOf(x)===j; }).join(" · ");
@@ -440,6 +450,10 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
 
   /* ── 建立案件 ── */
   $("btn-go").addEventListener("click", function(){
+    if(!目前pid && 最新 && !快速已看){
+      快速已看=true;$("btn-go").textContent="儲存為案件 →";
+      $("prov").textContent="已完成初步評估。數字為本次 Core 結果；確認保留後，再按「儲存為案件」。";return;
+    }
     /* Core 可用就用它的結果；不可用時只存輸入，計算欄位由 buildRecord 填 null（顯示「—」）不是 0。 */
     var 最新或空 = 最新 || { engine: B.buildEngine(表單), result: {}, input_hash: "" };
     if (!最新或空.input_hash) {
@@ -495,14 +509,38 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
       case_type: (rec.snap && rec.snap.case_type) || "urban_renewal",
       mode: rec.engine.mode || "全案管理"
     };
-    $("start-title").textContent = "繼續：" + ((rec.snap && rec.snap.code_name) || "你的案件");
+    $("start-title").textContent = "調整：" + ((rec.snap && rec.snap.code_name) || "你的案件");
     $("start-sub").textContent = "調整條件後，按「更新」採用這次計算。未採用前保留原案件。";
-    $("btn-go").textContent = "更新並回到駕駛艙 →";
+    $("btn-go").textContent = "採用調整並前往基地 →";
     return true;
   }
 
+  function 顯示續做(){
+    var rec=B.activeRecord();if(!rec)return;
+    var last="site";try{last=localStorage.getItem("uros.last_step."+rec.pid)||"site";}catch(e){}
+    var m=window.PMWorkflow.model(rec,B.consentFacts(rec),B.provenance(rec),last);
+    if(new URLSearchParams(location.search).get("new")==="1")return;
+    $("pm-resume").hidden=false;$("entry").hidden=location.hash!=="#entry";
+    $("hero-overview").hidden=false;
+    $("save-status").textContent="案件已存於本機";
+    $("pm-case-name").textContent=m.name;$("pm-case-stage").textContent=m.stage+" · 上次開啟："+m.step+(m.computedAt?" · 最近計算："+m.computedAt.slice(0,10):"");
+    $("pm-consent").textContent=m.metrics.agreed==null||m.metrics.total==null?"—":m.metrics.agreed+" / "+m.metrics.total+" 戶";
+    $("pm-consent-source").textContent=m.consentSource==="recorded-events"?"逐戶紀錄":"案件快照；請核對最新紀錄";
+    $("pm-return").textContent=window.PMWorkflow.percent(m.metrics.return_rate);$("pm-cost").textContent=window.PMWorkflow.percent(m.metrics.shared_cost_ratio);
+    $("pm-next-text").textContent=m.next.text;$("pm-next-link").href=m.next.href;
+    $("edit-case").hidden=!rec.engine;
+    $("pm-issues").replaceChildren();m.issues.forEach(function(issue){var li=document.createElement("li"),a=document.createElement("a");a.href=issue.href;a.textContent=issue.text+" →";li.appendChild(a);$("pm-issues").appendChild(li);});
+  }
+  $("edit-case").addEventListener("click",function(){ $("entry").hidden=false;$("entry").scrollIntoView(); });
+  $("new-case").addEventListener("click",function(){
+    history.replaceState(null,"","index.html?new=1#entry");$("pm-resume").hidden=true;目前pid=null;表單=B.defaults();快速已看=false;輸入失效();畫表單();$("start-title").textContent="先快速判斷這塊地值不值得研究";
+    $("start-sub").textContent="先看初步結果，再決定是否儲存為案件。";$("entry").hidden=false;$("entry").scrollIntoView();試算();
+  });
+  window.addEventListener("hashchange",function(){if(location.hash==="#entry")$("entry").hidden=false;});
+
   /* ── 啟動 ── */
-  var 有既有 = 接既有();
+  var 有既有 = new URLSearchParams(location.search).get("new")==="1" ? false : 接既有();
+  顯示續做();
   畫表單();
   畫讀數(null);
   畫四步();
@@ -525,7 +563,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
          不需要 Core 就能記下來。舊版把兩者綁在一起，Core 一掛整個入口鎖死，
          唯一能按的只剩「看示範案」——那正是拿掉 A~D 開場時要避免的事。 */
       $("btn-go").disabled = false;
-      $("btn-go").textContent = "先建立案件（數字稍後補算）→";
+      $("btn-go").textContent = "先儲存輸入（數字稍後補算）→";
       $("prov").innerHTML = '<b style="color:var(--amber)">計算的部分暫時取不到。</b> '
         + '本頁不會用估算值頂替，但你填的數字是事實、可以先存下來——'
         + '建立案件後計算欄位顯示「—」，等計算核心恢復再重算即可。';

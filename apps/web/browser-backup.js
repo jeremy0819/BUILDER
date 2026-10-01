@@ -89,7 +89,7 @@
     doc = validate(root.UROSSecurity.parseJSON(JSON.stringify(doc), LIMIT));
     var old = locals();
     var business = Object.keys(old).filter(function (key) {
-      if (["uros.theme", "uros.active_case", "uros.last_backup_at", "uros.diagnostics.v1"].includes(key)) return false;
+      if (["uros.theme", "uros.active_case", "uros.last_backup_at", "uros.diagnostics.v1"].includes(key) || key.indexOf("uros.last_step.")===0) return false;
       if (key === "uros.workflow.v1") {
         var s = root.UROSSecurity.parseJSON(old[key]); return !s || !Array.isArray(s.order) || s.order.length || Object.keys(s.projects || {}).length;
       }
@@ -136,7 +136,8 @@
       + '<details><summary>還原備份</summary><p>備份含案件、歷程、方案及本機草稿，可能包含個人資料，請妥善保管。僅能還原至沒有 BUILDER 資料的瀏覽器設定檔。</p>'
       + '<label>選取完整備份 JSON <input id="backup-restore" type="file" accept=".json,application/json"></label></details>'
       + '<details><summary>本機診斷</summary><p>僅包含錯誤類別與時間，不含案件名稱、輸入、錯誤原文或堆疊，最多 50 筆。</p><button type="button" id="diagnostics-export">匯出診斷摘要</button></details>';
-    var anchor = document.querySelector("[data-spatial-stage]") || document.getElementById("uros-shell") || document.querySelector(".top") || document.querySelector(".hero");
+    /* Home's spatial demo is a collapsed <details>; the backup notice must stay visible. */
+    var anchor = document.querySelector(".hero") || document.querySelector("[data-spatial-stage]") || document.getElementById("uros-shell") || document.querySelector(".top");
     if (anchor) anchor.after(host); else document.body.prepend(host);
     document.getElementById("backup-save").addEventListener("click", save);
     document.getElementById("diagnostics-export").addEventListener("click", function () {
