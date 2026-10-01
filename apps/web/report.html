@@ -45,16 +45,17 @@
       <section class="analysis-top" aria-label="判讀與財務"><div id="decision-visual"></div></section>
       <div class="strategy-columns">
         <section class="strategy-inputs" aria-labelledby="profiles-title">
-          <div class="section-heading"><h2 id="profiles-title">地主觀察</h2><span id="profile-save" role="status"></span></div>
+          <details id="household-observations" class="household-observations"><summary><h2 id="profiles-title">住戶觀察與分型</h2><span id="profile-save" role="status"></span></summary>
           <div class="profile-tools"><input id="owner-search" type="search" placeholder="搜尋戶別代號" aria-label="搜尋戶別代號"><select id="owner-filter" aria-label="篩選地主"><option value="all">全部</option><option value="unclassified">未分型</option><option value="blocked">產權待清理</option><option value="key">關鍵戶</option></select></div>
           <div id="profiles" class="profile-list"></div>
+          </details>
           <details class="assumptions-panel"><summary>財務假設與情境</summary>
             <form id="analysis-assumptions" class="assumption-grid"></form>
             <p>空白欄位保留為資料不足。金額單位：萬元。</p>
           </details>
         </section>
         <section class="strategy-results" aria-labelledby="actions-title">
-          <div class="section-heading"><h2 id="actions-title">行動順序</h2><button id="export-strategy" type="button" class="icon-command" title="匯出策略 JSON" aria-label="匯出策略 JSON" disabled>↓</button></div>
+          <div class="section-heading"><h2 id="actions-title">優先行動</h2><button id="export-strategy" type="button" class="icon-command" title="匯出策略 JSON" aria-label="匯出策略 JSON" disabled>↓</button></div>
           <div id="strategy-summary" class="strategy-summary"></div>
           <div class="queue-tabs" role="tablist" aria-label="行動類別"><button type="button" role="tab" data-queue="persuasion" aria-selected="true">地主溝通</button><button type="button" role="tab" data-queue="administrative" aria-selected="false" tabindex="-1">產權清理</button></div>
           <div id="action-list" class="action-list" aria-live="polite"></div>

@@ -90,6 +90,7 @@
       if (filter === "blocked" && value.signability !== "blocked") return;
       if (filter === "key" && !value.is_key_household) return;
       var row = el("details", null, "profile-row"), summary = el("summary"), label = el("span");
+      row.setAttribute("name", "household-profile");
       summary.append(el("b", id), label); row.appendChild(summary);
       function summaryText() { label.textContent = lookup(TYPES, value.willingness_type || "") + (value.signability === "blocked" ? " · 產權待清理" : ""); }
       function update(key, next) {

@@ -172,3 +172,19 @@
 .people-mode button{padding:12px 18px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;cursor:pointer}.people-mode button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
 @media(max-width:600px){.workflow-panels{margin:16px 10px;padding:16px}.workflow-panels .cw2-grid{grid-template-columns:1fr}.workflow-panels .tadd>*{width:100%}}
 @media(prefers-reduced-motion:reduce){.workflow-panels .at-prog i{animation:none}}
+.household-list{margin-top:18px;border-top:1px solid var(--line);padding-top:12px}
+.household-list>summary,.household-row>summary{cursor:pointer;min-height:44px;display:flex;align-items:center;gap:12px;list-style:none}
+.household-list>summary{font-weight:650}.household-list>summary span{margin-left:auto;font-size:12px;color:var(--mute)}
+.household-list>summary::before,.household-row>summary::before{content:"\203A";font-size:22px;flex:none;transition:transform .15s}
+.household-list[open]>summary::before,.household-row[open]>summary::before{transform:rotate(90deg)}
+.household-list summary::-webkit-details-marker{display:none}
+.household-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin:12px 0}
+.household-tools input,.household-tools select{width:100%;padding:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.household-rows{max-height:480px;overflow:auto;overscroll-behavior:contain}
+.brow.household-row{display:block;border:0;border-bottom:1px solid var(--line);border-radius:0;padding:4px 0}
+.household-row .bev{margin-left:auto}.household-row .bid{min-width:0;overflow-wrap:anywhere}
+.household-edit{display:flex;gap:12px;align-items:end;padding:12px 24px}.household-edit label{display:grid;gap:6px;font-size:12px;flex:1;min-width:0}
+.household-edit select{width:100%;padding:8px;background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+.household-last,.household-empty{font-size:12px;color:var(--mute);margin:8px 24px}
+.workflow-next{display:flex;justify-content:flex-end;border-top:1px solid var(--line);padding-top:16px;margin-top:18px}.workflow-next a{min-height:44px;display:flex;align-items:center;font-weight:650}
+@media(max-width:600px){.household-tools{grid-template-columns:1fr}.household-row>summary{flex-wrap:wrap;gap:8px}.household-row .bev{font-size:11px}.household-edit{padding:10px 8px;flex-wrap:wrap}.household-edit label{flex-basis:100%}.household-edit button{width:100%}}
