@@ -47,6 +47,14 @@ try{
   // A fresh browser has no case: enter through the visible synthetic-demo action.
   await page.goto(base+"index.html");await page.locator('#btn-demo').click();
   await page.waitForURL(base+'dashboard.html');await page.locator("body.uros-unified").waitFor();
+  check(await page.locator('html').getAttribute('data-theme')==='dark','new workspace defaults to dark');
+  check(await page.locator('.stage-viewport [data-stage="name"]').count()===0,'case name stays outside the synthetic viewport');
+  check(await page.locator('.stage-preview').innerText()==='0.7 Preview','prototype maturity is explicit without changing release');
+  check(await page.locator('.stage-demo-label').evaluate(el=>{
+    const luminance=color=>{const rgb=color.match(/[\d.]+/g).slice(0,3).map(v=>Number(v)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return rgb[0]*.2126+rgb[1]*.7152+rgb[2]*.0722;};
+    const fg=luminance(getComputedStyle(el).color),bg=luminance(getComputedStyle(el.closest('.stage-viewport')).backgroundColor);
+    return (Math.max(fg,bg)+.05)/(Math.min(fg,bg)+.05)>=4.5;
+  }),'non-case label maintains readable contrast');
   const frame=page.frameLocator('.spatial-stage iframe');
   await frame.locator('canvas').waitFor();
   check(await page.evaluate(()=>typeof window.spatialDiagnostics==='undefined'),"Three runtime remains in the child document");
@@ -55,9 +63,13 @@ try{
   check(await frame.locator('#top').getAttribute('aria-pressed')==='true',"in-workspace top view works");
   await frame.locator('#inspect').click();await frame.locator('[data-object="demo-building"]').click();
   check(await frame.locator('#height').innerText()==='26 m',"embedded source inspector retains explicit height");
+  await frame.locator('#close-inspector').click();
+  check(await frame.locator('#object-inspector').isHidden(),'source inspector has a visible close action');
+  await frame.locator('#view-options > summary').click();await frame.locator('#focus').click();
+  await frame.locator('#focus').press('Escape');
+  check(await frame.locator('#view-options').getAttribute('open')===null,'advanced camera menu closes with Escape');
   check(await page.evaluate(()=>JSON.stringify(Object.entries(localStorage)))===storage,"embedded viewing never changes case storage");
   check(await page.locator('.stage-view-title').innerText().then(t=>t.includes('非本案量體')),"embedded model cannot be mistaken for the case geometry");
-  await frame.locator('#inspect').click();
   await frame.locator('#iso').click();
   await page.screenshot({path:resolve(root,'tools/browser/artifacts/studio-desktop.png'),fullPage:false});
   await page.setViewportSize({width:390,height:844});

@@ -1,4 +1,5 @@
 <meta charset="utf-8">
+<script src="studio-theme.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Urban Renewal OS · 開發評估儀表板</title>
 <style>
@@ -169,7 +170,7 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
     </div>
   </header>
 
-  <div class="ssot"><span>🔒</span><div>所有數字皆由 <b>RE-DCF Core</b> 計算（Result JSON）；儀表板<b>只讀渲染、不重算</b>（SSOT）。
+  <div class="ssot"><span>🔒</span><div>所有數字皆由 <b>RE-DCF Core</b> 計算（Result JSON）；草案呼叫<b>同一 Core 重算</b>；未採用不落盤，採用後才更新案件（SSOT）。
   v2.0 合約含<b>逐層樓板</b>與<b>可重算驗證</b>：給 Core 這份輸入即可回放出同一組 result。
   主畫面＝上方<b>作用中案件</b>（Case Workspace）。沒有案件時請先到 <a href="index.html">起始頁</a>填四個數字建案；
   下方「三案對照」是 Core 0.2.0 時期的靜態快照，供型態比較，零真實資料。</div></div>
@@ -1068,32 +1069,26 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
   function planPanel(rec){
     const v=rec&&rec.view; if(!v) return "";
     const 用=v.used_floor_area, 允=v.allow_floor_area, 餘=v.remaining_floor_area;
-    const 超=餘!=null&&餘<0, 使用率=允?(用/允*100):0;
-    const effOK=v.efficiency_ratio!=null&&v.efficiency_ratio>=1.58&&v.efficiency_ratio<=1.68;
     return `<details class="cw-roster" open><summary>容積與坪效（Core 逐欄）</summary>
       <div class="cw-grid" style="margin-top:10px">
         <div class="cw-card"><h4>容積查核</h4>
           <div class="cw-row"><span>法定容積</span><b>${fmt(v.baseline_far)} ㎡</b></div>
           <div class="cw-row"><span>允建容積（含獎勵/容移）</span><b>${fmt(允)} ㎡</b></div>
           <div class="cw-row"><span>使用容積</span><b>${fmt(用)} ㎡</b></div>
-          <div class="cw-row"><span>餘裕</span><b style="color:${超?"var(--err)":"var(--ok)"}">${fmt(餘)} ㎡${超?"（超限）":""}</b></div>
-          ${bar(使用率, 超?"var(--err)":"var(--accent)")}
-          <div class="src" style="margin-top:5px">使用率 ${使用率.toFixed(1)}%</div></div>
+          <div class="cw-row"><span>剩餘容積</span><b>${fmt(餘)} ㎡</b></div></div>
         <div class="cw-card"><h4>坪效</h4>
           <div class="cw-row"><span>銷售坪</span><b>${fmt(v.saleable_area)} 坪</b></div>
-          <div class="cw-row"><span>銷坪比</span><b style="color:${effOK?"var(--ok)":"var(--warn)"}">${v.efficiency_ratio!=null?v.efficiency_ratio.toFixed(3):"—"}</b></div>
-          <div class="src">正常帶 1.58–1.68${effOK?"（在帶內）":"（不在帶內，Core 已示警）"}</div>
+          <div class="cw-row"><span>銷坪比</span><b>${v.efficiency_ratio!=null?v.efficiency_ratio.toFixed(3):"—"}</b></div>
           <div class="cw-row" style="margin-top:6px"><span>更新前總值</span><b>${fmt(v.pre_renewal_value)} 萬</b></div>
           <div class="cw-row"><span>價值倍數</span><b>${v.value_multiple!=null?v.value_multiple.toFixed(2)+"×":"—"}</b></div></div>
         <div class="cw-card"><h4>財務</h4>
           <div class="cw-row"><span>總銷</span><b>${fmt(v.total_sales)} 萬</b></div>
           <div class="cw-row"><span>共同負擔</span><b>${fmt(v.shared_cost)} 萬</b></div>
           <div class="cw-row"><span>共負比</span><b>${pc(v.shared_cost_ratio)}</b></div>
-          ${bar((v.shared_cost_ratio||0)*100, (v.shared_cost_ratio||0)>0.6?"var(--err)":"var(--accent)")}
           <div class="cw-row" style="margin-top:6px"><span>地主分回</span><b>${pc(v.owner_return_ratio)}</b></div>
           <div class="cw-row"><span>投報率</span><b>${pc(v.return_rate)}</b></div></div>
       </div>
-      ${(v.warnings&&v.warnings.length)?`<div class="src" style="margin-top:8px;color:var(--warn)">⚠ Core 健檢：${v.warnings.join("、")}</div>`:""}
+      ${(v.warnings&&v.warnings.length)?`<div class="src" style="margin-top:8px;color:var(--warn)">Core 健檢：${v.warnings.map(w=>esc(typeof w==="string"?w:w.msg||w.code||"—")).join("、")}</div>`:""}
       <div class="src">數字逐欄自 Core result（SSOT）；本面板零計算。</div></details>`;
   }
 

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-Hant" data-theme="light">
+<html lang="zh-Hant" data-theme="dark">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>BUILDER · Spatial Lab</title>
@@ -10,7 +10,7 @@
   <script src="./core-runtime.js" defer></script><script type="module" src="./spatial-prototype/lab.mjs"></script>
 </head>
 <body class="uros-unified">
-  <header><strong>BUILDER <span>Spatial Lab</span></strong><span class="label">Synthetic / Demo Geometry · 未綁定案件</span><a href="./dashboard.html">返回①基地</a></header>
+  <header><strong>BUILDER <span>Spatial Lab · 0.7 Preview</span></strong><span class="label">Synthetic / Demo Geometry · 未綁定案件</span><a href="./dashboard.html">返回①基地</a></header>
   <div class="intro"><h1>3D 空間工作台</h1><p>旋轉、俯視或選取量體，對照其輪廓與高度。此合成場景未綁定案件，不代表正式 LOD 0。</p></div>
   <main>
     <section class="viewer" aria-label="合成量體檢視">
@@ -21,6 +21,7 @@
         <button id="focus" disabled title="先選取物件，再聚焦其範圍">聚焦選取</button><button id="overview" title="回到整體範圍，保留物件顯示設定">總覽</button>
         <button id="reset" aria-label="重設全部" title="恢復視角、顯示全部物件並清除選取">重設</button>
         <button id="inspect" hidden aria-expanded="false" aria-controls="object-inspector">物件資料</button>
+        <details id="view-options" hidden><summary>更多</summary><div class="view-options-body"></div></details>
       </div>
       <div id="scene" tabindex="0" aria-label="合成基地與量體" aria-describedby="interaction-help"></div>
       <div id="fallback" hidden role="status">無法使用 3D 檢視，合成資料仍列於下方。</div>
@@ -28,7 +29,7 @@
       <div class="caption"><span id="viewer-status" role="status">載入中</span><span>規劃量體示意 · 非真實基地／核定圖說</span></div>
     </section>
     <aside id="object-inspector" aria-label="物件資料">
-      <h2 class="aside-title">物件與來源</h2>
+      <div class="inspector-heading"><h2 class="aside-title">物件與來源</h2><button id="close-inspector" hidden aria-label="關閉物件資料">×</button></div>
       <div class="objects">
         <div class="object-row"><button data-object="demo-site" aria-pressed="false" title="顯示並選取合成基地">合成基地</button><label><input type="checkbox" data-visibility="demo-site" checked>顯示基地</label></div>
         <div class="object-row"><button data-object="demo-building" aria-pressed="false" title="顯示並選取合成量體 A">合成量體 A</button><label><input type="checkbox" data-visibility="demo-building" checked>顯示量體</label></div>
