@@ -51,9 +51,24 @@
   var fmt = function (v) { return v == null ? "—" : typeof v === "number" ? v.toLocaleString("zh-TW", { maximumFractionDigits: 2 }) : String(v); };
   function el(tag, text, className) { var node = document.createElement(tag); if (text != null) node.textContent = String(text); if (className) node.className = className; return node; }
   function status(text, state) { $("analysis-status").textContent = text; $("analysis-status").dataset.state = state || "idle"; }
+  function readiness() {
+    var list = $("readiness-list"); list.replaceChildren();
+    var checks = [
+      {ok:!!record, text:record ? "已選擇案件" : "尚未選擇案件", href:"workspace.html#cases", action:"選擇或建立案件"},
+      {ok:!!(record && record.engine), text:record && record.engine ? "具備可重算的案件輸入" : "缺少可重算的案件輸入", href:record?"workspace.html#cases":"index.html?new=1#entry", action:record?"匯入完整案件輸入":"建立案件"},
+      {ok:!!(runtime && runtime.ready), text:runtime && runtime.ready ? "計算核心已就緒" : "計算核心尚未就緒", action:"等待核心載入；若載入失敗，使用重新連線"},
+      {ok:!draftError, text:draftError ? "本機草稿未能儲存" : "未偵測到草稿儲存錯誤", action:"檢查瀏覽器儲存空間或權限"},
+      {ok:!busy, text:busy ? "本次分析進行中" : "目前沒有進行中的分析", action:"等待本次分析完成"}
+    ];
+    checks.forEach(function(check){var li=el("li",(check.ok ? "✓ " : "待處理 · ")+check.text);li.className=check.ok?"ready":"missing";list.appendChild(li);});
+    var blocker=checks.find(function(check){return !check.ok;}), next=$("readiness-next");next.replaceChildren();
+    if(blocker){next.appendChild(el("span","下一步："+blocker.action+"。"));if(blocker.href){var a=el("a","前往處理 →");a.href=blocker.href;next.appendChild(a);}}
+    else next.textContent="可產生本次分析。地主觀察與額外財務假設若未填，結果會標示資料不足；此處不提供未校準的信心分數。";
+  }
   function buttons() {
     $("analysis-run").disabled = !record || !record.engine || !runtime || !runtime.ready || busy || draftError;
     $("export-strategy").disabled = !analysis; $("export-decision").disabled = !analysis;
+    readiness();
   }
   function readDraft(key) {
     var raw = localStorage.getItem(key); if (!raw) return {};
@@ -70,6 +85,7 @@
   }
   function invalidate(message) {
     guard.invalidate(); busy = false; analysis = null;
+    $("decision-brief").hidden=true;
     $("action-list").replaceChildren(el("p", "尚無本次分析結果", "analysis-empty-text"));
     $("action-evidence").replaceChildren(); $("strategy-summary").replaceChildren(); $("decision-table").replaceChildren();
     if (record) root.DecisionView.mount($("decision-visual"), Object.assign({}, record, { decision: null }));
@@ -175,6 +191,7 @@
       analysis = response; busy = false;
       var model = Object.assign({}, snapshot, { view: response.result, snap: Object.assign({}, snapshot.snap, { input_hash: response.input_hash, core_version: response.result.core_version }), decision: response.decision });
       root.DecisionView.mount($("decision-visual"), model); renderSummary(); renderQueue(); renderDecision();
+      renderBrief();
       status("分析完成 · 本次試算，未寫回案件快照 · core " + response.result.core_version + " · input " + response.input_hash.replace(/^sha256:/, "").slice(0,12), "ready"); buttons();
     } catch (e) {
       if (!current()) { if (guard.current(token)) invalidate("案件資料已更新，請重新分析。"); return; }
@@ -187,6 +204,15 @@
       var block = el("div"), value = el("b", pair[1]); if (i === 2 && ["low","medium","high"].includes(s.cascade_risk)) value.className = "risk-" + s.cascade_risk;
       block.append(el("small", pair[0]), value); target.appendChild(block);
     });
+  }
+  function renderBrief() {
+    var d=analysis.decision,s=analysis.strategy,brief=$("decision-brief"),verdict={GO:"可繼續推進",CAUTION:"先處理資料與整合風險",STOP:"暫停並重新檢查方案"};
+    $("brief-verdict").textContent=(verdict[d.verdict]||"需要人工判讀")+" · "+(d.verdict||"未判定");
+    $("brief-limits").textContent=(d.insufficient_fields||[]).length?"資料不足："+d.insufficient_fields.join("、")+"。判定僅供方向性參考。":"判定僅供方向性參考；完工機率尚未校準。";
+    var actions=[].concat(s.persuasion_queue||[],s.administrative_queue||[]).sort(function(a,b){return (a.rank||999)-(b.rank||999);}).slice(0,3),list=$("brief-actions");list.replaceChildren();
+    actions.forEach(function(item){var li=el("li"),title=el("strong",item.household_id+" · "+(ACTIONS[item.recommended_action]||ADMIN[item.action]||"待釐清")),reason=el("span",item.reason||lookup(BLOCKS,item.blocking_reason));li.append(title,reason);list.appendChild(li);});
+    if(!actions.length)list.appendChild(el("li","本次分析未產生逐戶行動；請檢查地主清冊與觀察資料。"));
+    brief.hidden=false;
   }
   function selectAction(item, button) {
     $("action-list").querySelectorAll("button").forEach(function (node) { node.setAttribute("aria-pressed", String(node === button)); });

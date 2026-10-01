@@ -97,6 +97,8 @@ body .site-massing button,body .product-planning button{border-radius:9px;min-he
 body .site-massing input[type=checkbox]{min-height:18px}
 body #workflow-tools{max-width:1176px;border-radius:18px;background:var(--uros-panel);border:1px solid var(--uros-line);padding:24px;margin:28px auto}
 body .people-mode{max-width:1176px;margin:18px auto}.people-mode button{border-radius:9px;min-height:44px}
+.people-mode{display:flex;align-items:center;gap:12px;padding:12px 16px;border:1px solid var(--uros-line);border-radius:12px;background:var(--uros-panel)}.people-mode-context{flex:1;display:grid;gap:2px}.people-mode-context b{font-size:15px}.people-mode-context span{font-size:11px;color:var(--uros-mute)}.people-mode button{border:1px solid var(--uros-line);background:transparent;color:var(--uros-ink);cursor:pointer;padding:9px 14px}.people-mode[data-mode="records"] [data-mode="records"],.people-mode[data-mode="play"] [data-mode="play"]{display:none}.people-mode [data-mode="play"]{color:var(--uros-accent)}
+.top .pm-model-info summary{cursor:pointer;min-height:44px;display:flex;align-items:center;color:var(--uros-mute);font-size:12px}.top .pm-model-info .pill{display:inline-flex;margin:4px 4px 0 0}
 .studio-shelf .ssot{background:transparent;border:0;padding:12px 0;color:var(--uros-mute)}
 .studio-shelf .import{margin-top:24px;box-shadow:none;border-style:solid;text-align:left;padding:24px;background:var(--uros-panel)}
 .studio-shelf .cases{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}.studio-shelf .card{box-shadow:none;border-radius:16px}
@@ -128,6 +130,17 @@ body .people-mode{max-width:1176px;margin:18px auto}.people-mode button{border-r
   body .site-massing,body .product-planning{padding:18px 14px;border-radius:14px}body #workflow-tools{width:calc(100% - 32px);padding:16px;margin:20px 16px}
   .studio-home .start{padding:20px 16px;margin-top:32px}.studio-home .hero h1{font-size:32px}.studio-home .hero p{font-size:12px}
 }
+
+/* PM workflow: source details remain available without occupying the daily path. */
+body .uros-shell-prov{display:block;white-space:normal;overflow:visible;margin-top:0}
+.uros-shell-prov summary{cursor:pointer;min-height:32px;display:list-item;align-content:center;color:var(--uros-mute);font-size:11px}
+.uros-shell-prov>div{display:flex;gap:12px;flex-wrap:wrap;padding:8px 0 2px}
+.pm-site-summary{max-width:1176px;margin:10px auto 18px;padding:24px;background:var(--uros-panel);border:1px solid var(--uros-line);border-radius:14px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 24px;align-items:center}
+.pm-site-summary h2{font-size:22px;margin:4px 0}.pm-site-summary p{font-size:12px;color:var(--uros-mute);margin:3px 0;line-height:1.7}.pm-site-summary .pm-kicker{font-size:11px;color:var(--uros-accent);font-weight:700}
+.pm-site-facts{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.pm-site-facts>div{background:var(--uros-panel-2);padding:14px;border-radius:8px}.pm-site-facts small{display:block;color:var(--uros-mute);font-size:12px}.pm-site-facts strong{display:block;font-size:23px;margin-top:3px;font-variant-numeric:tabular-nums}
+.pm-site-summary .pm-site-warning{grid-column:1;margin:0;color:var(--uros-warn)}.pm-site-summary .pm-primary{grid-column:2;grid-row:3}
+.pm-site-summary .pm-primary{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:10px 18px;border-radius:7px;background:var(--studio-orange);color:#281c11;text-decoration:none;font-size:13px;font-weight:700;white-space:nowrap}
+@media(max-width:700px){body .uros-shell-prov{display:block}.pm-site-summary{margin:10px 16px 18px;padding:18px;display:block}.pm-site-facts{grid-template-columns:1fr;gap:6px;margin:14px 0}.pm-site-facts>div{padding:10px 12px}.pm-site-facts strong{font-size:20px}.pm-site-summary .pm-primary{display:flex;margin-top:14px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}}
 
 /* Case facts and the synthetic exhibit are separate surfaces, never one model card. */

@@ -31,7 +31,7 @@ const origin="http://127.0.0.1:"+server.address().port;
 let browser, passed=0;
 const check=(condition,name)=>{assert.ok(condition,name);passed++;console.log("PASS",name);};
 try {
-  browser=await chromium.launch({headless:true});
+  browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHROMIUM_PATH?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_PATH}:{})});
   const context=await browser.newContext({viewport:{width:1440,height:1000}});
   await context.route('https://cdn.jsdelivr.net/**',route=>route.fulfill({status:403,body:'blocked by enterprise policy'}));
   const external=[];context.on('request',req=>{if(!req.url().startsWith(origin))external.push({url:req.url(),method:req.method(),body:req.postData()});});
@@ -43,9 +43,22 @@ try {
     localStorage.setItem("uros.theme","light");
   },{rec});
   const page=await context.newPage(), errors=[];page.on("pageerror",e=>errors.push(e.message));
+  const home=await context.newPage();await home.goto(origin+'/index.html');
+  check(await home.locator('#pm-resume').isVisible()&&await home.locator('#entry').isHidden(),'returning user starts at saved case and next action');
+  check(await home.locator('#hero-overview').isVisible()&&await home.locator('#backup-status').isVisible(),'case overview and backup status stay visible with spatial tool collapsed');
+  await home.goto(origin+'/overview.html');
+  check(await home.locator('#overview-case').isVisible()&&await home.locator('#overview-name').innerText()===rec.snap.code_name,'daily overview reads the active case');
+  await home.getByRole('link',{name:'＋ 建立新案件'}).click();
+  check(await home.locator('#entry').isVisible()&&await home.locator('#pm-resume').isHidden(),'new case opens a fresh quick evaluation');
+  await home.waitForFunction(()=>{const b=document.getElementById('btn-go');return !b.disabled&&b.textContent.includes('快速評估');},{},{timeout:120000});
+  const beforeQuick=await home.evaluate(()=>localStorage.getItem('uros.workflow.v1'));
+  await home.locator('#btn-go').click();
+  check(await home.locator('#btn-go').innerText()==='儲存為案件 →'&&await home.evaluate(()=>localStorage.getItem('uros.workflow.v1'))===beforeQuick,'quick evaluation stays a preview until explicitly saved');
+  await home.close();
   await page.goto(origin+"/report.html");
   await page.waitForFunction(()=>!document.getElementById("analysis-run").disabled || !document.getElementById("runtime-retry").hidden,{},{timeout:150000});
   check(await page.locator("#runtime-retry").isHidden(),"real Pyodide initialized with jsonschema");
+  check(await page.locator('#readiness-list .missing').count()===0&&await page.locator('#analysis-run').isEnabled(),'Decision explains readiness before analysis');
   check(await page.locator('#calibration-notice summary').innerText()==='存活率未校準 · 判定僅供方向性比較','calibration warning visible with CDN blocked');
   check(await page.locator('#backup-status').innerText()==='尚無有效備份紀錄','first-use backup warning visible');
   check(await page.locator('#household-observations').getAttribute('open')===null,'Decision household observations start collapsed');
@@ -60,6 +73,7 @@ try {
   await page.locator("#analysis-run").click();
   await page.waitForFunction(()=>document.querySelector("#analysis-status").textContent.startsWith("分析完成"),{},{timeout:120000});
   check(await page.locator("#action-list button").count()>0,"real Core returned actionable strategy");
+  check(await page.locator('#decision-brief').isVisible()&&await page.locator('#brief-actions li').count()<=3,'Decision leads with verdict and at most three traced actions');
   check(await page.locator("#export-strategy").isEnabled(),"traceable export enabled");
   const downloadPromise=page.waitForEvent('download');await page.locator('#export-strategy').click();
   const download=await downloadPromise, output=resolve(artifacts,'strategy-test.json');await download.saveAs(output);
@@ -181,7 +195,7 @@ try {
   check(await page.evaluate(()=>CaseBus.activeRecord().cashflow.input_hash===CaseBus.activeRecord().snap.input_hash),'Product cost disbursement stays bound after adoption');
   // Stored injection stays text in every major surface.
   await page.evaluate(()=>{const s=JSON.parse(localStorage.getItem("uros.workflow.v1")),p=s.order[0];s.projects[p].snap.code_name='<img src=x onerror="window.__injected=1">';localStorage.setItem("uros.workflow.v1",JSON.stringify(s));});
-  for(const file of ["dashboard.html","evaluator.html","workspace.html","report.html"]){
+  for(const file of ["index.html","overview.html","dashboard.html","evaluator.html","workspace.html","report.html"]){
     await page.goto(origin+"/"+file);await page.waitForTimeout(350);
     check(await page.evaluate(()=>!window.__injected&&!document.querySelector('img[onerror]')),"stored XSS inert: "+file);
   }
@@ -298,7 +312,9 @@ try {
   check((await page.locator('#cd-say').innerText())!==say1,'different simulated households have different dialogue');
   await page.locator('#cd-close').click();
   await page.evaluate(()=>{const s=CaseBus.readStore(),pid=CaseBus.activePid();s.projects[pid].wf.stakeholders=Array.from({length:81},(_,i)=>({stakeholder_id:'O'+i,role:'owner'}));s.projects[pid].snap.total=81;s.projects[pid].snap.agreed=0;CaseBus.writeStore(s);localStorage.removeItem('uros.bridge.case');});
-  await page.reload();await page.locator('[data-mode="play"]').click();await page.locator('#btn-start').click();await page.locator('#ovl-chapter').waitFor({state:'hidden'});
+  await page.reload();
+  check(await page.locator('#integration-play').isVisible()&&new URL(page.url()).searchParams.get('tool')==='simulation','sandbox deep link remains separate from case records after reload');
+  await page.locator('#btn-start').click();await page.locator('#ovl-chapter').waitFor({state:'hidden'});
   check(await page.locator('#ovl-title').isHidden(),'short mobile page has a stable, clickable start button after reload');
   check(await page.locator('#owners-cap-notice').isVisible()&&(await page.locator('#owners-cap-notice').innerText()).includes('81 戶超過沙盤上限 80'),'owner limit remains visible after entering the sandbox');
   await page.goto(origin+'/workspace.html?view=task');

@@ -6,12 +6,17 @@ function init(){
   const host=document.createElement("section");host.id="workflow-tools";host.setAttribute("aria-label","本步案件紀錄");
   if(file==="os-simulator.html"){
     const play=document.getElementById("integration-play"),nav=document.createElement("nav");nav.className="people-mode";nav.setAttribute("aria-label","地主工作模式");
-    nav.innerHTML='<button type="button" data-mode="records" aria-pressed="true">案件紀錄</button><button type="button" data-mode="play" aria-pressed="false">整合推演（示意）</button>';
+    nav.innerHTML='<div class="people-mode-context"><b>地主整合 · 案件紀錄</b><span>逐戶事實、同意事件與任務留在正式工作區；沙盤使用獨立的合成案例。</span></div><button type="button" data-mode="records" aria-pressed="true">返回案件紀錄</button><button type="button" data-mode="play" aria-pressed="false">開啟策略沙盤（示意） ↗</button>';
     play.before(nav,host);
-    function mode(key){play.hidden=key!=="play";host.hidden=key==="play";nav.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.mode===key)));}
-    nav.querySelectorAll("button").forEach(b=>b.onclick=()=>mode(b.dataset.mode));
-    root.addEventListener("hashchange",()=>{if(location.hash.startsWith("#workflow-"))mode("records");});
-    root.addEventListener("uros:workflow-open",()=>mode("records"));
+    function mode(key,updateUrl){
+      play.hidden=key!=="play";host.hidden=key==="play";nav.dataset.mode=key;
+      nav.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.mode===key)));
+      if(updateUrl){const url=new URL(location.href);if(key==="play")url.searchParams.set("tool","simulation");else url.searchParams.delete("tool");history.replaceState(null,"",url);}
+    }
+    nav.querySelectorAll("button").forEach(b=>b.onclick=()=>mode(b.dataset.mode,true));
+    mode(new URLSearchParams(location.search).get("tool")==="simulation"&&!location.hash.startsWith("#workflow-")?"play":"records",false);
+    root.addEventListener("hashchange",()=>{if(location.hash.startsWith("#workflow-"))mode("records",true);});
+    root.addEventListener("uros:workflow-open",()=>mode("records",true));
   }else document.body.appendChild(host);
   const panel=root.WorkflowPanels.mount(host,groups[file]);
   if(location.hash.startsWith("#workflow-"))host.scrollIntoView();

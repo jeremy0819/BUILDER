@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <script src="studio-theme.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BUILDER · 案件總覽</title>
+  <link rel="stylesheet" href="os-unified.css">
+  <link rel="stylesheet" href="builder-studio.css">
+  <link rel="stylesheet" href="pm-workflow.css">
+  <script src="security.js" defer></script><script src="version.js" defer></script>
+  <script src="case-bus.js" defer></script><script src="pm-workflow.js" defer></script>
+  <script src="overview.js" defer></script>
+</head>
+<body class="pm-overview-page">
+  <main>
+    <header><strong>BUILDER / 案件總覽</strong><nav aria-label="主導覽"><a href="index.html">首頁</a><a href="workspace.html#cases">我的案件</a><a href="dashboard.html">基地與法規</a></nav></header>
+    <section class="pm-overview" id="overview-empty" hidden><span class="pm-kicker">PROJECTS</span><h1>尚未選擇案件</h1><p>先建立或匯入案件，便能在這裡看到已保存的數字與下一步。</p><a class="pm-primary" href="index.html?new=1#entry">快速評估 →</a></section>
+    <section class="pm-overview" id="overview-case" hidden aria-label="作用中案件總覽">
+      <span class="pm-kicker">目前案件</span><h1 id="overview-name"></h1><div class="pm-meta" id="overview-stage"></div>
+      <div class="pm-facts"><div><small>同意進度</small><strong id="overview-consent"></strong><span id="overview-consent-source"></span></div><div><small>全案投報率 · Core 快照</small><strong id="overview-return"></strong></div><div><small>共同負擔比 · Core 快照</small><strong id="overview-cost"></strong></div></div>
+      <div class="pm-next"><div><span class="pm-kicker">NEXT ACTION</span><p id="overview-next"></p></div><a class="pm-primary" id="overview-go" href="dashboard.html">開始工作 →</a></div>
+      <h2>需核對的資料</h2><ul class="pm-issues" id="overview-issues"></ul>
+      <details class="pm-model-info"><summary>資料與模型資訊</summary><p class="pm-mini" id="overview-source"></p></details>
+    </section>
+    <section aria-labelledby="overview-projects-title"><h2 id="overview-projects-title">其他案件</h2><div class="pm-collection" id="overview-projects"></div><a class="pm-secondary" href="index.html?new=1#entry">＋ 建立新案件</a></section>
+  </main>
+</body>
+</html>

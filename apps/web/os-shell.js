@@ -3,10 +3,10 @@
   "use strict";
 
   var PAGES = {
-    "dashboard.html": { key: "site", n: "01 / 04", title: "基地與量體" },
+    "dashboard.html": { key: "site", n: "01 / 04", title: "基地與法規" },
     "evaluator.html": { key: "product", n: "02 / 04", title: "產品與財務" },
     "os-simulator.html": { key: "people", n: "03 / 04", title: "地主整合" },
-    "report.html": { key: "decision", n: "04 / 04", title: "決策與行動" }
+    "report.html": { key: "decision", n: "04 / 04", title: "策略決策" }
   };
   var PRODUCT_VIEWS = [
     { id: "core", label: "產品規劃" },
@@ -139,6 +139,7 @@
     var existing = document.getElementById("uros-shell");
     if (existing) existing.remove();
     var rec = activeRecord(), pid = rec && rec.pid, snap = (rec && rec.snap) || {};
+    if(pid)try{localStorage.setItem("uros.last_step."+pid,page.key);}catch(e){}
     var shell = document.createElement("header");
     shell.id = "uros-shell";
     shell.className = "uros-shell";
@@ -150,8 +151,8 @@
       + '<div class="uros-shell-actions"><a class="uros-icon-btn" href="index.html" title="OS 主選單" aria-label="OS 主選單">⌂</a>'
       + '<a class="uros-icon-btn" href="workspace.html" title="案件工作區" aria-label="案件工作區">▦</a>'
       + '<button class="uros-icon-btn" id="uros-theme" type="button" title="切換主題" aria-label="切換主題">◐</button></div>'
-      + '<div class="uros-shell-prov"><span>案件快照</span><b>' + esc(snap.code_name || "尚無案件") + "</b><span>" + esc(snap.case_type === "danger_building" ? "危老重建" : "都市更新")
-      + '</span><span>input ' + esc(shortHash(snap.input_hash) || "—") + '</span><span>core ' + esc(snap.core_version || "—") + "</span></div></div>";
+      + '<details class="uros-shell-prov"><summary>資料與模型資訊 · ' + esc(snap.code_name || "尚無案件") + '</summary><div><span>' + esc(snap.case_type === "danger_building" ? "危老重建" : "都市更新")
+      + '</span><span>input ' + esc(shortHash(snap.input_hash) || "—") + '</span><span>core ' + esc(snap.core_version || "—") + "</span></div></details></div>";
     var source=document.createElement("span");source.setAttribute("data-uros-runtime","");source.textContent=page.key==="people"?"快照模式":"核心未啟動";shell.querySelector(".uros-step-id").appendChild(source);
     var stepnav = document.getElementById("uros-stepnav");
     if (stepnav && stepnav.nextSibling) stepnav.parentNode.insertBefore(shell, stepnav.nextSibling);
@@ -175,26 +176,30 @@
     var steps={
       site:["整理基地與樓層草案。重算後採用，才會更新案件。","#site-massing-host","調整本案條件"],
       product:["比較案件快照與本次試算。採用後，再前往地主整合。","#product-planning-host","調整產品條件"],
-      people:["先整理同意與接觸紀錄，再選擇是否進入示意推演。","#workflow-board","查看同意看板"],
+      people:["整理實際同意與接觸紀錄；整合沙盤另行開啟。","#workflow-board","查看同意看板"],
       decision:["核對輸入與觀察，再產生本次判讀。推演不等於實際承諾。","#strategy-workspace","檢視判讀資料"]
     };
-    var next=rec?steps[page.key]:["尚無作用中案件。建立或匯入後，四步會共用同一份資料。","index.html#entry","建立案件"];
-    if(rec&&!rec.engine&&(page.key==="site"||page.key==="product"))next=["目前只有已存快照；補齊輸入後才能重新試算。","index.html#entry","補齊案件輸入"];
-    var action=document.createElement("div");action.className="uros-action";
-    action.innerHTML='<p><strong>目前這一步</strong>'+next[0]+'</p><a href="'+next[1]+'">'+next[2]+' →</a>';
-    shell.appendChild(action);
-    if(page.key==="decision"){
-      var content=document.getElementById("analysis-content"),oldChecklist=document.getElementById("decision-readiness");
-      if(oldChecklist)oldChecklist.remove();
-      if(content){
-        var provenance=root.CaseBus&&root.CaseBus.provenance?root.CaseBus.provenance(rec):{};
-        var checklist=document.createElement("details");checklist.id="decision-readiness";checklist.className="studio-readiness";
-        checklist.innerHTML='<summary>判讀前確認 · 資料與來源</summary><ul>'
-          +'<li><span>案件輸入：'+(rec&&rec.engine?'已保存，仍須核對條件':'尚待補齊')+'</span><a href="dashboard.html">核對基地 →</a></li>'
-          +'<li><span>Core 快照：'+(!snap.input_hash?'尚未計算':provenance.stale?'舊版本，請重算':'已保存，請確認本次條件已採用')+'</span><a href="evaluator.html">核對產品 →</a></li>'
-          +'<li><span>地主觀察：請核對最新接觸與同意紀錄</span><a href="os-simulator.html#workflow-board">核對紀錄 →</a></li></ul>';
-        content.parentNode.insertBefore(checklist,content);
-      }
+    var next=rec?steps[page.key]:["尚無作用中案件。建立或匯入後，四步會共用同一份資料。","index.html?new=1#entry","建立案件"];
+    if(rec&&!rec.engine&&(page.key==="site"||page.key==="product"))next=["目前只有已存快照；匯入完整輸入後才能重新試算。","workspace.html#cases","匯入完整案件"];
+    if(page.key==="site"){
+      var v=(rec&&rec.view)||{},provenance=root.CaseBus&&root.CaseBus.provenance?root.CaseBus.provenance(rec):{};
+      var summary=document.createElement("section");summary.className="pm-site-summary";summary.setAttribute("aria-label","基地可行性摘要");
+      var title=document.createElement("div");title.innerHTML='<span class="pm-kicker">① 基地與法規</span><h2>基地可行性</h2><p>數字取自案件 Core 快照；條件變更請先重算、再採用。</p>';
+      var numbers=document.createElement("div");numbers.className="pm-site-facts";
+      [["允建容積",v.allow_floor_area],["已配置容積",v.used_floor_area],["容積餘量",v.remaining_floor_area]].forEach(function(pair){var cell=document.createElement("div"),label=document.createElement("small"),value=document.createElement("strong");label.textContent=pair[0];value.textContent=fmt(pair[1],"㎡");cell.append(label,value);numbers.appendChild(cell);});
+      var warning=document.createElement("p");warning.className="pm-site-warning";
+      var count=Array.isArray(v.warnings)?v.warnings.length:(Number.isInteger(snap.warnings_n)?snap.warnings_n:0);
+      warning.textContent=provenance.stale?"⚠ 快照由舊版 Core 產生，請重算。":count?"Core 健檢有 "+count+" 項提醒；詳情見下方資料。":"基地條件與來源仍須人工核對。";
+      var a=document.createElement("a");a.className="pm-primary";
+      if(!rec){a.href="index.html?new=1#entry";a.textContent="建立案件 →";}
+      else if(!rec.engine){a.href="workspace.html#cases";a.textContent="匯入完整案件 →";}
+      else if(v.allow_floor_area!=null&&!provenance.stale){a.href="evaluator.html";a.textContent="前往產品與財務 →";}
+      else{a.href="#site-massing-host";a.textContent="核對基地條件 →";}
+      summary.append(title,numbers,warning,a);shell.appendChild(summary);
+    }else{
+      var action=document.createElement("div");action.className="uros-action";
+      action.innerHTML='<p><strong>目前這一步</strong>'+next[0]+'</p><a href="'+next[1]+'">'+next[2]+' →</a>';
+      shell.appendChild(action);
     }
     var routes = page.key === "site" ? [["mass","空間與樓層"]] : page.key === "people" ? [["board","同意看板"],["task","時程任務"]]
       : page.key === "decision" ? [["dec","決策紀錄"],["time","時間軸"],["attr","歸因比較"]] : [];
