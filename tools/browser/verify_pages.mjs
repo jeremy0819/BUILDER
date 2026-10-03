@@ -102,6 +102,7 @@ try{
   check((await page.locator('#pulse-blockers').innerText()).includes('合成驗證任務'),'Pulse lists an explicitly blocked task');
   check((await page.locator('#pulse-actions').innerText()).includes('驗證角色'),'next actions retain the manually assigned owner');
   check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'published daily overview mobile no overflow');
+  check(await page.evaluate(()=>['#pulse-review','#pulse-blockers a','#pulse-actions a'].every(selector=>{const el=document.querySelector(selector);return el&&el.getBoundingClientRect().height>=44;})),'Pulse mobile actions meet the 44px touch target');
   await page.screenshot({path:resolve(root,'tools/browser/artifacts/overview-mobile.png'),fullPage:true});
   await page.setViewportSize({width:1440,height:1000});
   await page.screenshot({path:resolve(root,'tools/browser/artifacts/overview-desktop.png'),fullPage:true});
