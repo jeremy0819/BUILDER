@@ -54,11 +54,11 @@ class Element {
 }
 
 function harness(views=['task'],hash=''){
-  const listeners=new Map(),lists=[],runs=[],runtimes=[];let active='A',store,writeError=null,writes=0;
+  const listeners=new Map(),lists=[],runs=[],runtimes=[],events=[];let active='A',store,writeError=null,writes=0;
   const window={addEventListener:(name,fn)=>{if(!listeners.has(name))listeners.set(name,new Set());listeners.get(name).add(fn);},removeEventListener:(name,fn)=>listeners.get(name)?.delete(fn)};
   const emit=(type,key)=>{for(const fn of [...(listeners.get(type)||[])])fn({type,key});};
   const CaseBus={KEY:'workflow',ACTIVE_KEY:'active',EVENT:'case-changed',decisionBinds:caseBusExports.CaseBus.decisionBinds,activePid:()=>active,readStore:()=>copy(store),writeStore:value=>{if(writeError)throw Error(writeError);store=copy(value);writes++;emit('case-changed');}};
-  const CaseStore={listScenarios:pid=>{const job={pid,...deferred()};lists.push(job);return job.promise;}};
+  const CaseStore={listScenarios:pid=>{const job={pid,...deferred()};lists.push(job);return job.promise;},append:(pid,event)=>{events.push({pid,event});return Promise.resolve(events.length);}};
   window.CaseBus=CaseBus;window.CaseStore=CaseStore;
   window.createCoreRuntime=callbacks=>{const rt={ready:true,callbacks,terminated:false,terminate(){this.terminated=true;},attribute:(...args)=>{const job={args,...deferred()};runs.push(job);return job.promise;}};runtimes.push(rt);return rt;};
   const context=vm.createContext({window,CaseStore,console,crypto:{randomUUID},location:{hash},history:{replaceState(){}},document:{createElement:tag=>new Element(tag)}});
@@ -66,7 +66,7 @@ function harness(views=['task'],hash=''){
   const record=pid=>({wf:{...copy(WL.importV21ToWorkflow(fixture)),project:{...copy(WL.importV21ToWorkflow(fixture).project),project_id:pid,code_name:pid}},snap:copy(WL.displaySnapshot(fixture))});
   store={order:['A','B'],projects:{A:record('A'),B:record('B')}};
   vm.runInContext(source,context);const host=new Element('section'),panel=window.WorkflowPanels.mount(host,views);
-  return {host,panel,window,lists,runs,runtimes,listeners,emit,get store(){return copy(store);},set store(value){store=copy(value);},get writes(){return writes;},set active(value){active=value;},set writeError(value){writeError=value;},$(s){return host.querySelector(s);},click(s){const el=host.querySelector(s);if(!el)throw Error('Missing control '+s);return el.onclick?.({target:el});}};
+  return {host,panel,window,lists,runs,runtimes,events,listeners,emit,get store(){return copy(store);},set store(value){store=copy(value);},get writes(){return writes;},set active(value){active=value;},set writeError(value){writeError=value;},$(s){return host.querySelector(s);},click(s){const el=host.querySelector(s);if(!el)throw Error('Missing control '+s);return el.onclick?.({target:el});}};
 }
 
 const h=harness();
@@ -97,6 +97,13 @@ h.click('.workflow-refresh');
 ok(h.$('.workflow-context').textContent.startsWith('Concurrent B edit'),'explicit refresh renders the newly active case');
 h.$('#ttitle').value='<img src=x onerror=alert(1)>';h.click('#taddbtn');
 ok(h.store.projects.B.wf.tasks.length===1&&!h.$('img'),'task text is escaped after save and render');
+
+const loop=harness();loop.$('#ttitle').value='產權確認';loop.$('#towner').value='代書';loop.$('#tdue').value='2026-10-08';loop.click('#taddbtn');
+ok(loop.store.projects.A.wf.tasks[0].owner_role==='代書'&&loop.store.projects.A.wf.tasks[0].due==='2026-10-08','new task keeps manually entered owner and due date');
+loop.$('.task-status').value='blocked';loop.click('.task-save');
+ok(loop.store.projects.A.wf.tasks[0].status==='blocked'&&loop.events.some(e=>e.event.field.endsWith(':status')&&e.event.after==='blocked'),'status updates are saved and appended as input-fact activity');
+loop.$('.task-status').value='done';loop.$('.task-owner').value='';loop.click('.task-save');
+ok(loop.store.projects.A.wf.tasks[0].status==='done'&&!('owner_role' in loop.store.projects.A.wf.tasks[0]),'task can be completed and an optional owner cleared');
 
 // Render actual workbench UI using CaseBus's existing input_hash × core_version binding rule.
 const bench=harness(['bench']),benchStore=bench.store,benchSnapshot=benchStore.projects.A.snap;

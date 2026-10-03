@@ -89,7 +89,7 @@
     doc = validate(root.UROSSecurity.parseJSON(JSON.stringify(doc), LIMIT));
     var old = locals();
     var business = Object.keys(old).filter(function (key) {
-      if (["uros.theme", "uros.active_case", "uros.last_backup_at", "uros.diagnostics.v1"].includes(key) || key.indexOf("uros.last_step.")===0) return false;
+      if (["uros.theme", "uros.active_case", "uros.last_backup_at", "uros.diagnostics.v1"].includes(key) || key.indexOf("uros.last_step.")===0 || key.indexOf("uros.pulse_reviewed.")===0) return false;
       if (key === "uros.workflow.v1") {
         var s = root.UROSSecurity.parseJSON(old[key]); return !s || !Array.isArray(s.order) || s.order.length || Object.keys(s.projects || {}).length;
       }

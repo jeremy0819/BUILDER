@@ -258,33 +258,56 @@ function renderTasks(pid){
   const rec=loadStore().projects[pid]; if(!rec) return; const wf=rec.wf;
   const tasks=wf.tasks||[], tl=WORKLOGIC.taskTally(tasks);
   const tallyHTML=TASK_ST.map(([k,l])=>`<span class="cstat"><i style="background:${TASK_COLOR[k]}"></i>${l} <b>${tl[k]}</b></span>`).join("");
-  const rowsHTML=tasks.length?tasks.slice().sort((a,b)=>a.stage.localeCompare(b.stage,undefined,{numeric:true})).map(t=>`<div class="brow">
-      <span class="bid mono">${esc(t.stage)}</span><span style="flex:1;font-size:12.5px">${esc(t.title)}</span>
-      <button class="cpill tglt" data-tid="${esc(t.task_id)}" style="color:${TASK_COLOR[t.status]};border-color:${TASK_COLOR[t.status]};cursor:pointer">${TASK_LABEL[t.status]}</button>
+  const rowsHTML=tasks.length?tasks.slice().sort((a,b)=>a.stage.localeCompare(b.stage,undefined,{numeric:true})).map(t=>`<div class="brow task-row" data-tid="${esc(t.task_id)}">
+      <span class="bid mono">${esc(t.stage)}</span><strong class="task-title">${esc(t.title)}</strong>
+      <label>負責人／角色<input class="task-owner" maxlength="40" value="${esc(t.owner_role||"")}" placeholder="未指定"></label>
+      <label>期限<input class="task-due" type="date" value="${esc(t.due||"")}"></label>
+      <label>狀態<select class="task-status">${TASK_ST.map(([k,l])=>`<option value="${k}" ${t.status===k?"selected":""}>${l}</option>`).join("")}</select></label>
+      <button type="button" class="btn sm task-save">儲存</button>
     </div>`).join(""):`<div class="wip">尚無任務——可帶入 S1–S11 里程碑範本，或手動新增。</div>`;
   $("pane").innerHTML=`<div class="board">
     <div class="btally">${tallyHTML}<span class="cstat" style="margin-left:auto">共 <b>${tasks.length}</b> 項</span></div>
     <div class="tadd">
       <select id="tstage">${Object.keys(WORKLOGIC.STAGE_TITLES).map(s=>`<option value="${s}">${s} ${WORKLOGIC.STAGE_TITLES[s]}</option>`).join("")}</select>
       <input id="ttitle" placeholder="任務標題（事實，不含真實資料）" maxlength="60">
+      <input id="towner" placeholder="負責人／角色（選填）" maxlength="40">
+      <input id="tdue" type="date" aria-label="期限（選填）">
       <button class="btn sm" id="taddbtn">新增</button>
       ${tasks.length?"":'<button class="btn sm ghost" id="tseed">帶入 S1–S11 範本</button>'}
     </div>
     <div class="brows" style="margin-top:12px">${rowsHTML}</div>
-    <div class="fin src">狀態＝人工登錄的事實（待辦/進行/完成/卡住），非系統推論。點狀態徽章循環切換。</div>
+    <div class="fin src">負責人、期限與狀態由使用者登錄；空白欄位不會由系統推定。完成後請選「完成」並儲存。</div>
   </div>`;
-  $("taddbtn").onclick=()=>{const t=$("ttitle").value.trim(); if(!t)return; addTask(pid,$("tstage").value,t); renderTasks(pid);};
+  $("taddbtn").onclick=()=>{const t=$("ttitle").value.trim(); if(!t)return; addTask(pid,$("tstage").value,t,$("towner").value.trim(),$("tdue").value); renderTasks(pid);};
   const seed=$("tseed"); if(seed) seed.onclick=()=>{seedTasks(pid); renderTasks(pid);};
-  $("pane").querySelectorAll(".tglt").forEach(b=>b.onclick=()=>{cycleTask(pid,b.dataset.tid); renderTasks(pid);});
+  $("pane").querySelectorAll(".task-save").forEach(b=>b.onclick=()=>{
+    const row=b.closest(".task-row"); updateTask(pid,row.dataset.tid,row.querySelector(".task-owner").value.trim(),row.querySelector(".task-due").value,row.querySelector(".task-status").value);renderTasks(pid);
+  });
 }
-function addTask(pid,stage,title){const s=loadStore(),rec=s.projects[pid];if(!rec)return;
-  rec.wf.tasks=rec.wf.tasks||[]; rec.wf.tasks.push({task_id:"tk-"+crypto.randomUUID(),stage,title,status:"todo"}); saveStore(s);}
+function taskEvent(pid,task,field,before,after){
+  if(!root.CaseStore||typeof root.CaseStore.append!=="function"){status.textContent="案件已儲存；Activity 未載入，變更紀錄不完整";return;}
+  root.CaseStore.append(pid,{kind:"edit",target:{type:"case",id:pid},field:"task:"+task.task_id+":"+field,
+    before:before,after:after}).catch(()=>{status.textContent="案件已儲存；Activity 寫入失敗，變更紀錄不完整";});
+}
+function addTask(pid,stage,title,owner,due){const s=loadStore(),rec=s.projects[pid];if(!rec)return;
+  rec.wf.tasks=rec.wf.tasks||[];const t={task_id:"tk-"+crypto.randomUUID(),stage,title,status:"todo"};
+  if(owner)t.owner_role=owner;if(due)t.due=due;
+  rec.wf.tasks.push(t);saveStore(s);taskEvent(pid,t,"created",null,t);}
 function seedTasks(pid){const s=loadStore(),rec=s.projects[pid];if(!rec)return;
   if((rec.wf.tasks||[]).length) return;
-  rec.wf.tasks=WORKLOGIC.stageTemplate().map((t,i)=>({task_id:"tk-seed-"+(i+1),...t})); saveStore(s);}
-function cycleTask(pid,tid){const s=loadStore(),rec=s.projects[pid];if(!rec)return;
-  const order=["todo","doing","done","blocked"]; const t=(rec.wf.tasks||[]).find(x=>x.task_id===tid); if(!t)return;
-  t.status=order[(order.indexOf(t.status)+1)%order.length]; saveStore(s);}
+  rec.wf.tasks=WORKLOGIC.stageTemplate().map((t,i)=>({task_id:"tk-seed-"+(i+1),...t}));saveStore(s);
+  taskEvent(pid,{task_id:"seed",title:"S1–S11 里程碑範本"},"created",null,rec.wf.tasks.length);}
+function updateTask(pid,tid,owner,due,nextStatus){const s=loadStore(),rec=s.projects[pid];if(!rec)return;
+  const t=(rec.wf.tasks||[]).find(x=>x.task_id===tid);if(!t)return;
+  if(!TASK_LABEL[nextStatus])throw Error("任務狀態無效");
+  if(due&&!/^\d{4}-\d{2}-\d{2}$/.test(due))throw Error("期限格式無效");
+  const changes=[];[["owner_role",owner],["due",due],["status",nextStatus]].forEach(([field,value])=>{
+    const before=t[field]||"";if(before===value)return;
+    if(value)t[field]=value;else delete t[field];changes.push([field,before,value]);
+  });
+  if(!changes.length)return;
+  saveStore(s);changes.forEach(([field,before,after])=>taskEvent(pid,t,field,before,after));
+}
 // ── C4 決策日誌（append-only ADR；evidence 釘作準快照指紋，非 GO/CAUTION/STOP）──
 function renderDecisions(pid){
   const rec=loadStore().projects[pid]; if(!rec) return; const wf=rec.wf;
