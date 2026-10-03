@@ -11,6 +11,11 @@
   }
   function activityText(ev,titles){
     var field=ev.field||"輸入";
+    if(ev.kind==="scenario"){
+      if(field==="create")return "建立方案："+short(ev.after);
+      if(field==="authoritative")return "設為目前工作方案："+short(ev.target&&ev.target.id);
+      if(field==="delete")return "刪除方案："+short(ev.before);
+    }
     if(ev.field&&ev.field.indexOf("task:")===0){
       var id=ev.field.split(":")[1],name=titles[id]||(id==="seed"?"S1–S11 里程碑範本":"任務 "+id);
       if(ev.field.endsWith(":created"))return "新增任務："+(ev.after&&ev.after.title||name);
@@ -27,7 +32,7 @@
   }
   function model(rec,activity,reviewedAt){
     var wf=rec&&rec.wf||{},project=wf.project||{},rows=[];
-    var tasks=Array.isArray(wf.tasks)?wf.tasks:[],titles={};
+    var tasks=Array.isArray(wf.tasks)?wf.tasks:[],titles=Object.create(null);
     tasks.forEach(function(t){if(t&&t.task_id)titles[t.task_id]=t.title||"未命名任務";});
     (Array.isArray(activity)?activity:[]).forEach(function(ev){
       var time=validTime(ev&&ev.ts);if(time===null)return;

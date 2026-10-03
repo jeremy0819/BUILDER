@@ -44,8 +44,10 @@
       +'<div class="pp-results"></div><div class="pp-status" role="status" aria-live="polite"></div><div class="pp-warnings"></div></div></div>'
       +'<details class="pp-finance-detail"><summary>銷售組成與土地成本</summary><div class="pp-more-fields"></div></details>'
       +'<details class="pp-finance-detail"><summary>成本科目與分期支出</summary><div class="pp-cashflow"></div></details>'
-      +'<div class="pp-actions"><button type="button" data-pp="run">Core 重算</button><button type="button" data-pp="apply" disabled>採用產品，前往③人心</button><a href="os-simulator.html" data-pp="skip">沿用案件快照，前往③</a></div></section>';
+      +'<div class="pp-actions"><button type="button" data-pp="run">Core 重算</button><button type="button" data-pp="apply" disabled>採用產品，前往③人心</button><a href="os-simulator.html" data-pp="skip">沿用案件快照，前往③</a></div>'
+      +'<div class="pp-scenario-host"></div></section>';
     var q=function (s) { return host.querySelector(s); };
+    var compare;
     function show(state) {
       q(".pp-status").textContent=state.message;
       q('[data-pp="apply"]').disabled=state.phase!=="ready";
@@ -56,12 +58,14 @@
         return '<tr><th>'+o[1]+'</th><td>'+format(rec.view && rec.view[o[0]],o[2])+'</td><td>'+format(result && result[o[0]],o[2])+'</td></tr>';
       }).join("")+'</tbody></table>';
       q(".pp-warnings").textContent=result?(result.warnings||[]).map(function (w) {return typeof w==="string"?w:w.message||w.msg||w.code||"";}).join("；"):"";
+      if(compare)compare.updateDraft(state);
     }
     function getRuntime() {
       if (!runtime || runtime.failed) runtime=root.createCoreRuntime({});
       return runtime;
     }
     session=root.PlanningSession.create(rec,getRuntime,show);
+    if(root.ScenarioCompare&&root.CaseStore)compare=root.ScenarioCompare.mount(q(".pp-scenario-host"),rec,getRuntime,function(){return session.state();},function(){session.dispose();root.location.reload();});
     FIELDS.concat(MORE_FIELDS).forEach(function (field) {
       var label=document.createElement("label");label.textContent=field.label;
       var number=document.createElement("input"), range=document.createElement("input");
@@ -83,7 +87,7 @@
     q('[data-pp="apply"]').addEventListener("click",function () {try {session.accept();root.location.href="os-simulator.html";} catch(err){q(".pp-status").textContent=root.PlanningSession.saveError(err);}});
     q('[data-pp="skip"]').addEventListener("click",function (e) {if(session.state().dirty&&!root.confirm("本次產品尚未採用。捨棄試算，沿用案件快照？"))e.preventDefault();else session.dispose();});
     show(session.state());session.schedule(0);
-    return {dispose:function () {session.dispose();if(runtime)runtime.terminate();}};
+    return {dispose:function () {session.dispose();if(compare)compare.dispose();if(runtime)runtime.terminate();}};
   }
   root.ProductPlanning={mount:mount,inputTarget:inputTarget,inputKey:inputKey,cashflowHTML:cashflowHTML};
 })(typeof self!=="undefined"?self:this);

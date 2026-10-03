@@ -138,6 +138,7 @@ jobs:
         run: |
           node tests/web/test_strategy_security.mjs
           node tests/web/test_planning_session.mjs
+          node tests/web/test_scenario_compare.mjs
           node tests/web/test_development_intake.mjs
           node tests/web/test_spatial_prototype.mjs
 
@@ -151,6 +152,7 @@ jobs:
       - name: "Gate 19 — Real browser / Pyodide / responsive / stored-XSS regression"
         run: |
           node tools/browser/verify.mjs
+          node tools/browser/verify_scenario_compare.mjs
           node tools/browser/verify_spatial.mjs
           node tools/browser/verify_pages.mjs
 
