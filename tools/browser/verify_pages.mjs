@@ -86,6 +86,24 @@ try{
   await page.screenshot({path:resolve(root,'tools/browser/artifacts/studio-mobile.png'),fullPage:false});
   await page.goto(base+'overview.html');
   check(await page.locator('#overview-case').isVisible()&&await page.locator('#overview-go').isVisible(),'published daily overview leads to the saved case next action');
+  check((await page.locator('#pulse-baseline').innerText()).includes('尚未設定比較基準'),'first Pulse visit does not invent a change baseline');
+  await page.locator('#pulse-review').waitFor({state:'visible'});await page.waitForFunction(()=>!document.getElementById('pulse-review').disabled);
+  await page.locator('#pulse-review').click();
+  check(await page.locator('#pulse-changes').innerText()==='0','explicit review starts a zero-change baseline');
+  await page.goto(base+'os-simulator.html#workflow-task');
+  await page.locator('#ttitle').fill('合成驗證任務');await page.locator('#towner').fill('驗證角色');await page.locator('#tdue').fill('2030-01-01');await page.locator('#taddbtn').click();
+  const task=page.locator('.task-row').filter({hasText:'合成驗證任務'});
+  await task.locator('.task-status').selectOption('blocked');await task.locator('.task-save').click();
+  check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'task editor stays within mobile viewport');
+  await page.screenshot({path:resolve(root,'tools/browser/artifacts/task-mobile.png'),fullPage:true});
+  await page.waitForFunction(async()=>{const pid=CaseBus.activePid();return (await CaseStore.listActivity(pid)).some(ev=>ev.field&&ev.field.endsWith(':status')&&ev.after==='blocked');});
+  await page.goto(base+'overview.html');
+  check(Number(await page.locator('#pulse-changes').innerText())>=2,'Pulse shows recorded task changes after review');
+  check((await page.locator('#pulse-blockers').innerText()).includes('合成驗證任務'),'Pulse lists an explicitly blocked task');
+  check((await page.locator('#pulse-actions').innerText()).includes('驗證角色'),'next actions retain the manually assigned owner');
   check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'published daily overview mobile no overflow');
+  await page.screenshot({path:resolve(root,'tools/browser/artifacts/overview-mobile.png'),fullPage:true});
+  await page.setViewportSize({width:1440,height:1000});
+  await page.screenshot({path:resolve(root,'tools/browser/artifacts/overview-desktop.png'),fullPage:true});
   console.log(`PAGES: ${passed} passed; commit=${build.commit}`);
 }finally{await browser?.close();if(server)await new Promise(r=>server.close(r));}
