@@ -21,4 +21,6 @@ assert.equal(Pulse.model({wf:{}},null,'2026-10-02T09:00:00Z').activityAvailable,
 assert.equal(Pulse.model({wf:{}},[],null).blockedCount,0);
 const created=Pulse.model({wf:{tasks:[]} },[{key:3,kind:'edit',field:'task:3:created',after:{title:'新任務',status:'todo'},ts:'2026-10-02T13:00:00Z'}],null);
 assert.equal(created.recent[0].text,'新增任務：新任務');
+const switched=Pulse.model({wf:{}},[{key:4,kind:'scenario',target:{type:'scenario',id:'sc-2'},field:'authoritative',ts:'2026-10-02T14:00:00Z'}],null);
+assert.equal(switched.recent[0].text,'設為目前工作方案：sc-2');
 console.log('Project Pulse recorded-fact and baseline checks passed');
