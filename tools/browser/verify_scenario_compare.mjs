@@ -48,7 +48,7 @@ try{
   check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'scenario table scrolls within the mobile viewport');
   page.once('dialog',dialog=>dialog.accept());
   await Promise.all([page.waitForEvent('framenavigated',{timeout:30000}),page.locator('[data-sc-adopt]').click()]);
-  await page.waitForFunction(async()=>{const pid=CaseBus.activePid(),list=await CaseStore.listScenarios(pid),current=CaseBus.activeRecord();return list.length===2&&list.filter(s=>s.authoritative).length===1&&list.find(s=>s.authoritative).input_hash===current.snap.input_hash;},{},{timeout:30000});
+  await page.waitForFunction(async()=>{try{if(typeof CaseBus==='undefined'||typeof CaseStore==='undefined')return false;const pid=CaseBus.activePid(),current=CaseBus.activeRecord();if(!pid||!current)return false;const list=await CaseStore.listScenarios(pid);return list.length===2&&list.filter(s=>s.authoritative).length===1&&list.find(s=>s.authoritative).input_hash===current.snap.input_hash;}catch(e){return false;}},{},{timeout:30000});
   check(await page.evaluate(async()=>{const pid=CaseBus.activePid(),list=await CaseStore.listScenarios(pid),current=CaseBus.activeRecord(),acts=await CaseStore.listActivity(pid);return list.find(s=>s.authoritative).name==='合成對照'&&
     current.snap.input_hash===list.find(s=>s.authoritative).input_hash&&acts.some(e=>e.kind==='scenario'&&e.field==='authoritative'&&e.target.id===list.find(s=>s.authoritative).scenario_id);}),
     'adoption binds case snapshot, authoritative scenario and Activity');
