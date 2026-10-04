@@ -33,11 +33,11 @@
     var background=root.UROSSecurity&&root.UROSSecurity.imageData((rec.assets||{}).cadastral), showBackground=!!background;
     var initialError="";
     try{if(rec.site_intake)data=validate(rec.site_intake,pid);}catch(e){initialError="既有基地資料版本不支援；原資料未覆蓋。";}
-    host.innerHTML='<section class="site-intake" aria-label="基地地塊與查核"><div class="si-heading"><h2>基地地塊</h2><span>手繪草圖 · 未定位</span></div>'
+    host.innerHTML='<section class="site-intake" aria-label="基地參考草圖與查核"><div class="si-heading"><h2>基地平面</h2><span>Level A · 參考草圖／未定位</span></div>'
       +'<div class="si-grid"><div><div class="si-tools"><label>地塊<select data-si="parcel" aria-label="選取地塊"></select></label><button type="button" data-si="add">新增地塊</button><button type="button" data-si="undo" title="復原上一個草圖動作" aria-label="復原上一個草圖動作">↶</button><button type="button" data-si="clear">清除此地塊</button></div>'
       +'<label class="si-background"'+(background?'':' hidden')+'><input type="checkbox" checked>地籍底圖 · 僅供描繪，未測量定位</label><svg class="si-canvas" viewBox="0 0 640 360" tabindex="0" role="application" aria-label="基地草圖輸入，點選新增頂點；方向鍵移動游標，Enter 新增，Backspace 復原"></svg>'
-      +'<div class="si-caption"><span data-si="summary"></span><span>無測量尺度；面積以右側登記輸入為準</span></div></div>'
-      +'<div class="si-fields"><div class="si-core-fields"></div><details><summary>土地與資料來源</summary><form class="si-land-fields"></form><button type="button" data-si="coverage">以建蔽率建立樓板草案</button><p class="si-limit">樓板預設輸入，非建築輪廓或建蔽合規判定。</p></details>'
+      +'<div class="si-caption"><span data-si="summary"></span><span>參考草圖不參與量體或 Core 計算；面積以登記輸入為準。</span></div></div>'
+      +'<div class="si-fields"><div class="si-core-fields"></div><div class="si-coverage-fields"></div><p class="si-limit">正式基地 Geometry 尚未接入；草圖不能升格為可建輪廓。<a href="overview.html#data-status-title">查看資料狀態 →</a></p><details><summary>基地資料來源與查核</summary><form class="si-land-fields"></form><button type="button" data-si="coverage">依建蔽率估算標準樓板</button><p class="si-limit">僅依輸入面積與建蔽率估算，未使用基地形狀；不代表可建 footprint 或法規合規判定。</p></details>'
       +'<details><summary>開發資料查核</summary><div class="si-research"></div><p class="si-limit">官方查詢不附帶案件資料。尚未串接跨站擷取，不會自動填入法定容積、獎勵或成交單價。</p></details></div></div>'
       +'<div class="si-status" role="status" aria-live="polite"></div></section>';
     var q=function(s){return host.querySelector(s);},svg=q("svg"), status=q(".si-status");
@@ -84,7 +84,7 @@
       if(f[2]==="select"){[""].concat(f[3]).forEach(function(v){var o=document.createElement("option");o.value=v;o.textContent=v||"未指定";input.appendChild(o);});}
       else{input.type=f[2];if(f[2]==="number"){input.min=0;input.max=f[3];input.step="any";}else if(f[3])input.maxLength=f[3];}
       input.value=data.land[f[0]]==null?"":data.land[f[0]];
-      input.addEventListener("change",function(){if(!input.checkValidity()){input.reportValidity();return;}data.land[f[0]]=input.value===""?null:f[2]==="number"?input.valueAsNumber:input.value;persist();});label.appendChild(input);q(".si-land-fields").appendChild(label);
+      input.addEventListener("change",function(){if(!input.checkValidity()){input.reportValidity();return;}data.land[f[0]]=input.value===""?null:f[2]==="number"?input.valueAsNumber:input.value;persist();});label.appendChild(input);q(f[0]==="coverage_percent"?".si-coverage-fields":".si-land-fields").appendChild(label);
     });
     q(".si-land-fields").onsubmit=function(e){e.preventDefault();};
     q('[data-si="coverage"]').onclick=function(){var input=q('[data-land="coverage_percent"]');if(!input.value||!input.checkValidity()||input.valueAsNumber<=0){status.textContent="請先填入有效建蔽率。";return;}if(onCoverage)onCoverage(input.valueAsNumber);};

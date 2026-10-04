@@ -236,7 +236,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
         <div class="rt">🗂️ 案件工作區 WORKSPACE <span class="x">多案管理</span></div>
         <div class="rd">匯入 v2.1 案件 JSON、多案列表、同意看板／任務／決策日誌／時間軸、wf 匯出入。</div></a>
       <a href="dashboard.html">
-        <div class="rt">基地與法規工作區 <span class="x">樓層與條件</span></div>
+        <div class="rt">基地與量體工作區 <span class="x">樓層與條件</span></div>
         <div class="rd">逐層樓板表、產權清冊、傳動軸滑桿——要細調就到這裡。</div></a>
       <a href="evaluator.html">
         <div class="rt">🧮 坪效×投報試算 <span class="x">教學·示意</span></div>
@@ -434,7 +434,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
     if(最新) rec = rec ? B.applyResult(rec, 最新) : B.buildRecord(最新);
     var sv = rec ? B.stepValues(rec) : null;
     $("steps").innerHTML = B.STEP_ORDER.map(function(key, i){
-      var s = sv ? sv[key] : {title:["基地與法規","產品與財務","地主整合","策略決策"][i], href:"#", items:[]};
+      var s = sv ? sv[key] : {title:["基地與量體","產品與財務","地主整合","策略決策"][i], href:"#", items:[]};
       var rows = (s.items||[]).map(function(it){
         var d = 顯示(it);
         return '<dt>'+it.label+'</dt><dd class="'+(d.na?"na":"")+'">'+esc(d.t)+'</dd>';

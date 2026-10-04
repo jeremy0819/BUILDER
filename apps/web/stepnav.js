@@ -11,7 +11,7 @@
 (function () {
   "use strict";
   var STEPS = [
-    { n: "①", label: "基地與法規", href: "dashboard.html", hand: "基地事實", key: "site", pick: "允建容積" },
+    { n: "①", label: "基地與量體", href: "dashboard.html", hand: "基地事實", key: "site", pick: "允建容積" },
     { n: "②", label: "產品與財務", href: "evaluator.html", hand: "產品方案", key: "product", pick: "全案投報率" },
     { n: "③", label: "地主整合", href: "os-simulator.html", hand: "同意紀錄", key: "people", pick: "同意進度" },
     { n: "④", label: "策略決策", href: "report.html", hand: "下一步", key: "decision", pick: "判定" }

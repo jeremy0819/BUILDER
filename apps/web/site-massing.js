@@ -49,23 +49,28 @@
   function mount(host, rec, getRuntime) {
     var draft = JSON.parse(JSON.stringify(rec.engine)), selected = 0, overlay = false, session, disposed = false;
     var above = draft.floors.findIndex(function (f) { return /^1F$/.test(f.樓層); }); if (above >= 0) selected = above;
-    host.innerHTML = '<section class="site-massing" aria-label="量體生成與容積模擬">'
-      + '<div class="sm-heading"><div><h1>本案樓層方案</h1><p>量體規劃 <span class="sm-source">INPUT</span></p></div>'
-      + '<button type="button" data-sm="reset" title="還原案件樓層">還原案件</button></div>'
-      + '<div class="sm-intake"></div><div class="sm-grid"><div class="sm-visual"><div class="sm-visual-toolbar"><b>樓層比較</b><label class="sm-overlay"><input type="checkbox" data-sm="overlay">梯廳／安全梯／陽台</label></div>'
-      + '<div class="sm-drawing"></div><p class="sm-origin"></p>'
-      + '<div class="sm-legend"><span>灰：案件快照</span><span>綠：本次草案</span><span>框線：選取樓層</span><span>虛線：地下層</span></div></div>'
-      + '<div class="sm-controls"><form class="sm-generate"><h2>樓層設定</h2><label>地上層數<input name="levels" type="number" min="1" max="60" step="1" required></label>'
-      + '<label>標準樓板（㎡）<input name="plate" type="number" min="0.01" max="10000" step="0.01" required></label>'
-      + '<p class="sm-note">重新生成會替換本次草案的逐層配置，含一層地下室；原案不變。</p></form>'
-      + '<details class="sm-floor-detail"><summary>逐層微調</summary><div class="sm-floor-select"><label>編輯樓層<select aria-label="編輯樓層"></select></label></div><div class="sm-floor-editor"></div></details>'
-      + '<details class="sm-site-inputs"><summary>基地與容積條件</summary><div></div></details></div></div>'
-      + '<div class="sm-result-heading"><h2>容積查核 <span class="sm-source">CORE</span></h2><label class="sm-auto"><input type="checkbox" data-sm="auto" checked>自動重算</label>'
-      + '<button type="button" data-sm="run">Core 重算</button></div>'
-      + '<div class="sm-status" role="status" aria-live="polite"></div><div class="sm-results"></div><div class="sm-warnings" role="status"></div>'
-      + '<div class="sm-next"><span data-sm="saved">本次草案尚未採用</span><button type="button" data-sm="apply" disabled>採用草案，前往②產品</button>'
-      + '<a href="evaluator.html" data-sm="skip">沿用案件快照，前往②</a></div></section>';
+    host.innerHTML = `<section class="site-massing" aria-label="基地、量體與 Core 結果">
+      <div class="sm-heading"><div><h1>本案基地與量體</h1><p>先核對基地輸入，再調整樓層草案；圖形與數字各有其資料來源。</p></div><button type="button" data-sm="reset" title="還原案件樓層">還原案件</button></div>
+      <section class="sm-layer sm-layer-site" aria-labelledby="sm-site-title"><div class="sm-layer-heading"><span>A / 基地</span><h2 id="sm-site-title">基地輸入與參考草圖</h2></div><div class="sm-intake"></div></section>
+      <section class="sm-layer sm-layer-massing" aria-labelledby="sm-massing-title"><div class="sm-layer-heading"><span>B / 量體</span><h2 id="sm-massing-title">樓層與標準樓板</h2></div>
+        <p class="sm-geometry-boundary">可建 footprint：未建立。現階段沒有正式基地 Geometry 與退縮規則；下列樓板是面積輸入，不是建築平面或高度。3D 操作展示收在下方，且不代表本案。</p>
+        <div class="sm-controls"><form class="sm-generate"><label>地上層數<input name="levels" type="number" min="1" max="60" step="1" required></label><label>標準樓板（㎡）<input name="plate" type="number" min="0.01" max="10000" step="0.01" required></label><p class="sm-note">調整後只產生本次草案；重算與採用前不修改案件快照。</p></form></div>
+        <details class="sm-diagram"><summary>逐層面積比較 · 非 footprint／樓高</summary><div class="sm-visual"><div class="sm-visual-toolbar"><b>案件快照／本次草案</b><label class="sm-overlay"><input type="checkbox" data-sm="overlay">梯廳／安全梯／陽台</label></div><div class="sm-drawing"></div><p class="sm-origin"></p><div class="sm-legend"><span>灰：案件快照</span><span>綠：本次草案</span><span>框線：選取樓層</span><span>虛線：地下層</span></div></div></details>
+        <details class="sm-floor-detail"><summary>逐層編輯</summary><div class="sm-floor-select"><label>編輯樓層<select aria-label="編輯樓層"></select></label></div><div class="sm-floor-editor"></div></details>
+        <details class="sm-site-inputs"><summary>進階容積條件</summary><div></div></details>
+      </section>
+      <section class="sm-layer sm-layer-result" aria-labelledby="sm-result-title"><div class="sm-layer-heading"><span>C / 結果</span><h2 id="sm-result-title">Core 容積結果</h2></div>
+        <div class="sm-result-heading"><p class="sm-note">允建、已用、剩餘容積與銷售坪數由 Core 重算；未重算的草案顯示「—」。</p><button type="button" data-sm="run">Core 重算</button></div>
+        <details class="sm-calc-options"><summary>重算設定</summary><label class="sm-auto"><input type="checkbox" data-sm="auto" checked>輸入變更後自動重算</label></details>
+        <p class="sm-snapshot-stale" hidden></p><div class="sm-status" role="status" aria-live="polite"></div><div class="sm-results"></div><div class="sm-warnings" role="status"></div>
+        <details class="sm-provenance"><summary>計算溯源</summary><p></p></details>
+        <div class="sm-next"><span data-sm="saved">本次草案尚未採用</span><button type="button" data-sm="apply" disabled>採用草案，前往②產品</button><a href="evaluator.html" data-sm="skip">沿用案件快照，前往②</a></div>
+      </section></section>`;
     var q = function (s) { return host.querySelector(s); };
+    var provenance=root.CaseBus.provenance(rec),stale=q(".sm-snapshot-stale");
+    stale.hidden=!provenance.stale;
+    if(provenance.stale)stale.textContent=provenance.stale_note+"；請以現行 Core 重算後再採用。";
+    q(".sm-provenance p").textContent="Core "+(provenance.core_version||"—")+" · input_hash "+(provenance.input_hash||"—")+(provenance.computed_at?" · 計算時間 "+provenance.computed_at:"");
     var intake = root.SiteIntake ? root.SiteIntake.mount(q('.sm-intake'),rec,function(coverage){
       var inputs=root.CaseBus.defaults();inputs.基地面積=draft.params.基地面積;inputs.人行廣場=draft.params.人行廣場;inputs.建蔽率=coverage;
       q('[name="plate"]').value=root.CaseBus.buildEngine(inputs).floors.find(function(f){return f.樓層==='1F';}).樓板;
@@ -146,9 +151,8 @@
       var label = document.createElement("label"); label.textContent = field[1]; var input = document.createElement("input");
       input.type="number"; input.min=field[2]; input.max=field[3]; input.step="any"; input.required=true; input.value=draft.params[field[0]] == null ? "" : draft.params[field[0]];
       input.dataset.param=field[0]; input.addEventListener("input",function () { if(input.validity.valid) draft.params[field[0]]=input.valueAsNumber; changed(valid()); });
-      label.appendChild(input); (intake ? intake.fields : q(".sm-site-inputs div")).appendChild(label);
+      label.appendChild(input); (intake && (field[0]==="基地面積"||field[0]==="容積率") ? intake.fields : q(".sm-site-inputs div")).appendChild(label);
     });
-    if(intake) q('.sm-site-inputs').hidden=true;
     q('[data-sm="overlay"]').addEventListener("change",function (e) { overlay=e.target.checked; draw(); });
     q('[data-sm="auto"]').addEventListener("change",function (e) { if (e.target.checked) session.schedule(0); else session.cancelScheduled(); });
     q('[data-sm="run"]').addEventListener("click",function () { if(valid()) session.retry(); });

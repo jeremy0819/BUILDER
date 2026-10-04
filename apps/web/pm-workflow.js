@@ -1,7 +1,7 @@
 /* A factual, local-only summary for the PM home and daily case overview. */
 (function(root){
   "use strict";
-  var ROUTES={site:["基地與法規","dashboard.html"],product:["產品與財務","evaluator.html"],people:["地主整合","os-simulator.html"],decision:["策略決策","report.html"]};
+  var ROUTES={site:["基地與量體","dashboard.html"],product:["產品與財務","evaluator.html"],people:["地主整合","os-simulator.html"],decision:["策略決策","report.html"]};
   function model(rec,facts,provenance,lastStep){
     if(!rec)return null;
     var snap=rec.snap||{}, view=rec.view||{}, wf=rec.wf||{}, project=wf.project||{};

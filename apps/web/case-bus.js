@@ -253,7 +253,7 @@
         d = (rec && rec.decision) || null, P = ((rec && rec.engine) || {}).params || {};
     return {
       site: {
-        title: "基地與法規", href: "dashboard.html",
+        title: "基地與量體", href: "dashboard.html",
         items: [
           { label: "基地面積", value: 取(P, "基地面積"), unit: "㎡", source: "input" },
           { label: "法定容積率", value: 取(P, "容積率"), unit: "ratio", source: "input" },
