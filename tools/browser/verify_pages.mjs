@@ -86,6 +86,8 @@ try{
   await page.screenshot({path:resolve(root,'tools/browser/artifacts/studio-mobile.png'),fullPage:false});
   await page.goto(base+'overview.html');
   check(await page.locator('#overview-case').isVisible()&&await page.locator('#overview-go').isVisible(),'published daily overview leads to the saved case next action');
+  check(await page.locator('#data-status-rows tr').count()===9,'daily overview lists itemized Data Status without a synthetic score');
+  check((await page.locator('#data-status-rows').innerText()).includes('原始來源未記錄'),'input values do not claim verified sources');
   check((await page.locator('#pulse-baseline').innerText()).includes('尚未設定比較基準'),'first Pulse visit does not invent a change baseline');
   await page.locator('#pulse-review').waitFor({state:'visible'});await page.waitForFunction(()=>!document.getElementById('pulse-review').disabled);
   await page.locator('#pulse-review').click();
