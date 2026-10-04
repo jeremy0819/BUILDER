@@ -19,12 +19,23 @@
       m.issues.forEach(function(issue){var li=document.createElement("li"),a=document.createElement("a");a.href=issue.href;a.textContent=issue.text+" →";li.appendChild(a);$("overview-issues").appendChild(li);});
       $("overview-source").textContent="Core "+(m.coreVersion||"—")+" · input_hash "+(m.inputHash||"—")+(m.computedAt?" · 最近計算 "+m.computedAt:"");
       mountPulse(rec);
+      mountDataStatus(rec,bus.provenance(rec));
     }
     $("overview-projects").replaceChildren();
     (store.order||[]).filter(function(pid){return store.projects&&store.projects[pid]&&(!rec||pid!==rec.pid);}).forEach(function(pid){
       var item=store.projects[pid],a=document.createElement("a"),name=document.createElement("strong"),stage=document.createElement("span");
       name.textContent=(item.snap&&item.snap.code_name)||pid;stage.textContent=(item.wf&&item.wf.project&&item.wf.project.stage)||"階段未設定";
       a.href="overview.html";a.addEventListener("click",function(event){event.preventDefault();bus.setActive(pid);location.reload();});a.append(name,stage);$("overview-projects").appendChild(a);
+    });
+  }
+  function mountDataStatus(rec,provenance){
+    var body=document.getElementById("data-status-rows");body.replaceChildren();
+    root.DataStatus.model(rec,provenance).forEach(function(row){
+      var tr=document.createElement("tr"),title=document.createElement("th"),link=document.createElement("a");
+      title.scope="row";link.href=row.href;link.textContent=row.label;title.appendChild(link);tr.appendChild(title);
+      [row.value,row.status,row.source,row.checked].forEach(function(value){var td=document.createElement("td");td.textContent=value;tr.appendChild(td);});
+      if(row.note){var small=document.createElement("small");small.textContent=row.note;tr.lastChild.appendChild(small);}
+      body.appendChild(tr);
     });
   }
   function mountPulse(rec){
