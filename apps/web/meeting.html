@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BUILDER · 會議摘要</title>
+  <script src="studio-theme.js"></script>
+  <link rel="stylesheet" href="os-unified.css">
+  <link rel="stylesheet" href="builder-studio.css">
+  <link rel="stylesheet" href="meeting-brief.css">
+  <script src="security.js" defer></script><script src="version.js" defer></script><script src="case-bus.js" defer></script><script src="case-store.js" defer></script><script src="pm-workflow.js" defer></script><script src="project-pulse.js" defer></script><script src="meeting-brief.js" defer></script>
+</head>
+<body class="meeting-page">
+  <main>
+    <header class="meeting-toolbar"><a href="overview.html">← 返回案件總覽</a><div><button type="button" id="meeting-mark">將目前設為下次會議基準</button><button type="button" id="meeting-print">列印／存成 PDF</button></div></header>
+    <section id="meeting-empty" hidden><h1>尚未選擇案件</h1><p>請先開啟案件，再建立會議摘要。</p><a href="workspace.html#cases">選擇案件 →</a></section>
+    <article id="meeting-case" hidden aria-label="案件會議摘要">
+      <div class="meeting-heading"><span>BUILDER / MEETING BRIEF</span><h1 id="meeting-name"></h1><p id="meeting-generated"></p></div>
+      <section><div class="meeting-section-head"><span>01</span><h2>案件現況</h2></div><dl class="meeting-state"><div><dt>階段</dt><dd id="meeting-stage"></dd></div><div><dt>同意進度</dt><dd id="meeting-consent"></dd></div><div><dt>全案投報率 · Core</dt><dd id="meeting-return"></dd></div><div><dt>共同負擔比 · Core</dt><dd id="meeting-cost"></dd></div></dl><p class="meeting-note" id="meeting-core-note"></p></section>
+      <section><div class="meeting-section-head"><span>02</span><h2>自上次會議的變更</h2></div><p class="meeting-note" id="meeting-baseline"></p><ol id="meeting-changes"></ol></section>
+      <section><div class="meeting-section-head"><span>03</span><h2>卡住的事項</h2></div><ol id="meeting-blockers"></ol><p class="meeting-note">只列出人工標記為「卡住」的任務。</p></section>
+      <section><div class="meeting-section-head"><span>04</span><h2>本次待決策議題</h2></div><label class="meeting-agenda no-print">每行一項，由會議準備者明確輸入<textarea id="meeting-agenda-input" rows="4" maxlength="1200" placeholder="例如：是否重新委託估價"></textarea></label><p class="meeting-note no-print" id="meeting-agenda-status">本機會議草稿；不寫入案件歷程或推定為已決策。</p><ol id="meeting-topics"></ol></section>
+      <section><div class="meeting-section-head"><span>05</span><h2>下一步任務</h2></div><ol id="meeting-actions"></ol><p class="meeting-note">負責人、期限與狀態均取自人工登錄任務。</p></section>
+      <footer>資料取自本機案件、Activity 與會議草稿；缺漏項目不代表已完成。列印前請核對時間、來源與待決議題。</footer>
+    </article>
+  </main>
+</body>
+</html>
