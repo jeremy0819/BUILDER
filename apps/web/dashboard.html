@@ -1,7 +1,7 @@
 <meta charset="utf-8">
 <script src="studio-theme.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BUILDER · 基地與法規工作區</title>
+<title>BUILDER · 基地與量體工作區</title>
 <style>
 :root{
   --accent:#5A3FE0; --accent-2:#8A6BF5; --accent-soft:#eeeafb;
@@ -159,7 +159,7 @@ footer{margin-top:36px;padding-top:17px;border-top:1px solid var(--line);font-si
   <header class="top">
     <div class="brand">
       <div class="logo">UR<br>OS</div>
-      <div><h1>基地與法規工作區</h1><div class="sub">都市更新／危老 · 基地條件與樓層方案</div></div>
+      <div><h1>基地與量體工作區</h1><div class="sub">都市更新／危老 · 基地資料、樓層草案與 Core 結果</div></div>
     </div>
     <div class="pills">
       <a class="pill" href="overview.html" style="text-decoration:none">案件總覽</a>
@@ -633,8 +633,8 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
                  <b style="color:var(--warn)">⚠ 方向性判斷（存活率未校準）· 非投資結論</b></div>`
                :`<div style="font-size:11px;color:var(--mute);border:1px dashed var(--line);border-radius:9px;padding:6px 10px">決策狀態：待 Decision Engine<br>（Workspace 匯入 decision JSON）</div>`}
         </div></div>
-      <section id="case-spatial-stage"></section>
-      ${rec.engine?'<div id="site-massing-host"></div>':''}
+      ${rec.engine?'<div id="site-massing-host"></div>':'<div class="cw-empty">此案只有快照，缺少可重算的完整輸入。<a href="workspace.html#cases">匯入完整案件資料 →</a></div>'}
+      <details class="uros-site-extra site-spatial-demo" id="site-spatial-demo"><summary>3D 操作展示 · 合成場景，非本案量體</summary><section id="case-spatial-stage"></section></details>
       <details class="uros-site-extra" id="site-records"><summary>基地資料、地籍與產權清冊</summary>
       ${self.LandInformation?self.LandInformation.render(rec):""}
       <div class="cw-grid">

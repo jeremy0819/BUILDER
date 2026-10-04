@@ -117,6 +117,10 @@ try {
   await page.evaluate(()=>{const r=CaseBus.activeRecord(),canvas=document.createElement('canvas');canvas.width=320;canvas.height=180;const c=canvas.getContext('2d');c.fillStyle='#eeeeee';c.fillRect(0,0,320,180);c.strokeStyle='#b934aa';c.strokeRect(30,30,200,120);r.assets={...(r.assets||{}),cadastral:canvas.toDataURL('image/png')};CaseBus.replace(r.pid,r);});
   await page.goto(origin+"/dashboard.html");await page.locator("#site-massing-host").waitFor();
   const studioAccent=await page.evaluate(()=>getComputedStyle(document.body).getPropertyValue('--uros-accent').trim());
+  check(await page.locator('.sm-layer-heading h2').allTextContents().then(v=>v.join('|')==='基地輸入與參考草圖|樓層與標準樓板|Core 容積結果'),'Site presents base, massing and Core result in order');
+  check(await page.locator('#site-spatial-demo').getAttribute('open')===null&&await page.locator('.sm-diagram').getAttribute('open')===null,'synthetic 3D and floor area diagram begin collapsed');
+  check(await page.locator('#site-workflow-records').getAttribute('open')===null,'case record panel begins collapsed in Site');
+  check((await page.locator('.si-caption').innerText()).includes('不參與量體或 Core 計算'),'reference sketch clearly has no planning binding');
   check(await page.locator('.si-canvas image').count()===1,'local cadastral attachment is reused as a tracing background');
   check(await page.evaluate(()=>!!CaseBus.activeRecord().assets.cadastral),'demo collection upgrades preserve user attachments');
   await page.locator('.si-background input').uncheck();
@@ -161,6 +165,7 @@ try {
   check(await page.locator('[data-uros-runtime]').isVisible() && (await page.locator('[data-uros-runtime]').innerText())==='本機','Site runtime source visible on mobile');
   check(await page.locator('#site-records').getAttribute('open')===null,'land records initially collapsed');
   check(await page.locator('#cw-drive').count()===0,'financial controls no longer compete with Site massing');
+  await page.locator('.sm-diagram > summary').click();
   const priorEngine=await page.evaluate(()=>JSON.stringify(CaseBus.activeRecord().engine));
   const figure=await page.locator('.sm-drawing').innerHTML();
   const faceBox=await page.locator('.sm-drawing [data-mv-row]').first().boundingBox();

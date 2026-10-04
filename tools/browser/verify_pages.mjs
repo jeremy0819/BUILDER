@@ -55,6 +55,19 @@ try{
   await page.locator('#btn-demo').click();
   await page.waitForURL(base+'dashboard.html');await page.locator("body.uros-unified").waitFor();
   check(await page.locator('html').getAttribute('data-theme')==='dark','new workspace defaults to dark');
+  check(await page.locator('.sm-layer-heading h2').allTextContents().then(v=>v.join('|')==='基地輸入與參考草圖|樓層與標準樓板|Core 容積結果'),'published Site follows the three-layer hierarchy');
+  check(await page.locator('#site-spatial-demo').getAttribute('open')===null,'synthetic 3D stays out of the primary case flow');
+  check(await page.locator('#site-workflow-records').getAttribute('open')===null,'case record panel stays collapsed by default');
+  check((await page.locator('[data-si="coverage"]').textContent()).trim()==='依建蔽率估算標準樓板'&&(await page.locator('.si-caption').textContent()).includes('不參與量體'),'coverage action and sketch label state the data boundary');
+  await page.screenshot({path:resolve(root,'tools/browser/artifacts/site-main-desktop.png'),fullPage:true});
+  await page.setViewportSize({width:390,height:844});
+  check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'three-layer Site main view mobile no overflow');
+  await page.screenshot({path:resolve(root,'tools/browser/artifacts/site-main-mobile.png'),fullPage:true});
+  await page.setViewportSize({width:1440,height:1000});
+  await page.locator('.uros-workflow-links a[href="#workflow-mass"]').click();
+  check(await page.locator('#site-workflow-records').getAttribute('open')!==null,'Site record deep link opens its disclosure');
+  await page.locator('#site-workflow-records > summary').click();
+  await page.locator('#site-spatial-demo > summary').click();
   check(await page.locator('.stage-viewport [data-stage="name"]').count()===0,'case name stays outside the synthetic viewport');
   check(await page.locator('.stage-preview').innerText()==='0.7 Preview','prototype maturity is explicit without changing release');
   check(await page.locator('.stage-demo-label').evaluate(el=>{

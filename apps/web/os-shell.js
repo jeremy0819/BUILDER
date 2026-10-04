@@ -3,7 +3,7 @@
   "use strict";
 
   var PAGES = {
-    "dashboard.html": { key: "site", n: "01 / 04", title: "基地與法規" },
+    "dashboard.html": { key: "site", n: "01 / 04", title: "基地與量體" },
     "evaluator.html": { key: "product", n: "02 / 04", title: "產品與財務" },
     "os-simulator.html": { key: "people", n: "03 / 04", title: "地主整合" },
     "report.html": { key: "decision", n: "04 / 04", title: "策略決策" }
@@ -181,27 +181,12 @@
     };
     var next=rec?steps[page.key]:["尚無作用中案件。建立或匯入後，四步會共用同一份資料。","index.html?new=1#entry","建立案件"];
     if(rec&&!rec.engine&&(page.key==="site"||page.key==="product"))next=["目前只有已存快照；匯入完整輸入後才能重新試算。","workspace.html#cases","匯入完整案件"];
-    if(page.key==="site"){
-      var v=(rec&&rec.view)||{},provenance=root.CaseBus&&root.CaseBus.provenance?root.CaseBus.provenance(rec):{};
-      var summary=document.createElement("section");summary.className="pm-site-summary";summary.setAttribute("aria-label","基地可行性摘要");
-      var title=document.createElement("div");title.innerHTML='<span class="pm-kicker">① 基地與法規</span><h2>基地可行性</h2><p>數字取自案件 Core 快照；條件變更請先重算、再採用。</p>';
-      var numbers=document.createElement("div");numbers.className="pm-site-facts";
-      [["允建容積",v.allow_floor_area],["已配置容積",v.used_floor_area],["容積餘量",v.remaining_floor_area]].forEach(function(pair){var cell=document.createElement("div"),label=document.createElement("small"),value=document.createElement("strong");label.textContent=pair[0];value.textContent=fmt(pair[1],"㎡");cell.append(label,value);numbers.appendChild(cell);});
-      var warning=document.createElement("p");warning.className="pm-site-warning";
-      var count=Array.isArray(v.warnings)?v.warnings.length:(Number.isInteger(snap.warnings_n)?snap.warnings_n:0);
-      warning.textContent=provenance.stale?"⚠ 快照由舊版 Core 產生，請重算。":count?"Core 健檢有 "+count+" 項提醒；詳情見下方資料。":"基地條件與來源仍須人工核對。";
-      var a=document.createElement("a");a.className="pm-primary";
-      if(!rec){a.href="index.html?new=1#entry";a.textContent="建立案件 →";}
-      else if(!rec.engine){a.href="workspace.html#cases";a.textContent="匯入完整案件 →";}
-      else if(v.allow_floor_area!=null&&!provenance.stale){a.href="evaluator.html";a.textContent="前往產品與財務 →";}
-      else{a.href="#site-massing-host";a.textContent="核對基地條件 →";}
-      summary.append(title,numbers,warning,a);shell.appendChild(summary);
-    }else{
+    if(page.key!=="site"){
       var action=document.createElement("div");action.className="uros-action";
       action.innerHTML='<p><strong>目前這一步</strong>'+next[0]+'</p><a href="'+next[1]+'">'+next[2]+' →</a>';
       shell.appendChild(action);
     }
-    var routes = page.key === "site" ? [["mass","空間與樓層"]] : page.key === "people" ? [["board","同意看板"],["task","時程任務"]]
+    var routes = page.key === "site" ? [["mass","案件紀錄"]] : page.key === "people" ? [["board","同意看板"],["task","時程任務"]]
       : page.key === "decision" ? [["dec","決策紀錄"],["time","時間軸"],["attr","歸因比較"]] : [];
     if (routes.length) {
       var links = document.createElement("nav"); links.className = "uros-workflow-links";
