@@ -22,6 +22,8 @@ import sys
 
 # 凍結基準（檔 → sha256）。變更凍結檔＝改這裡＝需 repo 擁有者核准（🔴）。
 FROZEN = {
+    "schemas/dashboard_query.schema.v0.1.json":
+        "a7aef32bb2b447d8827c80abebf3fdfa63870f550c1cbc09b1db679e89b74071",
     "schemas/site_intake.schema.v0.1.json":
         "e08a9aa40d41d35fa2a631c88c8308e67f6266b420d1fe87169145ec66357f5d",
     "schemas/cashflow_view.schema.v0.1.json":

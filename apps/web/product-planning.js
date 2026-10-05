@@ -45,7 +45,7 @@
       +'<details class="pp-finance-detail"><summary>銷售組成與土地成本</summary><div class="pp-more-fields"></div></details>'
       +'<details class="pp-finance-detail"><summary>成本科目與分期支出</summary><div class="pp-cashflow"></div></details>'
       +'<div class="pp-actions"><button type="button" data-pp="run">Core 重算</button><button type="button" data-pp="apply" disabled>採用產品，前往③人心</button><a href="os-simulator.html" data-pp="skip">沿用案件快照，前往③</a></div>'
-      +'<div class="pp-scenario-host"></div></section>';
+      +'<div id="scenario-comparison" class="pp-scenario-host"></div></section>';
     var q=function (s) { return host.querySelector(s); };
     var compare;
     function show(state) {

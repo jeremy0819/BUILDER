@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>BUILDER · 主管 Dashboard</title>
+  <script src="studio-theme.js"></script><link rel="stylesheet" href="os-unified.css"><link rel="stylesheet" href="builder-studio.css"><link rel="stylesheet" href="executive-dashboard.css">
+  <script src="security.js" defer></script><script src="version.js" defer></script><script src="case-store.js" defer></script><script src="case-bus.js" defer></script><script src="project-pulse.js" defer></script><script src="core-runtime.js" defer></script><script src="executive-dashboard.js" defer></script>
+</head>
+<body class="executive-page">
+  <main class="executive-dashboard">
+    <header class="executive-heading"><div><strong>BUILDER</strong><h1>主管 Dashboard</h1></div><nav aria-label="工作用途"><a href="executive-dashboard.html" aria-current="page">Dashboard</a><a id="executive-workspace" href="dashboard.html">Workspace →</a><a id="executive-meeting" href="meeting.html">Meeting Brief →</a></nav></header>
+    <form id="executive-query" class="executive-query">
+      <label>案件<select id="executive-case" aria-label="案件"></select></label>
+      <label>期間<select id="executive-period"><option value="3m">近 3 月</option><option value="6m">近 6 月</option><option value="1y">近 1 年</option><option value="all" selected>全部</option><option value="custom">自訂</option></select></label>
+      <label>指標<select id="executive-metric"><option value="return_rate">全案投報率</option><option value="total_sales">全案總銷</option><option value="shared_cost">共同負擔</option><option value="owner_return_value">地主分回價值</option><option value="saleable_area">銷售坪數</option><option value="agreed">同意戶數</option><option value="funding_gap">資金缺口</option></select></label>
+      <label>起日<input id="executive-start" type="date"></label><label>迄日<input id="executive-end" type="date"></label>
+      <button type="submit" aria-label="查詢" title="查詢">↻</button>
+    </form>
+    <p id="executive-status" class="executive-status" role="status" aria-live="polite">讀取已存案件…</p>
+    <div id="executive-empty" hidden><p>此瀏覽器尚無案件。</p><a href="workspace.html#cases">前往案件櫃 →</a></div>
+    <div id="executive-content" hidden>
+      <section id="executive-kpis" class="executive-kpis" aria-label="案件指標"></section>
+      <div class="executive-analysis">
+        <section class="executive-trend" aria-labelledby="executive-trend-title"><div class="executive-section-head"><h2 id="executive-trend-title">歷史趨勢</h2><div class="executive-series" role="group" aria-label="歷史來源"><button type="button" data-series="adopted" aria-pressed="true">案件已採用</button><button type="button" data-series="scenarios" aria-pressed="false">方案歷史</button></div></div><p class="executive-caption" id="executive-basis"></p><div id="executive-chart" class="executive-chart"></div><div id="executive-chart-note" class="executive-caption"></div><details id="executive-missing" hidden><summary id="executive-missing-summary"></summary><div id="executive-missing-list"></div></details></section>
+        <section class="executive-composition" aria-labelledby="executive-cost-title"><div class="executive-section-head"><h2 id="executive-cost-title">哪個科目變了？</h2></div><div id="executive-costs" class="executive-costs"></div></section>
+      </div>
+      <section class="executive-events" aria-labelledby="executive-events-title"><div class="executive-section-head"><h2 id="executive-events-title">期間事件</h2><button type="button" id="executive-clear-day" hidden>全部期間</button></div><div id="executive-events" class="executive-event-list"></div></section>
+    </div>
+    <dialog id="executive-evidence" class="executive-evidence"><div class="executive-section-head"><h2>資料與事件</h2><button type="button" id="executive-close" aria-label="關閉" title="關閉">×</button></div><div id="executive-evidence-body"></div></dialog>
+  </main>
+</body></html>

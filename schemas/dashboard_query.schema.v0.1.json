@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://builder.local/schemas/dashboard_query.schema.v0.1.json",
+  "title": "Read-only dashboard projection v0.1",
+  "description": "Recorded time with current Core replay. No persisted output, company-profit inference, or net-funding-gap inference.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "dashboard_version", "core_version", "basis", "chart", "metric", "range", "points", "current_id", "previous_id", "deltas"],
+  "properties": {
+    "schema_version": {"const": "dashboard-0.1"},
+    "dashboard_version": {"const": "0.1.0"},
+    "core_version": {"type": "string"},
+    "basis": {"const": "current-core-replay"},
+    "chart": {"type": "object", "additionalProperties": false, "required": ["x_field", "time_zone", "interpolation", "editable", "draggable", "must_not_read_as"], "properties": {
+      "x_field": {"const": "ts"}, "time_zone": {"const": "Asia/Taipei"}, "interpolation": {"const": "none"},
+      "editable": {"const": false}, "draggable": {"const": false},
+      "must_not_read_as": {"const": ["original-core-historical-results", "scenario-creation-is-adoption", "event-proximity-is-causality", "disbursement-is-funding-gap", "owner-return-is-developer-profit"]}
+    }},
+    "metric": {"enum": ["total_sales", "shared_cost", "owner_return_value", "return_rate", "saleable_area", "agreed", "funding_gap"]},
+    "range": {"type": "object", "required": ["start", "end"], "additionalProperties": false, "properties": {"start": {"type": "string"}, "end": {"type": "string"}}},
+    "points": {"type": "array", "maxItems": 256, "items": {"type": "object", "required": ["point_id", "ts", "label", "source", "source_id", "recorded_core_version", "input_hash", "core_version", "values", "costs", "error", "display", "cost_display"], "additionalProperties": false, "properties": {
+      "point_id": {"type": "string"}, "ts": {"type": ["string", "null"]}, "label": {"type": "string"}, "source": {"type": "string"}, "source_id": {"type": "string"},
+      "recorded_core_version": {"type": "string"}, "input_hash": {"type": "string"}, "core_version": {"type": "string"},
+      "values": {"type": "object", "additionalProperties": {"type": ["number", "null"]}}, "costs": {"type": "object", "additionalProperties": {"type": "number"}},
+      "error": {"type": ["string", "null"]}, "display": {"type": "object", "additionalProperties": {"type": "string"}}, "cost_display": {"type": "object", "additionalProperties": {"type": "string"}}
+    }}},
+    "current_id": {"type": ["string", "null"]}, "previous_id": {"type": ["string", "null"]},
+    "deltas": {"type": "object", "additionalProperties": {"type": "object", "required": ["value", "display"], "additionalProperties": false, "properties": {"value": {"type": ["number", "null"]}, "display": {"type": "string"}}}}
+  }
+}

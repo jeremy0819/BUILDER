@@ -137,5 +137,10 @@ try{
   await page.screenshot({path:resolve(root,'tools/browser/artifacts/overview-mobile.png'),fullPage:true});
   await page.setViewportSize({width:1440,height:1000});
   await page.screenshot({path:resolve(root,'tools/browser/artifacts/overview-desktop.png'),fullPage:true});
+  await page.goto(base+'executive-dashboard.html');
+  check(await page.locator('#executive-query').isVisible()&&(await page.locator('h1').innerText())==='主管 Dashboard','published Dashboard is reachable under the Pages project prefix');
+  check(await page.locator('iframe,canvas,input[type="number"]').count()===0,'published Dashboard excludes 3D and financial editing');
+  await page.setViewportSize({width:390,height:844});
+  check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'published Dashboard mobile query has no overflow');
   console.log(`PAGES: ${passed} passed; commit=${build.commit}`);
 }finally{await browser?.close();if(server)await new Promise(r=>server.close(r));}

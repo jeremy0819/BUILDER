@@ -70,6 +70,14 @@ self.onmessage = (e) => {
     } catch (err) {
       post("result", { id: m.id, error: String((err && err.message) || err) });
     }
+  } else if (m.type === "dashboard") {
+    if (!ready) { post("result", { id: m.id, error: "core-not-ready" }); return; }
+    try {
+      pyodide.globals.set("_dashboard_json", JSON.stringify(m.query || {}));
+      const out = pyodide.runPython("from core.redcf.dashboard import query_dashboard\n" +
+        "json.dumps({'dashboard': query_dashboard(**json.loads(_dashboard_json))})");
+      post("result", Object.assign({ id: m.id }, JSON.parse(out)));
+    } catch (err) { post("result", { id: m.id, error: String((err && err.message) || err) }); }
   } else if (m.type === "today") {
     // M7.2 Watchtower：「今天要做什麼」——同一份 core/redcf.build_today（逾期/風險窗判準只有一套）
     if (!ready) { post("result", { id: m.id, error: "core-not-ready" }); return; }

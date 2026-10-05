@@ -143,6 +143,7 @@ jobs:
           node tests/web/test_scenario_compare.mjs
           node tests/web/test_development_intake.mjs
           node tests/web/test_spatial_prototype.mjs
+          node tests/web/test_executive_dashboard.mjs
 
       - name: "Install browser verification tools"
         run: |
@@ -157,6 +158,7 @@ jobs:
           node tools/browser/verify_scenario_compare.mjs
           node tools/browser/verify_spatial.mjs
           node tools/browser/verify_pages.mjs
+          node tools/browser/verify_dashboard.mjs
 
       - name: "Gate 22 — Player feedback / backup / calibration / CI identity"
         run: |

@@ -150,6 +150,7 @@
       + optionsHtml(pid) + "</select></div>"
       + '<div class="uros-shell-actions"><a class="uros-icon-btn" href="index.html" title="OS 主選單" aria-label="OS 主選單">⌂</a>'
       + '<a class="uros-icon-btn" href="workspace.html" title="案件工作區" aria-label="案件工作區">▦</a>'
+      + '<a class="uros-icon-btn" href="executive-dashboard.html" title="主管 Dashboard：案件歷史" aria-label="主管 Dashboard：案件歷史">▥</a>'
       + '<button class="uros-icon-btn" id="uros-theme" type="button" title="切換主題" aria-label="切換主題">◐</button></div>'
       + '<details class="uros-shell-prov"><summary>資料與模型資訊 · ' + esc(snap.code_name || "尚無案件") + '</summary><div><span>' + esc(snap.case_type === "danger_building" ? "危老重建" : "都市更新")
       + '</span><span>input ' + esc(shortHash(snap.input_hash) || "—") + '</span><span>core ' + esc(snap.core_version || "—") + "</span></div></details></div>";

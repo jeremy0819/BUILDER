@@ -10,7 +10,7 @@
 
 | 版本 | 載體（真實來源） | 現值 | bump 時機 |
 |---|---|---|---|
-| **Schema Version** | `schemas/project_schema.json`（v1.1）＋`schemas/project_schema_v2.json`（v2.0）＋`schemas/project_schema_v2_1.json`（v2.1）＋`schemas/v2/*.schema.json` 內 `schema_version` | 1.1＋2.0＋2.1（**皆凍結**；連同各層契約共 **20 檔**凍結） | 加 optional 欄位＝minor（例：2.0→2.1 owner_allocations）；改名/改型別/刪欄位/改必填＝major（見 SCHEMA_STRATEGY）。凍結守衛＝`tools/check_schema_freeze.py`（Gate 6） |
+| **Schema Version** | `schemas/project_schema.json`（v1.1）＋`schemas/project_schema_v2.json`（v2.0）＋`schemas/project_schema_v2_1.json`（v2.1）＋`schemas/v2/*.schema.json` 內 `schema_version` | 1.1＋2.0＋2.1（**皆凍結**；連同各層契約共 **23 檔**凍結） | 加 optional 欄位＝minor（例：2.0→2.1 owner_allocations）；改名/改型別/刪欄位/改必填＝major（見 SCHEMA_STRATEGY）。凍結守衛＝`tools/check_schema_freeze.py`（Gate 6） |
 | **CORE_VERSION** | `core/redcf/_version.py` 的 `CORE_VERSION` | **0.6.0**（`input_hash` 數值正規化＋Decision v0.2 二元組，見 `CHANGELOG.md`） | 計算公式、費率、law_db 內容、合約結構變動才 bump；**消費端追溯依據，不可斷號** |
 | **App Version** | `apps/streamlit/app.py` 的 `APP_VERSION`；各 HTML 內版號（evaluator v1.3、simulator V4） | v4.9 / v1.3 / V4 | 純介面/行為變更才 bump（cosmetic）；`BUILD_DATE` 每次部署恆更新 |
 | **OS Release** | git tag `os-vX.Y.Z`（聚合版本，**新增機制**） | os-v0.1.0-alpha／0.2.0-beta／0.3.0／0.4.0／0.5.0／**os-v0.6.0** 已發布 | 每次正式 release 打 tag，對應一組凍結的上述三者 |
@@ -35,6 +35,10 @@
 > （本機未定位草圖與人工土地事實）；`cashflow_view.schema.v0.1`
 > `3264a5c05d71e5b6284d62ed81cc43a26f851fcf9da0a1311a9f8ce1e7e54e41`
 > （既有成本分期的溯源信封，不改 Project Result、計算公式或費率；Core 維持 0.6.0）。
+> 2026-10-05 主管 Dashboard 新增唯讀查詢契約 `dashboard_query.schema.v0.1`
+> `a7aef32bb2b447d8827c80abebf3fdfa63870f550c1cbc09b1db679e89b74071`；
+> `DASHBOARD_VERSION` 0.1.0 獨立版本化。既有 22 檔基準不變、合計 23 檔。
+> 查詢投影只呼叫既有 Core、計算期差與格式，不改財務公式、Project Result 或費率；Core 維持 0.6.0。
 > 要改凍結檔＝走版本升級流程（新 `schema_version`＋遷移器＋更新 FROZEN），不得直接改檔。
 
 ## 2. 三層關係（誰依賴誰）
