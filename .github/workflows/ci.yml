@@ -126,6 +126,7 @@ jobs:
           node tests/web/test_project_pulse.mjs
           node tests/web/test_data_status.mjs
           node tests/web/test_meeting_brief.mjs
+          node tests/web/test_home_onboarding.mjs
 
       # ── Gate 20：四步共用 UI／Decision 圖／本機地政邊界 ──────────────
       #   共用 shell 必須載入四頁；Decision 互動只換證據，不可拖曳或反算；
@@ -159,6 +160,7 @@ jobs:
           node tools/browser/verify_spatial.mjs
           node tools/browser/verify_pages.mjs
           node tools/browser/verify_dashboard.mjs
+          node tools/browser/verify_home.mjs
 
       - name: "Gate 22 — Player feedback / backup / calibration / CI identity"
         run: |

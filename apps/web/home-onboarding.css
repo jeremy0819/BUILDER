@@ -1,0 +1,58 @@
+.studio-home .home-icon{display:block;width:22px;height:22px;flex:0 0 22px;pointer-events:none}
+.studio-home [data-home-icon]{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.studio-home .home-command,.studio-home .brand,.studio-home .pm-secondary,.studio-home .pm-secondary-button{display:inline-flex;align-items:center;gap:9px;letter-spacing:0}
+.studio-home header>.home-command{min-height:44px;font-size:13px}
+.studio-home .brand [data-home-icon]{color:var(--uros-accent)}
+.studio-home .hero{padding:20px 0 10px}
+.studio-home .hero h1{font-size:32px;letter-spacing:0;margin:6px 0 8px}
+.studio-home .hero p{font-size:14px;line-height:1.6}
+.studio-home .start{margin-top:24px;background:transparent;border:0;border-top:1px solid var(--uros-line);border-radius:0;padding:22px 0}
+.studio-home .start h2{font-size:20px;letter-spacing:0}
+.studio-home .start .sub{font-size:13px;line-height:1.6}
+.studio-home .entry-progress{margin-bottom:22px}
+.studio-home .entry-progress[hidden]{display:none!important}
+.studio-home .entry-progress h3{font-size:13px;margin:0 0 14px;font-weight:600;color:var(--uros-mute)}
+.studio-home .entry-progress ol{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:0;margin:0;list-style:none;gap:20px}
+.studio-home .entry-progress li{position:relative;display:flex;align-items:center;gap:10px;min-width:0}
+.studio-home .entry-progress li:not(:last-child)::after{content:"";position:absolute;top:20px;left:calc(100% - 16px);width:24px;height:1px;background:var(--uros-line)}
+.studio-home .entry-step-number,.studio-home .step .sn{display:grid;place-items:center;width:42px;height:42px;flex:0 0 42px;border-radius:50%;border:1px solid var(--uros-line);background:var(--uros-panel-2);color:var(--uros-mute);font:700 20px var(--sans);letter-spacing:0;font-variant-numeric:tabular-nums}
+.studio-home .entry-step-label{font-size:14px;font-weight:700;line-height:1.5;overflow-wrap:anywhere}
+.studio-home .entry-step-status{display:block;font-size:12px;font-weight:400;color:var(--uros-mute);line-height:1.5}
+.studio-home [data-state=current] .entry-step-number{background:var(--uros-accent);border-color:var(--uros-accent);color:var(--uros-panel)}
+.studio-home [data-state=current] .entry-step-label{color:var(--uros-accent)}
+.studio-home [data-state=complete] .entry-step-number{border-color:var(--uros-ok);color:var(--uros-ok)}
+.studio-home [data-state=skipped] .entry-step-number{border-style:dashed}
+.studio-home .cta button{display:inline-flex;align-items:center;justify-content:center;gap:9px}
+.studio-home .cta button.go{border-radius:8px}
+.studio-home .readout{border:0;border-block:1px solid var(--uros-line);border-radius:0;background:transparent}
+.studio-home .readout .rhead{font-size:12px;letter-spacing:0;padding:12px 0}
+.studio-home .rhead .home-command{font-weight:600;color:var(--uros-ink)}
+.studio-home .sect{letter-spacing:0}
+.studio-home .steps{grid-template-columns:repeat(4,minmax(0,1fr))}
+.studio-home .step{min-width:0;padding:18px 12px}
+.studio-home .step .sh{align-items:center;gap:10px}
+.studio-home .step .sn{width:38px;height:38px;flex-basis:38px;font-size:19px;color:var(--uros-accent)}
+.studio-home .step-heading{display:flex;align-items:center;gap:7px;min-width:0}
+.studio-home .step-heading .home-icon{width:20px;height:20px;flex-basis:20px;color:var(--uros-accent)}
+.studio-home .step .st{font-size:14px;overflow-wrap:anywhere}
+.studio-home .step dl{grid-template-columns:minmax(0,1fr) auto}
+.studio-home .step dt,.studio-home .step dd{overflow-wrap:anywhere}
+.studio-home .step.is-pending:hover{background:transparent}
+.studio-home .more{border-radius:8px}
+@media(max-width:850px){.studio-home .steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){
+  .studio-home .hero{align-items:start;flex-wrap:wrap;gap:8px}
+  .studio-home .hero h1{font-size:28px}
+  .studio-home .start{margin-top:18px}
+  .studio-home .entry-progress ol{gap:10px}
+  .studio-home .entry-progress li{flex-direction:column;align-items:flex-start;gap:7px}
+  .studio-home .entry-progress li:not(:last-child)::after{left:52px;width:calc(100% - 52px)}
+  .studio-home .entry-step-label{font-size:13px}
+  .studio-home .entry-step-number{width:40px;height:40px;flex-basis:40px}
+  .studio-home .step{padding:14px 8px}
+  .studio-home .step .sh{align-items:flex-start;flex-direction:column}
+  .studio-home .step .src{font-size:11px;letter-spacing:0}
+  .studio-home .cta .go{width:100%}
+  .studio-home .cta .ghost{flex:1 1 140px}
+  .studio-home .readout .rhead{align-items:flex-start;flex-direction:column;gap:4px}
+}

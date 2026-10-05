@@ -164,12 +164,13 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
 </style>
 <link rel="stylesheet" href="builder-studio.css">
 <link rel="stylesheet" href="pm-workflow.css">
+<link rel="stylesheet" href="home-onboarding.css">
 
 <body class="studio-home">
 <div class="wrap">
   <header>
-    <span class="brand"><b>BUILDER</b> / 工作室</span>
-    <a href="executive-dashboard.html">主管 Dashboard →</a>
+    <span class="brand"><span data-home-icon="map" aria-hidden="true"></span><b>BUILDER</b> / 工作室</span>
+    <a class="home-command" href="executive-dashboard.html"><span data-home-icon="chart" aria-hidden="true"></span>主管 Dashboard</a>
     <details class="pm-model-info" id="model-info"><summary><span id="model-status">模型啟動中</span> · <span id="save-status">尚未儲存案件</span></summary><div class="stats">
       <span class="chip hot">core <span data-uros-ver="core">—</span></span>
       <span class="chip">schema <span data-uros-ver="schema">—</span></span>
@@ -179,16 +180,24 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
     </div></details>
   </header>
 
-  <div class="hero"><div><span class="stage-eyebrow">都市更新決策工作台</span><h1>把資料變成下一個決策。</h1><p>基地、財務與地主資訊，從上次停下的地方繼續。</p></div><a id="hero-overview" href="overview.html" hidden>案件總覽 ↗</a></div>
+  <div class="hero"><div><span class="stage-eyebrow">都市更新決策工作台</span><h1>BUILDER 工作室</h1><p>基地、財務與地主資訊，從上次停下的地方繼續。</p></div><a class="home-command" id="hero-overview" href="overview.html" hidden><span data-home-icon="folder" aria-hidden="true"></span>案件總覽</a></div>
   <section class="pm-resume" id="pm-resume" hidden aria-label="繼續案件">
     <span class="pm-kicker">繼續上次工作</span><h2 id="pm-case-name"></h2><div class="pm-meta" id="pm-case-stage"></div>
     <div class="pm-facts"><div><small>同意進度</small><strong id="pm-consent"></strong><span id="pm-consent-source"></span></div><div><small>全案投報率 · Core 快照</small><strong id="pm-return"></strong></div><div><small>共同負擔比 · Core 快照</small><strong id="pm-cost"></strong></div></div>
-    <div class="pm-next"><div><span class="pm-kicker">NEXT ACTION</span><p id="pm-next-text"></p></div><a class="pm-primary" id="pm-next-link" href="dashboard.html">繼續處理 →</a></div>
-    <ul class="pm-issues" id="pm-issues"></ul><div class="pm-actions"><a class="pm-secondary" href="overview.html">查看案件總覽 →</a><a class="pm-secondary" href="workspace.html#cases">其他案件 →</a><button class="pm-secondary-button" type="button" id="new-case">＋ 建立新案件</button><button class="pm-secondary-button" type="button" id="edit-case">調整目前案件輸入</button></div>
+    <div class="pm-next"><div><span class="pm-kicker">NEXT ACTION</span><p id="pm-next-text"></p></div><a class="pm-primary home-command" id="pm-next-link" href="dashboard.html">繼續處理<span data-home-icon="arrow" aria-hidden="true"></span></a></div>
+    <ul class="pm-issues" id="pm-issues"></ul><div class="pm-actions"><a class="pm-secondary" href="overview.html"><span data-home-icon="folder" aria-hidden="true"></span>查看案件總覽</a><a class="pm-secondary" href="workspace.html#cases"><span data-home-icon="folder" aria-hidden="true"></span>其他案件</a><button class="pm-secondary-button" type="button" id="new-case"><span data-home-icon="plus" aria-hidden="true"></span>建立新案件</button><button class="pm-secondary-button" type="button" id="edit-case"><span data-home-icon="pencil" aria-hidden="true"></span>調整目前案件輸入</button></div>
   </section>
 
   <!-- ① 開場：問四個你一定知道的數字 -->
   <section class="start" id="entry">
+    <div class="entry-progress" id="entry-progress" aria-labelledby="entry-progress-title">
+      <h3 id="entry-progress-title">新增案件</h3>
+      <ol aria-label="建案步驟">
+        <li data-entry-step="1" data-state="current" aria-current="step"><span class="entry-step-number" aria-hidden="true">1</span><span class="entry-step-label">填寫條件<span class="entry-step-status">編輯中</span></span></li>
+        <li data-entry-step="2" data-state="pending"><span class="entry-step-number" aria-hidden="true">2</span><span class="entry-step-label">檢視初評<span class="entry-step-status">尚未計算</span></span></li>
+        <li data-entry-step="3" data-state="pending"><span class="entry-step-number" aria-hidden="true">3</span><span class="entry-step-label">儲存案件<span class="entry-step-status">待確認</span></span></li>
+      </ol>
+    </div>
     <h2 id="start-title">先快速判斷這塊地值不值得研究</h2>
     <p class="sub" id="start-sub">填四個已知條件，先看 Core 的初步結果；決定保留時再儲存為案件。</p>
 
@@ -209,20 +218,20 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
 
     <!-- Core 即時讀數：這一區的每個數字都由 core/redcf 產出 -->
     <div class="readout">
-      <div class="rhead"><span>Core 即時試算</span><span class="st" id="ro-status">計算核心啟動中…</span></div>
+      <div class="rhead"><span class="home-command"><span data-home-icon="chart" aria-hidden="true"></span>Core 即時試算</span><span class="st" id="ro-status">計算核心啟動中…</span></div>
       <div class="rgrid" id="ro-grid"></div>
     </div>
 
     <div class="cta">
-      <button class="go" id="btn-go" disabled>快速評估 →</button>
-      <button class="ghost" id="btn-demo">先看一個示範案</button>
-      <button class="ghost" id="btn-reset">回到預設值</button>
+      <button class="go" id="btn-go" disabled><span data-home-icon="chart" id="btn-go-icon" aria-hidden="true"></span><span id="btn-go-label">快速評估 →</span></button>
+      <button class="ghost" id="btn-demo"><span data-home-icon="play" aria-hidden="true"></span>先看一個示範案</button>
+      <button class="ghost" id="btn-reset"><span data-home-icon="reset" aria-hidden="true"></span>回到預設值</button>
     </div>
-    <div class="prov" id="prov"></div>
+    <div class="prov" id="prov" role="status" aria-live="polite"></div>
   </section>
 
   <!-- ② 四步連動帶：同一份 result，四步各自 verbatim 取用 -->
-  <div class="sect">四步動線 · 同一份數字</div>
+  <div class="sect" id="steps-heading">建案後的四步工作</div>
   <div class="steps" id="steps"></div>
   <div class="prov" id="steps-note">
     每一格都標了來源：<b>Core</b>＝計算核心產出、<b>輸入</b>＝你填的事實、<b>決策引擎</b>＝Decision Engine 判定。
@@ -297,6 +306,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
 <script src="browser-backup.js"></script>
 <script src="case-bus.js"></script>
 <script src="pm-workflow.js"></script>
+<script src="home-onboarding.js"></script>
 <script src="spatial-stage.js"></script>
 <script src="core-runtime.js"></script>
 <script src="demo-cases.js"></script>
@@ -319,6 +329,10 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
 
   var 表單 = B.defaults();
   var RT = null, 就緒 = false, 失敗 = false, 最新 = null, 目前pid = null, 忙 = false, 等待 = false, 快速已看 = false;
+  var Home = window.HomeOnboarding;
+  Home.mountIcons(document);
+  function 建案步驟(phase){ Home.render($("entry-progress"), {editing:!!目前pid, phase:phase||(快速已看?"review":"input"), computed:!!(最新&&/^sha256:/.test(最新.input_hash)), unavailable:失敗||就緒&&!最新}); }
+  function 主動作(label, icon){ $("btn-go-label").textContent=label;$("btn-go-icon").innerHTML=Home.icon(icon||"arrow"); }
 
   function fmtNum(v){ return v==null ? null : Number(v).toLocaleString("en-US",{maximumFractionDigits:0}); }
   function fmtPct(v){ return v==null ? null : (v*100).toFixed(1)+"%"; }
@@ -387,7 +401,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
 
   var 排程試算 = window.coreDebounce(function(){ 試算(); }, 260);
   var 輸入序 = 0;
-  function 輸入失效(){ 輸入序++; 最新=null; 快速已看=false; if(就緒)$("btn-go").disabled=true; if(!目前pid)$("btn-go").textContent="快速評估 →"; 畫讀數(null); 畫四步(); $("prov").textContent="輸入已變更，尚未取得本次 Core 結果。"; }
+  function 輸入失效(){ 輸入序++; 最新=null; 快速已看=false; if(就緒)$("btn-go").disabled=true; if(!目前pid)主動作(失敗?"先儲存輸入（數字稍後補算）→":"快速評估 →",失敗?"plus":"chart"); 建案步驟();畫讀數(null); 畫四步(); $("prov").textContent="輸入已變更，尚未取得本次 Core 結果。"; }
 
   function 試算(){
     if(!RT || !就緒){ 畫讀數(null); return; }
@@ -398,6 +412,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
     RT.recompute(eng).then(function(r){
       if(token!==輸入序){等待=true;return;}
       最新 = {engine: eng, result: r.result || {}, input_hash: r.input_hash || "", cashflow:r.cashflow||null};
+      建案步驟();
       畫讀數(最新.result);
       $("btn-go").disabled = false;
       $("prov").innerHTML = '<b>溯源</b> input_hash '
@@ -408,7 +423,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
       畫四步();
     }).catch(function(e){
       狀態("試算失敗：" + 人話(e.message), false, e.message);
-      畫讀數(null);$("btn-go").disabled=false;$("btn-go").textContent="先儲存輸入（數字稍後補算）→";
+      畫讀數(null);$("btn-go").disabled=false;主動作("先儲存輸入（數字稍後補算）→","plus");建案步驟();
     }).then(function(){
       忙 = false;
       if(等待){ 等待 = false; 試算(); }
@@ -426,7 +441,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
     return {t:String(it.value)};
   }
   var 來源名 = {core:"Core", input:"你的輸入", decision:"決策引擎"};
-  var 序號 = ["①","②","③","④"];
+  var 步驟圖示 = ["map","chart","users","signpost"];
 
   function 畫四步(){
     /* 既有案件保留人心／任務等事實，再疊上當下 Core 結果做唯讀預覽；不在此落盤。 */
@@ -442,18 +457,21 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
       }).join("");
       var 來源 = [].concat.apply([], (s.items||[]).map(function(it){ return 來源名[it.source]; }))
         .filter(function(x,j,a){ return a.indexOf(x)===j; }).join(" · ");
-      return '<a class="step" href="'+s.href+'">'
-        + '<div class="sh"><span class="sn">'+序號[i]+'</span><span class="st">'+s.title+'</span></div>'
+      return (目前pid?'<a class="step" href="'+s.href+'">':'<div class="step is-pending">')
+        + '<div class="sh"><span class="sn">'+(i+1)+'</span><span class="step-heading">'+Home.icon(步驟圖示[i])+'<span class="st">'+esc(s.title)+'</span></span></div>'
         + '<dl>'+(rows||'<dt>尚未計算</dt><dd class="na">—</dd>')+'</dl>'
-        + '<div class="src">來源：'+(來源||"—")+'</div></a>';
+        + '<div class="src">來源：'+(來源||"—")+'</div>'+(目前pid?'</a>':'</div>');
     }).join("");
+    $("steps-heading").textContent=目前pid?"案件四步工作":"建案後的四步工作";
+    $("steps-note").textContent=目前pid?"作用中案件 · 數值取自同一份 Core 快照與逐戶紀錄":"尚未儲存案件 · 下列數值為本次 Core 預覽";
   }
 
   /* ── 建立案件 ── */
   $("btn-go").addEventListener("click", function(){
-    if(!目前pid && 最新 && !快速已看){
-      快速已看=true;$("btn-go").textContent="儲存為案件 →";
-      $("prov").textContent="已完成初步評估。數字為本次 Core 結果；確認保留後，再按「儲存為案件」。";return;
+    if(!目前pid && 最新 && /^sha256:/.test(最新.input_hash) && !快速已看){
+      快速已看=true;主動作("儲存為案件 →","plus");建案步驟();
+      $("prov").textContent="已完成初步評估。數字為本次 Core 結果；確認保留後，再按「儲存為案件」。";
+      $("ro-grid").scrollIntoView({block:"nearest"});return;
     }
     /* Core 可用就用它的結果；不可用時只存輸入，計算欄位由 buildRecord 填 null（顯示「—」）不是 0。 */
     var 最新或空 = 最新 || { engine: B.buildEngine(表單), result: {}, input_hash: "" };
@@ -466,7 +484,18 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
     var store = 目前pid ? B.readStore() : null;
     var existing = store && store.projects ? store.projects[目前pid] : null;
     var rec = existing ? B.applyResult(existing, 最新) : B.buildRecord(最新);
-    目前pid = existing ? B.replace(目前pid, rec) : B.upsert(rec);
+    建案步驟("save");
+    try {
+      if (!existing && Object.prototype.hasOwnProperty.call(B.readStore().projects, rec.pid)) {
+        // Case identity must not collide merely because two cases share the same inputs.
+        rec.pid="prj-"+crypto.randomUUID();rec.wf.project.project_id=rec.pid;
+      }
+      目前pid = existing ? B.replace(目前pid, rec) : B.upsert(rec);
+    } catch (e) {
+      建案步驟();主動作("再試一次儲存 →","plus");
+      $("prov").textContent="儲存未完成，輸入仍保留。請確認瀏覽器允許本機儲存，且有足夠空間。";
+      $("prov").title=e.message||"";return;
+    }
     location.href = "dashboard.html";
   });
 
@@ -512,7 +541,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
     };
     $("start-title").textContent = "調整：" + ((rec.snap && rec.snap.code_name) || "你的案件");
     $("start-sub").textContent = "調整條件後，按「更新」採用這次計算。未採用前保留原案件。";
-    $("btn-go").textContent = "採用調整並前往基地 →";
+    主動作("採用調整並前往基地 →","arrow");
     return true;
   }
 
@@ -545,6 +574,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
   畫表單();
   畫讀數(null);
   畫四步();
+  建案步驟();
   document.querySelectorAll("[data-seg]").forEach(function(b){
     b.setAttribute("aria-pressed", String(表單[b.getAttribute("data-seg")] === b.getAttribute("data-val")));
   });
@@ -564,7 +594,7 @@ footer{margin-top:24px;border-top:1px solid var(--line);padding-top:13px;display
          不需要 Core 就能記下來。舊版把兩者綁在一起，Core 一掛整個入口鎖死，
          唯一能按的只剩「看示範案」——那正是拿掉 A~D 開場時要避免的事。 */
       $("btn-go").disabled = false;
-      $("btn-go").textContent = "先儲存輸入（數字稍後補算）→";
+      主動作("先儲存輸入（數字稍後補算）→","plus");建案步驟();
       $("prov").innerHTML = '<b style="color:var(--amber)">計算的部分暫時取不到。</b> '
         + '本頁不會用估算值頂替，但你填的數字是事實、可以先存下來——'
         + '建立案件後計算欄位顯示「—」，等計算核心恢復再重算即可。';

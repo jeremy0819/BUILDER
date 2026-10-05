@@ -274,7 +274,7 @@ ok(/rec \? B\.applyResult\(rec, 最新\) : B\.buildRecord\(最新\)/.test(homeSr
    "首頁即時預覽以 applyResult 疊最新 Core 結果，不讀舊 view");
 ok(/existing \? B\.applyResult\(existing, 最新\) : B\.buildRecord\(最新\)/.test(homeSrc),
    "首頁更新既有案件走 applyResult，保留案件事實");
-ok(/function openNewCase\(\)\{ location.href="index.html#entry"; \}/.test(dashboardSrc) &&
+ok(/function openNewCase\(\)\{ location.href="index.html\?new=1#entry"; \}/.test(dashboardSrc) &&
    !/function submitNewCase/.test(dashboardSrc) && /B\.buildRecord\(最新\)/.test(homeSrc),
    "Dashboard 導向唯一建案入口，首頁仍走 CaseBus engine／record 契約");
 ok(!/面積表計入容積\s*:/.test(dashboardSrc),

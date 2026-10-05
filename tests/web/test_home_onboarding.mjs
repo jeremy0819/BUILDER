@@ -1,0 +1,44 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import Home from '../../apps/web/home-onboarding.js';
+
+let passed=0;
+const check=(value,label)=>{assert.ok(value,label);passed++;};
+const initial=Home.model();
+check(initial.current===1&&!initial.hidden,'first use starts with input');
+check(initial.steps[1].text==='尚未計算','loading is not a completed evaluation');
+const ready=Home.model({computed:true});
+check(ready.current===1&&ready.steps[1].text==='待檢視','background recompute does not advance the user');
+const review=Home.model({phase:'review',computed:true});
+check(review.current===2&&review.steps[0].state==='complete','explicit preview moves to review');
+check(review.steps[2].state==='pending','preview does not claim a saved case');
+check(Home.model({phase:'review',computed:false}).current===1,'invalidated output returns to input');
+check(Home.model({editing:true}).hidden,'editing an existing case does not masquerade as creation');
+const offline=Home.model({unavailable:true});
+check(offline.steps[1].text==='尚未計算'&&offline.steps[2].text==='可先儲存輸入','offline path remains honest');
+const saving=Home.model({phase:'save',computed:true});
+check(saving.current===3&&saving.steps[1].state==='complete','saving a reviewed Core result');
+const inputOnly=Home.model({phase:'save',computed:false,unavailable:true});
+check(inputOnly.current===3&&inputOnly.steps[1].state==='skipped'&&inputOnly.steps[1].text==='尚未計算','input-only save never completes the Core step');
+
+const nodes=Array.from({length:3},()=>({dataset:{},attrs:{},status:{},setAttribute(k,v){this.attrs[k]=v;},removeAttribute(k){delete this.attrs[k];},querySelector(){return this.status;}}));
+const host={hidden:false,querySelectorAll(){return nodes;}};
+Home.render(host,{phase:'review',computed:true});
+check(nodes.filter(n=>n.attrs['aria-current']==='step').length===1&&nodes[1].attrs['aria-current']==='step','one accessible current step');
+Home.render(host,{computed:false});
+check(nodes[0].attrs['aria-current']==='step'&&!nodes[1].attrs['aria-current']&&nodes[1].status.textContent==='尚未計算','render clears stale review state');
+Home.render(host,{editing:true});check(host.hidden,'existing-case stepper hidden');
+
+for(const name of ['map','chart','users','signpost','plus','arrow','reset','folder','pencil','play'])check(Home.icon(name).includes('aria-hidden="true"')&&Home.icon(name).includes('focusable="false"'),'decorative official icon '+name);
+for(const name of ['constructor','toString','__proto__','<img onerror=alert(1)>'])check(Home.icon(name)==='','unknown or untrusted icon name cannot become markup');
+const source=readFileSync(new URL('../../apps/web/home-onboarding.js',import.meta.url),'utf8');
+check(!/fetch\(|localStorage|CaseStore|recompute\(|https?:.*src=/.test(source),'component has no data/network/calculation side effects');
+const html=readFileSync(new URL('../../apps/web/index.html',import.meta.url),'utf8');
+check(/目前pid\?'<a class="step"/.test(html)&&html.includes('<div class="step is-pending">'),'unsaved previews have no cross-case navigation');
+check(!/\$\("btn-go"\)\.textContent\s*=/.test(html),'dynamic commands preserve their icons');
+check(html.indexOf('home-onboarding.js')<html.indexOf('var Home ='),'component loads before the controller');
+check(html.includes('if(!目前pid && 最新 && /^sha256:/.test(最新.input_hash) && !快速已看)'),'input-only retry cannot claim a Core review');
+const site=readFileSync(new URL('../../apps/web/dashboard.html',import.meta.url),'utf8');
+check(site.includes('if(!hasDemo && !explicitReload) return;'),'a real saved case does not implicitly request demo cases');
+check(site.includes('function openNewCase(){ location.href="index.html?new=1#entry"; }'),'Workspace new-case command enters new mode, not editing');
+console.log('HOME ONBOARDING: '+passed+' passed');
