@@ -7,7 +7,7 @@
 
 ## A. 自動化門檻（CI 綠）
 
-- [ ] **CI 全綠**：最新 commit 的 GitHub Actions `CI` workflow 全部 Gate（Gate0–Gate6 ＋ Gate1.5 套件安裝）全 pass。
+- [ ] **CI 全綠**：最新 commit 的 GitHub Actions `CI` workflow 全部現行 Gate（以 `.github/workflows/ci.yml` 為準）全 pass。
 - [ ] **Golden Test PASS**：`python -m pytest -q` → 全 passed（含 test_golden＋test_headless）。
 - [ ] **Core 隔離 PASS**：`python tools/check_core_isolation.py` → Gate2 PASS。
 - [ ] **Template 迴歸 PASS**：`python tools/check_template.py` → Gate3 PASS。
@@ -38,6 +38,7 @@
       要改凍結檔＝走版本升級流程（新版本＋遷移器＋更新 FROZEN 基準），不得直接改檔。
       - site intake v0.1 `schemas/site_intake.schema.v0.1.json` = `e08a9aa40d41d35fa2a631c88c8308e67f6266b420d1fe87169145ec66357f5d`
       - cashflow view v0.1 `schemas/cashflow_view.schema.v0.1.json` = `3264a5c05d71e5b6284d62ed81cc43a26f851fcf9da0a1311a9f8ce1e7e54e41`
+      - evidence fact v0.1 `schemas/evidence_fact.schema.v0.1.json` = `e8876437488a62fe075d6e4903772255a8d6fb95a47d6c5643648aa5215bff1e`（M9.1 本機候選證據；不改 Project Schema）
 - [ ] **Version Updated**：依 `governance/VERSION_POLICY.md` 確認 CORE_VERSION / schema_version /
       APP_VERSION 該動的已動、不該動的沒動；本次 release 對應版本已填入下方發布紀錄。
 - [ ] **Migration Updated**：若 schema major 變更，`core/redcf/migrations.py` 的 `migrate()`

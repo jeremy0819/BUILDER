@@ -37,9 +37,9 @@ def 蒐集() -> dict:
         files[rel] = (根 / rel).read_text(encoding="utf-8")
     # 3) valuation 讀的係數檔（置於 apps/web）
     files["apps/web/coefficients.json"] = (根 / "apps/web/coefficients.json").read_text(encoding="utf-8")
-    # 4) Core schemas（validator 讀取；Presentation 契約由 chart-contracts.js 獨立載入）
+    # 4) Core schemas（validator 讀取；圖表／本機候選證據契約不由 Core 消費）
     for p in sorted((根 / "schemas").glob("*.json")):
-        if p.name.startswith("chart_contract.schema."):
+        if p.name.startswith(("chart_contract.schema.", "evidence_fact.schema.")):
             continue
         files[p.relative_to(根).as_posix()] = p.read_text(encoding="utf-8")
     return files

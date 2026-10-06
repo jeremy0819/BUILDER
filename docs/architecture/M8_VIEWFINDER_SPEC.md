@@ -2,7 +2,7 @@
 
 > **文件類型**：架構規格（docs/architecture/）
 > **里程碑**：M8 · Viewfinder — 圖像互動層
-> **狀態**：M8.1／M8.2 完成
+> **狀態**：M8.1–M8.4 完成；M8.5 本機 GIS 待做。Evidence & Calibration 另列 M9，不改寫本文件的歷史編號。
 > **前置**：M7 THE CASE OS 完成（M7.1–M7.5 已出貨，os-v0.5.0 已發布）
 > **最後更新**：2026/08
 

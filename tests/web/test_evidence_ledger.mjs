@@ -1,0 +1,25 @@
+import assert from 'node:assert/strict';
+import EvidenceLedger from '../../apps/web/evidence-ledger.js';
+
+const rec={pid:'case-synthetic',wf:{project:{project_id:'case-synthetic'}},snap:{input_hash:'sha256:old'}};
+const at='2026-10-06T00:00:00.000Z';
+const observed=EvidenceLedger.caseFact(rec,{field:'基地面積',value:'860',source:'合成測試文件',evidence_type:'observed',observed_at:'2026-10-01',confidence:'unknown'},'f-synthetic-1',at);
+assert.equal(observed.verification_status,'unverified');
+assert.equal(observed.evidence_type,'observed');
+const one=EvidenceLedger.append(rec,observed);
+assert.equal(rec.evidence_facts,undefined,'append does not mutate the case');
+assert.equal(EvidenceLedger.list(one).length,1);
+const assumed=EvidenceLedger.caseFact(one,{field:'等待成本',value:'低',source:'分析者假設',evidence_type:'assumed',observed_at:'2026-10-02',confidence:'low'},'f-synthetic-2',at);
+assert.equal(assumed.observed_at,null,'an assumption cannot acquire an observed date');
+const two=EvidenceLedger.append(one,assumed);
+assert.equal(two.evidence_facts.length,2);
+assert.equal(one.evidence_facts.length,1);
+assert.throws(()=>EvidenceLedger.append(one,observed),/重複/);
+assert.throws(()=>EvidenceLedger.validate({...observed,case_id:'other'},rec.pid),/案件不符/);
+assert.throws(()=>EvidenceLedger.validate({...observed,verification_status:'verified'},rec.pid),/溯源無效/);
+assert.throws(()=>EvidenceLedger.validate({...observed,evidence_type:'calibrated'},rec.pid),/模型輸出|校準紀錄/);
+assert.throws(()=>EvidenceLedger.validate({...observed,evidence_type:'inferred',observed_at:null},rec.pid),/模型或依據/);
+const tampered={...two,evidence_facts:[...two.evidence_facts,{...observed,fact_id:'f-synthetic-3',supporting_fact_ids:['f-missing'],evidence_type:'inferred',model_version:'model-1'}]};
+assert.throws(()=>EvidenceLedger.list(tampered),/依據鏈無效/);
+assert.throws(()=>EvidenceLedger.append({...rec,evidence_facts:null},observed),/格式或數量無效/);
+console.log('Evidence contract, append-only UI path, and authority boundaries passed');
