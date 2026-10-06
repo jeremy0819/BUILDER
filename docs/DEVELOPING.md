@@ -7,7 +7,7 @@
 | 目錄 | 內容 |
 |---|---|
 | `core/redcf/` | **唯一計算核心（SSOT）**——容積／坪效／財務／權變／現金流／決策引擎／策略引擎 |
-| `schemas/` | 凍結的合約（12 份，位元組不可變，Gate 6 守衛） |
+| `schemas/` | 版本化合約；已凍結檔由 Gate 6 守衛，數量以 `tools/check_schema_freeze.py` 為準 |
 | `apps/web/` | 靜態站：駕駛艙／沙盤／決策報告（純呈現，零計算） |
 | `apps/streamlit/` | Streamlit 精確計算介面（消費 core，不含公式） |
 | `tools/` | 建置與守衛腳本（bundle、示範案生成、各 Gate 檢查） |
@@ -30,12 +30,12 @@ python -m http.server 8000 -d apps/web # 建議：Pyodide 需同源載入 worker
 ## 測試
 
 ```bash
-python -m pytest -q                    # 目前 118 項
+python -m pytest -q                    # 包含 Core 與合約驗證
 node tests/web/test_os_simulator.mjs   # 沙盤遊戲核心 86 項
 node tests/web/test_workspace.mjs      # 工作區 49 項
 ```
 
-## CI Gate（現行 22 道；數量以 `.github/workflows/ci.yml` 為準，本節不重複載明數字）
+## CI Gate（數量以 `.github/workflows/ci.yml` 為準）
 
 定義於 `.github/workflows/ci.yml`，**任一紅即擋 merge**。
 
