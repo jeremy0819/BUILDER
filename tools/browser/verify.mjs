@@ -48,6 +48,16 @@ try {
   check(await home.locator('#hero-overview').isVisible()&&await home.locator('#backup-status').isVisible(),'case overview and backup status stay visible with spatial tool collapsed');
   await home.goto(origin+'/overview.html');
   check(await home.locator('#overview-case').isVisible()&&await home.locator('#overview-name').innerText()===rec.snap.code_name,'daily overview reads the active case');
+  check((await home.locator('#overview-model-status').innerText()).includes('存活率未校準'),'daily overview exposes the actual model calibration status');
+  check(await home.locator('.data-status details').getAttribute('open')===null,'detailed data table stays secondary on the daily overview');
+  check(await home.locator('#evidence-panel').getAttribute('open')===null,'candidate evidence stays out of the executive first view');
+  const evidenceHash=await home.evaluate(()=>CaseBus.activeRecord().snap.input_hash);
+  await home.locator('#evidence-panel > summary').click();
+  await home.locator('#evidence-field').fill('基地面積');await home.locator('#evidence-value').fill('合成 860');
+  await home.locator('#evidence-source').fill('合成測試文件');await home.locator('#evidence-date').fill('2026-10-01');
+  await home.locator('#evidence-add').click();
+  check(await home.locator('#evidence-list .evidence-item').count()===1&&(await home.locator('#evidence-list').innerText()).includes('觀察紀錄 · 未核驗'),'manual observation retains an unverified label');
+  check(await home.evaluate(hash=>CaseBus.activeRecord().snap.input_hash===hash&&CaseBus.activeRecord().evidence_facts[0].verification_status==='unverified',evidenceHash),'evidence entry leaves Core identity and verification unchanged');
   await home.getByRole('link',{name:'＋ 建立新案件'}).click();
   check(await home.locator('#entry').isVisible()&&await home.locator('#pm-resume').isHidden(),'new case opens a fresh quick evaluation');
   await home.waitForFunction(()=>{const b=document.getElementById('btn-go');return !b.disabled&&b.textContent.includes('快速評估');},{},{timeout:120000});

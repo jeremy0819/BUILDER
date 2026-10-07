@@ -16,6 +16,8 @@ assert.equal(Dashboard.sources(rec,[],[adoption],'adopted').find(p=>p.source==='
 const before=JSON.stringify({rec,scenarios,creation,adoption});
 Dashboard.sources(rec,scenarios,[creation,adoption],'adopted');
 assert.equal(JSON.stringify({rec,scenarios,creation,adoption}),before);
+const privateRecord={...rec,evidence_facts:[{field:'Private synthetic note',value:'Not a financial measurement'}]};
+assert.deepEqual(Dashboard.sources(privateRecord,scenarios,[creation,adoption],'adopted'),applied,'candidate evidence is not included in Core query points');
 const html=readFileSync(new URL('../../apps/web/executive-dashboard.html',import.meta.url),'utf8');
 const js=readFileSync(new URL('../../apps/web/executive-dashboard.js',import.meta.url),'utf8');
 assert.doesNotMatch(html,/three|spatial-stage|type="number"|iframe|canvas/i);
@@ -27,4 +29,4 @@ assert.match(js,/stored-snapshot/);
 assert.match(js,/timeZone:'Asia\/Taipei'/);
 const product=readFileSync(new URL('../../apps/web/product-planning.js',import.meta.url),'utf8');
 assert.ok(js.includes('evaluator.html#scenario-comparison')&&product.includes('id="scenario-comparison"'));
-console.log('EXECUTIVE DASHBOARD: 15 source/read-only boundary assertions passed');
+console.log('EXECUTIVE DASHBOARD: 16 source/read-only boundary assertions passed');

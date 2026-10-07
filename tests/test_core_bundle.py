@@ -36,6 +36,8 @@ def test_bundle_含計算主線_不含pandas模組():
         assert need in files, f"bundle 缺 {need}"
     assert "core/redcf/io.py" not in files and "core/redcf/templates.py" not in files, \
         "bundle 不應含 pandas 相依模組（io/templates）"
+    assert "schemas/evidence_fact.schema.v0.1.json" not in files, \
+        "本機候選證據契約不是 Core 計算依賴"
 
 
 @pytest.fixture

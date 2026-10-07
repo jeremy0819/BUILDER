@@ -10,8 +10,8 @@
   <link rel="stylesheet" href="os-unified.css">
   <link rel="stylesheet" href="builder-studio.css">
   <link rel="stylesheet" href="pm-workflow.css">
-  <script src="security.js" defer></script><script src="version.js" defer></script>
-  <script src="case-bus.js" defer></script><script src="case-store.js" defer></script><script src="pm-workflow.js" defer></script><script src="project-pulse.js" defer></script><script src="data-status.js" defer></script>
+  <script src="security.js" defer></script><script src="version.js" defer></script><script src="calibration-data.js" defer></script>
+  <script src="case-bus.js" defer></script><script src="case-store.js" defer></script><script src="pm-workflow.js" defer></script><script src="project-pulse.js" defer></script><script src="data-status.js" defer></script><script src="evidence-ledger.js" defer></script>
   <script src="overview.js" defer></script>
 </head>
 <body class="pm-overview-page">
@@ -20,7 +20,8 @@
     <section class="pm-overview" id="overview-empty" hidden><span class="pm-kicker">PROJECTS</span><h1>尚未選擇案件</h1><p>先建立或匯入案件，便能在這裡看到已保存的數字與下一步。</p><a class="pm-primary" href="index.html?new=1#entry">快速評估 →</a></section>
     <section class="pm-overview" id="overview-case" hidden aria-label="作用中案件總覽">
       <span class="pm-kicker">目前案件</span><h1 id="overview-name"></h1><div class="pm-meta" id="overview-stage"></div>
-      <div class="pm-facts"><div><small>同意進度</small><strong id="overview-consent"></strong><span id="overview-consent-source"></span></div><div><small>全案投報率 · Core 快照</small><strong id="overview-return"></strong></div><div><small>共同負擔比 · Core 快照</small><strong id="overview-cost"></strong></div></div>
+      <div class="pm-facts"><div><small>同意紀錄 · 戶數</small><strong id="overview-consent"></strong><span id="overview-consent-source"></span></div><div><small>全案投報率 · Core 快照</small><strong id="overview-return"></strong></div><div><small>共同負擔比 · Core 快照</small><strong id="overview-cost"></strong></div></div>
+      <p class="pm-model-status" id="overview-model-status"></p>
       <section class="pulse" aria-labelledby="pulse-title">
         <div class="pulse-head"><div><span class="pm-kicker">PROJECT PULSE</span><h2 id="pulse-title">案件動態</h2><p class="pm-mini" id="pulse-baseline">讀取案件紀錄…</p></div><button type="button" class="pm-secondary-button" id="pulse-review">將目前紀錄設為已查看</button></div>
         <div class="pulse-counts"><div><small>自上次確認的變更</small><strong id="pulse-changes">—</strong></div><div><small>已登錄阻塞</small><strong id="pulse-blocked">—</strong></div><div><small>待辦／進行中</small><strong id="pulse-open">—</strong></div></div>
@@ -29,7 +30,20 @@
       </section>
       <div class="pm-next"><div><span class="pm-kicker">NEXT ACTION</span><p id="overview-next"></p></div><a class="pm-primary" id="overview-go" href="dashboard.html">開始工作 →</a></div>
       <section class="pulse-actions" aria-labelledby="pulse-actions-title"><div class="pulse-head"><h2 id="pulse-actions-title">下一步任務</h2><a href="os-simulator.html#workflow-task">管理任務 →</a></div><ul id="pulse-actions" class="pulse-list"></ul></section>
-      <section class="data-status" aria-labelledby="data-status-title"><div class="pulse-head"><div><span class="pm-kicker">DATA STATUS</span><h2 id="data-status-title">資料狀態</h2></div></div><p class="pm-mini">逐項顯示已輸入資料、紀錄來源與可追溯日期。「已輸入」不代表外部資料已驗證；未記錄日期時不推定新鮮度。</p><div class="data-status-scroll"><table><thead><tr><th scope="col">項目</th><th scope="col">案件值／涵蓋</th><th scope="col">狀態</th><th scope="col">來源</th><th scope="col">查核／事件日期</th></tr></thead><tbody id="data-status-rows"></tbody></table></div></section>
+      <section class="data-status" aria-labelledby="data-status-title"><div class="pulse-head"><div><span class="pm-kicker">DATA STATUS</span><h2 id="data-status-title">資料狀態</h2></div></div><details><summary>查看來源、日期與資料缺口</summary><p class="pm-mini">逐項顯示已輸入資料、紀錄來源與可追溯日期。「已輸入」不代表外部資料已驗證；未記錄日期時不推定新鮮度。</p><div class="data-status-scroll"><table><thead><tr><th scope="col">項目</th><th scope="col">案件值／涵蓋</th><th scope="col">狀態</th><th scope="col">來源</th><th scope="col">查核／事件日期</th></tr></thead><tbody id="data-status-rows"></tbody></table></div></details></section>
+      <details class="evidence-panel" id="evidence-panel"><summary>證據紀錄 <span id="evidence-count">0 筆</span></summary>
+        <p class="pm-mini">這裡保存本機候選紀錄，分開標示觀察與假設。使用者登錄的「觀察」仍未經外部核驗；紀錄不會自動改寫 Core 輸入、法規判定或完成機率。推論與校準須先有可追溯的模型與證據快照。</p>
+        <div class="evidence-list" id="evidence-list"></div>
+        <div class="evidence-form" aria-label="新增證據紀錄">
+          <label>資料項目<input id="evidence-field" maxlength="80" placeholder="例如：基地面積" autocomplete="off"></label>
+          <label>記錄值<input id="evidence-value" maxlength="500" placeholder="照來源原文記錄" autocomplete="off"></label>
+          <label>類型<select id="evidence-type"><option value="observed">觀察紀錄 · 未核驗</option><option value="assumed">分析假設</option></select></label>
+          <label>來源／設定依據<input id="evidence-source" maxlength="160" placeholder="文件、訪談或假設依據" autocomplete="off"></label>
+          <label id="evidence-date-label">觀察日期<input id="evidence-date" type="date"></label>
+          <label>信心註記<select id="evidence-confidence"><option value="unknown">未評估</option><option value="low">低</option><option value="medium">中</option><option value="high">高</option></select></label>
+        </div>
+        <button type="button" class="pm-primary" id="evidence-add">新增本機紀錄</button><p class="pm-mini" id="evidence-status" role="status" aria-live="polite"></p>
+      </details>
       <h2>需核對的資料</h2><ul class="pm-issues" id="overview-issues"></ul>
       <details class="pm-model-info"><summary>資料與模型資訊</summary><p class="pm-mini" id="overview-source"></p></details>
     </section>

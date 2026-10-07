@@ -24,6 +24,8 @@ import sys
 FROZEN = {
     "schemas/dashboard_query.schema.v0.1.json":
         "a7aef32bb2b447d8827c80abebf3fdfa63870f550c1cbc09b1db679e89b74071",
+    "schemas/evidence_fact.schema.v0.1.json":
+        "e8876437488a62fe075d6e4903772255a8d6fb95a47d6c5643648aa5215bff1e",  # M9.1 本機候選證據
     "schemas/site_intake.schema.v0.1.json":
         "e08a9aa40d41d35fa2a631c88c8308e67f6266b420d1fe87169145ec66357f5d",
     "schemas/cashflow_view.schema.v0.1.json":

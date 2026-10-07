@@ -5,6 +5,7 @@ import {resolve,sep,extname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {spawnSync} from 'node:child_process';
 import assert from 'node:assert/strict';
+import EvidenceLedger from '../../apps/web/evidence-ledger.js';
 
 const root=fileURLToPath(new URL('../../',import.meta.url)),web=resolve(root,'apps/web'),artifacts=resolve(root,'tools/browser/artifacts');
 const py=spawnSync(process.env.PYTHON||'python',['-c',`import copy,json,pathlib
@@ -16,6 +17,7 @@ for price in (60,65,70):
  out.append({'engine':x,'result':recompute(x),'input_hash':input_hash(x)})
 print(json.dumps(out))`],{cwd:root,encoding:'utf8'});
 assert.equal(py.status,0,py.stderr);const inputs=JSON.parse(py.stdout);
+const fact=EvidenceLedger.caseFact({pid:'synthetic-history'},{field:'Private synthetic note',value:'Not a financial measurement',source:'Synthetic evidence source',evidence_type:'assumed'},'f-dashboard-synthetic','2026-10-07T00:00:00.000Z');
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json','.css':'text/css; charset=utf-8','.wasm':'application/wasm'};
 const server=createServer((req,res)=>{
  const path=decodeURIComponent(new URL(req.url,'http://localhost').pathname),base=path.startsWith('/runtime/')?artifacts:web,file=resolve(base,'.'+path);
@@ -34,9 +36,10 @@ try{
  await page.goto(origin+'/executive-dashboard.html');
  await page.waitForFunction(()=>document.querySelector('#executive-status').textContent!=='讀取已存案件…');
  check(await page.locator('#executive-empty').isVisible(),'empty local browser has no fabricated case');
- await page.evaluate(async rows=>{
+ await page.evaluate(async ({rows,fact})=>{
   const rec=CaseBus.buildRecord(rows[2]);rec.pid='synthetic-history';rec.wf.project.project_id=rec.pid;
   rec.snap.computed_at='2026-10-01T10:00:00+08:00';rec.wf.project.snapshots=[{id:'baseline',computed_at:'2026-06-01T10:00:00+08:00',input_hash:rows[0].input_hash,core_version:'0.5.0'},{id:'missing',computed_at:'2026-08-01T10:00:00+08:00',input_hash:'sha256:unavailable',core_version:'0.5.0'}];
+  rec.evidence_facts=[fact];
   CaseBus.replace(rec.pid,rec);
   const other=structuredClone(rec);other.pid='other-history';other.snap.code_name='Other synthetic case';other.wf.project.project_id=other.pid;other.wf.project.snapshots=[];CaseBus.replace(other.pid,other);CaseBus.setActive(rec.pid);
   const dates=['2026-06-01T10:00:00+08:00','2026-07-01T10:00:00+08:00','2026-09-29T10:00:00+08:00'];
@@ -45,7 +48,7 @@ try{
   await CaseStore.append(rec.pid,{kind:'scenario',field:'authoritative',target:{type:'scenario',id:'s1'},after:true,ts:'2026-07-18T10:00:00+08:00'});
   await CaseStore.append(rec.pid,{kind:'scenario',field:'authoritative',target:{type:'scenario',id:'s2'},after:true,ts:'2026-09-29T10:00:00+08:00'});
   await CaseStore.append(rec.pid,{kind:'input',field:'住宅單價',before:65,after:70,intent:'<img src=x onerror="window.dashboardXSS=1">',ts:'2026-09-29T11:00:00+08:00'});
- },inputs);
+ },{rows:inputs,fact});
  await page.reload();await settled(page);
  check(await page.locator('#executive-kpis button').count()===6,'six compact KPIs');
  check((await page.locator('#executive-status').innerText()).includes('5 筆歷史'),'snapshot and adoption history, including missing input');
@@ -54,6 +57,7 @@ try{
  check(await page.locator('[data-point]').count()===4,'four real values, missing point not fabricated');
  check((await page.locator('.trend-line').getAttribute('d')).split('M').length===3,'missing snapshot breaks the line');
  check((await page.locator('#executive-costs tbody tr').count())===7,'seven Core cost components');
+ check(!(await page.locator('body').innerText()).includes('Private synthetic note'),'private candidate evidence is not presented as a Dashboard financial measurement');
  await page.locator('[data-cost]').first().click();check((await page.locator('#executive-evidence-body').innerText()).includes('A工程費用'),'cost component opens its Core source');await page.locator('#executive-close').click();await page.locator('#executive-clear-day').click();
  check(await page.locator('[data-kpi="funding_gap"] strong').innerText()==='—','cost disbursement is not mislabeled funding gap');
  check(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight),'default desktop fits in one screen');
@@ -74,6 +78,8 @@ try{
  check(await page.locator('#executive-evidence').isVisible(),'keyboard activates chart evidence');
  check(await page.locator('#executive-evidence-body img').count()===0&&await page.evaluate(()=>!window.dashboardXSS),'stored names and Activity cannot execute HTML');
  await page.locator('#executive-close').click();
+ // Anchor the query date, not the machine date, so the calendar-month assertion stays reproducible.
+ await page.locator('#executive-end').fill('2026-10-05');await page.locator('#executive-end').dispatchEvent('change');await settled(page);
  await page.locator('#executive-period').selectOption('3m');await settled(page);
  check(await page.locator('#executive-start').inputValue()==='2026-07-05','three-month query is calendar-based');
  await page.locator('#executive-period').selectOption('all');await settled(page);

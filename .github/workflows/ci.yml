@@ -181,3 +181,7 @@ jobs:
       #   結構性參數明確拒答。規格自相矛盾（cells 被抽樣）要在進迴圈前就擋下。
       - name: "Gate 23 — Sensitivity map honesty (node)"
         run: node tests/web/test_sensitivity.mjs
+
+      # ── Gate 24：M9.1 證據類型、append-only UI 路徑與未核驗邊界 ──
+      - name: "Gate 24 — Candidate evidence lineage (node)"
+        run: node tests/web/test_evidence_ledger.mjs
