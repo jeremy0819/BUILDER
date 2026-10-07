@@ -625,7 +625,7 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
             <span>作用中案件</span><select id="cw-switch">${caseOpts}</select>
             ${rec.demo?`<span class="cw-demo-tag">合成示範</span>`:""}
             <a href="workspace.html">＋ 匯入／管理案件 →</a>
-            <a href="index.html#entry" title="前往統一建案入口"><b>建立另一案件</b></a>
+            <a href="index.html?new=1#entry" title="前往統一建案入口"><b>建立另一案件</b></a>
             <a href="#" onclick="reloadDemoCases();return false" title="重新載入 A/B/C/D 四個合成示範案（不會刪除你自己匯入的案件）">↻ 重載示範案</a></div></div>
         <div style="text-align:right">
           ${dec?`<div class="cw-verdict" style="color:${VC[dec.verdict]||'var(--mute)'};font-size:22px">${esc(dec.verdict)}</div>
@@ -1243,13 +1243,10 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
       const recs=demoRecords();
       if(!recs.length) return;
       const s=load()||{order:[],projects:{}};
-      const has=s.projects&&Object.keys(s.projects).length;
       const seedV=localStorage.getItem("uros.demo_seed_v");
-      /* 2026-08 起：**空的 store 不再自動植入示範案**。
-         舊行為讓每個新使用者一開頁就被四個陌生案子擋在自己的地前面——順序反了。
-         示範案改為明示索取：起始頁的「先看一個示範案」或本頁的 reloadDemoCases()。
-         已經有示範案的回訪者仍照舊升級（下方分支），不會突然少東西。 */
-      if(!has && !explicitReload) return;
+      // Only upgrade a previously requested demo collection, never a newly saved real case.
+      const hasDemo=recs.some(d=>s.projects&&s.projects[d.pid]&&s.projects[d.pid].demo);
+      if(!hasDemo && !explicitReload) return;
       if(seedV===DEMO_SEED_V) return;                  // 已是最新示範集合
       let 變動=false;
       recs.forEach(d=>{
@@ -1264,7 +1261,7 @@ try{ CaseDrafts.set(CaseBus.activePid(),"site_visited",true); }catch(e){}
      設計原則：欄位少、看得懂、**輸入當下就顯示 Core 算出的允建容積**——
      那個數字就是之後每一頁看到的同一個數字（同專案同數字），因為它由 Core 算、存進案件。
      UI 零計算：允建容積等一切數字都來自 Core recompute，本表單只組輸入。 */
-  function openNewCase(){ location.href="index.html#entry"; }
+  function openNewCase(){ location.href="index.html?new=1#entry"; }
   self.openNewCase=openNewCase;
 
   // 手動重載示範案（顧問端救援：清掉示範資料重新植入，使用者自有案件保留）

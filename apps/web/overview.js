@@ -79,7 +79,13 @@
         var next=ledger.append(current,fact);bus.replace(current.pid,next);rec=next;lastStored=JSON.stringify(next.evidence_facts);render();
         $("evidence-field").value="";$("evidence-value").value="";$("evidence-source").value="";$("evidence-date").value="";
         status.textContent="候選證據已存本機；未改動 Core 輸入或資料核驗狀態。";
-      }catch(e){status.textContent=e&&e.message?e.message:"證據未儲存，請檢查案件與本機儲存空間。";}
+      }catch(e){
+        var message=e&&e.message||"";
+        status.textContent=e&&e.name==="QuotaExceededError"?"本機儲存空間不足，紀錄未存入；欄位已保留。請先匯出案件備份後再重試。":
+          e&&e.name==="SecurityError"?"瀏覽器不允許本機儲存，紀錄未存入；欄位已保留。請檢查瀏覽器儲存設定後再重試。":
+          /^(案件或證據已在其他頁面變更|證據|觀察紀錄|人工紀錄|推論|校準紀錄)/.test(message)?message:
+          "證據未儲存；欄位已保留。請先匯出案件備份，再檢查案件與本機儲存空間。";
+      }
     });
   }
   function mountPulse(rec){

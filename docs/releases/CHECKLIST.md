@@ -22,6 +22,7 @@
 ## C. 合約與版本
 
 - [ ] **Schema Hash（凍結守衛）**：`python tools/check_schema_freeze.py` → 全數相符。
+      - dashboard query v0.1 `schemas/dashboard_query.schema.v0.1.json` = `a7aef32bb2b447d8827c80abebf3fdfa63870f550c1cbc09b1db679e89b74071`（唯讀歷史查詢；既有 22 檔不變）
       基準（唯一來源＝該腳本 `FROZEN` 表，此處抄錄供對照）：
       - v1.1 `schemas/project_schema.json` = `e37e10dbe19f5bbf51234a12fa8e60af34d4c854ac05566aa3e87f7d35bd4a96`
       - v2.0 `schemas/project_schema_v2.json` = `f1c466a3162655634baf19973dcb061a8e64643d08302a1dc3f6cdd0df38e6b1`

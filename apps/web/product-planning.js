@@ -36,7 +36,7 @@
   function mount(host, rec) {
     var runtime, session, draft = rec && rec.engine && JSON.parse(JSON.stringify(rec.engine));
     if (!draft) {
-      host.innerHTML='<div class="product-planning"><h2>尚無可重算的產品方案</h2><p>請先建立案件，或匯入含樓層輸入的案件資料。</p><a href="index.html#entry">建立案件</a> · <a href="workspace.html">匯入案件</a></div>';
+      host.innerHTML='<div class="product-planning"><h2>尚無可重算的產品方案</h2><p>請先建立案件，或匯入含樓層輸入的案件資料。</p><a href="index.html?new=1#entry">建立案件</a> · <a href="workspace.html">匯入案件</a></div>';
       return {dispose:function () {}};
     }
     host.innerHTML='<section class="product-planning" aria-label="產品與財務試算"><div class="pp-title"><h2>產品條件</h2><button type="button" data-pp="reset">還原案件</button></div>'
@@ -45,7 +45,7 @@
       +'<details class="pp-finance-detail"><summary>銷售組成與土地成本</summary><div class="pp-more-fields"></div></details>'
       +'<details class="pp-finance-detail"><summary>成本科目與分期支出</summary><div class="pp-cashflow"></div></details>'
       +'<div class="pp-actions"><button type="button" data-pp="run">Core 重算</button><button type="button" data-pp="apply" disabled>採用產品，前往③人心</button><a href="os-simulator.html" data-pp="skip">沿用案件快照，前往③</a></div>'
-      +'<div class="pp-scenario-host"></div></section>';
+      +'<div id="scenario-comparison" class="pp-scenario-host"></div></section>';
     var q=function (s) { return host.querySelector(s); };
     var compare;
     function show(state) {

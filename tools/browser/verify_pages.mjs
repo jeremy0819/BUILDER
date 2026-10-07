@@ -124,6 +124,32 @@ try{
   await page.locator('#evidence-field').fill('輸入安全');await page.locator('#evidence-value').fill('<img src=x onerror=window.__evidence_pwned=1>');
   await page.locator('#evidence-source').fill('合成安全測試');await page.locator('#evidence-add').click();
   check(await page.locator('#evidence-list .evidence-item').count()===3&&await page.locator('#evidence-list img').count()===0&&await page.evaluate(()=>window.__evidence_pwned===undefined),'candidate evidence text cannot execute HTML');
+  await page.locator('#evidence-field').fill('合成重試紀錄');await page.locator('#evidence-value').fill('保留輸入');await page.locator('#evidence-source').fill('合成儲存測試');
+  const beforeEvidenceFailure=await page.evaluate(()=>{
+    const before=localStorage.getItem(CaseBus.KEY),original=Storage.prototype.setItem;
+    Storage.prototype.setItem=function(key,value){if(key===CaseBus.KEY)throw new DOMException('setItem private-storage-detail','QuotaExceededError');return original.call(this,key,value);};
+    window.__restoreEvidenceStorage=()=>{Storage.prototype.setItem=original;};return before;
+  });
+  await page.locator('#evidence-add').click();
+  check((await page.locator('#evidence-status').innerText()).includes('儲存空間不足')&&!(await page.locator('#evidence-status').innerText()).includes('private-storage-detail'),'evidence quota failure has a human-readable retry message');
+  check(await page.locator('#evidence-field').inputValue()==='合成重試紀錄'&&await page.evaluate(()=>localStorage.getItem(CaseBus.KEY))===beforeEvidenceFailure,'failed evidence append retains inputs and original case data');
+  await page.evaluate(()=>window.__restoreEvidenceStorage());await page.locator('#evidence-add').click();
+  check(await page.locator('#evidence-list .evidence-item').count()===4&&(await page.locator('#evidence-status').innerText()).includes('已存本機'),'evidence retry appends exactly once');
+  await page.locator('#evidence-field').fill('合成過期輸入');await page.locator('#evidence-value').fill('不應覆蓋');await page.locator('#evidence-source').fill('合成衝突測試');
+  await page.evaluate(()=>{
+    const rec=CaseBus.activeRecord(),fact=EvidenceLedger.caseFact(rec,{field:'其他頁面追加',value:'合成資料',source:'合成跨頁測試',evidence_type:'assumed'},'f-concurrent-synthetic',new Date().toISOString());
+    CaseBus.replace(rec.pid,EvidenceLedger.append(rec,fact));
+  });
+  const beforeEvidenceConflict=await page.evaluate(()=>localStorage.getItem(CaseBus.KEY));await page.locator('#evidence-add').click();
+  check((await page.locator('#evidence-status').innerText()).includes('其他頁面變更')&&await page.evaluate(()=>localStorage.getItem(CaseBus.KEY))===beforeEvidenceConflict,'concurrent evidence append cannot be overwritten by a stale form');
+  const originalEvidencePid=await page.evaluate(()=>{
+    const rec=CaseBus.activeRecord(),other=structuredClone(rec);other.pid='synthetic-evidence-other';other.wf.project.project_id=other.pid;other.snap.code_name='合成隔離案件';delete other.evidence_facts;
+    CaseBus.replace(other.pid,other);return rec.pid;
+  });
+  const beforeEvidenceSwitch=await page.evaluate(()=>localStorage.getItem(CaseBus.KEY));await page.locator('#evidence-add').click();
+  check((await page.locator('#evidence-status').innerText()).includes('其他頁面變更')&&await page.evaluate(()=>localStorage.getItem(CaseBus.KEY))===beforeEvidenceSwitch,'active-case switch cannot redirect evidence into another case');
+  await page.evaluate(pid=>CaseBus.setActive(pid),originalEvidencePid);await page.reload();await page.locator('#evidence-panel > summary').click();
+  check(await page.locator('#evidence-list .evidence-item').count()===5&&await page.evaluate(()=>EvidenceLedger.list(CaseBus.activeRecord()).every(f=>f.case_id===CaseBus.activePid()&&f.verification_status==='unverified')),'fresh overview preserves all five correctly bound unverified records');
   check((await page.locator('#pulse-baseline').innerText()).includes('尚未設定比較基準'),'first Pulse visit does not invent a change baseline');
   await page.locator('#pulse-review').waitFor({state:'visible'});await page.waitForFunction(()=>!document.getElementById('pulse-review').disabled);
   await page.locator('#pulse-review').click();
@@ -160,5 +186,10 @@ try{
   await page.screenshot({path:resolve(root,'tools/browser/artifacts/overview-mobile.png'),fullPage:true});
   await page.setViewportSize({width:1440,height:1000});
   await page.screenshot({path:resolve(root,'tools/browser/artifacts/overview-desktop.png'),fullPage:true});
+  await page.goto(base+'executive-dashboard.html');
+  check(await page.locator('#executive-query').isVisible()&&(await page.locator('h1').innerText())==='主管 Dashboard','published Dashboard is reachable under the Pages project prefix');
+  check(await page.locator('iframe,canvas,input[type="number"]').count()===0,'published Dashboard excludes 3D and financial editing');
+  await page.setViewportSize({width:390,height:844});
+  check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'published Dashboard mobile query has no overflow');
   console.log(`PAGES: ${passed} passed; commit=${build.commit}`);
 }finally{await browser?.close();if(server)await new Promise(r=>server.close(r));}

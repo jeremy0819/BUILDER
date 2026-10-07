@@ -70,6 +70,7 @@
       analyze: function (engine, workflow, inputs, profiles) {
         return request({ type: "analyze", engine: engine, workflow: workflow, inputs: inputs, profiles: profiles });
       },
+      dashboard: function (query) { return request({ type: "dashboard", query: query }); },
       decide: function (engine, workflow, inputs) {
         return request({ type: "decide", engine: engine, workflow: workflow, inputs: inputs });
       },
