@@ -37,6 +37,7 @@ Prototype 的 synthetic 圖形只驗證技術，不替任何案件取得以上�
 
 建議新增獨立 Presentation 契約，不編輯既有 Project 或 Household 凍結檔。
 以下欄位是提案，不是本輪新增的正式 schema 或已接受輸入。
+基地 Geometry 如何經 Planning 規則連到 Core 與量體，另見 [Site Geometry → Planning → Core 整合提案](SITE_GEOMETRY_PLANNING_PROPOSAL.md)；該文件也尚未核准或實作。
 
 | 區塊 | 擬定欄位／規則 |
 |---|---|
